@@ -34,7 +34,8 @@
 docker run -d \
   --name isrvd \
   -p 8080:8080 \
-  -p 9080:9080 \
+  -p 80:9080 \
+  -p 443:9443 \
   -v /var/run/docker.sock:/var/run/docker.sock \
   -v /mnt/isrvd:/data \
   rehiy/isrvd:latest
@@ -44,6 +45,7 @@ docker run -d \
 |------|------|------|
 | 8080 | isrvd | Web 管理界面 |
 | 9080 | APISIX | HTTP 代理端口 |
+| 9443 | APISIX | HTTPS 代理端口 |
 
 ### slim（仅 isrvd）
 
