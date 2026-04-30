@@ -5,6 +5,9 @@ import (
 	"sync"
 
 	"github.com/goccy/go-yaml"
+	"github.com/rehiy/pango/logman"
+
+	"isrvd/internal/helper"
 )
 
 // YamlProvider YAML 文件配置提供者
@@ -34,6 +37,8 @@ func (y *YamlProvider) Load() (*Config, error) {
 		return nil, err
 	}
 
+	y.migratePasswords(conf)
+
 	return conf, nil
 }
 
@@ -48,4 +53,33 @@ func (y *YamlProvider) Save(conf *Config) error {
 	}
 
 	return os.WriteFile(y.file, data, 0644)
+}
+
+// migratePasswords 迁移明文密码为加密格式
+func (y *YamlProvider) migratePasswords(conf *Config) {
+	migrated := false
+
+	for _, m := range conf.Members {
+		if m.Password == "" || helper.HashedBcrypt(m.Password) {
+			continue
+		}
+
+		hashedPassword, err := helper.HashPassword(m.Password)
+		if err != nil {
+			logman.Warn("密码加密失败", "username", m.Username, "error", err)
+			continue
+		}
+
+		logman.Info("密码已自动迁移为加密格式", "username", m.Username)
+		m.Password = hashedPassword
+		migrated = true
+	}
+
+	if migrated {
+		if err := y.Save(conf); err != nil {
+			logman.Warn("密码迁移保存失败", "error", err)
+		} else {
+			logman.Info("配置文件已自动更新（密码迁移）")
+		}
+	}
 }

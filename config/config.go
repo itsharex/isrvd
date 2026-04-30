@@ -1,12 +1,6 @@
 package config
 
-import (
-	"path/filepath"
-
-	"github.com/rehiy/pango/logman"
-
-	"isrvd/internal/helper"
-)
+import "path/filepath"
 
 var (
 	// 模式
@@ -17,7 +11,7 @@ var (
 	JWTSecret = "jwt-secret-key"
 	// 内网代理用户名 Header 名（为空则不启用）
 	ProxyHeaderName = ""
-	// 础目录
+	// 基础目录
 	RootDirectory = "."
 	// Agent LLM 配置
 	Agent = &AgentConfig{}
@@ -42,11 +36,7 @@ func Load() error {
 		return err
 	}
 
-	applyConfig(conf)
-
-	if err := migratePlaintextPasswords(); err != nil {
-		logman.Warn("密码迁移失败", "error", err)
-	}
+	Apply(conf)
 
 	return nil
 }
@@ -77,8 +67,8 @@ func Save() error {
 	return provider.Save(conf)
 }
 
-// applyConfig 应用配置到全局变量
-func applyConfig(conf *Config) {
+// Apply 应用配置到全局变量（不存储）
+func Apply(conf *Config) {
 	if conf.Server != nil {
 		Debug = conf.Server.Debug
 		ListenAddr = conf.Server.ListenAddr
@@ -119,34 +109,4 @@ func applyConfig(conf *Config) {
 		}
 		Members[m.Username] = m
 	}
-}
-
-// migratePlaintextPasswords 自动迁移明文密码为加密格式
-func migratePlaintextPasswords() error {
-	needSave := false
-
-	for _, m := range Members {
-		if m.Password == "" || helper.HashedBcrypt(m.Password) {
-			continue
-		}
-
-		hashedPassword, err := helper.HashPassword(m.Password)
-		if err != nil {
-			logman.Warn("密码加密失败", "username", m.Username, "error", err)
-			continue
-		}
-
-		logman.Info("密码已自动迁移为加密格式", "username", m.Username)
-		m.Password = hashedPassword
-		needSave = true
-	}
-
-	if needSave {
-		if err := Save(); err != nil {
-			return err
-		}
-		logman.Info("配置文件已自动更新（密码迁移）")
-	}
-
-	return nil
 }
