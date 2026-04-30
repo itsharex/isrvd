@@ -77,12 +77,12 @@ services:
 
 ```bash
 # 一键安装
-curl -sL https://github.com/rehiy/isrvd/refs/heads/master/script/isrvd.sh | sudo bash -s install
+curl -sL https://raw.githubusercontent.com/rehiy/isrvd/refs/heads/master/build/script/isrvd.sh | sudo bash -s install
 
 # 其他命令
-curl -sL https://github.com/rehiy/isrvd/refs/heads/master/script/isrvd.sh | sudo bash -s update     # 更新
-curl -sL https://github.com/rehiy/isrvd/refs/heads/master/script/isrvd.sh | sudo bash -s uninstall  # 卸载
-curl -sL https://github.com/rehiy/isrvd/refs/heads/master/script/isrvd.sh | bash -s download        # 仅下载
+curl -sL https://raw.githubusercontent.com/rehiy/isrvd/refs/heads/master/build/script/isrvd.sh | sudo bash -s update     # 更新
+curl -sL https://raw.githubusercontent.com/rehiy/isrvd/refs/heads/master/build/script/isrvd.sh | sudo bash -s uninstall  # 卸载
+curl -sL https://raw.githubusercontent.com/rehiy/isrvd/refs/heads/master/build/script/isrvd.sh | bash -s download        # 仅下载
 ```
 
 安装目录：`/usr/local/isrvd/`（包含二进制和配置文件）
