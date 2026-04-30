@@ -22,7 +22,7 @@ fi
 # 替换版本号
 ###########################################
 
-sed -i "s/Version = \".*\"/Version = \"$last_tag\"/" config/load.go
+sed -i "s/Version = \".*\"/Version = \"$last_tag\"/" config/config.go
 
 ###########################################
 # Go 编译环境
