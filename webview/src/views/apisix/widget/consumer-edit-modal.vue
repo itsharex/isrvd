@@ -8,6 +8,7 @@ import api from '@/service/api'
 import type { ApisixConsumer, ApisixCreateConsumerRequest, ApisixUpdateConsumerRequest } from '@/service/types'
 
 import BaseModal from '@/component/modal.vue'
+
 import PluginConfigPanel from './plugin-config-panel.vue'
 
 const defaultFormData = () => ({

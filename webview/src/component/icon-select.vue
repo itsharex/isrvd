@@ -1,8 +1,8 @@
 <script lang="ts">
-import { Component, Prop, Vue, toNative } from 'vue-facing-decorator'
-import iconFamilies from '@fortawesome/fontawesome-free/metadata/icon-families.json'
 import iconCategoriesYml from '@fortawesome/fontawesome-free/metadata/categories.yml?raw'
+import iconFamilies from '@fortawesome/fontawesome-free/metadata/icon-families.json'
 import { load as yamlLoad } from 'js-yaml'
+import { Component, Prop, Vue, toNative } from 'vue-facing-decorator'
 
 import BaseModal from '@/component/modal.vue'
 

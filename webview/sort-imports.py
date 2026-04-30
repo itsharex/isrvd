@@ -3,7 +3,7 @@
 批量整理 Vue 文件中 <script> 块内的 import 语句。
 
 分组顺序（组间空一行，组内按字母排序）：
-  1. 第三方库          vue-facing-decorator、vue、vue-router 等（不以 @/ 开头）
+  1. 第三方库          vue-facing-decorator、vue、vue-router 等（不以 @/ 或 ./ 开头）
   2. @/store/...
   3. @/router
   4. @/service/...
@@ -11,6 +11,7 @@
   6. @/component/...
   7. @/views/...
   8. 其余 @/ 路径（兜底）
+  9. 相对路径导入 ./ 开头（排在最后）
 
 同一模块的普通导入与 type 导入合并为相邻两行（普通在前，type 在后），
 不跨组拆散。
@@ -21,15 +22,17 @@ import sys
 from pathlib import Path
 
 # ── 分组规则（按优先级匹配，返回 (group_index, sort_key)）──────────────────
+# 注意：./ 开头的相对路径导入排在最后（第8组）
 GROUP_PATTERNS = [
-    (0, re.compile(r"^'(?!@/)")),          # 第三方：不以 @/ 开头
+    (0, re.compile(r"^'(?!\./)(?!@/)")),   # 第三方：不以 @/ 或 ./ 开头
     (1, re.compile(r"^'@/store/")),         # store
     (2, re.compile(r"^'@/router")),         # router
     (3, re.compile(r"^'@/service/")),       # service
     (4, re.compile(r"^'@/helper/")),        # helper
     (5, re.compile(r"^'@/component/")),     # component
     (6, re.compile(r"^'@/views/")),         # views
-    (7, re.compile(r"^'@/")),              # 其余 @/ 兜底
+    (7, re.compile(r"^'@/")),               # 其余 @/ 兜底
+    (8, re.compile(r"^'\./")),              # 相对路径：./ 开头，排在最后
 ]
 
 def get_group(import_line: str) -> int:
@@ -51,38 +54,65 @@ def sort_key(import_line: str) -> tuple:
     path = m.group(1) if m else ''
     return (group, is_type, path, import_line)
 
+def collect_full_import(lines: list[str], start_idx: int) -> tuple[str, int]:
+    """
+    从 start_idx 开始收集完整的 import 语句（可能跨多行）。
+    返回 (完整 import 语句, 下一个待处理行的索引)。
+    """
+    # 收集从 start_idx 开始的所有行，直到找到匹配的 from '...' 或结束
+    import_lines = []
+    i = start_idx
+    while i < len(lines):
+        line = lines[i].rstrip('\n')
+        import_lines.append(line)
+        # 如果这一行包含 from '...' 或 from "..."，说明 import 语句结束
+        if re.search(r"from\s+['\"][^'\"]+['\"]", line):
+            break
+        i += 1
+    
+    return ('\n'.join(import_lines), i + 1)
+
+
 def reorder_imports(lines: list[str]) -> list[str]:
     """
     接收 script 块内的所有行，提取并重排 import 语句，
     返回重排后的完整行列表。
     """
-    import_lines: list[str] = []
+    import_statements: list[str] = []
     other_lines: list[str] = []
     # 收集连续 import 块（允许 import 块之间有空行）
     in_import_zone = True
-    for line in lines:
+    i = 0
+    while i < len(lines):
+        line = lines[i]
         stripped = line.rstrip('\n')
         if in_import_zone:
-            if re.match(r"^import\s+", stripped) or stripped == '':
-                if re.match(r"^import\s+", stripped):
-                    import_lines.append(stripped)
+            if re.match(r"^import\s+", stripped):
+                # 收集完整的 import 语句（可能跨多行）
+                full_import, next_idx = collect_full_import(lines, i)
+                import_statements.append(full_import)
+                i = next_idx
+            elif stripped == '':
                 # 空行在 import 区内跳过（重新生成）
+                i += 1
             else:
                 in_import_zone = False
                 other_lines.append(line)
+                i += 1
         else:
             other_lines.append(line)
+            i += 1
 
-    if not import_lines:
+    if not import_statements:
         return lines
 
     # 按分组 + 字母排序
-    import_lines.sort(key=sort_key)
+    import_statements.sort(key=sort_key)
 
     # 按分组插入空行分隔
     grouped: list[str] = []
     prev_group = -1
-    for imp in import_lines:
+    for imp in import_statements:
         g = get_group(imp)
         if prev_group != -1 and g != prev_group:
             grouped.append('')
@@ -90,13 +120,29 @@ def reorder_imports(lines: list[str]) -> list[str]:
         prev_group = g
 
     # 重新组合：import 块 + 空行 + 其余代码
-    result_lines = [l + '\n' for l in grouped]
+    result_lines = []
+    for l in grouped:
+        if l == '':
+            result_lines.append('\n')
+        else:
+            # 检查是否是多行 import（包含 \n）
+            if '\n' in l:
+                # 多行 import，按原样输出每一行
+                # l 已经包含完整的多行文本，确保每行都有 \n
+                lines_in_l = l.split('\n')
+                for line_part in lines_in_l:
+                    if line_part:  # 非空行
+                        result_lines.append(line_part + '\n')
+            else:
+                result_lines.append(l + '\n')
+    
     # 确保 import 块与后续代码之间有且仅有一个空行
     if other_lines:
         # 去掉 other_lines 开头多余空行
         while other_lines and other_lines[0].strip() == '':
             other_lines.pop(0)
-        result_lines.append('\n')
+        if result_lines and result_lines[-1].strip() != '':
+            result_lines.append('\n')
         result_lines.extend(other_lines)
 
     return result_lines

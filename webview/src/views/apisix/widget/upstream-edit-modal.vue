@@ -18,6 +18,7 @@ import type {
 import { normalizeUpstreamFormNodes, normalizeUpstreamType } from '@/helper/apisix'
 
 import BaseModal from '@/component/modal.vue'
+
 import HostSelect from './host-select.vue'
 import PortSelect from './port-select.vue'
 

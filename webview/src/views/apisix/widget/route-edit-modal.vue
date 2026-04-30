@@ -23,6 +23,7 @@ import {
 } from '@/helper/apisix'
 
 import BaseModal from '@/component/modal.vue'
+
 import HostSelect from './host-select.vue'
 import PluginConfigPanel from './plugin-config-panel.vue'
 import PortSelect from './port-select.vue'

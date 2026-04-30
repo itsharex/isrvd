@@ -1,10 +1,4 @@
 <script lang="ts">
-import SystemCpuMem from './system_cpu_mem.vue'
-import SystemDisk from './system_disk.vue'
-import SystemGo from './system_go.vue'
-import SystemGpu from './system_gpu.vue'
-import SystemInfo from './system_info.vue'
-import SystemNetwork from './system_network.vue'
 import { Component, Inject, Ref, Vue, toNative } from 'vue-facing-decorator'
 
 import { APP_STATE_KEY } from '@/store/state'
@@ -13,6 +7,13 @@ import api from '@/service/api'
 import type { SystemStat } from '@/service/types'
 
 import { POLL_INTERVAL } from '@/helper/utils'
+
+import SystemCpuMem from './system_cpu_mem.vue'
+import SystemDisk from './system_disk.vue'
+import SystemGo from './system_go.vue'
+import SystemGpu from './system_gpu.vue'
+import SystemInfo from './system_info.vue'
+import SystemNetwork from './system_network.vue'
 
 @Component({
     components: { SystemInfo, SystemCpuMem, SystemGpu, SystemDisk, SystemNetwork, SystemGo }

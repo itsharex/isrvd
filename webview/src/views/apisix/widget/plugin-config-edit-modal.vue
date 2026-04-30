@@ -13,6 +13,7 @@ import type {
 } from '@/service/types'
 
 import BaseModal from '@/component/modal.vue'
+
 import PluginConfigPanel from './plugin-config-panel.vue'
 
 const defaultFormData = () => ({
