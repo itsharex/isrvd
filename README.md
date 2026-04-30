@@ -75,14 +75,23 @@ services:
 
 ## 二进制部署
 
-从 [Releases](https://github.com/rehiy/isrvd/releases) 下载压缩包：
-
 ```bash
-tar xzf isrvd-linux-amd64.tar.gz
-cd isrvd-linux-amd64
-sudo ./systemctl/install.sh   # 安装
-sudo ./systemctl/update.sh    # 更新
-sudo ./systemctl/uninstall.sh # 卸载
+# 获取最新版本
+ARCH=$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m)
+LATEST=$(curl -sI https://github.com/rehiy/isrvd/releases/latest | grep -i "location:" | sed 's#.*/tag/##' | tr -d '\r\n')
+DOWNLOAD_URL="https://github.com/rehiy/isrvd/releases/download/$LATEST/isrvd-$ARCH.tar.gz"
+
+# 下载最新版本
+echo "Downloading $DOWNLOAD_URL"
+curl -sL "$DOWNLOAD_URL" | tar xz
+
+# 安装服务
+cd isrvd-*
+sudo ./systemctl/install.sh
+
+# 更新 / 卸载
+sudo ./systemctl/update.sh
+sudo ./systemctl/uninstall.sh
 ```
 
 配置文件：`/etc/isrvd/config.yml`
