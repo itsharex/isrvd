@@ -34,7 +34,8 @@
 docker run -d \
   --name isrvd \
   -p 8080:8080 \
-  -p 9080:9080 \
+  -p 80:9080 \
+  -p 443:9443 \
   -v /var/run/docker.sock:/var/run/docker.sock \
   -v /mnt/isrvd:/data \
   rehiy/isrvd:latest
@@ -44,6 +45,7 @@ docker run -d \
 |------|------|------|
 | 8080 | isrvd | Web 管理界面 |
 | 9080 | APISIX | HTTP 代理端口 |
+| 9443 | APISIX | HTTPS 代理端口 |
 
 ### slim（仅 isrvd）
 
@@ -77,12 +79,12 @@ services:
 
 ```bash
 # 一键安装
-curl -sL https://github.com/rehiy/isrvd/refs/heads/master/script/isrvd.sh | sudo bash -s install
+curl -sL https://raw.githubusercontent.com/rehiy/isrvd/refs/heads/master/build/script/isrvd.sh | sudo bash -s install
 
 # 其他命令
-curl -sL https://github.com/rehiy/isrvd/refs/heads/master/script/isrvd.sh | sudo bash -s update     # 更新
-curl -sL https://github.com/rehiy/isrvd/refs/heads/master/script/isrvd.sh | sudo bash -s uninstall  # 卸载
-curl -sL https://github.com/rehiy/isrvd/refs/heads/master/script/isrvd.sh | bash -s download        # 仅下载
+curl -sL https://raw.githubusercontent.com/rehiy/isrvd/refs/heads/master/build/script/isrvd.sh | sudo bash -s update     # 更新
+curl -sL https://raw.githubusercontent.com/rehiy/isrvd/refs/heads/master/build/script/isrvd.sh | sudo bash -s uninstall  # 卸载
+curl -sL https://raw.githubusercontent.com/rehiy/isrvd/refs/heads/master/build/script/isrvd.sh | bash -s download        # 仅下载
 ```
 
 安装目录：`/usr/local/isrvd/`（包含二进制和配置文件）
