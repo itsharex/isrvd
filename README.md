@@ -76,25 +76,16 @@ services:
 ## 二进制部署
 
 ```bash
-# 获取最新版本
-ARCH=$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m)
-LATEST=$(curl -sI https://github.com/rehiy/isrvd/releases/latest | grep -i "location:" | sed 's#.*/tag/##' | tr -d '\r\n')
-DOWNLOAD_URL="https://github.com/rehiy/isrvd/releases/download/$LATEST/isrvd-$ARCH.tar.gz"
+# 一键安装
+curl -sL https://github.com/rehiy/isrvd/refs/heads/master/script/isrvd.sh | sudo bash -s install
 
-# 下载最新版本
-echo "Downloading $DOWNLOAD_URL"
-curl -sL "$DOWNLOAD_URL" | tar xz
-
-# 安装服务
-cd isrvd-*
-sudo ./systemctl/install.sh
-
-# 更新 / 卸载
-sudo ./systemctl/update.sh
-sudo ./systemctl/uninstall.sh
+# 其他命令
+curl -sL https://github.com/rehiy/isrvd/refs/heads/master/script/isrvd.sh | sudo bash -s update     # 更新
+curl -sL https://github.com/rehiy/isrvd/refs/heads/master/script/isrvd.sh | sudo bash -s uninstall  # 卸载
+curl -sL https://github.com/rehiy/isrvd/refs/heads/master/script/isrvd.sh | bash -s download        # 仅下载
 ```
 
-配置文件：`/etc/isrvd/config.yml`
+安装目录：`/usr/local/isrvd/`（包含二进制和配置文件）
 
 也可直接运行 `./isrvd`，通过环境变量 `CONFIG_PATH` 指定配置文件。
 
