@@ -54,6 +54,26 @@ export const interceptors = (state: { token: string | null; loading: boolean }, 
         }
     )
 
+    axiosBlobInstance.interceptors.response.use(
+        (value: AxiosResponse) => {
+            return value.data
+        },
+        (error: unknown) => {
+            const err = error as { response?: { status?: number; data?: Blob }; request?: unknown }
+            if (err.response?.status === 401) {
+                actions.showNotification('error', '登录已过期，请重新登录')
+                actions.clearAuth()
+            } else if (err.response) {
+                actions.showNotification('error', `下载失败: ${err.response.status}`)
+            } else if (err.request) {
+                actions.showNotification('error', '网络连接失败，请检查网络')
+            } else {
+                actions.showNotification('error', '发生未知错误')
+            }
+            return Promise.reject(error)
+        }
+    )
+
     axiosInstance.interceptors.response.use(
         (value: AxiosResponse) => {
             // 过滤逻辑：不显示 GET 请求和 HTTP 200 状态码的消息
