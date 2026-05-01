@@ -3,6 +3,7 @@ package server
 import (
 	"errors"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 
@@ -89,4 +90,19 @@ func (app *App) systemDeleteMember(c *gin.Context) {
 		return
 	}
 	helper.RespondSuccess(c, "成员删除成功", nil)
+}
+
+// systemGetAuditLogs 获取操作审计日志
+func (app *App) systemGetAuditLogs(c *gin.Context) {
+	username := c.Query("username")
+	limitStr := c.DefaultQuery("limit", "100")
+	limit := 100
+
+	// 解析 limit 参数
+	if l, err := strconv.Atoi(limitStr); err == nil && l > 0 {
+		limit = l
+	}
+
+	logs := helper.GetAuditLogs(username, limit)
+	helper.RespondSuccess(c, "ok", logs)
 }

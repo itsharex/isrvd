@@ -188,6 +188,11 @@ const routes: RouteRecordRaw[] = [
     name: 'system-settings',
     component: () => import('@/views/system/settings.vue')
   },
+  {
+    path: '/system/audit-logs',
+    name: 'system-audit-logs',
+    component: () => import('@/views/system/audit-logs.vue')
+  },
 ]
 
 const router = createRouter({

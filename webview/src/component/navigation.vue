@@ -422,6 +422,18 @@ export default toNative(NavigationBar)
         <span v-if="!collapsed">用户管理</span>
       </router-link>
 
+      <!-- 审计日志 -->
+      <router-link
+        v-if="canSystem"
+        to="/system/audit-logs"
+        class="flex items-center gap-3 px-3 py-3 text-sm font-medium text-slate-600 rounded-xl transition-all duration-200 hover:bg-slate-100 hover:text-slate-900"
+        active-class="bg-blue-50 text-blue-700"
+        :title="collapsed ? '审计日志' : ''"
+      >
+        <i class="fas fa-clipboard-list"></i>
+        <span v-if="!collapsed">审计日志</span>
+      </router-link>
+
       <!-- 系统设置（放在最后） -->
       <router-link
         v-if="canSystem"

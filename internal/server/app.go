@@ -6,6 +6,7 @@ import (
 	"github.com/rehiy/pango/logman"
 
 	"isrvd/config"
+	"isrvd/internal/helper"
 	svcApisix "isrvd/internal/service/apisix"
 	svcCompose "isrvd/internal/service/compose"
 	svcDocker "isrvd/internal/service/docker"
@@ -94,6 +95,7 @@ func (app *App) initRoutes() {
 	protected := r.Group("")
 	protected.Use(AuthMiddleware())
 	protected.Use(app.RoutePermMiddleware())
+	protected.Use(helper.AuditMiddleware())
 	for _, route := range allRoutes {
 		if !app.isRouteAvailable(route) {
 			continue
@@ -147,6 +149,7 @@ func (app *App) defineRoutes() []Route {
 		{Method: "GET", Path: "/system/probe", Handler: app.systemProbe, Module: "system", Label: "系统管理", Perm: "r"},
 		{Method: "GET", Path: "/system/settings", Handler: app.systemGetSettings, Module: "system", Label: "系统管理", Perm: "r"},
 		{Method: "GET", Path: "/system/members", Handler: app.systemListMembers, Module: "system", Label: "系统管理", Perm: "r"},
+		{Method: "GET", Path: "/system/audit-logs", Handler: app.systemGetAuditLogs, Module: "system", Label: "系统管理", Perm: "r"},
 
 		// System - 读写
 		{Method: "PUT", Path: "/system/settings", Handler: app.systemUpdateSettings, Module: "system", Label: "系统管理", Perm: "rw"},

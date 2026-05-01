@@ -169,3 +169,17 @@ export interface SystemStat {
     version: string
     versionCheck: SystemVersionCheck
 }
+
+// ─── 审计日志 ───
+
+export interface AuditLog {
+    timestamp: string
+    username: string
+    method: string
+    uri: string
+    body: string
+    ip: string
+    statusCode: number
+    success: boolean
+    duration: number
+}

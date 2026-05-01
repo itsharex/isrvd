@@ -20,7 +20,8 @@ import type {
     SystemAllSettings,
     SystemMemberInfo, SystemMemberUpsertRequest,
     ComposeDeployResult,
-    SystemStat
+    SystemStat,
+    AuditLog
 } from './types'
 
 // API 服务类，统一管理所有 API 请求
@@ -421,6 +422,11 @@ class ApiService {
 
     deleteMember(username: string) {
         return http.delete<void>(`/api/system/member/${encodeURIComponent(username)}`)
+    }
+
+    // 审计日志
+    getAuditLogs(params?: { username?: string; limit?: number }) {
+        return http.get<AuditLog[]>('/api/system/audit-logs', { params })
     }
 
     // ==================== Compose 部署 ====================
