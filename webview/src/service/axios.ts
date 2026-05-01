@@ -59,7 +59,7 @@ export const interceptors = (state: { token: string | null; loading: boolean }, 
             return value.data
         },
         (error: unknown) => {
-            const err = error as { response?: { status?: number }; request?: unknown }
+            const err = error as { response?: { status?: number; data?: Blob }; request?: unknown }
             if (err.response?.status === 401) {
                 actions.showNotification('error', '登录已过期，请重新登录')
                 actions.clearAuth()
@@ -68,7 +68,7 @@ export const interceptors = (state: { token: string | null; loading: boolean }, 
             } else if (err.request) {
                 actions.showNotification('error', '网络连接失败，请检查网络')
             } else {
-                actions.showNotification('error', '下载失败')
+                actions.showNotification('error', '发生未知错误')
             }
             return Promise.reject(error)
         }
