@@ -132,7 +132,6 @@ export default toNative(Volumes)
             <thead>
               <tr class="bg-slate-50 border-b border-slate-200">
                 <th class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">名称</th>
-                <th class="w-24 px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">驱动</th>
                 <th class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">挂载点</th>
                 <th class="w-36 px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">创建时间</th>
                 <th class="w-32 px-4 py-3 text-right text-xs font-semibold text-slate-600 uppercase tracking-wider">操作</th>
@@ -151,7 +150,6 @@ export default toNative(Volumes)
                     </div>
                   </div>
                 </td>
-                <td class="px-4 py-3 text-sm text-slate-600">{{ vol.driver }}</td>
                 <td class="px-4 py-3 font-mono text-xs text-slate-500 truncate max-w-xs" :title="vol.mountpoint">{{ vol.mountpoint }}</td>
                 <td class="px-4 py-3 whitespace-nowrap text-sm text-slate-600">{{ formatTime(vol.createdAt) }}</td>
                 <td class="px-4 py-3">

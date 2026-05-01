@@ -177,7 +177,7 @@ export default toNative(Nodes)
                 <th class="w-24 px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">角色</th>
                 <th class="w-28 px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">状态</th>
                 <th class="w-28 px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">可用性</th>
-                <th class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">地址</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">IP 地址</th>
                 <th class="w-28 px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">引擎版本</th>
                 <th class="w-44 px-4 py-3 text-right text-xs font-semibold text-slate-600 uppercase tracking-wider">操作</th>
               </tr>
@@ -191,7 +191,7 @@ export default toNative(Nodes)
                     </div>
                     <div class="min-w-0">
                       <span class="font-medium text-slate-800 truncate block">{{ n.hostname }}</span>
-                      <span class="text-xs text-slate-400 font-mono">{{ n.id.slice(0, 12) }}</span>
+                      <span class="text-xs text-slate-400 font-mono truncate block mt-0.5">{{ n.id }}</span>
                     </div>
                   </div>
                 </td>
@@ -238,12 +238,8 @@ export default toNative(Nodes)
                 <div class="min-w-0">
                   <div class="flex items-center gap-2">
                     <span class="font-medium text-slate-800 text-sm truncate">{{ n.hostname }}</span>
-                    <span v-if="n.leader" class="inline-flex items-center px-1.5 py-0.5 rounded-lg text-xs font-medium bg-indigo-100 text-indigo-700">
-                      <i class="fas fa-crown mr-1 text-[10px]"></i>Leader
-                    </span>
                   </div>
-                  <div class="text-xs text-slate-400 font-mono">{{ n.id.slice(0, 12) }}</div>
-                  <div class="text-xs text-slate-500 mt-0.5">{{ n.addr || '-' }}</div>
+                  <div class="text-xs text-slate-400 font-mono">{{ n.id }}</div>
                 </div>
               </div>
             </div>
@@ -251,7 +247,9 @@ export default toNative(Nodes)
             <!-- 中间：角色、状态、可用性信息 -->
             <div class="flex items-center gap-2 mb-3">
               <span class="text-xs text-slate-400 flex-shrink-0">角色</span>
-              <span :class="n.role === 'manager' ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-600'" class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-medium capitalize">{{ n.role }}</span>
+              <span :class="n.role === 'manager' ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-600'" class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-medium capitalize">
+                <i v-if="n.leader"  class="fas fa-crown mr-1 text-[10px]"></i>{{ n.role }}
+              </span>
               <span class="text-xs text-slate-300">|</span>
               <span class="text-xs text-slate-400 flex-shrink-0">状态</span>
               <span :class="nodeStateClass(n.state)" class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-medium capitalize">{{ n.state }}</span>
@@ -260,7 +258,11 @@ export default toNative(Nodes)
               <span :class="availabilityClass(n.availability)" class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-medium capitalize">{{ n.availability }}</span>
             </div>
             <div class="flex items-center gap-2 mb-3">
-              <span class="text-xs text-slate-400 flex-shrink-0">引擎</span>
+              <span class="text-xs text-slate-400 flex-shrink-0">IP 地址</span>
+              <span class="text-xs text-slate-600">{{ n.addr || '-' }}</span>
+            </div>
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-xs text-slate-400 flex-shrink-0">引擎版本</span>
               <span class="text-xs text-slate-600">{{ n.engineVersion || '-' }}</span>
             </div>
             
