@@ -129,7 +129,7 @@ export default toNative(AuditLogs)
               <i class="fas fa-clipboard-list text-white"></i>
             </div>
             <div>
-              <h1 class="text-lg font-semibold text-slate-800">操作审计日志</h1>
+              <h1 class="text-lg font-semibold text-slate-800">操作审计</h1>
               <p class="text-xs text-slate-500">记录所有用户的操作行为</p>
             </div>
           </div>
