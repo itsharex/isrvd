@@ -103,6 +103,6 @@ func (app *App) systemGetAuditLogs(c *gin.Context) {
 		limit = l
 	}
 
-	logs := helper.GetAuditLogs(username, limit)
+	logs := svcSystem.GetAuditLogs(username, limit)
 	helper.RespondSuccess(c, "ok", logs)
 }

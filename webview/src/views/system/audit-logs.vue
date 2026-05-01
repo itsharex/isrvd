@@ -1,5 +1,6 @@
 <script lang="ts">
 import { json } from '@codemirror/lang-json'
+import { jsonrepair } from 'jsonrepair'
 import { Codemirror } from 'vue-codemirror'
 import { Component, Inject, toNative, Vue } from 'vue-facing-decorator'
 
@@ -31,9 +32,18 @@ class AuditLogs extends Vue {
     get detailBody(): string {
         if (!this.detailLog?.body) return ''
         try {
-            return JSON.stringify(JSON.parse(this.detailLog.body), null, 2)
+            let parsed = JSON.parse(this.detailLog.body)
+            parsed = this.unwrapJson(parsed)
+            return JSON.stringify(parsed, null, 2)
         } catch {
-            return this.detailLog.body
+            try {
+                const repaired = jsonrepair(this.detailLog.body)
+                let parsed = JSON.parse(repaired)
+                parsed = this.unwrapJson(parsed)
+                return JSON.stringify(parsed, null, 2)
+            } catch {
+                return this.detailLog.body
+            }
         }
     }
 
@@ -80,6 +90,23 @@ class AuditLogs extends Vue {
 
     formatDuration(duration: number): string {
         return duration < 1000 ? `${duration}ms` : `${(duration / 1000).toFixed(2)}s`
+    }
+
+    unwrapJson(parsed: any): any {
+        if (typeof parsed === 'string') {
+            try { return JSON.parse(parsed) } catch { }
+        }
+        return parsed
+    }
+
+    formatBody(body: string): string {
+        try {
+            let parsed = JSON.parse(body)
+            parsed = this.unwrapJson(parsed)
+            return JSON.stringify(parsed)
+        } catch {
+            return body
+        }
     }
 
     // ─── 生命周期 ───
@@ -196,7 +223,7 @@ export default toNative(AuditLogs)
                 <!-- Body -->
                 <td class="px-4 py-3 max-w-[200px]">
                   <button v-if="log.body" @click="showDetail(log)" class="text-left w-full group">
-                    <code class="text-xs text-slate-500 font-mono truncate block group-hover:text-primary-600 transition-colors">{{ log.body }}</code>
+                    <code class="text-xs text-slate-500 font-mono truncate block group-hover:text-primary-600 transition-colors">{{ formatBody(log.body) }}</code>
                   </button>
                   <span v-else class="text-xs text-slate-300">-</span>
                 </td>
@@ -247,7 +274,7 @@ export default toNative(AuditLogs)
             <div v-if="log.body" class="flex items-center gap-2 mb-2">
               <span class="text-xs text-slate-400 flex-shrink-0">Body</span>
               <button @click="showDetail(log)" class="flex items-center gap-1 min-w-0">
-                <code class="text-xs text-slate-500 font-mono truncate">{{ log.body }}</code>
+                <code class="text-xs text-slate-500 font-mono truncate">{{ formatBody(log.body) }}</code>
                 <i class="fas fa-arrow-up-right-from-square text-xs text-primary-500 flex-shrink-0"></i>
               </button>
             </div>

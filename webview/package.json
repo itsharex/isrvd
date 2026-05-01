@@ -3,7 +3,14 @@
   "version": "1.0.0",
   "type": "module",
   "description": "轻量级 Web 服务器管理工具前端，基于 Vue 3 构建",
-  "keywords": ["docker", "swarm", "compose", "apisix", "terminal", "vue3"],
+  "keywords": [
+    "docker",
+    "swarm",
+    "compose",
+    "apisix",
+    "terminal",
+    "vue3"
+  ],
   "author": "rehiy",
   "license": "GPL-3.0-only",
   "scripts": {
@@ -30,6 +37,7 @@
     "chart.js": "^4.5.1",
     "codemirror": "^6.0.2",
     "js-yaml": "^4.1.1",
+    "jsonrepair": "^3.14.0",
     "page-agent": "^1.8.0",
     "vue": "^3.5.18",
     "vue-codemirror": "^6.1.1",

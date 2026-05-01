@@ -6,7 +6,6 @@ import (
 	"github.com/rehiy/pango/logman"
 
 	"isrvd/config"
-	"isrvd/internal/helper"
 	svcApisix "isrvd/internal/service/apisix"
 	svcCompose "isrvd/internal/service/compose"
 	svcDocker "isrvd/internal/service/docker"
@@ -95,7 +94,7 @@ func (app *App) initRoutes() {
 	protected := r.Group("")
 	protected.Use(AuthMiddleware())
 	protected.Use(app.RoutePermMiddleware())
-	protected.Use(helper.AuditMiddleware())
+	protected.Use(svcSystem.AuditMiddleware())
 	for _, route := range allRoutes {
 		if !app.isRouteAvailable(route) {
 			continue
