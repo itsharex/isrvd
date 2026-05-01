@@ -6,7 +6,6 @@ import { APP_ACTIONS_KEY, APP_STATE_KEY, initProvider } from '@/store/state'
 import router, { setRouterGuard } from '@/router'
 
 import api from '@/service/api'
-import { fetchServiceProbe } from '@/service/probe'
 import type { SystemLinkSetting } from '@/service/types'
 
 import ConfirmModal from '@/component/confirm.vue'
@@ -41,8 +40,8 @@ class App extends Vue {
 
     async loadServiceAvailability() {
         try {
-            const availability = await fetchServiceProbe()
-            this.actions.updateServiceAvailability(availability)
+            const res = await api.serviceProbe()
+            this.actions.updateServiceAvailability(res?.payload || {})
         } catch (e) {
             console.warn('Failed to load service probe:', e)
         }
