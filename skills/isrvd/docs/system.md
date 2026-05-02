@@ -198,15 +198,14 @@ POST /api/auth/logout
 ### §6.1 系统终端
 
 ```
-WS /ws/shell?token=<jwt-token>
+WS /api/shell?token=<jwt-token>&shell=bash
 ```
 
 ### §6.2 容器终端
 
 ```
-WS /ws/docker/exec?id=<容器ID>&shell=/bin/sh&token=<jwt-token>
+WS /api/docker/containers/<容器ID>/exec?token=<jwt-token>&shell=/bin/sh
 ```
-
 ---
 
 ## 常见工作流

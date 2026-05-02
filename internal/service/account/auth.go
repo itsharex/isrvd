@@ -13,6 +13,44 @@ import (
 	"isrvd/internal/helper"
 )
 
+// RouteInfo 路由的权限元信息，供中间件做权限校验
+type RouteInfo struct {
+	Module string // 模块名，空字符串表示无需模块权限
+	Label  string // 模块显示名，用于错误提示
+	Perm   string // 所需权限：空或"r"=只读，"rw"=读写
+}
+
+// Auth 根据配置选择认证方式，返回用户名和错误原因。
+// 供中间件统一调用，避免在 server 层判断认证模式。
+func (s *Service) Auth(c *gin.Context) (username, errMsg string) {
+	if config.ProxyHeaderName != "" {
+		return s.CheckHeaderToken(c)
+	}
+	return s.CheckJwtToken(c)
+}
+
+// MixAuth 可选认证：成功返回用户名，失败返回空字符串（不中断请求）。
+func (s *Service) MixAuth(c *gin.Context) string {
+	username, _ := s.Auth(c)
+	return username
+}
+
+// CheckRoutePerm 在路由权限表中查找当前请求对应的路由，并校验用户权限。
+// 返回 (found bool, err error)：found=false 表示路由未注册，err 非 nil 表示权限不足。
+func (s *Service) CheckRoutePerm(routePerms map[string]RouteInfo, method, path, username string) (found bool, err error) {
+	route, exists := routePerms[method+" "+path]
+	if !exists {
+		route, exists = routePerms["ANY "+path]
+	}
+	if !exists {
+		return false, nil
+	}
+	if route.Module == "" {
+		return true, nil
+	}
+	return true, s.CheckPerm(username, route.Module, route.Perm, route.Label)
+}
+
 // GetAuthInfo 返回当前认证模式及已登录用户信息
 func (s *Service) GetAuthInfo(username string) *AuthInfoResponse {
 	mode := "jwt"
@@ -110,4 +148,66 @@ func (s *Service) ExtractHeaderUsername(c *gin.Context) string {
 		return ""
 	}
 	return username
+}
+
+// CheckJwtToken 解析 JWT 并返回用户名；失败时返回空用户名和具体错误原因。
+// errMsg 区分"未提供令牌"与"令牌无效"两种情况。
+func (s *Service) CheckJwtToken(c *gin.Context) (username, errMsg string) {
+	tokenStr := s.extractJwtToken(c)
+	if tokenStr == "" {
+		return "", "未提供认证令牌"
+	}
+	username = s.ExtractJwtUsername(c)
+	if username == "" {
+		return "", "认证令牌无效"
+	}
+	return username, ""
+}
+
+// extractJwtToken 从 Authorization Header 或 WebSocket query 中提取原始 token 字符串。
+func (s *Service) extractJwtToken(c *gin.Context) string {
+	tokenStr := strings.TrimPrefix(c.GetHeader("Authorization"), "Bearer ")
+	if tokenStr == "" && c.GetHeader("Upgrade") == "websocket" {
+		tokenStr = c.Query("token")
+	}
+	return tokenStr
+}
+
+// CheckHeaderToken 从代理 Header 读取用户名；失败时返回空用户名和具体错误原因。
+// errMsg 区分"Header 缺失"与"用户不存在"两种情况。
+func (s *Service) CheckHeaderToken(c *gin.Context) (username, errMsg string) {
+	raw := c.GetHeader(config.ProxyHeaderName)
+	if raw == "" {
+		return "", "代理 Header 缺失"
+	}
+	username = s.ExtractHeaderUsername(c)
+	if username == "" {
+		return "", "用户不存在"
+	}
+	return username, ""
+}
+
+// CheckPerm 校验用户对指定模块的权限。
+// requiredPerm 为 "rw" 时要求写权限，否则只需读权限。
+// label 用于错误提示，为空时使用 module 代替。
+// 返回 nil 表示有权限，否则返回描述错误原因的 error。
+func (s *Service) CheckPerm(username, module, requiredPerm, label string) error {
+	member, exists := config.Members[username]
+	if !exists {
+		return fmt.Errorf("用户不存在")
+	}
+	if label == "" {
+		label = module
+	}
+	perm := member.Permissions[module]
+	if requiredPerm == "rw" {
+		if perm != "rw" {
+			return fmt.Errorf("无 %s 模块写权限", label)
+		}
+	} else {
+		if perm != "r" && perm != "rw" {
+			return fmt.Errorf("无 %s 模块访问权限", label)
+		}
+	}
+	return nil
 }

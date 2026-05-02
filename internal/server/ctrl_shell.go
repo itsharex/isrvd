@@ -2,7 +2,6 @@ package server
 
 import (
 	"io"
-	"net/http"
 	"os"
 	"os/exec"
 	"runtime"
@@ -19,18 +18,13 @@ import (
 // defineShellRoutes 定义 Shell 模块路由（Web 终端）
 func (app *App) defineShellRoutes() []Route {
 	return []Route{
-		{Method: "GET", Path: "/shell/ws", Handler: app.shellWebSocket, Module: "shell", Label: "终端", Perm: "rw"},
+		{Method: "GET", Path: "/shell", Handler: app.shellWebSocket, Module: "shell", Label: "终端", Perm: "rw"},
 	}
 }
 
 func (app *App) shellWebSocket(c *gin.Context) {
 	username := c.GetString("username")
-	member, ok := config.Members[username]
-	if !ok || member.Permissions["shell"] == "" {
-		logman.Warn("Terminal access denied", "username", username)
-		helper.RespondError(c, http.StatusForbidden, "终端访问被拒绝")
-		return
-	}
+	member := config.Members[username]
 
 	shell := c.DefaultQuery("shell", "bash")
 	conn, err := helper.WsUpgrader.Upgrade(c.Writer, c.Request, nil)

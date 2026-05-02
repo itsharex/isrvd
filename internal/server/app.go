@@ -24,20 +24,22 @@ type App struct {
 	*gin.Engine
 	overviewSvc *svcOverview.Service
 	settingsSvc *svcSystem.SettingsService
+	auditSvc    *svcSystem.AuditService
 	accountSvc  *svcAccount.Service
 	apisixSvc   *svcApisix.Service
 	dockerSvc   *svcDocker.Service
 	swarmSvc    *svcSwarm.Service
 	composeSvc  *svcCompose.DeployService
-	routePerms  map[string]Route // METHOD+完整路径 → Route 权限索引
+	routePerms  map[string]svcAccount.RouteInfo // METHOD+完整路径 → 路由权限索引
 }
 
 func StartApp() {
-	app := &App{Engine: httpd.Engine(config.Debug), routePerms: make(map[string]Route)}
+	app := &App{Engine: httpd.Engine(config.Debug), routePerms: make(map[string]svcAccount.RouteInfo)}
 
 	// 初始化各业务服务
 	app.overviewSvc = svcOverview.NewService()
 	app.settingsSvc = svcSystem.NewSettingsService()
+	app.auditSvc = svcSystem.NewAuditService()
 	app.accountSvc = svcAccount.NewService()
 
 	if apisixSvc, err := svcApisix.NewService(); err != nil {
@@ -93,8 +95,8 @@ func (app *App) initRoutes() {
 	// 受保护路由组：AuthMiddleware + RoutePermMiddleware + AuditMiddleware
 	protectedGroup := r.Group("")
 	protectedGroup.Use(AuthMiddleware(app.accountSvc))
-	protectedGroup.Use(RoutePermMiddleware(app.routePerms))
-	protectedGroup.Use(svcSystem.AuditMiddleware())
+	protectedGroup.Use(RoutePermMiddleware(app.routePerms, app.accountSvc))
+	protectedGroup.Use(AuditMiddleware(app.auditSvc))
 
 	// 加载所有模块的受保护路由定义（含 account 模块）
 	allRoutes := app.collectRoutes()
@@ -139,7 +141,11 @@ func (app *App) collectRoutes() []Route {
 
 // registerRoute 注册单个路由，并同步建立 METHOD+完整路由模板的权限索引
 func (app *App) registerRoute(group *gin.RouterGroup, route Route) {
-	app.routePerms[route.Method+" "+APINamespace+route.Path] = route
+	app.routePerms[route.Method+" "+APINamespace+route.Path] = svcAccount.RouteInfo{
+		Module: route.Module,
+		Label:  route.Label,
+		Perm:   route.Perm,
+	}
 
 	switch route.Method {
 	case "GET":

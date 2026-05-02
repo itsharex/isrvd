@@ -17,7 +17,12 @@ export default defineConfig({
         target: 'http://localhost:8080',
         changeOrigin: true
       },
-      '/api/ws/': {
+      '/api/shell': {
+        target: 'ws://localhost:8080',
+        changeOrigin: true,
+        ws: true
+      },
+      '/api/docker/containers': {
         target: 'ws://localhost:8080',
         changeOrigin: true,
         ws: true

@@ -136,7 +136,7 @@ func (app *App) dockerContainerExec(c *gin.Context) {
 	}
 	defer conn.Close()
 
-	containerID := c.Query("id")
+	containerID := c.Param("id")
 	shell := c.DefaultQuery("shell", "/bin/sh")
 	if containerID == "" {
 		conn.WriteMessage(1, []byte("[错误: 缺少容器ID]\r\n"))

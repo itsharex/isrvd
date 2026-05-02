@@ -56,6 +56,6 @@ func (app *App) systemGetAuditLogs(c *gin.Context) {
 		limit = l
 	}
 
-	logs := svcSystem.GetAuditLogs(username, limit)
+	logs := app.auditSvc.GetLogs(username, limit)
 	helper.RespondSuccess(c, "ok", logs)
 }
