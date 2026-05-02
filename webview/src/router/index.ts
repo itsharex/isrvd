@@ -5,13 +5,14 @@ const baseURL = window.__BASE_URL__ || ''
 
 // 路由前缀与权限模块的映射
 const routePermMap: Array<[string, string]> = [
+  ['/system', 'system'],
+  ['/account', 'account'],
+  ['/shell', 'shell'],
   ['/explorer', 'filer'],
   ['/apisix', 'apisix'],
   ['/docker', 'docker'],
   ['/swarm', 'swarm'],
   ['/compose', 'compose'],
-  ['/system', 'system'],
-  ['/shell', 'shell'],
 ]
 
 const routes: RouteRecordRaw[] = [
@@ -179,9 +180,9 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/compose/deploy.vue')
   },
   {
-    path: '/system/members',
-    name: 'system-members',
-    component: () => import('@/views/system/members.vue')
+    path: '/account/members',
+    name: 'account-members',
+    component: () => import('@/views/account/members.vue')
   },
   {
     path: '/system/settings',

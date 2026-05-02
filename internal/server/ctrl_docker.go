@@ -10,6 +10,45 @@ import (
 	pkgdocker "isrvd/pkgs/docker"
 )
 
+// defineDockerRoutes 定义 Docker 模块路由
+func (app *App) defineDockerRoutes() []Route {
+	return []Route{
+		// Docker 信息
+		{Method: "GET", Path: "/docker/info", Handler: app.dockerInfo, Module: "docker", Label: "Docker", Perm: "r"},
+		// 容器管理
+		{Method: "GET", Path: "/docker/containers", Handler: app.dockerListContainers, Module: "docker", Label: "容器", Perm: "r"},
+		{Method: "POST", Path: "/docker/containers", Handler: app.dockerCreateContainer, Module: "docker", Label: "容器", Perm: "rw"},
+		{Method: "GET", Path: "/docker/containers/:id/stats", Handler: app.dockerContainerStats, Module: "docker", Label: "容器", Perm: "r"},
+		{Method: "POST", Path: "/docker/containers/:id/action", Handler: app.dockerContainerAction, Module: "docker", Label: "容器", Perm: "rw"},
+		{Method: "GET", Path: "/docker/containers/:id/logs", Handler: app.dockerContainerLogs, Module: "docker", Label: "容器", Perm: "r"},
+		{Method: "GET", Path: "/docker/containers/:id/exec", Handler: app.dockerContainerExec, Module: "docker", Label: "容器", Perm: "rw"},
+		// 镜像管理
+		{Method: "GET", Path: "/docker/images", Handler: app.dockerListImages, Module: "docker", Label: "镜像", Perm: "r"},
+		{Method: "POST", Path: "/docker/images/:id/action", Handler: app.dockerImageAction, Module: "docker", Label: "镜像", Perm: "rw"},
+		{Method: "POST", Path: "/docker/images/tag", Handler: app.dockerTagImage, Module: "docker", Label: "镜像", Perm: "rw"},
+		{Method: "GET", Path: "/docker/images/search/:term", Handler: app.dockerSearchImages, Module: "docker", Label: "镜像", Perm: "r"},
+		{Method: "POST", Path: "/docker/images/build", Handler: app.dockerBuildImage, Module: "docker", Label: "镜像", Perm: "rw"},
+		{Method: "GET", Path: "/docker/images/:id", Handler: app.dockerInspectImage, Module: "docker", Label: "镜像", Perm: "r"},
+		// 网络管理
+		{Method: "GET", Path: "/docker/networks", Handler: app.dockerListNetworks, Module: "docker", Label: "网络", Perm: "r"},
+		{Method: "POST", Path: "/docker/networks/:id/action", Handler: app.dockerNetworkAction, Module: "docker", Label: "网络", Perm: "rw"},
+		{Method: "POST", Path: "/docker/networks", Handler: app.dockerCreateNetwork, Module: "docker", Label: "网络", Perm: "rw"},
+		{Method: "GET", Path: "/docker/networks/:id", Handler: app.dockerNetworkInspect, Module: "docker", Label: "网络", Perm: "r"},
+		// 卷管理
+		{Method: "GET", Path: "/docker/volumes", Handler: app.dockerListVolumes, Module: "docker", Label: "数据卷", Perm: "r"},
+		{Method: "POST", Path: "/docker/volumes/:name/action", Handler: app.dockerVolumeAction, Module: "docker", Label: "数据卷", Perm: "rw"},
+		{Method: "POST", Path: "/docker/volumes", Handler: app.dockerCreateVolume, Module: "docker", Label: "数据卷", Perm: "rw"},
+		{Method: "GET", Path: "/docker/volumes/:name", Handler: app.dockerVolumeInspect, Module: "docker", Label: "数据卷", Perm: "r"},
+		// 镜像仓库
+		{Method: "GET", Path: "/docker/registries", Handler: app.dockerListRegistries, Module: "docker", Label: "镜像仓库", Perm: "r"},
+		{Method: "POST", Path: "/docker/registries", Handler: app.dockerCreateRegistry, Module: "docker", Label: "镜像仓库", Perm: "rw"},
+		{Method: "PUT", Path: "/docker/registries", Handler: app.dockerUpdateRegistry, Module: "docker", Label: "镜像仓库", Perm: "rw"},
+		{Method: "DELETE", Path: "/docker/registries", Handler: app.dockerDeleteRegistry, Module: "docker", Label: "镜像仓库", Perm: "rw"},
+		{Method: "POST", Path: "/docker/images/push", Handler: app.dockerPushImage, Module: "docker", Label: "镜像仓库", Perm: "rw"},
+		{Method: "POST", Path: "/docker/images/pull", Handler: app.dockerPullFromRegistry, Module: "docker", Label: "镜像仓库", Perm: "rw"},
+	}
+}
+
 // svcDockerRegistryUpsertRequest 是 service/docker 中 RegistryUpsertRequest 的本地别名
 type svcDockerRegistryUpsertRequest = svcDocker.RegistryUpsertRequest
 

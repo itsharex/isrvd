@@ -16,6 +16,13 @@ import (
 	"isrvd/internal/helper"
 )
 
+// defineAgentRoutes 定义 Agent 模块路由（LLM 代理）
+func (app *App) defineAgentRoutes() []Route {
+	return []Route{
+		{Method: "ANY", Path: "/agent/*path", Handler: app.agentProxy, Module: "agent", Label: "Agent 代理", Perm: "rw"},
+	}
+}
+
 var agentHTTPClient = &http.Client{Timeout: 10 * time.Minute}
 
 func (app *App) agentProxy(c *gin.Context) {

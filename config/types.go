@@ -67,6 +67,6 @@ type MemberConfig struct {
 	Password      string `yaml:"password"`
 	HomeDirectory string `yaml:"homeDirectory"`
 	// Permissions 各模块权限，key 为模块名，value 为 "r"（只读）或 "rw"（读写），空字符串或缺失表示无权限
-	// 可用模块：filer, agent, apisix, docker, swarm, compose, system, shell
+	// 可用模块：system, account, shell, filer, agent, apisix, docker, swarm, compose
 	Permissions map[string]string `yaml:"permissions,omitempty"`
 }

@@ -9,6 +9,28 @@ import (
 	pkgswarm "isrvd/pkgs/swarm"
 )
 
+// defineSwarmRoutes 定义 Swarm 模块路由
+func (app *App) defineSwarmRoutes() []Route {
+	return []Route{
+		// Swarm 信息
+		{Method: "GET", Path: "/swarm/info", Handler: app.swarmInfo, Module: "swarm", Label: "Swarm", Perm: "r"},
+		// 节点管理
+		{Method: "GET", Path: "/swarm/nodes", Handler: app.swarmListNodes, Module: "swarm", Label: "Swarm 节点", Perm: "r"},
+		{Method: "GET", Path: "/swarm/nodes/:id", Handler: app.swarmInspectNode, Module: "swarm", Label: "Swarm 节点", Perm: "r"},
+		{Method: "POST", Path: "/swarm/nodes/:id/action", Handler: app.NodeDTOAction, Module: "swarm", Label: "Swarm 节点", Perm: "rw"},
+		{Method: "GET", Path: "/swarm/tokens", Handler: app.swarmGetJoinTokens, Module: "swarm", Label: "Swarm 节点", Perm: "r"},
+		// 服务管理
+		{Method: "GET", Path: "/swarm/services", Handler: app.swarmListServices, Module: "swarm", Label: "Swarm 服务", Perm: "r"},
+		{Method: "GET", Path: "/swarm/services/:id", Handler: app.swarmInspectService, Module: "swarm", Label: "Swarm 服务", Perm: "r"},
+		{Method: "POST", Path: "/swarm/services", Handler: app.swarmCreateService, Module: "swarm", Label: "Swarm 服务", Perm: "rw"},
+		{Method: "POST", Path: "/swarm/services/:id/action", Handler: app.swarmServiceAction, Module: "swarm", Label: "Swarm 服务", Perm: "rw"},
+		{Method: "POST", Path: "/swarm/services/:id/force-update", Handler: app.swarmForceUpdateService, Module: "swarm", Label: "Swarm 服务", Perm: "rw"},
+		{Method: "GET", Path: "/swarm/services/:id/logs", Handler: app.swarmServiceLogs, Module: "swarm", Label: "Swarm 服务", Perm: "r"},
+		// 任务
+		{Method: "GET", Path: "/swarm/tasks", Handler: app.swarmListTasks, Module: "swarm", Label: "Swarm 任务", Perm: "r"},
+	}
+}
+
 func (app *App) swarmInfo(c *gin.Context) {
 	result, err := app.swarmSvc.SwarmInfo(c.Request.Context())
 	if err != nil {

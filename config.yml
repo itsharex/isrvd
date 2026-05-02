@@ -38,14 +38,15 @@ members:
     password: admin
     homeDirectory: .
     permissions:
+      system: rw
+      account: rw
+      shell: rw
       filer: rw
       agent: rw
       apisix: rw
       docker: rw
       swarm: rw
       compose: rw
-      system: rw
-      shell: rw
 
   - username: user1
     password: password1
@@ -59,5 +60,5 @@ members:
     password: password2
     homeDirectory: user2/
     # permissions 未配置则所有模块无权限
-    # 可用模块: filer, agent, apisix, docker, swarm, compose, system, shell
+    # 可用模块: system, account, shell, filer, agent, apisix, docker, swarm, compose
     # 可用値: r（只读）, rw（读写），留空或不填表示无权限

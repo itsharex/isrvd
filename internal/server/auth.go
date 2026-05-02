@@ -84,7 +84,7 @@ func HeaderAuthMiddleware() gin.HandlerFunc {
 
 // RoutePermMiddleware 基于 METHOD+PATH 的集中式权限验证中间件
 // 根据 Gin 已匹配的完整路由模板一次定位当前请求所需的权限
-func (app *App) RoutePermMiddleware() gin.HandlerFunc {
+func RoutePermMiddleware(routePerms map[string]Route) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		method := c.Request.Method
 		path := c.FullPath()
@@ -96,9 +96,9 @@ func (app *App) RoutePermMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		route, exists := app.routePerms[method+" "+path]
+		route, exists := routePerms[method+" "+path]
 		if !exists {
-			route, exists = app.routePerms["ANY "+path]
+			route, exists = routePerms["ANY "+path]
 		}
 		if !exists {
 			helper.RespondError(c, http.StatusForbidden, "未授权的访问路径")

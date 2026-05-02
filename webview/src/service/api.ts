@@ -17,8 +17,8 @@ import type {
     SystemProbeResponse, DockerInfo,
     FilerListResponse, FilerReadResponse,
     AuthLoginResponse, AuthInfoResponse,
+    MemberInfo, MemberUpsertRequest,
     SystemAllSettings,
-    SystemMemberInfo, SystemMemberUpsertRequest,
     ComposeDeployResult,
     SystemStat,
     AuditLog
@@ -26,16 +26,57 @@ import type {
 
 // API 服务类，统一管理所有 API 请求
 class ApiService {
-    // 认证相关
-    authInfo() {
-        return http.get<AuthInfoResponse>('/api/auth/info')
+    // ==================== System 系统相关 ====================
+
+    // 服务探测
+    serviceProbe() {
+        return http.get<SystemProbeResponse>('/api/system/probe')
     }
+
+    systemStat() {
+        return http.get<SystemStat>('/api/system/stats')
+    }
+
+    getSettings(params?: Record<string, string>) {
+        return http.get<SystemAllSettings>('/api/system/settings', { params })
+    }
+
+    updateAllSettings(data: Partial<SystemAllSettings>) {
+        return http.put<void>('/api/system/settings', data)
+    }
+
+    getAuditLogs(params?: { username?: string; limit?: number }) {
+        return http.get<AuditLog[]>('/api/system/audit-logs', { params })
+    }
+
+    // ==================== Account 账户相关 ====================
 
     login(data: { username: string; password: string }) {
         return http.post<AuthLoginResponse>('/api/auth/login', data)
     }
 
-    // 文件管理相关
+    getMe() {
+        return http.get<AuthInfoResponse>('/api/auth/info')
+    }
+
+    listMembers() {
+        return http.get<MemberInfo[]>('/api/account/members')
+    }
+
+    createMember(data: MemberUpsertRequest) {
+        return http.post<void>('/api/account/members', data)
+    }
+
+    updateMember(username: string, data: MemberUpsertRequest) {
+        return http.put<void>(`/api/account/members/${encodeURIComponent(username)}`, data)
+    }
+
+    deleteMember(username: string) {
+        return http.delete<void>(`/api/account/members/${encodeURIComponent(username)}`)
+    }
+
+    // ==================== Filer 文件管理相关 ====================
+
     list(path: string) {
         return http.post<FilerListResponse>('/api/filer/list', { path })
     }
@@ -56,7 +97,6 @@ class ApiService {
         return http.post<void>('/api/filer/create', { path, content })
     }
 
-    // 文件编辑相关
     read(path: string) {
         return http.post<FilerReadResponse>('/api/filer/read', { path })
     }
@@ -69,7 +109,6 @@ class ApiService {
         return http.post<void>('/api/filer/chmod', { path, mode })
     }
 
-    // 压缩解压
     zip(path: string) {
         return http.post<void>('/api/filer/zip', { path })
     }
@@ -78,7 +117,6 @@ class ApiService {
         return http.post<void>('/api/filer/unzip', { path })
     }
 
-    // 文件上传
     upload(formData: FormData, config: AxiosRequestConfig = {}) {
         return http.post<void>('/api/filer/upload', formData, {
             headers: {
@@ -88,21 +126,126 @@ class ApiService {
         })
     }
 
-    // 文件下载
     download(path: string) {
         return httpBlob.post('/api/filer/download', { path }, { responseType: 'blob' })
     }
 
-    // ==================== 服务探测相关 ====================
+    // ==================== APISIX 管理相关 ====================
 
-    serviceProbe() {
-        return http.get<SystemProbeResponse>('/api/system/probe')
+    // 路由管理
+    apisixListRoutes() {
+        return http.get<ApisixRoute[]>('/api/apisix/routes')
     }
 
-    // ==================== 系统信息相关 ====================
+    apisixGetRoute(id: string) {
+        return http.get<ApisixRoute>(`/api/apisix/route/${id}`)
+    }
 
-    systemStat() {
-        return http.get<SystemStat>('/api/system/stats')
+    apisixCreateRoute(data: ApisixRoute) {
+        return http.post('/api/apisix/routes', data)
+    }
+
+    apisixUpdateRoute(id: string, data: ApisixRoute) {
+        return http.put(`/api/apisix/route/${id}`, data)
+    }
+
+    apisixPatchRouteStatus(id: string, status: number) {
+        return http.patch<void>(`/api/apisix/route/${id}/status`, { status })
+    }
+
+    apisixDeleteRoute(id: string) {
+        return http.delete<void>(`/api/apisix/route/${id}`)
+    }
+
+    // Consumer 管理
+    apisixListConsumers() {
+        return http.get<ApisixConsumer[]>('/api/apisix/consumers')
+    }
+
+    apisixCreateConsumer(data: ApisixCreateConsumerRequest) {
+        return http.post('/api/apisix/consumers', data)
+    }
+
+    apisixUpdateConsumer(username: string, data: ApisixUpdateConsumerRequest) {
+        return http.put(`/api/apisix/consumer/${username}`, data)
+    }
+
+    apisixDeleteConsumer(username: string) {
+        return http.delete<void>(`/api/apisix/consumer/${username}`)
+    }
+
+    // 白名单管理
+    apisixGetWhitelist() {
+        return http.get<ApisixRoute[]>('/api/apisix/whitelist')
+    }
+
+    apisixRevokeWhitelist(routeId: string, consumerName: string) {
+        return http.post<void>('/api/apisix/whitelist/revoke', { route_id: routeId, consumer_name: consumerName })
+    }
+
+    // 辅助资源
+    apisixListPluginConfigs() {
+        return http.get<ApisixPluginConfig[]>('/api/apisix/plugin_configs')
+    }
+
+    apisixGetPluginConfig(id: string) {
+        return http.get<ApisixPluginConfig>(`/api/apisix/plugin_config/${id}`)
+    }
+
+    apisixCreatePluginConfig(data: ApisixCreatePluginConfigRequest) {
+        return http.post('/api/apisix/plugin_configs', data)
+    }
+
+    apisixUpdatePluginConfig(id: string, data: ApisixUpdatePluginConfigRequest) {
+        return http.put(`/api/apisix/plugin_config/${id}`, data)
+    }
+
+    apisixDeletePluginConfig(id: string) {
+        return http.delete<void>(`/api/apisix/plugin_config/${id}`)
+    }
+
+    apisixListUpstreams() {
+        return http.get<ApisixUpstream[]>('/api/apisix/upstreams')
+    }
+
+    apisixGetUpstream(id: string) {
+        return http.get<ApisixUpstream>(`/api/apisix/upstream/${id}`)
+    }
+
+    apisixCreateUpstream(data: ApisixCreateUpstreamRequest) {
+        return http.post('/api/apisix/upstreams', data)
+    }
+
+    apisixUpdateUpstream(id: string, data: ApisixUpdateUpstreamRequest) {
+        return http.put(`/api/apisix/upstream/${id}`, data)
+    }
+
+    apisixDeleteUpstream(id: string) {
+        return http.delete<void>(`/api/apisix/upstream/${id}`)
+    }
+
+    apisixListSSLs() {
+        return http.get<ApisixSSL[]>('/api/apisix/ssls')
+    }
+
+    apisixGetSSL(id: string) {
+        return http.get<ApisixSSL>(`/api/apisix/ssl/${id}`)
+    }
+
+    apisixCreateSSL(data: ApisixCreateSSLRequest) {
+        return http.post('/api/apisix/ssls', data)
+    }
+
+    apisixUpdateSSL(id: string, data: ApisixUpdateSSLRequest) {
+        return http.put(`/api/apisix/ssl/${id}`, data)
+    }
+
+    apisixDeleteSSL(id: string) {
+        return http.delete<void>(`/api/apisix/ssl/${id}`)
+    }
+
+    apisixListPlugins() {
+        return http.get<Record<string, { schema: Record<string, unknown> }>>('/api/apisix/plugins')
     }
 
     // ==================== Docker 服务相关 ====================
@@ -273,160 +416,6 @@ class ApiService {
 
     swarmServiceLogs(id: string, tail = '100') {
         return http.get<{ logs: string[] }>(`/api/swarm/service/${id}/logs`, { params: { tail } })
-    }
-
-    // ==================== APISIX 管理相关 ====================
-
-    // 路由管理
-    apisixListRoutes() {
-        return http.get<ApisixRoute[]>('/api/apisix/routes')
-    }
-
-    apisixGetRoute(id: string) {
-        return http.get<ApisixRoute>(`/api/apisix/route/${id}`)
-    }
-
-    apisixCreateRoute(data: ApisixRoute) {
-        return http.post('/api/apisix/routes', data)
-    }
-
-    apisixUpdateRoute(id: string, data: ApisixRoute) {
-        return http.put(`/api/apisix/route/${id}`, data)
-    }
-
-    apisixPatchRouteStatus(id: string, status: number) {
-        return http.patch<void>(`/api/apisix/route/${id}/status`, { status })
-    }
-
-    apisixDeleteRoute(id: string) {
-        return http.delete<void>(`/api/apisix/route/${id}`)
-    }
-
-    // Consumer 管理
-    apisixListConsumers() {
-        return http.get<ApisixConsumer[]>('/api/apisix/consumers')
-    }
-
-    apisixCreateConsumer(data: ApisixCreateConsumerRequest) {
-        return http.post('/api/apisix/consumers', data)
-    }
-
-    apisixUpdateConsumer(username: string, data: ApisixUpdateConsumerRequest) {
-        return http.put(`/api/apisix/consumer/${username}`, data)
-    }
-
-    apisixDeleteConsumer(username: string) {
-        return http.delete<void>(`/api/apisix/consumer/${username}`)
-    }
-
-    // 白名单管理
-    apisixGetWhitelist() {
-        return http.get<ApisixRoute[]>('/api/apisix/whitelist')
-    }
-
-    apisixRevokeWhitelist(routeId: string, consumerName: string) {
-        return http.post<void>('/api/apisix/whitelist/revoke', { route_id: routeId, consumer_name: consumerName })
-    }
-
-    // 辅助资源
-    apisixListPluginConfigs() {
-        return http.get<ApisixPluginConfig[]>('/api/apisix/plugin_configs')
-    }
-
-    apisixGetPluginConfig(id: string) {
-        return http.get<ApisixPluginConfig>(`/api/apisix/plugin_config/${id}`)
-    }
-
-    apisixCreatePluginConfig(data: ApisixCreatePluginConfigRequest) {
-        return http.post('/api/apisix/plugin_configs', data)
-    }
-
-    apisixUpdatePluginConfig(id: string, data: ApisixUpdatePluginConfigRequest) {
-        return http.put(`/api/apisix/plugin_config/${id}`, data)
-    }
-
-    apisixDeletePluginConfig(id: string) {
-        return http.delete<void>(`/api/apisix/plugin_config/${id}`)
-    }
-
-    apisixListUpstreams() {
-        return http.get<ApisixUpstream[]>('/api/apisix/upstreams')
-    }
-
-    apisixGetUpstream(id: string) {
-        return http.get<ApisixUpstream>(`/api/apisix/upstream/${id}`)
-    }
-
-    apisixCreateUpstream(data: ApisixCreateUpstreamRequest) {
-        return http.post('/api/apisix/upstreams', data)
-    }
-
-    apisixUpdateUpstream(id: string, data: ApisixUpdateUpstreamRequest) {
-        return http.put(`/api/apisix/upstream/${id}`, data)
-    }
-
-    apisixDeleteUpstream(id: string) {
-        return http.delete<void>(`/api/apisix/upstream/${id}`)
-    }
-
-    apisixListSSLs() {
-        return http.get<ApisixSSL[]>('/api/apisix/ssls')
-    }
-
-    apisixGetSSL(id: string) {
-        return http.get<ApisixSSL>(`/api/apisix/ssl/${id}`)
-    }
-
-    apisixCreateSSL(data: ApisixCreateSSLRequest) {
-        return http.post('/api/apisix/ssls', data)
-    }
-
-    apisixUpdateSSL(id: string, data: ApisixUpdateSSLRequest) {
-        return http.put(`/api/apisix/ssl/${id}`, data)
-    }
-
-    apisixDeleteSSL(id: string) {
-        return http.delete<void>(`/api/apisix/ssl/${id}`)
-    }
-
-    apisixListPlugins() {
-        return http.get<Record<string, { schema: Record<string, unknown> }>>('/api/apisix/plugins')
-    }
-
-    // ==================== 系统设置 ====================
-
-    getMe() {
-        return http.get<AuthInfoResponse>('/api/auth/info')
-    }
-
-    getSettings(params?: Record<string, string>) {
-        return http.get<SystemAllSettings>('/api/system/settings', { params })
-    }
-
-    updateAllSettings(data: Partial<SystemAllSettings>) {
-        return http.put<void>('/api/system/settings', data)
-    }
-
-    // 成员管理
-    listMembers() {
-        return http.get<SystemMemberInfo[]>('/api/system/members')
-    }
-
-    createMember(data: SystemMemberUpsertRequest) {
-        return http.post<void>('/api/system/members', data)
-    }
-
-    updateMember(username: string, data: SystemMemberUpsertRequest) {
-        return http.put<void>(`/api/system/member/${encodeURIComponent(username)}`, data)
-    }
-
-    deleteMember(username: string) {
-        return http.delete<void>(`/api/system/member/${encodeURIComponent(username)}`)
-    }
-
-    // 审计日志
-    getAuditLogs(params?: { username?: string; limit?: number }) {
-        return http.get<AuditLog[]>('/api/system/audit-logs', { params })
     }
 
     // ==================== Compose 部署 ====================

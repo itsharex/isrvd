@@ -1,5 +1,4 @@
-// Package system 成员账号管理
-package system
+package account
 
 import (
 	"errors"
@@ -16,7 +15,18 @@ import (
 // 哨兵错误，供 handler 层进行错误类型判断
 var (
 	ErrMemberNotFound = errors.New("成员不存在")
+	ErrMemberExists   = errors.New("用户名已存在")
+	ErrInvalidRequest = errors.New("用户名不能为空")
 )
+
+// GetMember 获取单个成员信息
+func (s *Service) GetMember(username string) *MemberInfo {
+	m, exists := config.Members[username]
+	if !exists {
+		return nil
+	}
+	return s.buildMemberInfo(m)
+}
 
 // MemberInfo 成员信息（不包含密码明文）
 type MemberInfo struct {
@@ -26,28 +36,17 @@ type MemberInfo struct {
 	Permissions   map[string]string `json:"permissions"`
 }
 
-// MemberUpsertRequest 成员新建/更新请求
-type MemberUpsertRequest struct {
-	Username      string            `json:"username"`
-	Password      string            `json:"password"`
-	HomeDirectory string            `json:"homeDirectory"`
-	Permissions   map[string]string `json:"permissions"`
-}
-
-// MemberService 成员账号业务服务
-type MemberService struct{}
-
-// NewMemberService 创建成员账号业务服务
-func NewMemberService() *MemberService {
-	return &MemberService{}
-}
-
-// GetMember 获取单个成员信息
-func (s *MemberService) GetMember(username string) *MemberInfo {
-	m, exists := config.Members[username]
-	if !exists {
-		return nil
+// ListMembers 列出所有成员
+func (s *Service) ListMembers() []*MemberInfo {
+	list := make([]*MemberInfo, 0, len(config.Members))
+	for _, m := range config.Members {
+		list = append(list, s.buildMemberInfo(m))
 	}
+	return list
+}
+
+// buildMemberInfo 从配置构建成员信息（确保权限不为 nil）
+func (s *Service) buildMemberInfo(m *config.MemberConfig) *MemberInfo {
 	perms := m.Permissions
 	if perms == nil {
 		perms = map[string]string{}
@@ -60,26 +59,8 @@ func (s *MemberService) GetMember(username string) *MemberInfo {
 	}
 }
 
-// ListMembers 列出所有成员
-func (s *MemberService) ListMembers() []*MemberInfo {
-	list := make([]*MemberInfo, 0, len(config.Members))
-	for _, m := range config.Members {
-		perms := m.Permissions
-		if perms == nil {
-			perms = map[string]string{}
-		}
-		list = append(list, &MemberInfo{
-			Username:      m.Username,
-			HomeDirectory: m.HomeDirectory,
-			PasswordSet:   m.Password != "",
-			Permissions:   perms,
-		})
-	}
-	return list
-}
-
 // ensureHomeDir 生成并创建成员 home 目录（空值时使用基础目录 + 用户名）
-func ensureHomeDir(home, username string) (string, error) {
+func (s *Service) ensureHomeDir(home, username string) (string, error) {
 	if home == "" {
 		home = username
 	}
@@ -92,16 +73,24 @@ func ensureHomeDir(home, username string) (string, error) {
 	return home, nil
 }
 
+// MemberUpsertRequest 成员新建/更新请求
+type MemberUpsertRequest struct {
+	Username      string            `json:"username"`
+	Password      string            `json:"password"`
+	HomeDirectory string            `json:"homeDirectory"`
+	Permissions   map[string]string `json:"permissions"`
+}
+
 // CreateMember 新建成员
-func (s *MemberService) CreateMember(req MemberUpsertRequest) error {
+func (s *Service) CreateMember(req MemberUpsertRequest) error {
 	if req.Username == "" {
-		return fmt.Errorf("用户名不能为空")
+		return ErrInvalidRequest
 	}
 	if _, exists := config.Members[req.Username]; exists {
-		return fmt.Errorf("用户名已存在")
+		return ErrMemberExists
 	}
 
-	home, err := ensureHomeDir(req.HomeDirectory, req.Username)
+	home, err := s.ensureHomeDir(req.HomeDirectory, req.Username)
 	if err != nil {
 		return fmt.Errorf("创建 home 目录失败: %w", err)
 	}
@@ -112,7 +101,8 @@ func (s *MemberService) CreateMember(req MemberUpsertRequest) error {
 		return fmt.Errorf("密码加密失败: %w", err)
 	}
 
-	config.Members[req.Username] = &config.MemberConfig{Username: req.Username,
+	config.Members[req.Username] = &config.MemberConfig{
+		Username:      req.Username,
 		Password:      hashedPassword,
 		HomeDirectory: home,
 		Permissions:   req.Permissions,
@@ -125,13 +115,13 @@ func (s *MemberService) CreateMember(req MemberUpsertRequest) error {
 }
 
 // UpdateMember 更新成员
-func (s *MemberService) UpdateMember(username string, req MemberUpsertRequest) error {
+func (s *Service) UpdateMember(username string, req MemberUpsertRequest) error {
 	member, exists := config.Members[username]
 	if !exists {
 		return ErrMemberNotFound
 	}
 
-	home, err := ensureHomeDir(req.HomeDirectory, username)
+	home, err := s.ensureHomeDir(req.HomeDirectory, username)
 	if err != nil {
 		return fmt.Errorf("创建 home 目录失败: %w", err)
 	}
@@ -156,7 +146,7 @@ func (s *MemberService) UpdateMember(username string, req MemberUpsertRequest) e
 }
 
 // DeleteMember 删除成员
-func (s *MemberService) DeleteMember(username string) error {
+func (s *Service) DeleteMember(username string) error {
 	if _, exists := config.Members[username]; !exists {
 		return ErrMemberNotFound
 	}

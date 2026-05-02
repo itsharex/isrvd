@@ -16,6 +16,13 @@ import (
 	"isrvd/internal/helper"
 )
 
+// defineShellRoutes 定义 Shell 模块路由（Web 终端）
+func (app *App) defineShellRoutes() []Route {
+	return []Route{
+		{Method: "GET", Path: "/shell/ws", Handler: app.shellWebSocket, Module: "shell", Label: "终端", Perm: "rw"},
+	}
+}
+
 func (app *App) shellWebSocket(c *gin.Context) {
 	username := c.GetString("username")
 	member, ok := config.Members[username]

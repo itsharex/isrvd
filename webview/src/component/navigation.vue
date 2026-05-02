@@ -20,13 +20,14 @@ class NavigationBar extends Vue {
     swarmExpanded = false
 
     // ─── 权限计算属性 ───
+    get canSystem() { return this.actions.hasPerm('system') }
+    get canAccount() { return this.actions.hasPerm('account') }
+    get canShell() { return this.actions.hasPerm('shell') }
     get canFiler() { return this.actions.hasPerm('filer') }
     get canApisix() { return this.state.serviceAvailability.apisix && this.actions.hasPerm('apisix') }
     get canDocker() { return this.state.serviceAvailability.docker && this.actions.hasPerm('docker') }
     get canSwarm() { return this.state.serviceAvailability.swarm && this.actions.hasPerm('swarm') }
     get canCompose() { return this.state.serviceAvailability.compose && this.actions.hasPerm('compose') }
-    get canSystem() { return this.actions.hasPerm('system') }
-    get canShell() { return this.actions.hasPerm('shell') }
 
     // 服务是否可用（不考虑权限）
     get hasDocker() { return this.state.serviceAvailability.docker }
@@ -411,9 +412,10 @@ export default toNative(NavigationBar)
         <span v-if="!collapsed">Compose 部署</span>
       </router-link>
 
+      <!-- 用户管理 -->
       <router-link
-        v-if="canSystem"
-        to="/system/members"
+        v-if="canAccount"
+        to="/account/members"
         class="flex items-center gap-3 px-3 py-3 text-sm font-medium text-slate-600 rounded-xl transition-all duration-200 hover:bg-slate-100 hover:text-slate-900"
         active-class="bg-blue-50 text-blue-700"
         :title="collapsed ? '用户管理' : ''"
@@ -434,7 +436,7 @@ export default toNative(NavigationBar)
         <span v-if="!collapsed">审计日志</span>
       </router-link>
 
-      <!-- 系统设置（放在最后） -->
+      <!-- 系统设置 -->
       <router-link
         v-if="canSystem"
         to="/system/settings"

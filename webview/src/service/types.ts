@@ -1,4 +1,4 @@
-export * from './types/auth'
+export * from './types/account'
 export * from './types/filer'
 export * from './types/system'
 export * from './types/docker'

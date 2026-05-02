@@ -19,6 +19,24 @@ import (
 	"isrvd/pkgs/archive"
 )
 
+// defineFilerRoutes 定义 Filer 模块路由（文件管理）
+func (app *App) defineFilerRoutes() []Route {
+	return []Route{
+		{Method: "POST", Path: "/filer/list", Handler: app.filerList, Module: "filer", Label: "文件管理", Perm: "rw"},
+		{Method: "POST", Path: "/filer/mkdir", Handler: app.filerMkdir, Module: "filer", Label: "文件管理", Perm: "rw"},
+		{Method: "POST", Path: "/filer/create", Handler: app.filerCreate, Module: "filer", Label: "文件管理", Perm: "rw"},
+		{Method: "POST", Path: "/filer/read", Handler: app.filerRead, Module: "filer", Label: "文件管理", Perm: "rw"},
+		{Method: "POST", Path: "/filer/modify", Handler: app.filerModify, Module: "filer", Label: "文件管理", Perm: "rw"},
+		{Method: "POST", Path: "/filer/rename", Handler: app.filerRename, Module: "filer", Label: "文件管理", Perm: "rw"},
+		{Method: "POST", Path: "/filer/delete", Handler: app.filerDelete, Module: "filer", Label: "文件管理", Perm: "rw"},
+		{Method: "POST", Path: "/filer/chmod", Handler: app.filerChmod, Module: "filer", Label: "文件管理", Perm: "rw"},
+		{Method: "POST", Path: "/filer/upload", Handler: app.filerUpload, Module: "filer", Label: "文件管理", Perm: "rw"},
+		{Method: "POST", Path: "/filer/download", Handler: app.filerDownload, Module: "filer", Label: "文件管理", Perm: "rw"},
+		{Method: "POST", Path: "/filer/zip", Handler: app.filerZip, Module: "filer", Label: "文件管理", Perm: "rw"},
+		{Method: "POST", Path: "/filer/unzip", Handler: app.filerUnzip, Module: "filer", Label: "文件管理", Perm: "rw"},
+	}
+}
+
 // ─── 文件路径辅助 ───
 
 func filerGetAbsPath(c *gin.Context, path string) string {

@@ -83,7 +83,7 @@ class App extends Vue {
     // ─── 生命周期 ───
     async mounted() {
         try {
-            const res = await api.authInfo()
+            const res = await api.getMe()
             const mode = res?.payload?.mode
             if (mode === 'header') {
                 // header 认证模式：直接使用代理注入的用户名，无需登录

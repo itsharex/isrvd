@@ -5,12 +5,13 @@ import { APP_ACTIONS_KEY } from '@/store/state'
 import type { AppActions } from '@/store/state'
 
 import api from '@/service/api'
-import type { SystemMemberInfo, SystemMemberUpsertRequest } from '@/service/types'
+import type { MemberInfo, MemberUpsertRequest } from '@/service/types'
 
 import BaseModal from '@/component/modal.vue'
 
 // 可配置的模块列表
 const MODULES = [
+    { key: 'account', label: '用户管理', icon: 'fas fa-users' },
     { key: 'filer',   label: '文件管理', icon: 'fas fa-folder' },
     { key: 'docker',  label: 'Docker',   icon: 'fab fa-docker' },
     { key: 'swarm',   label: 'Swarm',    icon: 'fas fa-layer-group' },
@@ -42,7 +43,7 @@ class MemberEditModal extends Vue {
     // 编辑时保存原始用户名，用于后端定位
     originalUsername = ''
     passwordSet = false
-    formData: SystemMemberUpsertRequest = {
+    formData: MemberUpsertRequest = {
         username: '', password: '', homeDirectory: '',
         permissions: emptyPermissions()
     }
@@ -62,7 +63,7 @@ class MemberEditModal extends Vue {
     }
 
     // ─── 方法 ───
-    show(member: SystemMemberInfo | null = null) {
+    show(member: MemberInfo | null = null) {
         if (member) {
             this.originalUsername = member.username
             this.passwordSet = member.passwordSet

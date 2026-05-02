@@ -1,7 +1,7 @@
 # 系统管理 API
 
-> 系统接口前缀: `/api/system`，文件接口前缀: `/api/filer`  
-> 系统操作需要 `system:r/rw` 权限，文件操作需要 `filer:r/rw` 权限
+> 系统接口前缀: `/api/system`，账号接口前缀: `/api/auth` 和 `/api/members`，文件接口前缀: `/api/filer`  
+> 系统操作需要 `system:r/rw` 权限，账号操作需要 `member:r/rw` 权限，文件操作需要 `filer:r/rw` 权限
 
 ---
 
@@ -80,28 +80,30 @@ PUT /api/system/settings
 
 ## §3 成员管理
 
+> 成员管理接口前缀: `/api/members`，需要 `member:r/rw` 权限
+
 ### §3.1 列出成员
 
 ```
-GET /api/system/members
+GET /api/members
 ```
 
 ### §3.2 创建成员
 
 ```
-POST /api/system/members
+POST /api/members
 ```
 
 ### §3.3 更新成员
 
 ```
-PUT /api/system/member/:username
+PUT /api/members/:username
 ```
 
 ### §3.4 删除成员
 
 ```
-DELETE /api/system/member/:username
+DELETE /api/members/:username
 ```
 
 > ⚠️ 首个系统账号禁止删除（前后端双重保护）。
@@ -120,6 +122,7 @@ DELETE /api/system/member/:username
     "apisix": "rw",
     "compose": "rw",
     "system": "r",
+    "member": "rw",
     "agent": "rw"
   }
 }
@@ -221,7 +224,7 @@ isrvd_get "/system/probe"
 ### 创建新用户
 
 ```bash
-isrvd_post "/system/members" '{
+isrvd_post "/members" '{
   "username": "developer",
   "password": "secure-password",
   "homeDirectory": "/data/developer",
@@ -232,6 +235,7 @@ isrvd_post "/system/members" '{
     "apisix": "r",
     "compose": "rw",
     "system": "r",
+    "member": "rw",
     "agent": "rw"
   }
 }'

@@ -1,9 +1,9 @@
 // ─── 系统探测 ───
 
 export interface SystemProbeResponse {
+    apisix: { available: boolean }
     docker: { available: boolean }
     swarm: { available: boolean }
-    apisix: { available: boolean }
 }
 
 // ─── 系统设置 ───
@@ -58,36 +58,6 @@ export interface SystemAllSettings {
     docker: SystemDockerSettings
     marketplace: SystemMarketplaceSettings
     links: SystemLinkSetting[]
-}
-
-// ─── 成员管理 ───
-
-// 模块权限定义：'' 表示无权限，'r' 表示只读，'rw' 表示读写
-export type ModulePermission = '' | 'r' | 'rw'
-
-export interface MemberPermissions {
-    filer: ModulePermission
-    docker: ModulePermission
-    swarm: ModulePermission
-    compose: ModulePermission
-    apisix: ModulePermission
-    agent: ModulePermission
-    system: ModulePermission
-}
-
-export interface SystemMemberInfo {
-    username: string
-    homeDirectory: string
-    passwordSet: boolean
-    permissions: Record<string, string>
-}
-
-export interface SystemMemberUpsertRequest {
-    username: string
-    // 写入时为空表示保留原値（仅更新场景）
-    password: string
-    homeDirectory: string
-    permissions: Record<string, string>
 }
 
 // ─── 系统统计（/api/system/stats 响应） ───
