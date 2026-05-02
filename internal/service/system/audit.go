@@ -1,4 +1,4 @@
-// Package system 提供系统级业务服务
+// Package system 提供系统级业务服务。
 package system
 
 import (
@@ -19,58 +19,68 @@ import (
 	"isrvd/config"
 )
 
-// AuditLog 操作审计日志结构
+// AuditLog 操作审计日志条目。
 type AuditLog struct {
 	Timestamp  time.Time `json:"timestamp"`  // 操作时间
 	Username   string    `json:"username"`   // 操作人
-	Method     string    `json:"method"`     // HTTP 方法
+	Method     string    `json:"method"`     // HTTP 方法（WebSocket 记为 "WS"）
 	URI        string    `json:"uri"`        // 请求 URI
-	Body       string    `json:"body"`       // 请求 Body
+	Body       string    `json:"body"`       // 请求体（文件字段替换为占位符）
 	IP         string    `json:"ip"`         // 客户端 IP
 	StatusCode int       `json:"statusCode"` // 响应状态码
-	Success    bool      `json:"success"`    // 是否成功（2xx）
+	Success    bool      `json:"success"`    // 是否成功
 	Duration   int64     `json:"duration"`   // 耗时（毫秒）
 }
 
 const maxAuditBufferSize = 100 // 内存缓冲最大条数
 
+// 审计日志全局状态。
 var (
 	auditLogBuffer  []AuditLog
 	auditLogMutex   sync.RWMutex
-	auditLogFile    *os.File
 	auditLogOnce    sync.Once
-	auditLogDateKey string        // 当前日志文件对应的日期（YYYY-MM-DD）
-	auditLogChan    chan AuditLog // 异步写入通道
+	auditLogChan    chan AuditLog
+	auditLogFile    *os.File
+	auditLogDateKey string // 当前日志文件对应的日期（YYYY-MM-DD）
 )
 
-// AuditMiddleware 操作审计中间件，记录所有非 GET 请求的 method/uri/body/状态/耗时
+// ---- 公开函数 ----------------------------------------------------------------
+
+// AuditMiddleware 返回操作审计中间件。
+// 记录所有非 GET 请求及 WebSocket 连接的方法、URI、请求体、状态码和耗时。
 func AuditMiddleware() gin.HandlerFunc {
-	initAuditLog() // 在注册中间件时自动完成初始化
+	initAuditLog()
 
 	return func(c *gin.Context) {
+		// WebSocket 升级请求：记录连接建立时间与持续时长
+		if strings.EqualFold(c.GetHeader("Upgrade"), "websocket") {
+			startTime := time.Now()
+			c.Next()
+			statusCode := c.Writer.Status()
+			if statusCode == 0 {
+				statusCode = http.StatusSwitchingProtocols
+			}
+			AddAuditLog(AuditLog{
+				Timestamp:  startTime,
+				Username:   c.GetString("username"),
+				Method:     "WS",
+				URI:        c.Request.RequestURI,
+				IP:         c.ClientIP(),
+				StatusCode: statusCode,
+				Success:    statusCode == http.StatusSwitchingProtocols,
+				Duration:   time.Since(startTime).Milliseconds(),
+			})
+			return
+		}
+
+		// GET 请求不记录审计（必须在 WebSocket 判断之后）
 		if c.Request.Method == http.MethodGet {
 			c.Next()
 			return
 		}
 
 		startTime := time.Now()
-
-		// 读取并回填 body
-		body := ""
-		if c.Request.Body != nil {
-			contentType := c.ContentType()
-			// 忽略文件上传类型的 body
-			if strings.HasPrefix(contentType, "multipart/form-data") || strings.HasPrefix(contentType, "application/octet-stream") {
-				body = "[File Upload Omitted]"
-			} else {
-				// 读取全部 body
-				raw, _ := io.ReadAll(c.Request.Body)
-				body = string(raw)
-				// 将读取的内容重新放回 Body，供后续 Handler 使用
-				c.Request.Body = io.NopCloser(bytes.NewReader(raw))
-			}
-		}
-
+		body := readBody(c)
 		c.Next()
 
 		statusCode := c.Writer.Status()
@@ -78,7 +88,7 @@ func AuditMiddleware() gin.HandlerFunc {
 			statusCode = http.StatusOK
 		}
 
-		entry := AuditLog{
+		AddAuditLog(AuditLog{
 			Timestamp:  startTime,
 			Username:   c.GetString("username"),
 			Method:     c.Request.Method,
@@ -88,32 +98,22 @@ func AuditMiddleware() gin.HandlerFunc {
 			StatusCode: statusCode,
 			Success:    statusCode >= http.StatusOK && statusCode < http.StatusMultipleChoices,
 			Duration:   time.Since(startTime).Milliseconds(),
-		}
-
-		AddAuditLog(entry)
-
-		logman.Info("Audit",
-			"username", entry.Username,
-			"method", entry.Method,
-			"uri", entry.URI,
-			"ip", entry.IP,
-			"status", entry.StatusCode,
-			"duration", entry.Duration,
-		)
+		})
 	}
 }
 
-// AddAuditLog 添加审计日志：写入内存缓冲并异步追加到当日文件
+// AddAuditLog 将审计条目写入内存缓冲，并异步追加到当日日志文件。
 func AddAuditLog(entry AuditLog) {
 	auditLogMutex.Lock()
-	// 内存缓冲超限时移除最旧记录
 	if len(auditLogBuffer) >= maxAuditBufferSize {
-		auditLogBuffer = auditLogBuffer[1:]
+		// 重新分配以释放底层数组，避免内存泄漏
+		newBuf := make([]AuditLog, maxAuditBufferSize-1, maxAuditBufferSize)
+		copy(newBuf, auditLogBuffer[1:])
+		auditLogBuffer = newBuf
 	}
 	auditLogBuffer = append(auditLogBuffer, entry)
 	auditLogMutex.Unlock()
 
-	// 异步发送到通道写入文件
 	if auditLogChan != nil {
 		select {
 		case auditLogChan <- entry:
@@ -123,7 +123,8 @@ func AddAuditLog(entry AuditLog) {
 	}
 }
 
-// GetAuditLogs 获取审计日志，按时间倒序返回，支持按用户名过滤
+// GetAuditLogs 返回内存缓冲中的审计日志，按时间倒序排列。
+// username 非空时仅返回该用户的记录；limit <= 0 时返回全部。
 func GetAuditLogs(username string, limit int) []AuditLog {
 	auditLogMutex.RLock()
 	defer auditLogMutex.RUnlock()
@@ -142,44 +143,88 @@ func GetAuditLogs(username string, limit int) []AuditLog {
 	return result
 }
 
-// initAuditLog 初始化审计日志：从今日文件加载历史记录到内存缓冲，并打开文件用于追加写入
+// ---- 内部函数 ----------------------------------------------------------------
+
+// initAuditLog 初始化审计日志（仅执行一次）：
+// 加载今日历史记录到内存缓冲，打开文件用于追加写入，并启动异步写入协程。
 func initAuditLog() {
 	auditLogOnce.Do(func() {
 		auditLogBuffer = make([]AuditLog, 0, maxAuditBufferSize)
 		auditLogChan = make(chan AuditLog, maxAuditBufferSize)
 
-		// 加载今日日志到内存缓冲
 		today := time.Now().Format("2006-01-02")
 		loadAuditFile(auditFilePath(today))
-
-		// 打开今日文件用于追加写入
 		openAuditFile(today)
 
-		// 启动异步写入协程
 		go processAuditLogs()
 	})
 }
 
-// processAuditLogs 异步处理审计日志的文件写入和轮转
+// processAuditLogs 从通道消费审计条目，按日期轮转文件并写入。
 func processAuditLogs() {
 	for entry := range auditLogChan {
 		today := entry.Timestamp.Format("2006-01-02")
 		if today != auditLogDateKey {
 			openAuditFile(today)
 		}
-
-		if auditLogFile != nil {
-			if data, err := json.Marshal(entry); err == nil {
-				data = append(data, '\n')
-				if _, err = auditLogFile.Write(data); err != nil {
-					logman.Warn("Audit", "msg", "写入审计日志文件失败", "err", err)
-				}
-			}
+		if auditLogFile == nil {
+			continue
+		}
+		data, err := json.Marshal(entry)
+		if err != nil {
+			continue
+		}
+		data = append(data, '\n')
+		if _, err = auditLogFile.Write(data); err != nil {
+			logman.Warn("Audit", "msg", "写入审计日志文件失败", "err", err)
 		}
 	}
 }
 
-// loadAuditFile 从指定文件读取日志追加到内存缓冲
+// readBody 读取请求体并回填，对不同 Content-Type 做差异化处理：
+//   - application/octet-stream：整体忽略，返回占位符
+//   - multipart/form-data：保留文本字段，文件字段替换为占位符
+//   - 其他：读取全部内容并回填 Body
+func readBody(c *gin.Context) string {
+	if c.Request.Body == nil {
+		return ""
+	}
+
+	contentType := c.ContentType()
+
+	switch {
+	case strings.HasPrefix(contentType, "application/octet-stream"):
+		return "[Binary Omitted]"
+
+	case strings.HasPrefix(contentType, "multipart/form-data"):
+		if err := c.Request.ParseMultipartForm(32 << 20); err != nil || c.Request.MultipartForm == nil {
+			return ""
+		}
+		fields := make(map[string]any)
+		for k, vs := range c.Request.MultipartForm.Value {
+			if len(vs) == 1 {
+				fields[k] = vs[0]
+			} else {
+				fields[k] = vs
+			}
+		}
+		for k := range c.Request.MultipartForm.File {
+			fields[k] = "[File Omitted]"
+		}
+		data, err := json.Marshal(fields)
+		if err != nil {
+			return ""
+		}
+		return string(data)
+
+	default:
+		raw, _ := io.ReadAll(c.Request.Body)
+		c.Request.Body = io.NopCloser(bytes.NewReader(raw))
+		return string(raw)
+	}
+}
+
+// loadAuditFile 从指定路径读取日志文件，将最后 maxAuditBufferSize 条记录追加到内存缓冲。
 func loadAuditFile(path string) {
 	f, err := os.Open(path)
 	if err != nil {
@@ -187,23 +232,22 @@ func loadAuditFile(path string) {
 	}
 	defer f.Close()
 
-	var tempBuffer []AuditLog
+	var buf []AuditLog
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
 		var entry AuditLog
 		if json.Unmarshal(scanner.Bytes(), &entry) == nil {
-			tempBuffer = append(tempBuffer, entry)
+			buf = append(buf, entry)
 		}
 	}
 
-	// 只保留最后 maxAuditBufferSize 条记录
-	if len(tempBuffer) > maxAuditBufferSize {
-		tempBuffer = tempBuffer[len(tempBuffer)-maxAuditBufferSize:]
+	if len(buf) > maxAuditBufferSize {
+		buf = buf[len(buf)-maxAuditBufferSize:]
 	}
-	auditLogBuffer = append(auditLogBuffer, tempBuffer...)
+	auditLogBuffer = append(auditLogBuffer, buf...)
 }
 
-// openAuditFile 打开指定日期的日志文件用于追加写入，关闭旧文件
+// openAuditFile 打开指定日期的日志文件（追加模式），关闭旧文件。
 func openAuditFile(date string) {
 	path := auditFilePath(date)
 
@@ -220,13 +264,11 @@ func openAuditFile(date string) {
 	if auditLogFile != nil {
 		auditLogFile.Close()
 	}
-
 	auditLogFile = f
 	auditLogDateKey = date
 }
 
-// auditFilePath 返回指定日期的日志文件路径
+// auditFilePath 返回指定日期的日志文件绝对路径。
 func auditFilePath(date string) string {
-	dir := filepath.Join(config.RootDirectory, "audit")
-	return filepath.Join(dir, date+".log")
+	return filepath.Join(config.RootDirectory, "audit", date+".log")
 }
