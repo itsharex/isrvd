@@ -57,7 +57,9 @@ func AuditMiddleware() gin.HandlerFunc {
 			startTime := time.Now()
 			c.Next()
 			statusCode := c.Writer.Status()
-			if statusCode == 0 {
+			// gorilla/websocket 升级成功后 gin Writer 状态为 200（默认值），
+			// 非 4xx/5xx 均视为升级成功
+			if statusCode == 0 || statusCode == http.StatusOK {
 				statusCode = http.StatusSwitchingProtocols
 			}
 			AddAuditLog(AuditLog{
