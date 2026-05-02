@@ -26,16 +26,17 @@ import type {
 
 // API 服务类，统一管理所有 API 请求
 class ApiService {
-    // ==================== System 系统相关 ====================
+    // ==================== Overview 系统概览 ====================
 
-    // 服务探测
     serviceProbe() {
-        return http.get<SystemProbeResponse>('/api/system/probe')
+        return http.get<SystemProbeResponse>('/api/overview/probe')
     }
 
-    systemStat() {
-        return http.get<SystemStat>('/api/system/stats')
+    systemStatus() {
+        return http.get<SystemStat>('/api/overview/status')
     }
+
+    // ==================== System 系统相关 ====================
 
     getSettings(params?: Record<string, string>) {
         return http.get<SystemAllSettings>('/api/system/settings', { params })

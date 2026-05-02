@@ -10,6 +10,7 @@ import (
 	svcApisix "isrvd/internal/service/apisix"
 	svcCompose "isrvd/internal/service/compose"
 	svcDocker "isrvd/internal/service/docker"
+	svcOverview "isrvd/internal/service/overview"
 	svcSwarm "isrvd/internal/service/swarm"
 	svcSystem "isrvd/internal/service/system"
 
@@ -21,7 +22,7 @@ const APINamespace = "/api"
 // App 应用实例，持有各业务服务
 type App struct {
 	*gin.Engine
-	systemSvc   *svcSystem.Service
+	overviewSvc *svcOverview.Service
 	settingsSvc *svcSystem.SettingsService
 	accountSvc  *svcAccount.Service
 	apisixSvc   *svcApisix.Service
@@ -35,7 +36,7 @@ func StartApp() {
 	app := &App{Engine: httpd.Engine(config.Debug), routePerms: make(map[string]Route)}
 
 	// 初始化各业务服务
-	app.systemSvc = svcSystem.NewService()
+	app.overviewSvc = svcOverview.NewService()
 	app.settingsSvc = svcSystem.NewSettingsService()
 	app.accountSvc = svcAccount.NewService()
 
@@ -83,7 +84,7 @@ func (app *App) initRoutes() {
 
 	// 公开路由组：MixAuthMiddleware（认证失败时放行）
 	publicGroup := r.Group("")
-	publicGroup.Use(MixAuthMiddleware())
+	publicGroup.Use(MixAuthMiddleware(app.accountSvc))
 
 	// 注册 account 模块的公开路由（无需认证）
 	publicGroup.GET("/auth/info", app.accountAuthInfo)
@@ -91,7 +92,7 @@ func (app *App) initRoutes() {
 
 	// 受保护路由组：AuthMiddleware + RoutePermMiddleware + AuditMiddleware
 	protectedGroup := r.Group("")
-	protectedGroup.Use(AuthMiddleware())
+	protectedGroup.Use(AuthMiddleware(app.accountSvc))
 	protectedGroup.Use(RoutePermMiddleware(app.routePerms))
 	protectedGroup.Use(svcSystem.AuditMiddleware())
 
@@ -112,6 +113,8 @@ func (app *App) initRoutes() {
 func (app *App) collectRoutes() []Route {
 	var routes []Route
 
+	// 概览（系统统计 + 服务探测，无需权限）
+	routes = append(routes, app.defineOverviewRoutes()...)
 	// 系统设置
 	routes = append(routes, app.defineSystemRoutes()...)
 	// Account 模块：受保护路由（公开路由 /auth/info、/auth/login 由 initRoutes 直接注册）

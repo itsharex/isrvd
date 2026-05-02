@@ -5,28 +5,28 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt/v5"
 
 	"isrvd/config"
 	"isrvd/internal/helper"
+	svcAccount "isrvd/internal/service/account"
 )
 
 // 认证中间件工厂
-func AuthMiddleware() gin.HandlerFunc {
+func AuthMiddleware(svc *svcAccount.Service) gin.HandlerFunc {
 	if config.ProxyHeaderName == "" {
-		return JwtAuthMiddleware()
+		return JwtAuthMiddleware(svc)
 	}
-	return HeaderAuthMiddleware()
+	return HeaderAuthMiddleware(svc)
 }
 
 // MixAuthMiddleware 可选认证中间件
 // 认证成功时写入 username，失败时直接放行（不中断请求）
 // 认证模式在工厂函数调用时确定，避免每次请求重复判断静态配置
-func MixAuthMiddleware() gin.HandlerFunc {
+func MixAuthMiddleware(svc *svcAccount.Service) gin.HandlerFunc {
 	if config.ProxyHeaderName != "" {
 		// Header 认证模式
 		return func(c *gin.Context) {
-			if username := extractHeaderUsername(c); username != "" {
+			if username := svc.ExtractHeaderUsername(c); username != "" {
 				c.Set("username", username)
 			}
 			c.Next()
@@ -34,7 +34,7 @@ func MixAuthMiddleware() gin.HandlerFunc {
 	}
 	// JWT 认证模式
 	return func(c *gin.Context) {
-		if username := extractJwtUsername(c); username != "" {
+		if username := svc.ExtractJwtUsername(c); username != "" {
 			c.Set("username", username)
 		}
 		c.Next()
@@ -42,9 +42,9 @@ func MixAuthMiddleware() gin.HandlerFunc {
 }
 
 // JWT 认证中间件
-func JwtAuthMiddleware() gin.HandlerFunc {
+func JwtAuthMiddleware(svc *svcAccount.Service) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		username := extractJwtUsername(c)
+		username := svc.ExtractJwtUsername(c)
 		if username == "" {
 			// 区分"未提供 token"与"token 无效"两种情况给出不同提示
 			authHeader := c.GetHeader("Authorization")
@@ -65,9 +65,9 @@ func JwtAuthMiddleware() gin.HandlerFunc {
 // 内网代理 Header 认证中间件
 // 启用条件：config.ProxyHeaderName 非空
 // Header 缺失或用户不存在时返回 403，不回退到 JWT
-func HeaderAuthMiddleware() gin.HandlerFunc {
+func HeaderAuthMiddleware(svc *svcAccount.Service) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		username := extractHeaderUsername(c)
+		username := svc.ExtractHeaderUsername(c)
 		if username == "" {
 			if c.GetHeader(config.ProxyHeaderName) == "" {
 				helper.RespondError(c, http.StatusForbidden, "代理 Header 缺失")
@@ -144,49 +144,4 @@ func RoutePermMiddleware(routePerms map[string]Route) gin.HandlerFunc {
 
 		c.Next()
 	}
-}
-
-// extractJwtUsername 从 Authorization Header（或 WebSocket query）中解析 JWT，
-// 返回有效且存在于成员列表中的用户名；否则返回空字符串
-func extractJwtUsername(c *gin.Context) string {
-	authHeader := c.GetHeader("Authorization")
-	tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
-
-	// WebSocket 连接时允许从 query 参数获取 token
-	if tokenStr == "" && c.GetHeader("Upgrade") == "websocket" {
-		tokenStr = c.Query("token")
-	}
-	if tokenStr == "" {
-		return ""
-	}
-
-	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (any, error) {
-		return []byte(config.JWTSecret), nil
-	})
-	if err != nil || !token.Valid {
-		return ""
-	}
-
-	claims, ok := token.Claims.(jwt.MapClaims)
-	if !ok {
-		return ""
-	}
-	sub, _ := claims["sub"].(string)
-	if _, exists := config.Members[sub]; !exists {
-		return ""
-	}
-	return sub
-}
-
-// extractHeaderUsername 从代理 Header 中读取用户名，
-// 返回存在于成员列表中的用户名；否则返回空字符串
-func extractHeaderUsername(c *gin.Context) string {
-	username := c.GetHeader(config.ProxyHeaderName)
-	if username == "" {
-		return ""
-	}
-	if _, exists := config.Members[username]; !exists {
-		return ""
-	}
-	return username
 }

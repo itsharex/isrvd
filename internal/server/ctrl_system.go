@@ -11,26 +11,15 @@ import (
 	svcSystem "isrvd/internal/service/system"
 )
 
-// defineSystemRoutes 定义 System 模块路由（系统设置 + 成员管理）
+// defineSystemRoutes 定义 System 模块路由（系统设置 + 审计日志）
 func (app *App) defineSystemRoutes() []Route {
 	return []Route{
-		// 系统信息
-		{Method: "GET", Path: "/system/stat", Handler: app.systemStat, Module: "system", Label: "系统", Perm: "r"},
-		{Method: "GET", Path: "/system/probe", Handler: app.systemProbe, Module: "system", Label: "系统", Perm: "r"},
 		// 系统设置
 		{Method: "GET", Path: "/system/settings", Handler: app.systemGetSettings, Module: "system", Label: "系统设置", Perm: "r"},
 		{Method: "POST", Path: "/system/settings", Handler: app.systemUpdateSettings, Module: "system", Label: "系统设置", Perm: "rw"},
 		// 审计日志
 		{Method: "GET", Path: "/system/audit-logs", Handler: app.systemGetAuditLogs, Module: "system", Label: "系统", Perm: "r"},
 	}
-}
-
-func (app *App) systemStat(c *gin.Context) {
-	helper.RespondSuccess(c, "ok", app.systemSvc.Stat(c.Request.Context()))
-}
-
-func (app *App) systemProbe(c *gin.Context) {
-	helper.RespondSuccess(c, "ok", app.systemSvc.Probe(c.Request.Context()))
 }
 
 func (app *App) systemGetSettings(c *gin.Context) {

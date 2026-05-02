@@ -1,18 +1,15 @@
-// Package system 提供系统信息业务服务层
-package system
+package overview
 
 import (
 	"context"
 	"fmt"
 	"runtime"
 	"strings"
-	"time"
 
 	"github.com/rehiy/pango/psutil"
 	"github.com/shirou/gopsutil/v3/disk"
 
 	"isrvd/config"
-	"isrvd/internal/registry"
 	pkggpu "isrvd/pkgs/gpu"
 )
 
@@ -50,8 +47,8 @@ type SystemGPU struct {
 	FanSpeed    int     `json:"fanSpeed"`
 }
 
-// SystemStatResponse 系统统计响应
-type SystemStatResponse struct {
+// StatResponse 系统统计响应
+type StatResponse struct {
 	System       *psutil.DetailStat `json:"system"`
 	DiskIO       []*DiskIOStat      `json:"diskIO"`
 	GPU          []*SystemGPU       `json:"gpu"`
@@ -60,29 +57,38 @@ type SystemStatResponse struct {
 	VersionCheck *VersionCheck      `json:"versionCheck,omitempty"`
 }
 
-// ProbeResponse 探活响应
-type ProbeResponse struct {
-	Agent   map[string]bool `json:"agent"`
-	Apisix  map[string]bool `json:"apisix"`
-	Docker  map[string]bool `json:"docker"`
-	Swarm   map[string]bool `json:"swarm"`
-	Compose map[string]bool `json:"compose"`
-}
+// Stat 获取系统统计信息
+func (s *Service) Stat(ctx context.Context) *StatResponse {
+	detail := psutil.Detail(false)
+	detail.DiskPartition = filterDiskPartitions(detail.DiskPartition)
 
-// UptimeResponse 服务启动时间响应
-type UptimeResponse struct {
-	StartTime int64 `json:"startTime"`
-	Uptime    int64 `json:"uptime"`
-}
+	ioCounters, _ := disk.IOCounters()
+	diskIO := make([]*DiskIOStat, 0, len(ioCounters))
+	for name, counter := range ioCounters {
+		diskIO = append(diskIO, &DiskIOStat{
+			Name:       name,
+			ReadBytes:  counter.ReadBytes,
+			WriteBytes: counter.WriteBytes,
+			ReadCount:  counter.ReadCount,
+			WriteCount: counter.WriteCount,
+		})
+	}
 
-var startTime = time.Now()
+	goStat := &GoRuntimeStat{
+		Version:      runtime.Version(),
+		NumCPU:       runtime.NumCPU(),
+		NumGoroutine: runtime.NumGoroutine(),
+		GoMemoryStat: psutil.GoMemory(),
+	}
 
-// Service 系统信息业务服务
-type Service struct{}
-
-// NewService 创建系统信息业务服务
-func NewService() *Service {
-	return &Service{}
+	return &StatResponse{
+		System:       detail,
+		DiskIO:       diskIO,
+		GPU:          buildSystemGPUs(ctx),
+		Go:           goStat,
+		Version:      config.Version,
+		VersionCheck: s.CheckVersion(ctx),
+	}
 }
 
 // filterDiskPartitions 过滤磁盘分区，去除容器中的重复单文件挂载
@@ -145,57 +151,4 @@ func buildSystemGPUs(ctx context.Context) []*SystemGPU {
 		})
 	}
 	return systemGPUs
-}
-
-// Stat 获取系统统计信息
-func (s *Service) Stat(ctx context.Context) *SystemStatResponse {
-	detail := psutil.Detail(false)
-	detail.DiskPartition = filterDiskPartitions(detail.DiskPartition)
-
-	ioCounters, _ := disk.IOCounters()
-	diskIO := make([]*DiskIOStat, 0, len(ioCounters))
-	for name, counter := range ioCounters {
-		diskIO = append(diskIO, &DiskIOStat{
-			Name:       name,
-			ReadBytes:  counter.ReadBytes,
-			WriteBytes: counter.WriteBytes,
-			ReadCount:  counter.ReadCount,
-			WriteCount: counter.WriteCount,
-		})
-	}
-
-	goStat := &GoRuntimeStat{
-		Version:      runtime.Version(),
-		NumCPU:       runtime.NumCPU(),
-		NumGoroutine: runtime.NumGoroutine(),
-		GoMemoryStat: psutil.GoMemory(),
-	}
-
-	return &SystemStatResponse{
-		System:       detail,
-		DiskIO:       diskIO,
-		GPU:          buildSystemGPUs(ctx),
-		Go:           goStat,
-		Version:      config.Version,
-		VersionCheck: s.CheckVersion(ctx),
-	}
-}
-
-// Probe 探活
-func (s *Service) Probe(ctx context.Context) *ProbeResponse {
-	return &ProbeResponse{
-		Agent:   map[string]bool{"available": config.Agent.BaseURL != "" && config.Agent.APIKey != ""},
-		Apisix:  map[string]bool{"available": registry.IsApisixAvailable()},
-		Docker:  map[string]bool{"available": registry.IsDockerAvailable(ctx)},
-		Swarm:   map[string]bool{"available": registry.IsSwarmAvailable(ctx)},
-		Compose: map[string]bool{"available": registry.IsComposeAvailable(ctx)},
-	}
-}
-
-// Uptime 获取服务启动时间
-func (s *Service) Uptime() *UptimeResponse {
-	return &UptimeResponse{
-		StartTime: startTime.Unix(),
-		Uptime:    int64(time.Since(startTime).Seconds()),
-	}
 }

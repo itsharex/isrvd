@@ -2,8 +2,10 @@ package account
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/rehiy/pango/logman"
 
@@ -63,4 +65,49 @@ func (s *Service) Login(req LoginRequest) (*LoginResponse, error) {
 
 	logman.Info("User logged in", "username", req.Username)
 	return &LoginResponse{Token: tokenString, Username: req.Username}, nil
+}
+
+// ExtractJwtUsername 从 Authorization Header（或 WebSocket query）中解析 JWT，
+// 返回有效且存在于成员列表中的用户名；否则返回空字符串
+func (s *Service) ExtractJwtUsername(c *gin.Context) string {
+	authHeader := c.GetHeader("Authorization")
+	tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
+
+	// WebSocket 连接时允许从 query 参数获取 token
+	if tokenStr == "" && c.GetHeader("Upgrade") == "websocket" {
+		tokenStr = c.Query("token")
+	}
+	if tokenStr == "" {
+		return ""
+	}
+
+	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (any, error) {
+		return []byte(config.JWTSecret), nil
+	})
+	if err != nil || !token.Valid {
+		return ""
+	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return ""
+	}
+	sub, _ := claims["sub"].(string)
+	if _, exists := config.Members[sub]; !exists {
+		return ""
+	}
+	return sub
+}
+
+// ExtractHeaderUsername 从代理 Header 中读取用户名，
+// 返回存在于成员列表中的用户名；否则返回空字符串
+func (s *Service) ExtractHeaderUsername(c *gin.Context) string {
+	username := c.GetHeader(config.ProxyHeaderName)
+	if username == "" {
+		return ""
+	}
+	if _, exists := config.Members[username]; !exists {
+		return ""
+	}
+	return username
 }

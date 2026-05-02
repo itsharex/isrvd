@@ -11,15 +11,16 @@ import BaseModal from '@/component/modal.vue'
 
 // 可配置的模块列表
 const MODULES = [
+    { key: 'overview', label: '系统概览', icon: 'fas fa-gauge-high' },
+    { key: 'system',  label: '系统管理', icon: 'fas fa-gear' },
     { key: 'account', label: '用户管理', icon: 'fas fa-users' },
+    { key: 'shell',   label: 'Shell终端', icon: 'fas fa-terminal' },
     { key: 'filer',   label: '文件管理', icon: 'fas fa-folder' },
+    { key: 'agent',   label: 'AI Agent', icon: 'fas fa-robot' },
+    { key: 'apisix',  label: 'APISIX',   icon: 'fas fa-route' },
     { key: 'docker',  label: 'Docker',   icon: 'fab fa-docker' },
     { key: 'swarm',   label: 'Swarm',    icon: 'fas fa-layer-group' },
     { key: 'compose', label: 'Compose',  icon: 'fas fa-cubes' },
-    { key: 'apisix',  label: 'APISIX',   icon: 'fas fa-route' },
-    { key: 'agent',   label: 'AI Agent', icon: 'fas fa-robot' },
-    { key: 'system',  label: '系统管理', icon: 'fas fa-gear' },
-    { key: 'shell',   label: 'Shell终端', icon: 'fas fa-terminal' },
 ]
 
 function emptyPermissions(): Record<string, string> {

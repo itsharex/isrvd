@@ -22,6 +22,7 @@ export interface AuthLoginResponse {
 export type ModulePermission = '' | 'r' | 'rw'
 
 export interface MemberPermissions {
+    overview: ModulePermission
     system: ModulePermission
     account: ModulePermission
     shell: ModulePermission
