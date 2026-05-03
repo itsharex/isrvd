@@ -75,6 +75,13 @@ func Apply(conf *Config) {
 		JWTSecret = conf.Server.JWTSecret
 		ProxyHeaderName = conf.Server.ProxyHeaderName
 		RootDirectory = conf.Server.RootDirectory
+		// 将 RootDirectory 转换为绝对路径
+		if !filepath.IsAbs(RootDirectory) {
+			abs, err := filepath.Abs(RootDirectory)
+			if err == nil {
+				RootDirectory = abs
+			}
+		}
 	}
 
 	if conf.Agent != nil {
