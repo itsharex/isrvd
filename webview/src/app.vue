@@ -6,7 +6,7 @@ import { APP_ACTIONS_KEY, APP_STATE_KEY, initProvider } from '@/store/state'
 import router, { setRouterGuard } from '@/router'
 
 import api from '@/service/api'
-import type { SystemLinkSetting } from '@/service/types'
+import type { LinkConfig } from '@/service/types'
 
 import ConfirmModal from '@/component/confirm.vue'
 import NavigationBar from '@/component/navigation.vue'
@@ -27,7 +27,7 @@ class App extends Vue {
     @Provide(APP_STATE_KEY) state = state
     @Provide(APP_ACTIONS_KEY) actions = actions
     sidebarCollapsed = false
-    toolbarLinks: SystemLinkSetting[] = []
+    toolbarLinks: LinkConfig[] = []
 
     // ─── Refs ───
     @Ref readonly navigationRef!: InstanceType<typeof NavigationBar>
@@ -49,7 +49,7 @@ class App extends Vue {
 
     async loadLinks() {
         try {
-            const res = await api.getSettings()
+            const res = await api.getConfig()
             this.toolbarLinks = res?.payload?.links || []
         } catch (e) {
             console.warn('Failed to load toolbar links:', e)

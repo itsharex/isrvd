@@ -5,12 +5,12 @@ import { APP_ACTIONS_KEY } from '@/store/state'
 import type { AppActions } from '@/store/state'
 
 import api from '@/service/api'
-import type { SystemAllSettings, SystemServerSettings, SystemAgentSettings, SystemApisixSettings, SystemDockerSettings, SystemMarketplaceSettings, SystemLinkSetting } from '@/service/types'
+import type { AllConfigResponse, ServerConfig, AgentConfig, ApisixConfig, DockerConfig, MarketplaceConfig, LinkConfig } from '@/service/types'
 
 import IconSelect from '@/component/icon-select.vue'
 
 @Component({ components: { IconSelect } })
-class Settings extends Vue {
+class Config extends Vue {
   @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
 
   // ─── 数据属性 ───
@@ -18,46 +18,25 @@ class Settings extends Vue {
   saving = false
   activeTab: 'server' | 'agent' | 'app' | 'links' = 'server'
 
-  server: SystemServerSettings = { debug: false, listenAddr: '', jwtSecret: '', proxyHeaderName: '', rootDirectory: '' }
-  agent: SystemAgentSettings = { model: '', baseUrl: '', apiKey: '' }
-  apisix: SystemApisixSettings = { adminUrl: '', adminKey: '' }
-  docker: SystemDockerSettings = { host: '', containerRoot: '' }
-  marketplace: SystemMarketplaceSettings = { url: '' }
-  links: SystemLinkSetting[] = []
-  // 敏感字段当前是否已设置
-  jwtSecretSet = false
-  adminKeySet = false
-  agentApiKeySet = false
-
-  // 敏感字段 placeholder
-  get jwtSecretPlaceholder() {
-    return this.jwtSecretSet ? '已设置（留空保持不变）' : '尚未设置'
-  }
-
-  get adminKeyPlaceholder() {
-    return this.adminKeySet ? '已设置（留空保持不变）' : '尚未设置'
-  }
-
-  get agentApiKeyPlaceholder() {
-    return this.agentApiKeySet ? '已设置（留空保持不变）' : '尚未设置'
-  }
+  server: ServerConfig = { debug: false, listenAddr: '', proxyHeaderName: '', rootDirectory: '' }
+  agent: AgentConfig = { model: '', baseUrl: '' }
+  apisix: ApisixConfig = { adminUrl: '' }
+  docker: DockerConfig = { host: '', containerRoot: '' }
+  marketplace: MarketplaceConfig = { url: '' }
+  links: LinkConfig[] = []
 
   // ─── 方法 ───
-  async loadSettings(reload = false) {
+  async loadConfig(reload = false) {
     this.loading = true
     try {
-      const res = await api.getSettings(reload ? { reload: 'true' } : undefined)
-      const payload = res.payload as SystemAllSettings
-      // 敏感字段统一置空，仅用标志位驱动 placeholder
-      this.server = { ...payload.server, jwtSecret: '' }
-      this.agent = { ...payload.agent, apiKey: '' }
-      this.apisix = { ...payload.apisix, adminKey: '' }
+      const res = await api.getConfig(reload ? { reload: 'true' } : undefined)
+      const payload = res.payload as AllConfigResponse
+      this.server = { ...payload.server }
+      this.agent = { ...payload.agent }
+      this.apisix = { ...payload.apisix }
       this.docker = { ...payload.docker }
       this.marketplace = { ...(payload.marketplace || { url: '' }) }
       this.links = payload.links ? payload.links.map(l => ({ ...l })) : []
-      this.jwtSecretSet = !!payload.server.jwtSecretSet
-      this.adminKeySet = !!payload.apisix.adminKeySet
-      this.agentApiKeySet = !!payload.agent.apiKeySet
       if (reload) {
         this.actions.showNotification('success', '配置已从文件重新加载')
       }
@@ -70,7 +49,7 @@ class Settings extends Vue {
   async saveAll() {
     this.saving = true
     try {
-      await api.updateAllSettings({
+      await api.updateAllConfig({
         server: this.server,
         agent: this.agent,
         apisix: this.apisix,
@@ -79,7 +58,7 @@ class Settings extends Vue {
         links: this.links,
       })
       this.actions.showNotification('success', '全部配置已保存，部分项需重启生效')
-      this.loadSettings()
+      this.loadConfig()
     } catch (e) { }
     this.saving = false
   }
@@ -94,11 +73,11 @@ class Settings extends Vue {
 
   // ─── 生命周期 ───
   mounted() {
-    this.loadSettings()
+    this.loadConfig()
   }
 }
 
-export default toNative(Settings)
+export default toNative(Config)
 </script>
 
 <template>
@@ -113,7 +92,7 @@ export default toNative(Settings)
               <i class="fas fa-gear text-white"></i>
             </div>
             <div>
-              <h1 class="text-lg font-semibold text-slate-800">系统设置</h1>
+              <h1 class="text-lg font-semibold text-slate-800">系统配置</h1>
               <p class="text-xs text-slate-500">服务器、Agent、APISIX、Docker 配置</p>
             </div>
           </div>
@@ -133,7 +112,7 @@ export default toNative(Settings)
                 <i class="fas fa-link mr-1"></i>导航
               </button>
             </div>
-            <button type="button" @click="loadSettings(true)" class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors">
+            <button type="button" @click="loadConfig(true)" class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors">
               <i class="fas fa-rotate"></i>重载配置
             </button>
           </div>
@@ -145,11 +124,11 @@ export default toNative(Settings)
               <i class="fas fa-gear text-white"></i>
             </div>
             <div class="min-w-0">
-              <h1 class="text-lg font-semibold text-slate-800 truncate">系统设置</h1>
+              <h1 class="text-lg font-semibold text-slate-800 truncate">系统配置</h1>
               <p class="text-xs text-slate-500 truncate">服务器、Agent、APISIX、Docker 配置</p>
             </div>
           </div>
-          <button type="button" @click="loadSettings(true)" class="w-9 h-9 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-600 transition-colors flex-shrink-0" title="重载配置">
+          <button type="button" @click="loadConfig(true)" class="w-9 h-9 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-600 transition-colors flex-shrink-0" title="重载配置">
             <i class="fas fa-rotate text-sm"></i>
           </button>
         </div>
@@ -198,12 +177,8 @@ export default toNative(Settings)
             <p class="mt-1 text-xs text-slate-400">成员 home 目录及容器数据的基础目录</p>
           </div>
           <div>
-            <label class="block text-sm font-medium text-slate-700 mb-1.5">
-              JWT 密钥
-              <span v-if="jwtSecretSet" class="ml-1.5 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-green-50 text-green-700"><i class="fas fa-check mr-0.5"></i>已设置</span>
-              <span v-else class="ml-1.5 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-500">未设置</span>
-            </label>
-            <input type="password" v-model="server.jwtSecret" :placeholder="jwtSecretPlaceholder" class="input" autocomplete="new-password" />
+            <label class="block text-sm font-medium text-slate-700 mb-1.5">JWT 密钥</label>
+            <input type="password" v-model="server.jwtSecret" placeholder="留空保持不变" class="input" autocomplete="new-password" />
             <p class="mt-1 text-xs text-slate-400">用于签名登录令牌，修改后所有用户需要重新登录</p>
           </div>
           <div>
@@ -226,12 +201,8 @@ export default toNative(Settings)
             <p class="mt-1 text-xs text-slate-400">OpenAI 兼容的 LLM API 基础地址，留空则禁用代理</p>
           </div>
           <div>
-            <label class="block text-sm font-medium text-slate-700 mb-1.5">
-              API 密钥
-              <span v-if="agentApiKeySet" class="ml-1.5 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-green-50 text-green-700"><i class="fas fa-check mr-0.5"></i>已设置</span>
-              <span v-else class="ml-1.5 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-500">未设置</span>
-            </label>
-            <input type="password" v-model="agent.apiKey" :placeholder="agentApiKeyPlaceholder" class="input" autocomplete="new-password" />
+            <label class="block text-sm font-medium text-slate-700 mb-1.5">API 密钥</label>
+            <input type="password" v-model="agent.apiKey" placeholder="留空保持不变" class="input" autocomplete="new-password" />
             <p class="mt-1 text-xs text-slate-400">代理转发时以 Bearer 形式注入 Authorization 请求头</p>
           </div>
         </section>
@@ -245,12 +216,8 @@ export default toNative(Settings)
             <p class="mt-1 text-xs text-slate-400">APISIX Admin API 地址</p>
           </div>
           <div>
-            <label class="block text-sm font-medium text-slate-700 mb-1.5">
-              Admin Key
-              <span v-if="adminKeySet" class="ml-1.5 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-green-50 text-green-700"><i class="fas fa-check mr-0.5"></i>已设置</span>
-              <span v-else class="ml-1.5 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-500">未设置</span>
-            </label>
-            <input type="password" v-model="apisix.adminKey" :placeholder="adminKeyPlaceholder" class="input" autocomplete="new-password" />
+            <label class="block text-sm font-medium text-slate-700 mb-1.5">Admin Key</label>
+            <input type="password" v-model="apisix.adminKey" placeholder="留空保持不变" class="input" autocomplete="new-password" />
             <p class="mt-1 text-xs text-slate-400">访问 APISIX Admin API 的密钥</p>
           </div>
           <div class="border-t border-slate-200 pt-4">

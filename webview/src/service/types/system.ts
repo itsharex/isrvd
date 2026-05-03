@@ -12,56 +12,58 @@ export interface AuditLog {
     duration: number
 }
 
-// ─── 系统设置 ───
+// ─── 系统配置（复用后端结构） ───
 
-export interface SystemServerSettings {
+export interface ServerConfig {
     debug: boolean
     listenAddr: string
-    // 写入时为空表示保留原值
-    jwtSecret: string
-    // 读取时后端返回，标识是否已设置
-    jwtSecretSet?: boolean
     proxyHeaderName: string
     rootDirectory: string
+    // 写入时为空表示保留原值（不通过 JSON 返回）
+    jwtSecret?: string
 }
 
-export interface SystemApisixSettings {
-    adminUrl: string
-    // 写入时为空表示保留原值
-    adminKey: string
-    // 读取时后端返回，标识是否已设置
-    adminKeySet?: boolean
-}
-
-export interface SystemAgentSettings {
+export interface AgentConfig {
     model: string
     baseUrl: string
-    // 写入时为空表示保留原值
-    apiKey: string
-    // 读取时后端返回，标识是否已设置
-    apiKeySet?: boolean
+    // 写入时为空表示保留原值（不通过 JSON 返回）
+    apiKey?: string
 }
 
-export interface SystemDockerSettings {
+export interface ApisixConfig {
+    adminUrl: string
+    // 写入时为空表示保留原值（不通过 JSON 返回）
+    adminKey?: string
+}
+
+export interface DockerRegistry {
+    name: string
+    description?: string
+    url: string
+    username?: string
+}
+
+export interface DockerConfig {
     host: string
     containerRoot: string
+    registries?: DockerRegistry[]
 }
 
-export interface SystemMarketplaceSettings {
+export interface MarketplaceConfig {
     url: string
 }
 
-export interface SystemLinkSetting {
+export interface LinkConfig {
     label: string
     url: string
-    icon: string
+    icon?: string
 }
 
-export interface SystemAllSettings {
-    server: SystemServerSettings
-    agent: SystemAgentSettings
-    apisix: SystemApisixSettings
-    docker: SystemDockerSettings
-    marketplace: SystemMarketplaceSettings
-    links: SystemLinkSetting[]
+export interface AllConfigResponse {
+    server: ServerConfig
+    agent: AgentConfig
+    apisix: ApisixConfig
+    docker: DockerConfig
+    marketplace: MarketplaceConfig
+    links: LinkConfig[]
 }

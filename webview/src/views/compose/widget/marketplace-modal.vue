@@ -5,7 +5,7 @@ import { APP_ACTIONS_KEY } from '@/store/state'
 import type { AppActions } from '@/store/state'
 
 import api from '@/service/api'
-import type { SystemAllSettings, ComposeMarketplacePick } from '@/service/types'
+import type { AllConfigResponse, ComposeMarketplacePick } from '@/service/types'
 
 // 应用市场 postMessage 协议：仅本组件使用，故就近定义
 interface MarketplaceInstallPayload {
@@ -14,9 +14,9 @@ interface MarketplaceInstallPayload {
     type: 'install'
 
     // 业务字段
-    name: string                                          // 实例名（作为目录名 / compose project 名，需满足 [a-zA-Z0-9][a-zA-Z0-9_.-]*）
-    compose: string                                       // 已完成 ${VAR} 插值的完整 compose.yml 文本
-    initURL?: string                                      // 可选：附加运行文件 zip 下载地址
+    name: string      // 实例名（作为目录名 / compose project 名，需满足 [a-zA-Z0-9][a-zA-Z0-9_.-]*）
+    compose: string   // 已完成 ${VAR} 插值的完整 compose.yml 文本
+    initURL?: string  // 可选：附加运行文件 zip 下载地址
 }
 
 // 校验 postMessage 数据是否为合法的安装 payload
@@ -69,8 +69,8 @@ class MarketplaceModal extends Vue {
     async loadUrl() {
         this.loading = true
         try {
-            const res = await api.getSettings()
-            const payload = res.payload as SystemAllSettings
+            const res = await api.getConfig()
+            const payload = res.payload as AllConfigResponse
             const url = payload.marketplace?.url || ''
             this.iframeUrl = url
             if (url) {
@@ -146,9 +146,9 @@ class MarketplaceModal extends Vue {
         }
     }
 
-    openSettings() {
+    openConfig() {
         this.close()
-        this.$router.push('/system/settings')
+        this.$router.push('/system/config')
     }
 }
 
@@ -230,7 +230,7 @@ export default toNative(MarketplaceModal)
               </div>
               <h2 class="text-base font-semibold text-slate-800 mb-1">尚未配置应用市场</h2>
               <p class="text-sm text-slate-500 mb-4">请前往「系统设置 → 应用市场」配置站点 URL</p>
-              <button type="button" @click="openSettings()" class="px-4 py-2 rounded-lg bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium flex items-center gap-1.5 transition-colors">
+              <button type="button" @click="openConfig()" class="px-4 py-2 rounded-lg bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium flex items-center gap-1.5 transition-colors">
                 <i class="fas fa-gear"></i>前往配置
               </button>
             </div>

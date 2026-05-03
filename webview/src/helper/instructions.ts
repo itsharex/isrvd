@@ -9,7 +9,7 @@ export const systemInstruction = `
 - 终端（/shell）：在线 Web 终端，直接执行 Shell 命令
 - Compose 部署（/compose/deploy）：粘贴 compose.yml，或通过内嵌的「应用市场」弹窗选择模板一键回填，统一部署为单机容器或 Swarm 服务
 - 成员管理（/account/members）：管理系统用户账号
-- 系统设置（/system/settings）：配置系统参数
+- 系统配置（/system/config）：配置系统参数
 
 操作规范：
 1. 执行破坏性操作（删除、停止、重启等）前，必须先向用户确认
@@ -86,8 +86,8 @@ export function getPageInstruction(url: string): string {
   if (path.includes('/account/members')) {
         return '当前页面：成员管理。可添加、编辑、删除系统用户，管理用户角色权限。'
     }
-    if (path.includes('/system/settings')) {
-        return '当前页面：系统设置。可配置系统参数，包括 JWT 密钥、管理员密钥等敏感配置，修改后需重启服务生效。'
+    if (path.includes('/system/config')) {
+        return '当前页面：系统配置。可配置系统参数，包括 JWT 密钥、管理员密钥等敏感配置，修改后需重启服务生效。'
     }
     return ''
 }

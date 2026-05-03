@@ -23,7 +23,7 @@ const APINamespace = "/api"
 type App struct {
 	*gin.Engine
 	overviewSvc *svcOverview.Service
-	settingsSvc *svcSystem.SettingsService
+	configSvc   *svcSystem.ConfigService
 	auditSvc    *svcSystem.AuditService
 	accountSvc  *svcAccount.Service
 	apisixSvc   *svcApisix.Service
@@ -38,7 +38,7 @@ func StartApp() {
 
 	// 初始化各业务服务
 	app.overviewSvc = svcOverview.NewService()
-	app.settingsSvc = svcSystem.NewSettingsService()
+	app.configSvc = svcSystem.NewConfigService()
 	app.auditSvc = svcSystem.NewAuditService()
 	app.accountSvc = svcAccount.NewService()
 

@@ -11,34 +11,34 @@ import (
 	svcSystem "isrvd/internal/service/system"
 )
 
-// defineSystemRoutes 定义 System 模块路由（系统设置 + 审计日志）
+// defineSystemRoutes 定义 System 模块路由（系统配置 + 审计日志）
 func (app *App) defineSystemRoutes() []Route {
 	return []Route{
-		// 系统设置
-		{Method: "GET", Path: "/system/settings", Handler: app.systemGetSettings, Module: "system", Label: "系统设置", Perm: "r"},
-		{Method: "POST", Path: "/system/settings", Handler: app.systemUpdateSettings, Module: "system", Label: "系统设置", Perm: "rw"},
+		// 系统配置
+		{Method: "GET", Path: "/system/config", Handler: app.systemGetConfig, Module: "system", Label: "系统配置", Perm: "r"},
+		{Method: "POST", Path: "/system/config", Handler: app.systemUpdateConfig, Module: "system", Label: "系统配置", Perm: "rw"},
 		// 审计日志
 		{Method: "GET", Path: "/system/audit-logs", Handler: app.systemGetAuditLogs, Module: "system", Label: "系统", Perm: "r"},
 	}
 }
 
-func (app *App) systemGetSettings(c *gin.Context) {
+func (app *App) systemGetConfig(c *gin.Context) {
 	if c.Query("reload") == "true" {
 		if err := config.Load(); err != nil {
 			helper.RespondError(c, http.StatusInternalServerError, err.Error())
 			return
 		}
 	}
-	helper.RespondSuccess(c, "ok", app.settingsSvc.GetAll())
+	helper.RespondSuccess(c, "ok", app.configSvc.GetAll())
 }
 
-func (app *App) systemUpdateSettings(c *gin.Context) {
-	var req svcSystem.UpdateAllRequest
+func (app *App) systemUpdateConfig(c *gin.Context) {
+	var req svcSystem.UpdateAllConfigRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		helper.RespondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
-	if err := app.settingsSvc.UpdateAll(req); err != nil {
+	if err := app.configSvc.UpdateAll(req); err != nil {
 		helper.RespondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}

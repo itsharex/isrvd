@@ -18,7 +18,7 @@ import type {
     FilerListResponse, FilerReadResponse,
     AuthLoginResponse, AuthInfoResponse,
     MemberInfo, MemberUpsertRequest,
-    SystemAllSettings,
+    AllConfigResponse,
     ComposeDeployResult,
     SystemStat,
     AuditLog
@@ -38,12 +38,12 @@ class ApiService {
 
     // ==================== System 系统相关 ====================
 
-    getSettings(params?: Record<string, string>) {
-        return http.get<SystemAllSettings>('/api/system/settings', { params })
+    getConfig(params?: Record<string, string>) {
+        return http.get<AllConfigResponse>('/api/system/config', { params })
     }
 
-    updateAllSettings(data: Partial<SystemAllSettings>) {
-        return http.put<void>('/api/system/settings', data)
+    updateAllConfig(data: Partial<AllConfigResponse>) {
+        return http.put<void>('/api/system/config', data)
     }
 
     getAuditLogs(params?: { username?: string; limit?: number }) {

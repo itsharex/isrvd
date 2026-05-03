@@ -30,7 +30,7 @@ GET /api/system/probe
 ### §2.1 获取配置
 
 ```
-GET /api/system/settings
+GET /api/system/config
 ```
 
 > ⚠️ 敏感字段（密码/密钥）不返回明文，只返回 `xxxSet: true/false` 表示是否已设置。
@@ -38,7 +38,7 @@ GET /api/system/settings
 ### §2.2 更新配置
 
 ```
-PUT /api/system/settings
+PUT /api/system/config
 ```
 
 请求体 `UpdateAllRequest`（部分更新，`null` 的分区跳过）：

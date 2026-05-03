@@ -94,7 +94,7 @@
 
 - 全局状态 `store/state.ts` 使用 `reactive` + Provide/Inject
 - 键：`APP_STATE_KEY`（`app.state`）、`APP_ACTIONS_KEY`（`app.actions`）
-- 全局权限 `permState`（`reactive`）：`loaded`、`isPrimary`、`permissions`，供路由守卫使用
+- 权限状态：`permissionsLoaded`（布尔）、`permissions`（`Record<string, string>`），通过 `hasPerm(module, write?)` 检查权限
 - 初始化 `initProvider()` 返回 `{ state, actions }`
 
 ### 5.3 API 服务层
@@ -103,7 +103,7 @@
 
 ### 5.4 类型定义
 
-`service/types/` 按域拆分（`docker`、`swarm`、`apisix`、`compose`、`system`、`auth`、`common`、`filer`），`service/types.ts` 统一 `export *` 导出。Swarm 服务列表 DTO 用 `SwarmServiceInfo`
+`service/types/` 按域拆分（`docker`、`swarm`、`apisix`、`compose`、`system`、`account`、`overview`、`filer`），`service/types.ts` 统一 `export *` 导出。Swarm 服务列表 DTO 用 `SwarmServiceInfo`
 
 ### 5.5 卡片与标题栏
 
@@ -157,7 +157,7 @@
 
 - 表单容器 `max-w-3xl space-y-4`
 - label：`block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1`，input 通用 `.input`，help `text-xs text-slate-400 mt-1`
-- 密钥/密码：后端仅返回 `xxxSet`，前端 `type="password" autocomplete="new-password"`，留空保存=不修改，placeholder："已设置（留空保持不变）"/"尚未设置"
+- 密钥/密码：后端返回脱敏配置（敏感字段 `json:"-"`），前端 `type="password" autocomplete="new-password"`，留空保存=不修改，placeholder："留空保持不变"
 
 ### 5.10 统一工具与轮询
 
@@ -187,7 +187,8 @@
 ## 6) 路由与导航
 
 - `/overview` 概览；`docker/overview`/`swarm/overview` 仅作组件不作独立菜单路由
-- 设置拆分：`/system/settings`、`/system/members`；侧边栏"系统设置"位于最后
+- 系统模块：`/system/config`（系统配置）、`/system/audit`（操作审计）
+- 用户管理：`/account/members`
 - 折叠子菜单展开状态跟随当前路由（`@Watch` immediate）
 - 侧边栏宽度 `w-16`（折叠）→ `w-64`（展开）
 - 移动端：遮罩 + 抽屉式（`-translate-x-full lg:translate-x-0`），`toggleMobileSidebar`/`closeMobileSidebar`/`openMobileSidebar`；窗口 ≥ 1024px 自动关闭
