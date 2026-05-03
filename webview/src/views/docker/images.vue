@@ -241,7 +241,7 @@ export default toNative(Images)
               <td class="px-4 py-3 whitespace-nowrap text-sm text-slate-600">{{ formatTime(new Date(img.created * 1000).toISOString()) }}</td>
               <td class="px-4 py-3">
                 <div class="flex justify-end items-center gap-0.5">
-              <button @click="$router.push('/docker/image/' + img.id)" class="btn-icon text-slate-600 hover:bg-slate-50" title="查看详情">
+              <button @click="$router.push('/docker/images/' + img.id)" class="btn-icon text-slate-600 hover:bg-slate-50" title="查看详情">
                     <i class="fas fa-circle-info text-xs"></i>
                   </button>
                   <button @click="tagModalRef?.show(img)" v-if="actions.hasPerm('docker', true)" class="btn-icon text-blue-600 hover:bg-blue-50" title="打标签">
@@ -297,7 +297,7 @@ export default toNative(Images)
           
           <!-- 底部：操作按钮 -->
           <div class="flex flex-wrap gap-1.5 pt-2 border-t border-slate-100">
-            <button @click="$router.push('/docker/image/' + img.id)" class="btn-icon text-slate-600 hover:bg-slate-50" title="查看详情">
+            <button @click="$router.push('/docker/images/' + img.id)" class="btn-icon text-slate-600 hover:bg-slate-50" title="查看详情">
               <i class="fas fa-circle-info text-xs"></i><span class="text-xs ml-1">详情</span>
             </button>
             <button @click="tagModalRef?.show(img)" v-if="actions.hasPerm('docker', true)" class="btn-icon text-blue-600 hover:bg-blue-50" title="打标签">

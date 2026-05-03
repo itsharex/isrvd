@@ -1,13 +1,13 @@
 export const systemInstruction = `
 你是 isrvd 的内置 AI 助手，isrvd 是一个轻量级服务器管理面板，提供以下功能模块：
 - 系统概览：查看主机 CPU、内存、磁盘、网络等实时指标
-- 文件管理器（/explorer）：浏览、上传、下载、编辑、压缩/解压服务器文件
+- 文件管理器（/filer）：浏览、上传、下载、编辑、压缩/解压服务器文件
 - AI 助手（/agent）：通过自然语言与 AI 交互，支持页面感知和操作引导
 - APISIX 网关（/apisix）：管理路由、消费者、IP 白名单
 - Docker（/docker）：管理容器、镜像、网络、数据卷、镜像仓库
 - Docker Swarm（/swarm）：管理集群节点、服务、任务
 - 终端（/shell）：在线 Web 终端，直接执行 Shell 命令
-- Compose 部署（/compose/deploy）：粘贴 compose.yml，或通过内嵌的「应用市场」弹窗选择模板一键回填，统一部署为单机容器或 Swarm 服务
+- Compose 部署（/compose/docker/deploy）：粘贴 compose.yml，或通过内嵌的「应用市场」弹窗选择模板一键回填，统一部署为单机容器或 Swarm 服务
 - 成员管理（/account/members）：管理系统用户账号
 - 系统配置（/system/config）：配置系统参数
 
@@ -23,7 +23,7 @@ export function getPageInstruction(url: string): string {
     if (path.includes('/overview') || path === '/') {
         return '当前页面：系统概览。可查看 CPU、内存、磁盘、网络等实时监控指标。'
     }
-    if (path.includes('/explorer')) {
+    if (path.includes('/filer')) {
         return '当前页面：文件管理器。支持浏览目录、上传/下载文件、在线编辑、创建/删除/重命名、压缩/解压（zip）、修改权限（chmod）等操作。'
     }
     if (path.includes('/shell')) {
@@ -38,22 +38,22 @@ export function getPageInstruction(url: string): string {
     if (path.includes('/apisix/whitelist')) {
         return '当前页面：APISIX IP 白名单管理。可配置允许访问的 IP 地址段。'
     }
-    if (path.includes('/docker/container') && path.includes('/terminal')) {
+    if (path.includes('/docker/containers') && path.includes('/exec')) {
         return '当前页面：容器终端。可在容器内执行 Shell 命令，注意操作风险。'
     }
-    if (path.includes('/docker/container') && path.includes('/logs')) {
+    if (path.includes('/docker/containers') && path.includes('/logs')) {
         return '当前页面：容器日志。可实时查看容器标准输出/错误日志，支持搜索过滤。'
     }
-    if (path.includes('/docker/container') && path.includes('/stats')) {
+    if (path.includes('/docker/containers') && path.includes('/stats')) {
         return '当前页面：容器监控。可查看容器 CPU、内存、网络、磁盘 IO 实时指标。'
     }
     if (path.includes('/docker/containers')) {
         return '当前页面：Docker 容器列表。可启动、停止、重启、删除容器，也可通过 Compose 批量部署。'
     }
-    if (path.includes('/docker/image')) {
+    if (path.includes('/docker/images')) {
         return '当前页面：Docker 镜像管理。可拉取、构建、打标签、推送、删除镜像。'
     }
-    if (path.includes('/docker/network')) {
+    if (path.includes('/docker/networks')) {
         return '当前页面：Docker 网络管理。可创建、查看、删除网络，查看网络内的容器连接情况。'
     }
     if (path.includes('/docker/volume')) {
@@ -71,16 +71,16 @@ export function getPageInstruction(url: string): string {
     if (path.includes('/swarm/services')) {
         return '当前页面：Swarm 服务列表。可创建、扩缩容、更新、删除 Swarm 服务。'
     }
-    if (path.includes('/swarm/service') && path.includes('/logs')) {
+    if (path.includes('/swarm/services') && path.includes('/logs')) {
         return '当前页面：Swarm 服务日志。可查看服务所有任务的聚合日志。'
     }
-    if (path.includes('/swarm/service/')) {
+    if (path.includes('/swarm/services/')) {
         return '当前页面：Swarm 服务详情。可查看服务配置、副本状态、滚动更新历史。'
     }
     if (path.includes('/swarm/tasks')) {
         return '当前页面：Swarm 任务列表。可查看所有服务任务的运行状态和调度信息。'
     }
-    if (path.includes('/compose/deploy')) {
+    if (path.includes('/compose/docker/deploy')) {
         return '当前页面：Compose 部署。可直接粘贴 compose.yml 文本部署，或点击「应用市场」打开弹窗挑选模板回填；需要填写实例名（同时作 compose project 名），docker 目标下会落盘到 数据目录/实例名 以便后续管理。'
     }
   if (path.includes('/account/members')) {

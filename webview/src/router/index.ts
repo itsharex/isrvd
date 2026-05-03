@@ -8,7 +8,7 @@ const routePermMap: Array<[string, string]> = [
   ['/system', 'system'],
   ['/account', 'account'],
   ['/shell', 'shell'],
-  ['/explorer', 'filer'],
+  ['/filer', 'filer'],
   ['/apisix', 'apisix'],
   ['/docker', 'docker'],
   ['/swarm', 'swarm'],
@@ -27,8 +27,8 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/overview/index.vue')
   },
   {
-    path: '/explorer',
-    name: 'explorer',
+    path: '/filer',
+    name: 'filer',
     component: () => import('@/views/filer/explorer.vue')
   },
   {
@@ -82,23 +82,23 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/docker/containers.vue')
   },
   {
-    path: '/docker/container/:id',
+    path: '/docker/containers/:id',
     redirect: to => ({ name: 'docker-container-stats', params: { id: to.params.id } })
   },
   {
-    path: '/docker/container/:id/stats',
+    path: '/docker/containers/:id/stats',
     name: 'docker-container-stats',
     component: () => import('@/views/docker/container-stats.vue')
   },
   {
-    path: '/docker/container/:id/logs',
+    path: '/docker/containers/:id/logs',
     name: 'docker-container-logs',
     component: () => import('@/views/docker/container-logs.vue')
   },
   {
-    path: '/docker/container/:id/terminal',
-    name: 'docker-container-terminal',
-    component: () => import('@/views/docker/container-terminal.vue')
+    path: '/docker/containers/:id/exec',
+    name: 'docker-container-exec',
+    component: () => import('@/views/docker/container-exec.vue')
   },
   {
     path: '/docker/images',
@@ -106,7 +106,7 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/docker/images.vue')
   },
   {
-    path: '/docker/image/:id',
+    path: '/docker/images/:id',
     name: 'docker-image',
     component: () => import('@/views/docker/image.vue')
   },
@@ -116,7 +116,7 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/docker/networks.vue')
   },
   {
-    path: '/docker/network/:id',
+    path: '/docker/networks/:id',
     name: 'docker-network',
     component: () => import('@/views/docker/network.vue')
   },
@@ -126,7 +126,7 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/docker/volumes.vue')
   },
   {
-    path: '/docker/volume/:name',
+    path: '/docker/volumes/:name',
     name: 'docker-volume',
     component: () => import('@/views/docker/volume.vue')
   },
@@ -146,7 +146,7 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/swarm/nodes.vue')
   },
   {
-    path: '/swarm/node/:id',
+    path: '/swarm/nodes/:id',
     name: 'swarm-node',
     component: () => import('@/views/swarm/node.vue')
   },
@@ -156,16 +156,12 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/swarm/services.vue')
   },
   {
-    path: '/swarm/service/:id',
-    redirect: to => ({ name: 'swarm-service-info', params: { id: to.params.id } })
+    path: '/swarm/services/:id',
+    name: 'swarm-service',
+    component: () => import('@/views/swarm/service.vue')
   },
   {
-    path: '/swarm/service/:id/info',
-    name: 'swarm-service-info',
-    component: () => import('@/views/swarm/service-info.vue')
-  },
-  {
-    path: '/swarm/service/:id/logs',
+    path: '/swarm/services/:id/logs',
     name: 'swarm-service-logs',
     component: () => import('@/views/swarm/service-logs.vue')
   },
@@ -175,9 +171,9 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/swarm/tasks.vue')
   },
   {
-    path: '/compose/deploy',
-    name: 'compose-deploy',
-    component: () => import('@/views/compose/deploy.vue')
+    path: '/compose/docker/deploy',
+    name: 'compose-docker-deploy',
+    component: () => import('@/views/compose/docker-deploy.vue')
   },
   {
     path: '/account/members',
@@ -190,9 +186,9 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/system/config.vue')
   },
   {
-    path: '/system/audit',
-    name: 'system-audit',
-    component: () => import('@/views/system/audit.vue')
+    path: '/system/audit/logs',
+    name: 'system-audit-logs',
+    component: () => import('@/views/system/audit-logs.vue')
   },
 ]
 
@@ -224,7 +220,7 @@ router.beforeEach((to) => {
   if (!_permsLoaded?.()) return true
 
   // 容器终端需要 docker 写权限
-  if (to.name === 'docker-container-terminal') {
+  if (to.name === 'docker-container-exec') {
     return _hasPerm?.('docker', true) ? true : { path: '/overview' }
   }
 

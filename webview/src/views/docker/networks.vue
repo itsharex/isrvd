@@ -52,7 +52,7 @@ class Networks extends Vue {
     }
 
     viewNetworkDetail(net: DockerNetworkInfo) {
-        this.$router.push('/docker/network/' + net.id)
+        this.$router.push('/docker/networks/' + net.id)
     }
 
     canDeleteNetwork(net: DockerNetworkInfo) {
