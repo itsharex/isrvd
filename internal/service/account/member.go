@@ -33,6 +33,7 @@ type MemberInfo struct {
 	Username      string            `json:"username"`
 	HomeDirectory string            `json:"homeDirectory"`
 	PasswordSet   bool              `json:"passwordSet"`
+	Founder       bool              `json:"founder"`
 	Permissions   map[string]string `json:"permissions"`
 }
 
@@ -55,6 +56,7 @@ func (s *Service) buildMemberInfo(m *config.MemberConfig) *MemberInfo {
 		Username:      m.Username,
 		HomeDirectory: m.HomeDirectory,
 		PasswordSet:   m.Password != "",
+		Founder:       m.Founder,
 		Permissions:   perms,
 	}
 }

@@ -44,7 +44,7 @@ class Members extends Vue {
     handleDeleteMember(m: MemberInfo) {
         this.actions.showConfirm({
             title: '删除成员',
-            message: `确定要删除成员 <strong class="text-slate-900">${m.username}</strong> 吗？此操作仅从配置文件移除，不删除 home 目录。`,
+            message: `确定要删除成员 <strong class="text-slate-900">${m.username}</strong> 吗？此操作仅从配置文件移除，不删除家目录。`,
             icon: 'fa-trash',
             iconColor: 'red',
             confirmText: '确认删除',
@@ -139,7 +139,7 @@ export default toNative(Members)
               <tr class="bg-slate-50 border-b border-slate-200">
                   <th class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">用户名</th>
                   <th class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">模块权限</th>
-                  <th class="w-28 px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">密码</th>
+                  <th class="w-20 px-4 py-3 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider">创始人</th>
                   <th class="w-28 px-4 py-3 text-right text-xs font-semibold text-slate-600 uppercase tracking-wider">操作</th>
                 </tr>
               </thead>
@@ -162,16 +162,14 @@ export default toNative(Members)
                         <span v-if="perm === 'rw'" class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-green-50 text-green-700">{{ mod }}<span class="ml-0.5 opacity-60">rw</span></span>
                         <span v-else-if="perm === 'r'" class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-600">{{ mod }}<span class="ml-0.5 opacity-60">r</span></span>
                       </template>
-                      <span v-if="!Object.values(m.permissions || {}).some(p => p)" class="text-xs text-slate-400">无权限</span>
+                      <span v-if="!Object.values(m.permissions || {}).some(p => p)" class="text-xs text-slate-400">-</span>
                     </div>
                   </td>
-                  <td class="px-4 py-3">
-                    <span v-if="m.passwordSet" class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-green-50 text-green-700">
-                      <i class="fas fa-check mr-1"></i>已设置
+                  <td class="px-4 py-3 text-center">
+                    <span v-if="m.founder" class="inline-flex items-center justify-center px-2 py-0.5 rounded text-xs font-medium bg-violet-50 text-violet-700">
+                      <i class="fas fa-crown mr-1"></i>是
                     </span>
-                    <span v-else class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-amber-50 text-amber-700">
-                      <i class="fas fa-exclamation mr-1"></i>未设置
-                    </span>
+                    <span v-else class="text-xs text-slate-400">-</span>
                   </td>
                   <td class="px-4 py-3">
                     <div class="flex justify-end items-center gap-0.5">
@@ -198,34 +196,31 @@ export default toNative(Members)
                   <i class="fas fa-user text-white text-base"></i>
                 </div>
                 <div class="min-w-0">
-                  <div class="flex items-center gap-2">
-                    <span class="font-medium text-slate-800 text-sm truncate">{{ m.username }}</span>
-                  </div>
-                  <div class="flex flex-wrap items-center gap-2 mt-1">
-                    <span v-if="m.passwordSet" class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-green-50 text-green-700">
-                      <i class="fas fa-check mr-1"></i>密码已设
-                    </span>
-                    <span v-else class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-amber-50 text-amber-700">
-                      <i class="fas fa-exclamation mr-1"></i>无密码
-                    </span>
-                  </div>
+                  <span class="font-medium text-slate-800 text-sm truncate block">{{ m.username }}</span>
                 </div>
               </div>
             </div>
-            <!-- 中间：Home 目录 -->
-            <div class="flex items-start gap-2 mb-3">
-              <span class="text-xs text-slate-400 flex-shrink-0 mt-0.5">Home</span>
+            <!-- 创始人标识 -->
+            <div v-if="m.founder" class="flex items-center gap-2 mb-3">
+              <span class="text-xs text-slate-400 flex-shrink-0">身份</span>
+              <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-violet-50 text-violet-700">
+                <i class="fas fa-crown mr-1 text-xs"></i>创始人
+              </span>
+            </div>
+            <!-- 中间：家目录 -->
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-xs text-slate-400 flex-shrink-0">家目录</span>
               <code class="text-xs bg-slate-100 px-2 py-1 rounded break-all">{{ m.homeDirectory }}</code>
             </div>
             <!-- 模块权限 -->
-            <div class="mb-3">
-              <span class="text-xs text-slate-400 mr-2">权限</span>
+            <div class="flex items-start gap-2 mb-3">
+              <span class="text-xs text-slate-400 flex-shrink-0">权限</span>
               <span class="inline-flex flex-wrap gap-1">
                 <template v-for="(perm, mod) in m.permissions" :key="mod">
                   <span v-if="perm === 'rw'" class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-green-50 text-green-700">{{ mod }}<span class="ml-0.5 opacity-60">rw</span></span>
                   <span v-else-if="perm === 'r'" class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-600">{{ mod }}<span class="ml-0.5 opacity-60">r</span></span>
                 </template>
-                <span v-if="!Object.values(m.permissions || {}).some(p => p)" class="text-xs text-slate-400">无权限</span>
+                <span v-if="!Object.values(m.permissions || {}).some(p => p)" class="text-xs text-slate-400">-</span>
               </span>
             </div>
             <!-- 底部：操作按鈕 -->

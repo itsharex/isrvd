@@ -43,7 +43,6 @@ class MemberEditModal extends Vue {
     modules = MODULES
     // 编辑时保存原始用户名，用于后端定位
     originalUsername = ''
-    passwordSet = false
     formData: MemberUpsertRequest = {
         username: '', password: '', homeDirectory: '',
         permissions: emptyPermissions()
@@ -58,16 +57,10 @@ class MemberEditModal extends Vue {
         return this.isEdit ? '编辑成员' : '添加成员'
     }
 
-    get passwordPlaceholder() {
-        if (!this.isEdit) return '登录密码'
-        return this.passwordSet ? '留空则保持不变' : '尚未设置'
-    }
-
     // ─── 方法 ───
     show(member: MemberInfo | null = null) {
         if (member) {
             this.originalUsername = member.username
-            this.passwordSet = member.passwordSet
             const perms = emptyPermissions()
             if (member.permissions) {
                 for (const k of Object.keys(perms)) {
@@ -82,7 +75,6 @@ class MemberEditModal extends Vue {
             }
         } else {
             this.originalUsername = ''
-            this.passwordSet = false
             this.formData = {
                 username: '', password: '', homeDirectory: '',
                 permissions: emptyPermissions()
@@ -140,10 +132,10 @@ export default toNative(MemberEditModal)
           <span v-if="!isEdit" class="text-red-500">*</span>
           <span v-else class="text-slate-400 font-normal">(留空则保持不变)</span>
         </label>
-        <input type="password" v-model="formData.password" :placeholder="passwordPlaceholder" class="input" autocomplete="new-password" />
+        <input type="password" v-model="formData.password" :placeholder="isEdit ? '留空则保持不变' : '登录密码'" class="input" autocomplete="new-password" />
       </div>
       <div>
-        <label class="block text-sm font-medium text-slate-700 mb-2">Home 目录 <span class="text-slate-400 font-normal">(可选)</span></label>
+        <label class="block text-sm font-medium text-slate-700 mb-2">家目录 <span class="text-slate-400 font-normal">(可选)</span></label>
         <input type="text" v-model="formData.homeDirectory" placeholder="留空则使用 基础目录/用户名" class="input" />
         <p class="mt-1 text-xs text-slate-400">相对路径基于"基础目录"，留空则自动创建为 基础目录/用户名</p>
       </div>

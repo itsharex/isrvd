@@ -62,6 +62,7 @@ class App extends Vue {
             const member = res?.payload?.member
             if (member) {
                 this.actions.setPermissions({
+                    founder: member.founder || false,
                     permissions: member.permissions || {}
                 })
             }

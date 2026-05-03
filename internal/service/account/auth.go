@@ -196,6 +196,10 @@ func (s *Service) CheckPerm(username, module, requiredPerm, label string) error 
 	if !exists {
 		return fmt.Errorf("用户不存在")
 	}
+	// 创始人拥有所有权限
+	if member.Founder {
+		return nil
+	}
 	if label == "" {
 		label = module
 	}

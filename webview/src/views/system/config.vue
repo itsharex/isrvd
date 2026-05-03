@@ -174,7 +174,7 @@ export default toNative(Config)
           <div>
             <label class="block text-sm font-medium text-slate-700 mb-1.5">基础目录</label>
             <input type="text" v-model="server.rootDirectory" placeholder="." class="input" />
-            <p class="mt-1 text-xs text-slate-400">成员 home 目录及容器数据的基础目录</p>
+            <p class="mt-1 text-xs text-slate-400">成员家目录及容器数据的基础目录</p>
           </div>
           <div>
             <label class="block text-sm font-medium text-slate-700 mb-1.5">JWT 密钥</label>

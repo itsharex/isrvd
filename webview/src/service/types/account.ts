@@ -38,6 +38,7 @@ export interface MemberInfo {
     username: string
     homeDirectory: string
     passwordSet: boolean
+    founder: boolean
     permissions: Record<string, string>
 }
 

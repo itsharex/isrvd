@@ -57,6 +57,7 @@ export interface AppState {
     confirm: ConfirmState
     serviceAvailability: ServiceAvailability
     permissionsLoaded: boolean
+    founder: boolean
     permissions: Record<string, string>
 }
 
@@ -64,7 +65,7 @@ export interface AppActions {
     setAuth(data: { authMode: 'jwt' | 'header'; token: string; username: string }): void
     clearAuth(): void
     isAuthenticated(): boolean
-    setPermissions(data: { permissions: Record<string, string> }): void
+    setPermissions(data: { founder?: boolean; permissions: Record<string, string> }): void
     hasPerm(module: string, write?: boolean): boolean
     loadFiles(path?: string): Promise<void>
     showNotification(type: string, message: string): void
@@ -94,6 +95,7 @@ export const initProvider = () => {
 
         // 权限状态
         permissionsLoaded: false,
+        founder: false,
         permissions: {},
 
         // 文件管理状态
@@ -144,6 +146,7 @@ export const initProvider = () => {
             state.token = null
             state.username = null
             state.permissionsLoaded = false
+            state.founder = false
             state.permissions = {}
             localStorage.removeItem('app-token')
             localStorage.removeItem('app-username')
@@ -153,12 +156,14 @@ export const initProvider = () => {
             return !!state.token
         },
 
-        setPermissions(data: { permissions: Record<string, string> }) {
+        setPermissions(data: { founder?: boolean; permissions: Record<string, string>}) {
             state.permissionsLoaded = true
+            state.founder = data.founder || false
             state.permissions = data.permissions || {}
         },
 
         hasPerm(module: string, write = false): boolean {
+            if (state.founder) return true
             const perm = state.permissions[module] || ''
             return write ? perm === 'rw' : (perm === 'r' || perm === 'rw')
         },

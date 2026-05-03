@@ -37,17 +37,7 @@ members:
   - username: admin
     password: admin
     homeDirectory: .
-    permissions:
-      overview: rw
-      system: rw
-      account: rw
-      shell: rw
-      filer: rw
-      agent: rw
-      apisix: rw
-      docker: rw
-      swarm: rw
-      compose: rw
+    founder: true
 
   - username: user1
     password: password1
