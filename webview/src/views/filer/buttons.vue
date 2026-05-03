@@ -32,6 +32,7 @@ export default toNative(FilerButtons)
   <div class="flex items-center justify-between gap-3 mb-6">
     <div class="flex items-center gap-3">
       <button 
+        v-if="actions.hasPerm('POST /api/filer/mkdir')"
         class="btn-success"
         @click="mkdirModalRef.show()"
       >
@@ -40,6 +41,7 @@ export default toNative(FilerButtons)
       </button>
 
       <button 
+        v-if="actions.hasPerm('POST /api/filer/create')"
         class="btn-primary"
         @click="createModalRef.show()"
       >
@@ -48,6 +50,7 @@ export default toNative(FilerButtons)
       </button>
 
       <button 
+        v-if="actions.hasPerm('POST /api/filer/upload')"
         class="btn-cyan"
         @click="uploadModal.show()"
       >
@@ -57,6 +60,7 @@ export default toNative(FilerButtons)
     </div>
 
     <button 
+      v-if="actions.hasPerm('POST /api/filer/list')"
       class="btn-secondary"
       @click="refreshFiles"
     >
