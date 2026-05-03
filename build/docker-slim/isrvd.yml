@@ -36,11 +36,13 @@ members:
     password: __ISRVD_PASSWORD__
     homeDirectory: .
     permissions:
+      overview: rw
+      system: rw
+      account: rw
+      shell: rw
       filer: rw
       agent: rw
       apisix: rw
       docker: rw
       swarm: rw
       compose: rw
-      system: rw
-      shell: rw
