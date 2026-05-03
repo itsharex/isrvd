@@ -14,9 +14,10 @@ import (
 
 // 哨兵错误，供 handler 层进行错误类型判断
 var (
-	ErrMemberNotFound = errors.New("成员不存在")
-	ErrMemberExists   = errors.New("用户名已存在")
-	ErrInvalidRequest = errors.New("用户名不能为空")
+	ErrMemberNotFound  = errors.New("成员不存在")
+	ErrMemberExists    = errors.New("用户名已存在")
+	ErrInvalidRequest  = errors.New("用户名不能为空")
+	ErrFounderProtected = errors.New("创始人不可修改或删除")
 )
 
 // GetMember 获取单个成员信息
@@ -122,6 +123,10 @@ func (s *Service) UpdateMember(username string, req MemberUpsertRequest) error {
 	if !exists {
 		return ErrMemberNotFound
 	}
+	// 创始人不可修改
+	if member.Founder {
+		return ErrFounderProtected
+	}
 
 	home, err := s.ensureHomeDir(req.HomeDirectory, username)
 	if err != nil {
@@ -149,8 +154,13 @@ func (s *Service) UpdateMember(username string, req MemberUpsertRequest) error {
 
 // DeleteMember 删除成员
 func (s *Service) DeleteMember(username string) error {
-	if _, exists := config.Members[username]; !exists {
+	member, exists := config.Members[username]
+	if !exists {
 		return ErrMemberNotFound
+	}
+	// 创始人不可删除
+	if member.Founder {
+		return ErrFounderProtected
 	}
 	delete(config.Members, username)
 	if err := config.Save(); err != nil {

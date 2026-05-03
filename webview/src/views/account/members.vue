@@ -173,10 +173,20 @@ export default toNative(Members)
                   </td>
                   <td class="px-4 py-3">
                     <div class="flex justify-end items-center gap-0.5">
-                      <button @click="openEditMember(m)" class="btn-icon text-blue-600 hover:bg-blue-50" title="编辑">
+                      <button 
+                        @click="openEditMember(m)" 
+                        :disabled="m.founder"
+                        :class="m.founder ? 'btn-icon text-slate-300 cursor-not-allowed' : 'btn-icon text-blue-600 hover:bg-blue-50'" 
+                        :title="m.founder ? '创始人不可编辑' : '编辑'"
+                      >
                         <i class="fas fa-pen text-xs"></i>
                       </button>
-                      <button @click="handleDeleteMember(m)" class="btn-icon text-red-600 hover:bg-red-50" title="删除">
+                      <button 
+                        @click="handleDeleteMember(m)" 
+                        :disabled="m.founder"
+                        :class="m.founder ? 'btn-icon text-slate-300 cursor-not-allowed' : 'btn-icon text-red-600 hover:bg-red-50'" 
+                        :title="m.founder ? '创始人不可删除' : '删除'"
+                      >
                         <i class="fas fa-trash text-xs"></i>
                       </button>
                     </div>
@@ -225,10 +235,20 @@ export default toNative(Members)
             </div>
             <!-- 底部：操作按鈕 -->
             <div class="flex flex-wrap gap-1 pt-2 border-t border-slate-100">
-              <button @click="openEditMember(m)" class="btn-icon text-blue-600 hover:bg-blue-50" title="编辑">
+              <button 
+                @click="openEditMember(m)" 
+                :disabled="m.founder"
+                :class="m.founder ? 'btn-icon text-slate-300 cursor-not-allowed' : 'btn-icon text-blue-600 hover:bg-blue-50'" 
+                :title="m.founder ? '创始人不可编辑' : '编辑'"
+              >
                 <i class="fas fa-pen text-xs"></i><span class="text-xs ml-1">编辑</span>
               </button>
-              <button @click="handleDeleteMember(m)" class="btn-icon text-red-600 hover:bg-red-50" title="删除">
+              <button 
+                @click="handleDeleteMember(m)" 
+                :disabled="m.founder"
+                :class="m.founder ? 'btn-icon text-slate-300 cursor-not-allowed' : 'btn-icon text-red-600 hover:bg-red-50'" 
+                :title="m.founder ? '创始人不可删除' : '删除'"
+              >
                 <i class="fas fa-trash text-xs"></i><span class="text-xs ml-1">删除</span>
               </button>
             </div>
