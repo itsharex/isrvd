@@ -1,6 +1,7 @@
 # AGENTS.md — isrvd Agent Operating Guide
 
 > 本文件定义 AI 代理在 `isrvd` 仓库中的统一工作方式。
+> 本文件是当前仓库唯一代码规范入口。
 > 目标：可执行、可验证、低歧义。
 
 ---
@@ -217,6 +218,22 @@
 ---
 
 ## 9) 质量门禁（提交前自检）
+
+### 推荐校验命令
+
+```bash
+# 后端编译/测试
+go test ./...
+
+# 前端类型检查
+cd webview && npm run lint
+
+# 前端 import 排序检查
+cd webview && python3 sort-imports.py --dry-run src
+```
+
+- 受限环境无法执行完整命令时，至少说明未覆盖项和风险
+- 前端 import 排序修复可执行：`cd webview && python3 sort-imports.py src`
 
 - [ ] 编译通过（后端/前端受影响部分）
 - [ ] 无新增 lint 警告或错误

@@ -92,6 +92,50 @@ bash <(curl -sL https://jscdn.rehi.org/gh/rehiy/isrvd/build/script/isrvd.sh) dow
 
 也可直接运行 `./isrvd`，通过环境变量 `CONFIG_PATH` 指定配置文件。
 
+## 本地开发
+
+### 环境要求
+
+- **Go**：用于后端服务与命令行构建
+- **Node.js / npm**：用于 `webview` 前端开发与构建
+- **Docker**：可选，用于 Docker、Swarm、Compose 相关功能调试
+
+### 启动开发环境
+
+```bash
+./develop.sh
+```
+
+开发脚本会自动：
+
+- **后端**：复制 `config.yml` 为 `.local.yml`（如不存在），并通过 `CONFIG_PATH=.local.yml go run cmd/server/main.go` 启动
+- **前端**：进入 `webview`，安装依赖并执行 `npm run dev`
+- **端口清理**：启动前尝试释放 `8080` 和 `3000` 端口
+
+Windows 环境可使用：
+
+```bat
+develop.bat
+```
+
+### 构建与校验
+
+```bash
+# 完整分发构建
+./build.sh
+
+# 后端测试
+go test ./...
+
+# 前端类型检查
+cd webview && npm run lint
+
+# 前端 import 排序检查
+cd webview && python3 sort-imports.py --dry-run src
+```
+
+> 贡献代码前请优先阅读 [AGENTS.md](AGENTS.md)。该文件是当前仓库的代码规范与协作约定入口，旧版 `CODE_STYLE` 不再作为规范来源。
+
 ### 配置说明
 
 | 配置段 | 说明 |
@@ -166,6 +210,14 @@ config → registry → pkgs → service → server
 - **高内聚**：同一领域功能聚合在同一包
 - **低耦合**：层间通过接口解耦
 - **单一职责**：Handler 只管 HTTP，Service 只管业务
+
+### 开发规范
+
+- **后端分层**：`pkgs` 保持原生客户端能力，`service` 负责业务组合与类型转换，`server` 只处理 HTTP 入出口
+- **前端结构**：`webview/src/service/types` 按域拆分类型，页面复用统一卡片、表格、移动端双视图和操作按钮语义色
+- **状态与权限**：全局状态通过 Provide/Inject 注入，权限统一使用 `hasPerm(module, write?)` 判断
+- **安全基线**：敏感字段不返回明文，文件路径与解压路径必须校验，WebSocket 必须经过认证链路
+- **完整规范**：详见 [AGENTS.md](AGENTS.md)
 
 ## 安全特性
 
