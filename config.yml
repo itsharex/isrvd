@@ -3,7 +3,7 @@ server:
   listenAddr: :8080
   jwtSecret: default-secret-key
   # proxyHeaderName: X-Username
-  rootDirectory: storage/
+  rootDirectory: /srv/
 
 agent:
   # model: your-model
@@ -51,7 +51,7 @@ members:
 
   - username: user1
     password: password1
-    homeDirectory: user1/
+    homeDirectory: member/user1/
     permissions:
       filer: rw
       docker: r
@@ -59,7 +59,7 @@ members:
 
   - username: user2
     password: password2
-    homeDirectory: user2/
+    homeDirectory: member/user2/
     # permissions 未配置则所有模块无权限
     # 可用模块: overview, system, account, shell, filer, agent, apisix, docker, swarm, compose
     # 可用値: r（只读）, rw（读写），留空或不填表示无权限
