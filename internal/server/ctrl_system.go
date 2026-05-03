@@ -16,7 +16,7 @@ func (app *App) defineSystemRoutes() []Route {
 	return []Route{
 		// 系统配置
 		{Method: "GET", Path: "/system/config", Handler: app.systemGetConfig, Module: "system", Label: "系统配置", Perm: "r"},
-		{Method: "POST", Path: "/system/config", Handler: app.systemUpdateConfig, Module: "system", Label: "系统配置", Perm: "rw"},
+		{Method: "PUT", Path: "/system/config", Handler: app.systemUpdateConfig, Module: "system", Label: "系统配置", Perm: "rw"},
 		// 审计日志
 		{Method: "GET", Path: "/system/audit/logs", Handler: app.systemGetAuditLogs, Module: "system", Label: "操作审计", Perm: "r"},
 	}
