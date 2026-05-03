@@ -16,10 +16,10 @@ import (
 func (app *App) defineSystemRoutes() []Route {
 	return []Route{
 		// 系统配置
-		{Method: "GET", Path: "/system/config", Handler: app.systemGetConfig, Module: "system", Label: "系统配置", Access: svcAccount.AccessAuth},
-		{Method: "PUT", Path: "/system/config", Handler: app.systemUpdateConfig, Module: "system", Label: "系统配置"},
+		{Method: "GET", Path: "/system/config", Handler: app.systemGetConfig, Module: "system", Label: "获取系统配置", Access: svcAccount.AccessAuth},
+		{Method: "PUT", Path: "/system/config", Handler: app.systemUpdateConfig, Module: "system", Label: "更新系统配置"},
 		// 审计日志
-		{Method: "GET", Path: "/system/audit/logs", Handler: app.systemGetAuditLogs, Module: "system", Label: "操作审计"},
+		{Method: "GET", Path: "/system/audit/logs", Handler: app.systemGetAuditLogs, Module: "system", Label: "查询审计日志"},
 	}
 }
 

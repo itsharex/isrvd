@@ -13,21 +13,21 @@ import (
 func (app *App) defineSwarmRoutes() []Route {
 	return []Route{
 		// Swarm 信息
-		{Method: "GET", Path: "/swarm/info", Handler: app.swarmInfo, Module: "swarm", Label: "Swarm"},
+		{Method: "GET", Path: "/swarm/info", Handler: app.swarmInfo, Module: "swarm", Label: "获取 Swarm 信息"},
 		// 节点管理
-		{Method: "GET", Path: "/swarm/nodes", Handler: app.swarmListNodes, Module: "swarm", Label: "Swarm 节点"},
-		{Method: "GET", Path: "/swarm/nodes/:id", Handler: app.swarmInspectNode, Module: "swarm", Label: "Swarm 节点"},
-		{Method: "POST", Path: "/swarm/nodes/:id/action", Handler: app.NodeDTOAction, Module: "swarm", Label: "Swarm 节点"},
-		{Method: "GET", Path: "/swarm/tokens", Handler: app.swarmGetJoinTokens, Module: "swarm", Label: "Swarm 节点"},
+		{Method: "GET", Path: "/swarm/nodes", Handler: app.swarmListNodes, Module: "swarm", Label: "列出 Swarm 节点"},
+		{Method: "GET", Path: "/swarm/nodes/:id", Handler: app.swarmInspectNode, Module: "swarm", Label: "查看 Swarm 节点"},
+		{Method: "POST", Path: "/swarm/nodes/:id/action", Handler: app.NodeDTOAction, Module: "swarm", Label: "操作 Swarm 节点"},
+		{Method: "GET", Path: "/swarm/tokens", Handler: app.swarmGetJoinTokens, Module: "swarm", Label: "获取 Swarm 加入令牌"},
 		// 服务管理
-		{Method: "GET", Path: "/swarm/services", Handler: app.swarmListServices, Module: "swarm", Label: "Swarm 服务"},
-		{Method: "GET", Path: "/swarm/services/:id", Handler: app.swarmInspectService, Module: "swarm", Label: "Swarm 服务"},
-		{Method: "POST", Path: "/swarm/services", Handler: app.swarmCreateService, Module: "swarm", Label: "Swarm 服务"},
-		{Method: "POST", Path: "/swarm/services/:id/action", Handler: app.swarmServiceAction, Module: "swarm", Label: "Swarm 服务"},
-		{Method: "POST", Path: "/swarm/services/:id/force-update", Handler: app.swarmForceUpdateService, Module: "swarm", Label: "Swarm 服务"},
-		{Method: "GET", Path: "/swarm/services/:id/logs", Handler: app.swarmServiceLogs, Module: "swarm", Label: "Swarm 服务"},
+		{Method: "GET", Path: "/swarm/services", Handler: app.swarmListServices, Module: "swarm", Label: "列出 Swarm 服务"},
+		{Method: "GET", Path: "/swarm/services/:id", Handler: app.swarmInspectService, Module: "swarm", Label: "查看 Swarm 服务"},
+		{Method: "POST", Path: "/swarm/services", Handler: app.swarmCreateService, Module: "swarm", Label: "创建 Swarm 服务"},
+		{Method: "POST", Path: "/swarm/services/:id/action", Handler: app.swarmServiceAction, Module: "swarm", Label: "操作 Swarm 服务"},
+		{Method: "POST", Path: "/swarm/services/:id/force-update", Handler: app.swarmForceUpdateService, Module: "swarm", Label: "强制更新 Swarm 服务"},
+		{Method: "GET", Path: "/swarm/services/:id/logs", Handler: app.swarmServiceLogs, Module: "swarm", Label: "查看 Swarm 服务日志"},
 		// 任务
-		{Method: "GET", Path: "/swarm/tasks", Handler: app.swarmListTasks, Module: "swarm", Label: "Swarm 任务"},
+		{Method: "GET", Path: "/swarm/tasks", Handler: app.swarmListTasks, Module: "swarm", Label: "列出 Swarm 任务"},
 	}
 }
 

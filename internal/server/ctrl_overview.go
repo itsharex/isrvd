@@ -10,8 +10,8 @@ import (
 // defineOverviewRoutes 定义 Overview 模块路由（系统统计 + 服务探测，无需权限）
 func (app *App) defineOverviewRoutes() []Route {
 	return []Route{
-		{Method: "GET", Path: "/overview/status", Handler: app.overviewStat, Module: "overview", Label: "系统概览"},
-		{Method: "GET", Path: "/overview/probe", Handler: app.overviewProbe, Module: "overview", Label: "服务探测", Access: svcAccount.AccessAuth},
+		{Method: "GET", Path: "/overview/status", Handler: app.overviewStat, Module: "overview", Label: "获取系统概览状态"},
+		{Method: "GET", Path: "/overview/probe", Handler: app.overviewProbe, Module: "overview", Label: "探测服务可用性", Access: svcAccount.AccessAuth},
 	}
 }
 

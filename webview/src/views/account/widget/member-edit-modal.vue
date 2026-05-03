@@ -36,6 +36,7 @@ const MODULE_META: Record<string, { icon: string; label: string }> = {
 
 interface RouteItem {
     key: string
+    label: string
     access: number
 }
 
@@ -98,7 +99,7 @@ class MemberEditModal extends Vue {
             const groupMap = new Map<string, RouteItem[]>()
             for (const item of items) {
                 if (!groupMap.has(item.module)) groupMap.set(item.module, [])
-                groupMap.get(item.module)!.push({ key: item.key, access: item.access })
+                groupMap.get(item.module)!.push({ key: item.key, label: item.label || item.key, access: item.access })
             }
             // 按预定义顺序排列模块，未知模块追加到末尾
             const ordered: RouteGroup[] = []
@@ -162,6 +163,37 @@ class MemberEditModal extends Vue {
             this.permSet.add(key)
             this.formData.permissions = [...this.formData.permissions, key]
         }
+    }
+
+    manualRouteKeys(): string[] {
+        return this.routeGroups
+            .flatMap(group => group.routes)
+            .filter(route => !this.autoPerms.has(route.key))
+            .map(route => route.key)
+    }
+
+    applyRouteShortcut(keys: string[]) {
+        const manualKeySet = new Set(this.manualRouteKeys())
+        const nextKeySet = new Set(keys)
+        const preserved = this.formData.permissions.filter(key => !manualKeySet.has(key))
+        this.formData.permissions = [...preserved, ...keys]
+        this.permSet = new Set([...preserved, ...nextKeySet])
+    }
+
+    selectAllRoutes() {
+        this.applyRouteShortcut(this.manualRouteKeys())
+    }
+
+    selectReadOnlyRoutes() {
+        const keys = this.routeGroups
+            .flatMap(group => group.routes)
+            .filter(route => !this.autoPerms.has(route.key) && this.methodOf(route.key) === 'GET')
+            .map(route => route.key)
+        this.applyRouteShortcut(keys)
+    }
+
+    clearRoutes() {
+        this.applyRouteShortcut([])
     }
 
     isGroupAllChecked(routes: RouteItem[]): boolean {
@@ -251,7 +283,14 @@ export default toNative(MemberEditModal)
       </div>
       <!-- 路由权限 -->
       <div>
-        <label class="block text-sm font-medium text-slate-700 mb-2">路由权限</label>
+        <div class="flex items-center gap-2 mb-2">
+          <label class="block text-sm font-medium text-slate-700">路由权限</label>
+          <div class="ml-auto flex items-center gap-1">
+            <button type="button" class="px-2 py-1 rounded-md bg-blue-50 text-blue-600 hover:bg-blue-100 text-xs font-medium transition-colors" @click="selectAllRoutes">全选</button>
+            <button type="button" class="px-2 py-1 rounded-md bg-slate-50 text-slate-600 hover:bg-slate-100 text-xs font-medium transition-colors" @click="selectReadOnlyRoutes">只读</button>
+            <button type="button" class="px-2 py-1 rounded-md bg-red-50 text-red-600 hover:bg-red-100 text-xs font-medium transition-colors" @click="clearRoutes">清空</button>
+          </div>
+        </div>
         <div class="space-y-2">
             <div v-for="group in routeGroups" :key="group.module" class="rounded-lg border border-slate-200 overflow-hidden">
             <!-- 模块标题行（全选/取消） -->
@@ -289,7 +328,10 @@ export default toNative(MemberEditModal)
                 <span :class="['inline-block w-14 text-center text-xs font-mono font-semibold rounded px-1 py-0.5 flex-shrink-0', methodColor[methodOf(item.key)] || 'bg-slate-100 text-slate-600']">
                   {{ methodOf(item.key) }}
                 </span>
-                <code class="text-xs text-slate-600 break-all">{{ pathOf(item.key) }}</code>
+                <span class="min-w-0 flex-1 flex items-center gap-2">
+                  <span class="text-xs font-medium text-slate-700 truncate">{{ item.label }}</span>
+                  <code class="hidden sm:inline text-xs text-slate-400 font-mono truncate">{{ pathOf(item.key) }}</code>
+                </span>
                 <span v-if="isAuto(item.key)" class="ml-auto text-xs text-slate-400 flex-shrink-0">自动</span>
               </label>
             </div>

@@ -22,18 +22,18 @@ import (
 // defineFilerRoutes 定义 Filer 模块路由（文件管理）
 func (app *App) defineFilerRoutes() []Route {
 	return []Route{
-		{Method: "POST", Path: "/filer/list", Handler: app.filerList, Module: "filer", Label: "文件管理"},
-		{Method: "POST", Path: "/filer/mkdir", Handler: app.filerMkdir, Module: "filer", Label: "文件管理"},
-		{Method: "POST", Path: "/filer/create", Handler: app.filerCreate, Module: "filer", Label: "文件管理"},
-		{Method: "POST", Path: "/filer/read", Handler: app.filerRead, Module: "filer", Label: "文件管理"},
-		{Method: "POST", Path: "/filer/modify", Handler: app.filerModify, Module: "filer", Label: "文件管理"},
-		{Method: "POST", Path: "/filer/rename", Handler: app.filerRename, Module: "filer", Label: "文件管理"},
-		{Method: "POST", Path: "/filer/delete", Handler: app.filerDelete, Module: "filer", Label: "文件管理"},
-		{Method: "POST", Path: "/filer/chmod", Handler: app.filerChmod, Module: "filer", Label: "文件管理"},
-		{Method: "POST", Path: "/filer/upload", Handler: app.filerUpload, Module: "filer", Label: "文件管理"},
-		{Method: "POST", Path: "/filer/download", Handler: app.filerDownload, Module: "filer", Label: "文件管理"},
-		{Method: "POST", Path: "/filer/zip", Handler: app.filerZip, Module: "filer", Label: "文件管理"},
-		{Method: "POST", Path: "/filer/unzip", Handler: app.filerUnzip, Module: "filer", Label: "文件管理"},
+		{Method: "POST", Path: "/filer/list", Handler: app.filerList, Module: "filer", Label: "列出文件"},
+		{Method: "POST", Path: "/filer/mkdir", Handler: app.filerMkdir, Module: "filer", Label: "创建目录"},
+		{Method: "POST", Path: "/filer/create", Handler: app.filerCreate, Module: "filer", Label: "创建文件"},
+		{Method: "POST", Path: "/filer/read", Handler: app.filerRead, Module: "filer", Label: "读取文件"},
+		{Method: "POST", Path: "/filer/modify", Handler: app.filerModify, Module: "filer", Label: "保存文件"},
+		{Method: "POST", Path: "/filer/rename", Handler: app.filerRename, Module: "filer", Label: "重命名文件"},
+		{Method: "POST", Path: "/filer/delete", Handler: app.filerDelete, Module: "filer", Label: "删除文件"},
+		{Method: "POST", Path: "/filer/chmod", Handler: app.filerChmod, Module: "filer", Label: "修改文件权限"},
+		{Method: "POST", Path: "/filer/upload", Handler: app.filerUpload, Module: "filer", Label: "上传文件"},
+		{Method: "POST", Path: "/filer/download", Handler: app.filerDownload, Module: "filer", Label: "下载文件"},
+		{Method: "POST", Path: "/filer/zip", Handler: app.filerZip, Module: "filer", Label: "压缩文件"},
+		{Method: "POST", Path: "/filer/unzip", Handler: app.filerUnzip, Module: "filer", Label: "解压文件"},
 	}
 }
 

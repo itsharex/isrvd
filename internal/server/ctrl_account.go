@@ -13,13 +13,13 @@ import (
 // defineAccountRoutes 定义 Account 模块路由
 func (app *App) defineAccountRoutes() []Route {
 	return []Route{
-		{Method: "GET", Path: "/account/info", Handler: app.accountAuthInfo, Module: "account", Label: "账户", Access: account.AccessAnon},
-		{Method: "POST", Path: "/account/login", Handler: app.accountLogin, Module: "account", Label: "账户", Access: account.AccessAnon},
-		{Method: "GET", Path: "/account/routes", Handler: app.accountListRoutes, Module: "account", Label: "成员管理", Access: account.AccessAuth},
-		{Method: "GET", Path: "/account/members", Handler: app.accountListMembers, Module: "account", Label: "成员管理"},
-		{Method: "POST", Path: "/account/members", Handler: app.accountCreateMember, Module: "account", Label: "成员管理"},
-		{Method: "PUT", Path: "/account/members/:username", Handler: app.accountUpdateMember, Module: "account", Label: "成员管理"},
-		{Method: "DELETE", Path: "/account/members/:username", Handler: app.accountDeleteMember, Module: "account", Label: "成员管理"},
+		{Method: "GET", Path: "/account/info", Handler: app.accountAuthInfo, Module: "account", Label: "获取认证信息", Access: account.AccessAnon},
+		{Method: "POST", Path: "/account/login", Handler: app.accountLogin, Module: "account", Label: "登录账户", Access: account.AccessAnon},
+		{Method: "GET", Path: "/account/routes", Handler: app.accountListRoutes, Module: "account", Label: "列出路由权限", Access: account.AccessAuth},
+		{Method: "GET", Path: "/account/members", Handler: app.accountListMembers, Module: "account", Label: "列出成员"},
+		{Method: "POST", Path: "/account/members", Handler: app.accountCreateMember, Module: "account", Label: "创建成员"},
+		{Method: "PUT", Path: "/account/members/:username", Handler: app.accountUpdateMember, Module: "account", Label: "更新成员"},
+		{Method: "DELETE", Path: "/account/members/:username", Handler: app.accountDeleteMember, Module: "account", Label: "删除成员"},
 	}
 }
 

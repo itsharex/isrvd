@@ -138,8 +138,7 @@ export default toNative(Members)
               <thead>
               <tr class="bg-slate-50 border-b border-slate-200">
                   <th class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">用户名</th>
-                  <th class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">模块权限</th>
-                  <th class="w-20 px-4 py-3 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider">创始人</th>
+                  <th class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">权限</th>
                   <th class="w-28 px-4 py-3 text-right text-xs font-semibold text-slate-600 uppercase tracking-wider">操作</th>
                 </tr>
               </thead>
@@ -158,35 +157,30 @@ export default toNative(Members)
                   </td>
                   <td class="px-4 py-3">
                     <div class="flex flex-wrap gap-1">
-                      <span v-if="m.permissions && m.permissions.length > 0" class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-600">
+                      <span v-if="m.founder" class="inline-flex items-center justify-center px-2 py-0.5 rounded text-xs font-medium bg-violet-50 text-violet-700">
+                        <i class="fas fa-crown mr-1"></i>创始人
+                      </span>
+                      <span v-else-if="m.permissions && m.permissions.length > 0" class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-600">
                         <i class="fas fa-key mr-1 text-xs"></i>{{ m.permissions.length }} 条
                       </span>
                       <span v-else class="text-xs text-slate-400">-</span>
                     </div>
                   </td>
-                  <td class="px-4 py-3 text-center">
-                    <span v-if="m.founder" class="inline-flex items-center justify-center px-2 py-0.5 rounded text-xs font-medium bg-violet-50 text-violet-700">
-                      <i class="fas fa-crown mr-1"></i>是
-                    </span>
-                    <span v-else class="text-xs text-slate-400">-</span>
-                  </td>
                   <td class="px-4 py-3">
                     <div class="flex justify-end items-center gap-0.5">
                       <button 
-                        v-if="actions.hasPerm('PUT /api/account/members/:username')"
+                        v-if="!m.founder && actions.hasPerm('PUT /api/account/members/:username')"
                         @click="openEditMember(m)" 
-                        :disabled="m.founder"
-                        :class="m.founder ? 'btn-icon text-slate-300 cursor-not-allowed' : 'btn-icon text-blue-600 hover:bg-blue-50'" 
-                        :title="m.founder ? '创始人不可编辑' : '编辑'"
+                        class="btn-icon text-blue-600 hover:bg-blue-50" 
+                        title="编辑"
                       >
                         <i class="fas fa-pen text-xs"></i>
                       </button>
                       <button 
-                        v-if="actions.hasPerm('DELETE /api/account/members/:username')"
+                        v-if="!m.founder && actions.hasPerm('DELETE /api/account/members/:username')"
                         @click="handleDeleteMember(m)" 
-                        :disabled="m.founder"
-                        :class="m.founder ? 'btn-icon text-slate-300 cursor-not-allowed' : 'btn-icon text-red-600 hover:bg-red-50'" 
-                        :title="m.founder ? '创始人不可删除' : '删除'"
+                        class="btn-icon text-red-600 hover:bg-red-50" 
+                        title="删除"
                       >
                         <i class="fas fa-trash text-xs"></i>
                       </button>
@@ -234,20 +228,18 @@ export default toNative(Members)
             <!-- 底部：操作按鈕 -->
             <div class="flex flex-wrap gap-1 pt-2 border-t border-slate-100">
               <button 
-                v-if="actions.hasPerm('PUT /api/account/members/:username')"
+                v-if="!m.founder && actions.hasPerm('PUT /api/account/members/:username')"
                 @click="openEditMember(m)" 
-                :disabled="m.founder"
-                :class="m.founder ? 'btn-icon text-slate-300 cursor-not-allowed' : 'btn-icon text-blue-600 hover:bg-blue-50'" 
-                :title="m.founder ? '创始人不可编辑' : '编辑'"
+                class="btn-icon text-blue-600 hover:bg-blue-50" 
+                title="编辑"
               >
                 <i class="fas fa-pen text-xs"></i><span class="text-xs ml-1">编辑</span>
               </button>
               <button 
-                v-if="actions.hasPerm('DELETE /api/account/members/:username')"
+                v-if="!m.founder && actions.hasPerm('DELETE /api/account/members/:username')"
                 @click="handleDeleteMember(m)" 
-                :disabled="m.founder"
-                :class="m.founder ? 'btn-icon text-slate-300 cursor-not-allowed' : 'btn-icon text-red-600 hover:bg-red-50'" 
-                :title="m.founder ? '创始人不可删除' : '删除'"
+                class="btn-icon text-red-600 hover:bg-red-50" 
+                title="删除"
               >
                 <i class="fas fa-trash text-xs"></i><span class="text-xs ml-1">删除</span>
               </button>

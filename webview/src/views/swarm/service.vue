@@ -244,10 +244,10 @@ export default toNative(ServiceInfo)
         </div>
 
         <!-- 节点分布 -->
-        <div v-if="nodeDistribution.length > 0">
+        <div v-if="nodeDistribution.length > 0 && actions.hasPerm('GET /api/swarm/nodes/:id')">
           <h2 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">节点分布</h2>
           <div class="border border-slate-200 rounded-lg divide-y divide-slate-100">
-            <div v-for="node in nodeDistribution" :key="node.nodeName" :class="['px-3 py-2 flex items-center gap-3 transition-colors', actions.hasPerm('GET /api/swarm/nodes/:id') ? 'cursor-pointer hover:bg-slate-50' : '']" @click="actions.hasPerm('GET /api/swarm/nodes/:id') && $router.push({ name: 'swarm-node', params: { id: node.nodeID } })">
+            <div v-for="node in nodeDistribution" :key="node.nodeName" class="px-3 py-2 flex items-center gap-3 transition-colors cursor-pointer hover:bg-slate-50" @click="$router.push({ name: 'swarm-node', params: { id: node.nodeID } })">
               <i class="fas fa-server text-slate-400 text-xs w-3"></i>
               <span class="text-xs font-mono text-slate-700 flex-1 truncate">{{ node.nodeName }}</span>
               <span class="text-xs">

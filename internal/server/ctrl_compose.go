@@ -13,13 +13,13 @@ import (
 func (app *App) defineComposeRoutes() []Route {
 	return []Route{
 		// Docker Compose
-		{Method: "GET", Path: "/compose/docker/:name", Handler: app.composeGetDockerContent, Module: "compose", Label: "Docker Compose"},
-		{Method: "POST", Path: "/compose/docker/deploy", Handler: app.composeDeployDocker, Module: "compose", Label: "Docker Compose"},
-		{Method: "POST", Path: "/compose/docker/:name/redeploy", Handler: app.composeRedeployDocker, Module: "compose", Label: "Docker Compose"},
+		{Method: "GET", Path: "/compose/docker/:name", Handler: app.composeGetDockerContent, Module: "compose", Label: "读取 Docker Compose 文件"},
+		{Method: "POST", Path: "/compose/docker/deploy", Handler: app.composeDeployDocker, Module: "compose", Label: "部署 Docker Compose"},
+		{Method: "POST", Path: "/compose/docker/:name/redeploy", Handler: app.composeRedeployDocker, Module: "compose", Label: "重部署 Docker Compose"},
 		// Swarm Compose
-		{Method: "GET", Path: "/compose/swarm/:name", Handler: app.composeGetSwarmContent, Module: "compose", Label: "Swarm Compose"},
-		{Method: "POST", Path: "/compose/swarm/deploy", Handler: app.composeDeploySwarm, Module: "compose", Label: "Swarm Compose"},
-		{Method: "POST", Path: "/compose/swarm/:name/redeploy", Handler: app.composeRedeploySwarm, Module: "compose", Label: "Swarm Compose"},
+		{Method: "GET", Path: "/compose/swarm/:name", Handler: app.composeGetSwarmContent, Module: "compose", Label: "读取 Swarm Compose 文件"},
+		{Method: "POST", Path: "/compose/swarm/deploy", Handler: app.composeDeploySwarm, Module: "compose", Label: "部署 Swarm Compose"},
+		{Method: "POST", Path: "/compose/swarm/:name/redeploy", Handler: app.composeRedeploySwarm, Module: "compose", Label: "重部署 Swarm Compose"},
 	}
 }
 
