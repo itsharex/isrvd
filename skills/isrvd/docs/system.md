@@ -1,7 +1,8 @@
 # 系统管理 API
 
 > 系统接口前缀: `/api/system`，账号接口前缀: `/api/auth` 和 `/api/members`，文件接口前缀: `/api/filer`  
-> 系统操作需要 `system:r/rw` 权限，账号操作需要 `member:r/rw` 权限，文件操作需要 `filer:r/rw` 权限
+> 权限基于路由细粒度控制，如 `POST /api/system/config`、
+> `POST /api/members`、`POST /api/filer/list` 等
 
 ---
 
@@ -80,7 +81,7 @@ PUT /api/system/config
 
 ## §3 成员管理
 
-> 成员管理接口前缀: `/api/members`，需要 `member:r/rw` 权限
+> 成员管理接口前缀: `/api/members`，需要对应路由权限（如 `POST /api/members`）
 
 ### §3.1 列出成员
 
@@ -115,19 +116,21 @@ DELETE /api/members/:username
   "username": "user1",
   "password": "newpass",
   "homeDirectory": "/data/user1",
-  "permissions": {
-    "filer": "rw",
-    "docker": "rw",
-    "swarm": "r",
-    "apisix": "rw",
-    "compose": "rw",
-    "system": "r",
-    "member": "rw",
-    "agent": "rw"
-  }
+  "permissions": [
+    "POST /api/filer/list",
+    "POST /api/filer/upload",
+    "POST /api/filer/modify",
+    "POST /api/docker/containers",
+    "POST /api/swarm/services",
+    "POST /api/apisix/routes",
+    "POST /api/system/config",
+    "POST /api/members",
+    "POST /api/agent/chat"
+  ]
 }
 ```
 
+> `permissions` 为字符串数组，每个元素是一个路由权限点。
 > 更新时密码留空表示不修改。
 
 ---
@@ -136,25 +139,25 @@ DELETE /api/members/:username
 
 所有文件操作基于用户的 home 目录，路径为相对路径。系统自动防止目录遍历。
 
-### §4.1 只读操作（需要 `filer:r`）
+### §4.1 查看操作（需要对应路由权限）
 
 ```
-POST /api/filer/list       Body: { "path": "/" }              # 列出目录
-POST /api/filer/read       Body: { "path": "/file.txt" }      # 读取文件内容
-POST /api/filer/download   Body: { "path": "/file.txt" }      # 下载文件
+POST /api/filer/list       Body: { "path": "/" }              # 列出目录（需要 `POST /api/filer/list`）
+POST /api/filer/read       Body: { "path": "/file.txt" }      # 读取文件内容（需要 `POST /api/filer/read`）
+POST /api/filer/download   Body: { "path": "/file.txt" }      # 下载文件（需要 `POST /api/filer/download`）
 ```
-
-### §4.2 读写操作（需要 `filer:rw`）
+### §4.2 修改操作（需要对应路由权限）
 
 ```
-POST /api/filer/create     Body: { "path": "/new.txt", "content": "内容" }
-POST /api/filer/modify     Body: { "path": "/file.txt", "content": "新内容" }
-POST /api/filer/mkdir      Body: { "path": "/newdir" }
-POST /api/filer/delete     Body: { "path": "/file.txt" }
-POST /api/filer/rename     Body: { "path": "/old.txt", "target": "new.txt" }
-POST /api/filer/chmod      Body: { "path": "/file.txt", "mode": "755" }
-POST /api/filer/zip        Body: { "path": "/dir" }
-POST /api/filer/unzip      Body: { "path": "/file.zip" }
+POST /api/filer/create     Body: { "path": "/new.txt", "content": "内容" }        # 需要 `POST /api/filer/create`
+POST /api/filer/modify     Body: { "path": "/file.txt", "content": "新内容" }    # 需要 `POST /api/filer/modify`
+POST /api/filer/mkdir      Body: { "path": "/newdir" }                           # 需要 `POST /api/filer/mkdir`
+POST /api/filer/upload                                                                # 需要 `POST /api/filer/upload`
+POST /api/filer/delete     Body: { "path": "/file.txt" }                            # 需要 `POST /api/filer/delete`
+POST /api/filer/rename     Body: { "path": "/old.txt", "target": "new.txt" }        # 需要 `POST /api/filer/rename`
+POST /api/filer/chmod      Body: { "path": "/file.txt", "mode": "755" }            # 需要 `POST /api/filer/chmod`
+POST /api/filer/zip        Body: { "path": "/dir" }                                  # 需要 `POST /api/filer/zip`
+POST /api/filer/unzip      Body: { "path": "/file.zip" }                            # 需要 `POST /api/filer/unzip`
 ```
 
 ### §4.3 文件上传
@@ -227,15 +230,15 @@ isrvd_post "/members" '{
   "username": "developer",
   "password": "secure-password",
   "homeDirectory": "/data/developer",
-  "permissions": {
-    "filer": "rw",
-    "docker": "r",
-    "swarm": "r",
-    "apisix": "r",
-    "compose": "rw",
-    "system": "r",
-    "member": "rw",
-    "agent": "rw"
-  }
+  "permissions": [
+    "POST /api/filer/list",
+    "POST /api/filer/upload",
+    "POST /api/docker/containers",
+    "POST /api/swarm/services",
+    "POST /api/apisix/routes",
+    "POST /api/system/config",
+    "POST /api/members",
+    "POST /api/agent/chat"
+  ]
 }'
 ```

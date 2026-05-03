@@ -150,20 +150,30 @@ cd webview && python3 sort-imports.py --dry-run src
 
 ### 权限模块
 
-| 模块 | 权限值 | 说明 |
-|------|--------|------|
-| `overview` | `r` / `rw` | 系统概览 |
-| `system` | `r` / `rw` | 系统设置、审计日志 |
-| `account` | `r` / `rw` | 成员管理 |
-| `filer` | `r` / `rw` | 文件管理 |
-| `shell` | `r` / `rw` | Web 终端 |
-| `agent` | `r` / `rw` | AI 助手 |
-| `apisix` | `r` / `rw` | APISIX 管理 |
-| `docker` | `r` / `rw` | Docker 管理 |
-| `swarm` | `r` / `rw` | Swarm 管理 |
-| `compose` | `r` / `rw` | Compose 管理 |
+权限基于路由进行细粒度控制，每个用户可以独立授予各模块下具体 API 路由的访问权限。
 
-> `r` = 只读，`rw` = 读写，留空 = 无权限
+**权限格式**：`POST /api/<模块>/<路由>`（具体 HTTP 方法与路径）
+
+**前端权限判断**：使用 `actions.hasPerm('POST /api/<路由>')` 控制按钮/操作的显示
+
+**常用模块与路由示例**：
+
+| 模块 | 路由权限点示例 | 说明 |
+|------|---------------|------|
+| `overview` | `POST /api/overview/stats` | 系统概览 |
+| `system` | `POST /api/system/config` | 系统设置 |
+| `account` | `POST /api/members` | 成员管理 |
+| `filer` | `POST /api/filer/list` | 文件管理（列出） |
+| `filer` | `POST /api/filer/upload` | 文件管理（上传） |
+| `filer` | `POST /api/filer/modify` | 文件管理（修改） |
+| `shell` | `WS /api/shell` | Web 终端 |
+| `agent` | `POST /api/agent/chat` | AI 助手 |
+| `apisix` | `POST /api/apisix/routes` | APISIX 管理 |
+| `docker` | `POST /api/docker/containers` | Docker 管理 |
+| `swarm` | `POST /api/swarm/services` | Swarm 管理 |
+| `compose` | `POST /api/compose/deploy` | Compose 管理 |
+
+> 留空 = 无权限；具体可用路由见各模块 API 文档
 
 ## GPU 监控
 

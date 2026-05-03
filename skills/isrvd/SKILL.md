@@ -84,15 +84,23 @@ isrvd_init "http://localhost:8080" "admin" "password"
 
 ### 权限模块
 
-| 模块 | 说明 | 权限级别 |
-|------|------|----------|
-| `docker` | 容器/镜像/网络/卷/仓库 | `r` / `rw` |
-| `swarm` | 集群/服务/节点/任务 | `r` / `rw` |
-| `compose` | Compose 部署 | `r` / `rw` |
-| `apisix` | 路由/消费者/上游/插件 | `r` / `rw` |
-| `filer` | 文件管理 | `r` / `rw` |
-| `system` | 系统配置/成员 | `r` / `rw` |
-| `agent` | LLM 代理 | `r` / `rw` |
+权限基于路由进行细粒度控制，每个用户可以独立授予各模块下具体 API 路由的访问权限。
+
+**权限格式**：`POST /api/<模块>/<路由>`（具体 HTTP 方法与路径）
+
+**常用模块与路由示例**：
+
+| 模块 | 路由权限点示例 | 说明 |
+|------|---------------|------|
+| `docker` | `POST /api/docker/containers` | 容器/镜像/网络/卷/仓库 |
+| `swarm` | `POST /api/swarm/services` | 集群/服务/节点/任务 |
+| `compose` | `POST /api/compose/deploy` | Compose 部署 |
+| `apisix` | `POST /api/apisix/routes` | 路由/消费者/上游/插件 |
+| `filer` | `POST /api/filer/list` | 文件管理 |
+| `system` | `POST /api/system/config` | 系统配置/成员 |
+| `agent` | `POST /api/agent/chat` | LLM 代理 |
+
+> 留空 = 无权限；具体可用路由见各模块 API 文档
 
 ---
 
