@@ -5,7 +5,6 @@ import (
 	"github.com/rehiy/pango/httpd"
 	"github.com/rehiy/pango/logman"
 
-	"isrvd/config"
 	svcAccount "isrvd/internal/service/account"
 	svcApisix "isrvd/internal/service/apisix"
 	svcCompose "isrvd/internal/service/compose"
@@ -14,6 +13,7 @@ import (
 	svcSwarm "isrvd/internal/service/swarm"
 	svcSystem "isrvd/internal/service/system"
 
+	"isrvd/config"
 	"isrvd/public"
 )
 

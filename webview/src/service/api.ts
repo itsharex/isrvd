@@ -47,7 +47,7 @@ class ApiService {
     }
 
     getAuditLogs(params?: { username?: string; limit?: number }) {
-        return http.get<AuditLog[]>('/api/system/audit-logs', { params })
+        return http.get<AuditLog[]>('/api/system/audit/logs', { params })
     }
 
     // ==================== Account 账户相关 ====================
