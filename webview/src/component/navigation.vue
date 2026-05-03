@@ -32,6 +32,12 @@ class NavigationBar extends Vue {
         return this.isActive('/swarm/')
     }
 
+    // Compose 部署菜单可见性
+    get composeDeployVisible() {
+        return this.actions.hasPerm('POST /api/compose/docker/deploy') ||
+               this.actions.hasPerm('POST /api/compose/swarm/deploy')
+    }
+
     // ─── 监听器 ───
     @Watch('isApisixActive', { immediate: true })
     onApisixActiveChange(isActive: boolean) {
@@ -403,7 +409,7 @@ export default toNative(NavigationBar)
 
       <!-- Compose 部署 -->
       <router-link
-        v-if="actions.hasPerm('GET /api/compose/docker/:name')"
+        v-if="composeDeployVisible"
         to="/compose/docker/deploy"
         class="flex items-center gap-3 px-3 py-3 text-sm font-medium text-slate-600 rounded-xl transition-all duration-200 hover:bg-slate-100 hover:text-slate-900"
         active-class="bg-blue-50 text-blue-700"

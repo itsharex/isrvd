@@ -28,7 +28,7 @@ class Overview extends Vue {
             this.actions.hasPerm('GET /api/apisix/routes') ||
             this.actions.hasPerm('GET /api/docker/containers') ||
             this.actions.hasPerm('GET /api/swarm/info') ||
-            this.actions.hasPerm('GET /api/system/config')
+            this.actions.hasPerm('GET /api/overview/status')
         )
     }
 
@@ -43,14 +43,14 @@ class Overview extends Vue {
         if (this.actions.hasPerm('GET /api/swarm/info')) {
             this.swarmRef?.load()
         }
-        if (this.actions.hasPerm('GET /api/system/config')) {
+        if (this.actions.hasPerm('GET /api/overview/status')) {
             this.systemRef?.load()
         }
     }
 
     // ─── 生命周期 ───
     unmounted() {
-        if (this.actions.hasPerm('GET /api/system/config')) {
+        if (this.actions.hasPerm('GET /api/overview/status')) {
             this.systemRef?.stopPoll()
         }
     }
@@ -124,7 +124,7 @@ export default toNative(Overview)
       </div>
 
       <!-- 系统信息区块 -->
-      <div v-if="actions.hasPerm('GET /api/system/config')" class="p-6 border-b border-slate-100">
+      <div v-if="actions.hasPerm('GET /api/overview/status')" class="p-6 border-b border-slate-100">
         <div class="flex items-center gap-2 mb-4">
           <i class="fas fa-server text-slate-500 text-lg"></i>
           <h2 class="text-base font-semibold text-slate-700">系统信息</h2>

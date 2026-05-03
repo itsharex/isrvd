@@ -157,7 +157,7 @@ export default toNative(Images)
             <button v-if="actions.hasPerm('POST /api/docker/images/:id/action')" @click="buildModalRef?.show()" class="px-3 py-1.5 rounded-lg bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium flex items-center gap-1.5 transition-colors">
               <i class="fas fa-hammer"></i>构建
             </button>
-            <button v-if="actions.hasPerm('POST /api/docker/images/:id/action')" @click="pullModalRef?.show()" class="px-3 py-1.5 rounded-lg bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium flex items-center gap-1.5 transition-colors">
+            <button v-if="actions.hasPerm('POST /api/docker/images/pull')" @click="pullModalRef?.show()" class="px-3 py-1.5 rounded-lg bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium flex items-center gap-1.5 transition-colors">
               <i class="fas fa-download"></i>拉取
             </button>
           </div>
@@ -181,7 +181,7 @@ export default toNative(Images)
               <button v-if="actions.hasPerm('POST /api/docker/images/:id/action')" @click="buildModalRef?.show()" class="w-9 h-9 rounded-lg bg-blue-500 hover:bg-blue-600 flex items-center justify-center text-white transition-colors" title="构建">
                 <i class="fas fa-hammer text-sm"></i>
               </button>
-              <button v-if="actions.hasPerm('POST /api/docker/images/:id/action')" @click="pullModalRef?.show()" class="w-9 h-9 rounded-lg bg-blue-500 hover:bg-blue-600 flex items-center justify-center text-white transition-colors" title="拉取">
+              <button v-if="actions.hasPerm('POST /api/docker/images/pull')" @click="pullModalRef?.show()" class="w-9 h-9 rounded-lg bg-blue-500 hover:bg-blue-600 flex items-center justify-center text-white transition-colors" title="拉取">
                 <i class="fas fa-download text-sm"></i>
               </button>
             </div>
@@ -247,7 +247,7 @@ export default toNative(Images)
                   <button @click="tagModalRef?.show(img)" v-if="actions.hasPerm('POST /api/docker/images/:id/action')" class="btn-icon text-blue-600 hover:bg-blue-50" title="打标签">
                     <i class="fas fa-tag text-xs"></i>
                   </button>
-                  <button @click="pullImage(img)" v-if="actions.hasPerm('POST /api/docker/images/:id/action')" class="btn-icon text-emerald-600 hover:bg-emerald-50" title="拉取（更新）">
+                  <button @click="pullImage(img)" v-if="actions.hasPerm('POST /api/docker/images/pull')" class="btn-icon text-emerald-600 hover:bg-emerald-50" title="拉取（更新）">
                     <i class="fas fa-download text-xs"></i>
                   </button>
                   <button @click="openPush(img)" v-if="actions.hasPerm('POST /api/docker/images/:id/action')" :disabled="registries.length === 0" class="btn-icon text-indigo-600 hover:bg-indigo-50 disabled:opacity-40 disabled:cursor-not-allowed" :title="registries.length === 0 ? '暂无可用私有仓库' : '推送到仓库'">
@@ -303,7 +303,7 @@ export default toNative(Images)
             <button @click="tagModalRef?.show(img)" v-if="actions.hasPerm('POST /api/docker/images/:id/action')" class="btn-icon text-blue-600 hover:bg-blue-50" title="打标签">
               <i class="fas fa-tag text-xs"></i><span class="text-xs ml-1">标签</span>
             </button>
-            <button @click="pullImage(img)" v-if="actions.hasPerm('POST /api/docker/images/:id/action')" class="btn-icon text-emerald-600 hover:bg-emerald-50" title="拉取（更新）">
+            <button @click="pullImage(img)" v-if="actions.hasPerm('POST /api/docker/images/pull')" class="btn-icon text-emerald-600 hover:bg-emerald-50" title="拉取（更新）">
               <i class="fas fa-download text-xs"></i><span class="text-xs ml-1">拉取</span>
             </button>
             <button @click="openPush(img)" v-if="actions.hasPerm('POST /api/docker/images/:id/action')" :disabled="registries.length === 0" class="btn-icon text-indigo-600 hover:bg-indigo-50 disabled:opacity-40 disabled:cursor-not-allowed" :title="registries.length === 0 ? '暂无可用私有仓库' : '推送到仓库'">
