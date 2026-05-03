@@ -10,11 +10,12 @@
 | 文件管理 | 浏览、上传、下载、编辑、压缩解压、权限修改 |
 | Web 终端 | 基于 xterm.js 的 Shell 与容器终端 |
 | AI 助手 | 内置 Agent，支持自然语言操作 |
-| APISIX | 路由、Consumer、上游、SSL、插件配置 |
+| APISIX | 路由、Consumer、上游、SSL、插件配置、白名单 |
 | Docker | 容器、镜像、网络、卷、镜像仓库管理 |
 | Swarm | 集群、节点、服务、任务管理 |
 | Compose | 文件编辑、Docker/Swarm 部署与重部署 |
 | 成员管理 | 多用户、家目录隔离、模块权限控制 |
+| 系统管理 | 配置管理、操作审计日志 |
 | 移动端 | 响应式布局，适配移动设备 |
 
 ## Docker 部署
@@ -79,12 +80,12 @@ services:
 
 ```bash
 # 一键安装
-curl -sL https://raw.githubusercontent.com/rehiy/isrvd/refs/heads/master/build/script/isrvd.sh | sudo bash -s install
+bash <(curl -sL https://jscdn.rehi.org/gh/rehiy/isrvd/build/build/script/isrvd.sh) install
 
-# 其他命令
-curl -sL https://raw.githubusercontent.com/rehiy/isrvd/refs/heads/master/build/script/isrvd.sh | sudo bash -s update     # 更新
-curl -sL https://raw.githubusercontent.com/rehiy/isrvd/refs/heads/master/build/script/isrvd.sh | sudo bash -s uninstall  # 卸载
-curl -sL https://raw.githubusercontent.com/rehiy/isrvd/refs/heads/master/build/script/isrvd.sh | bash -s download        # 仅下载
+# 更新/卸载/仅下载
+bash <(curl -sL https://jscdn.rehi.org/gh/rehiy/isrvd/build/build/script/isrvd.sh) update
+bash <(curl -sL https://jscdn.rehi.org/gh/rehiy/isrvd/build/build/script/isrvd.sh) uninstall
+bash <(curl -sL https://jscdn.rehi.org/gh/rehiy/isrvd/build/build/script/isrvd.sh) download
 ```
 
 安装目录：`/usr/local/isrvd/`（包含二进制和配置文件）
@@ -107,7 +108,9 @@ curl -sL https://raw.githubusercontent.com/rehiy/isrvd/refs/heads/master/build/s
 
 | 模块 | 权限值 | 说明 |
 |------|--------|------|
-| `system` | `r` / `rw` | 系统设置 |
+| `overview` | `r` / `rw` | 系统概览 |
+| `system` | `r` / `rw` | 系统设置、审计日志 |
+| `account` | `r` / `rw` | 成员管理 |
 | `filer` | `r` / `rw` | 文件管理 |
 | `shell` | `r` / `rw` | Web 终端 |
 | `agent` | `r` / `rw` | AI 助手 |
@@ -148,13 +151,13 @@ docker run -d --device /dev/dri:/dev/dri -p 8080:8080 -v /var/run/docker.sock:/v
 
 ### 分层架构
 
-```
+```text
 config → registry → pkgs → service → server
 ```
 
 - **config**：配置加载
 - **registry**：外部服务初始化
-- **pkgs**：各模块客户端（Docker / Swarm / APISIX / GPU / Compose）
+- **pkgs**：各模块客户端（Docker / Swarm / APISIX / GPU / Compose / Archive）
 - **service**：业务逻辑与类型转换
 - **server**：HTTP handlers
 
@@ -164,20 +167,14 @@ config → registry → pkgs → service → server
 - **低耦合**：层间通过接口解耦
 - **单一职责**：Handler 只管 HTTP，Service 只管业务
 
-## 编译
-
-需要 Go 1.25+ 和 Node.js 22+：
-
-```bash
-./build.sh
-```
-
 ## 安全特性
 
-- JWT 认证，敏感配置仅返回 `xxxSet` 布尔值
-- 文件系统操作防目录遍历攻击
-- 压缩解压防 Zip Slip 攻击
-- WebSocket 连接需经过认证
+- JWT 认证，敏感字段（密钥、密码）不返回前端
+- 文件路径校验，防止目录遍历攻击
+- 解压校验路径，防止 Zip Slip 攻击
+- WebSocket 连接需经过认证中间件
+- 基于路由的细粒度权限控制
+- 操作审计日志，记录非 GET 请求
 - 支持代理认证头（`proxyHeaderName`）
 
 ## 许可证
