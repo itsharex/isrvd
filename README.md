@@ -80,12 +80,12 @@ services:
 
 ```bash
 # 一键安装
-bash <(curl -sL https://jscdn.rehi.org/gh/rehiy/isrvd/build/build/script/isrvd.sh) install
+bash <(curl -sL https://jscdn.rehi.org/gh/rehiy/isrvd/build/script/isrvd.sh) install
 
 # 更新/卸载/仅下载
-bash <(curl -sL https://jscdn.rehi.org/gh/rehiy/isrvd/build/build/script/isrvd.sh) update
-bash <(curl -sL https://jscdn.rehi.org/gh/rehiy/isrvd/build/build/script/isrvd.sh) uninstall
-bash <(curl -sL https://jscdn.rehi.org/gh/rehiy/isrvd/build/build/script/isrvd.sh) download
+bash <(curl -sL https://jscdn.rehi.org/gh/rehiy/isrvd/build/script/isrvd.sh) update
+bash <(curl -sL https://jscdn.rehi.org/gh/rehiy/isrvd/build/script/isrvd.sh) uninstall
+bash <(curl -sL https://jscdn.rehi.org/gh/rehiy/isrvd/build/script/isrvd.sh) download
 ```
 
 安装目录：`/usr/local/isrvd/`（包含二进制和配置文件）
