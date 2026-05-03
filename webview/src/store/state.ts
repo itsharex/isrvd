@@ -58,15 +58,15 @@ export interface AppState {
     serviceAvailability: ServiceAvailability
     permissionsLoaded: boolean
     founder: boolean
-    permissions: Record<string, string>
+    permissions: string[]
 }
 
 export interface AppActions {
     setAuth(data: { authMode: 'jwt' | 'header'; token: string; username: string }): void
     clearAuth(): void
     isAuthenticated(): boolean
-    setPermissions(data: { founder?: boolean; permissions: Record<string, string> }): void
-    hasPerm(module: string, write?: boolean): boolean
+    setPermissions(data: { founder?: boolean; permissions: string[] }): void
+    hasPerm(module: string): boolean
     loadFiles(path?: string): Promise<void>
     showNotification(type: string, message: string): void
     clearNotification(id: number): void
@@ -96,7 +96,7 @@ export const initProvider = () => {
         // 权限状态
         permissionsLoaded: false,
         founder: false,
-        permissions: {},
+        permissions: [],
 
         // 文件管理状态
         currentPath: '/',
@@ -147,7 +147,7 @@ export const initProvider = () => {
             state.username = null
             state.permissionsLoaded = false
             state.founder = false
-            state.permissions = {}
+            state.permissions = []
             localStorage.removeItem('app-token')
             localStorage.removeItem('app-username')
         },
@@ -156,16 +156,30 @@ export const initProvider = () => {
             return !!state.token
         },
 
-        setPermissions(data: { founder?: boolean; permissions: Record<string, string>}) {
+        setPermissions(data: { founder?: boolean; permissions: string[] }) {
             state.permissionsLoaded = true
             state.founder = data.founder || false
-            state.permissions = data.permissions || {}
+            state.permissions = data.permissions || []
         },
 
-        hasPerm(module: string, write = false): boolean {
+        hasPerm(module: string): boolean {
             if (state.founder) return true
-            const perm = state.permissions[module] || ''
-            return write ? perm === 'rw' : (perm === 'r' || perm === 'rw')
+            // 精确路由 key 匹配（如 'POST /api/docker/containers/:id/action'）
+            if (module.includes(' ')) {
+                // 从路由中提取模块名（/api/<module>/...），检查服务可用性
+                const path = module.split(' ')[1]
+                const seg = path?.match(/^\/api\/([^/]+)/)?.[1] as keyof ServiceAvailability | undefined
+                if (seg && seg in state.serviceAvailability && !state.serviceAvailability[seg]) return false
+                return state.permissions.includes(module)
+            }
+            // 模块级别匹配：先检查服务可用性，再检查 permissions
+            const seg = module as keyof ServiceAvailability
+            if (seg in state.serviceAvailability && !state.serviceAvailability[seg]) return false
+            return state.permissions.some(key => {
+                const path = key.split(' ')[1]
+                if (!path) return false
+                return path.startsWith(`/api/${module}/`) || path === `/api/${module}`
+            })
         },
 
         // 文件操作

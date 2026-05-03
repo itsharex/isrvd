@@ -5,28 +5,45 @@ import { APP_ACTIONS_KEY } from '@/store/state'
 import type { AppActions } from '@/store/state'
 
 import api from '@/service/api'
-import type { MemberInfo, MemberUpsertRequest } from '@/service/types'
+import { RouteAccessPerm } from '@/service/types'
+import type { MemberInfo, MemberUpsertRequest, RouteInfo } from '@/service/types'
 
 import BaseModal from '@/component/modal.vue'
 
-// 可配置的模块列表
-const MODULES = [
-    { key: 'overview', label: '系统概览', icon: 'fas fa-gauge-high' },
-    { key: 'system',  label: '系统管理', icon: 'fas fa-gear' },
-    { key: 'account', label: '用户管理', icon: 'fas fa-users' },
-    { key: 'shell',   label: 'Shell终端', icon: 'fas fa-terminal' },
-    { key: 'filer',   label: '文件管理', icon: 'fas fa-folder' },
-    { key: 'agent',   label: 'AI Agent', icon: 'fas fa-robot' },
-    { key: 'apisix',  label: 'APISIX',   icon: 'fas fa-route' },
-    { key: 'docker',  label: 'Docker',   icon: 'fab fa-docker' },
-    { key: 'swarm',   label: 'Swarm',    icon: 'fas fa-layer-group' },
-    { key: 'compose', label: 'Compose',  icon: 'fas fa-cubes' },
-]
+// 方法颜色映射
+const METHOD_COLOR: Record<string, string> = {
+    GET:    'bg-blue-50 text-blue-600',
+    POST:   'bg-green-50 text-green-700',
+    PUT:    'bg-yellow-50 text-yellow-700',
+    PATCH:  'bg-orange-50 text-orange-700',
+    DELETE: 'bg-red-50 text-red-600',
+    ANY:    'bg-purple-50 text-purple-700',
+}
 
-function emptyPermissions(): Record<string, string> {
-    const p: Record<string, string> = {}
-    for (const m of MODULES) p[m.key] = ''
-    return p
+// 模块元信息（图标 + 显示名）
+const MODULE_META: Record<string, { icon: string; label: string }> = {
+    overview: { icon: 'fas fa-gauge-high', label: '系统概览' },
+    system:   { icon: 'fas fa-gear',       label: '系统管理' },
+    account:  { icon: 'fas fa-users',      label: '用户管理' },
+    shell:    { icon: 'fas fa-terminal',   label: 'Shell 终端' },
+    filer:    { icon: 'fas fa-folder',     label: '文件管理' },
+    agent:    { icon: 'fas fa-robot',      label: 'AI Agent' },
+    apisix:   { icon: 'fas fa-route',      label: 'APISIX' },
+    docker:   { icon: 'fab fa-docker',     label: 'Docker' },
+    swarm:    { icon: 'fas fa-layer-group',label: 'Swarm' },
+    compose:  { icon: 'fas fa-cubes',      label: 'Compose' },
+}
+
+interface RouteItem {
+    key: string
+    access: number
+}
+
+interface RouteGroup {
+    module: string
+    label: string
+    icon: string
+    routes: RouteItem[]
 }
 
 @Component({
@@ -40,12 +57,18 @@ class MemberEditModal extends Vue {
     // ─── 数据属性 ───
     isOpen = false
     modalLoading = false
-    modules = MODULES
+    routesLoading = false
+    routeGroups: RouteGroup[] = []
+    // access >= 1 的路由 key 集合（匿名/登录即可），默认勾选且不可取消
+    autoPerms: Set<string> = new Set()
+    // formData.permissions 的 Set 镜像，用于 O(1) 查找
+    permSet: Set<string> = new Set()
+    methodColor = METHOD_COLOR
     // 编辑时保存原始用户名，用于后端定位
     originalUsername = ''
     formData: MemberUpsertRequest = {
         username: '', password: '', homeDirectory: '',
-        permissions: emptyPermissions()
+        permissions: []
     }
 
     // ─── 计算属性 ───
@@ -58,33 +81,120 @@ class MemberEditModal extends Vue {
     }
 
     // ─── 方法 ───
-    show(member: MemberInfo | null = null) {
-        if (member) {
-            this.originalUsername = member.username
-            const perms = emptyPermissions()
-            if (member.permissions) {
-                for (const k of Object.keys(perms)) {
-                    perms[k] = member.permissions[k] || ''
+    async loadRoutes() {
+        if (this.routeGroups.length > 0) return
+        this.routesLoading = true
+        try {
+            const res = await api.listRoutes()
+            const items: RouteInfo[] = res.payload || []
+            // 收集 access >= 1 的路由（匿名/登录即可），自动勾选且不可取消
+            const autoPerms = new Set<string>()
+            for (const item of items) {
+                if (item.access > RouteAccessPerm) autoPerms.add(item.key)
+            }
+            this.autoPerms = autoPerms
+            // 按 module 分组，保持模块顺序
+            const moduleOrder = Object.keys(MODULE_META)
+            const groupMap = new Map<string, RouteItem[]>()
+            for (const item of items) {
+                if (!groupMap.has(item.module)) groupMap.set(item.module, [])
+                groupMap.get(item.module)!.push({ key: item.key, access: item.access })
+            }
+            // 按预定义顺序排列模块，未知模块追加到末尾
+            const ordered: RouteGroup[] = []
+            for (const mod of moduleOrder) {
+                if (groupMap.has(mod)) {
+                    const meta = MODULE_META[mod] || { icon: 'fas fa-circle', label: mod }
+                    ordered.push({ module: mod, label: meta.label, icon: meta.icon, routes: groupMap.get(mod)! })
+                    groupMap.delete(mod)
                 }
             }
+            for (const [mod, routes] of groupMap) {
+                const meta = MODULE_META[mod] || { icon: 'fas fa-circle', label: mod }
+                ordered.push({ module: mod, label: meta.label, icon: meta.icon, routes })
+            }
+            this.routeGroups = ordered
+        } catch (e) {
+            this.actions.showNotification('error', '加载路由列表失败')
+        }
+        this.routesLoading = false
+    }
+
+    async show(member: MemberInfo | null = null) {
+        if (member) {
+            this.originalUsername = member.username
+            const perms = [...(member.permissions || [])]
             this.formData = {
                 username: member.username,
                 password: '',
                 homeDirectory: member.homeDirectory,
                 permissions: perms
             }
+            this.permSet = new Set(perms)
         } else {
             this.originalUsername = ''
             this.formData = {
                 username: '', password: '', homeDirectory: '',
-                permissions: emptyPermissions()
+                permissions: []
             }
+            this.permSet = new Set()
         }
         this.isOpen = true
+        await this.loadRoutes()
     }
 
-    setPermission(moduleKey: string, value: string) {
-        this.formData.permissions = { ...this.formData.permissions, [moduleKey]: value }
+    // 路由是否被勾选（自动权限路由始终返回 true）
+    isChecked(key: string): boolean {
+        return this.autoPerms.has(key) || this.permSet.has(key)
+    }
+
+    // 路由是否为自动勾选（不可手动取消）
+    isAuto(key: string): boolean {
+        return this.autoPerms.has(key)
+    }
+
+    togglePerm(key: string) {
+        if (this.autoPerms.has(key)) return
+        if (this.permSet.has(key)) {
+            this.permSet.delete(key)
+            this.formData.permissions = this.formData.permissions.filter(k => k !== key)
+        } else {
+            this.permSet.add(key)
+            this.formData.permissions = [...this.formData.permissions, key]
+        }
+    }
+
+    isGroupAllChecked(routes: RouteItem[]): boolean {
+        return routes.every(r => this.isChecked(r.key))
+    }
+
+    isGroupPartialChecked(routes: RouteItem[]): boolean {
+        const checked = routes.filter(r => this.isChecked(r.key)).length
+        return checked > 0 && checked < routes.length
+    }
+
+    toggleGroup(routes: RouteItem[]) {
+        // 只操作非自动权限的路由
+        const manualRoutes = routes.filter(r => !this.autoPerms.has(r.key)).map(r => r.key)
+        if (manualRoutes.length === 0) return
+        const allChecked = manualRoutes.every(k => this.permSet.has(k))
+        if (allChecked) {
+            const removeSet = new Set(manualRoutes)
+            manualRoutes.forEach(k => this.permSet.delete(k))
+            this.formData.permissions = this.formData.permissions.filter(k => !removeSet.has(k))
+        } else {
+            const toAdd = manualRoutes.filter(k => !this.permSet.has(k))
+            toAdd.forEach(k => this.permSet.add(k))
+            this.formData.permissions = [...this.formData.permissions, ...toAdd]
+        }
+    }
+
+    methodOf(key: string): string {
+        return key.split(' ')[0]
+    }
+
+    pathOf(key: string): string {
+        return key.split(' ')[1]
     }
 
     async handleConfirm() {
@@ -139,39 +249,51 @@ export default toNative(MemberEditModal)
         <input type="text" v-model="formData.homeDirectory" placeholder="留空则使用 基础目录/用户名" class="input" />
         <p class="mt-1 text-xs text-slate-400">相对路径基于"基础目录"，留空则自动创建为 基础目录/用户名</p>
       </div>
-      <!-- 模块权限 -->
+      <!-- 路由权限 -->
       <div>
-        <label class="block text-sm font-medium text-slate-700 mb-2">模块权限</label>
-        <div class="rounded-lg border border-slate-200 overflow-hidden">
-          <table class="w-full text-sm">
-            <thead>
-              <tr class="bg-slate-50 border-b border-slate-200">
-                <th class="px-3 py-2 text-left text-xs font-semibold text-slate-600">模块</th>
-                <th class="px-3 py-2 text-center text-xs font-semibold text-slate-600 w-20">无权限</th>
-                <th class="px-3 py-2 text-center text-xs font-semibold text-slate-600 w-20">只读</th>
-                <th class="px-3 py-2 text-center text-xs font-semibold text-slate-600 w-20">读写</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-100">
-              <tr v-for="mod in modules" :key="mod.key" class="hover:bg-slate-50">
-                <td class="px-3 py-2">
-                  <div class="flex items-center gap-2">
-                    <i :class="[mod.icon, 'text-slate-400 w-4 text-center']"></i>
-                    <span class="text-slate-700">{{ mod.label }}</span>
-                  </div>
-                </td>
-                <td class="px-3 py-2 text-center">
-                  <input type="radio" :name="'perm-' + mod.key" value="" :checked="!formData.permissions[mod.key]" @change="setPermission(mod.key, '')" class="w-4 h-4 accent-slate-400" />
-                </td>
-                <td class="px-3 py-2 text-center">
-                  <input type="radio" :name="'perm-' + mod.key" value="r" :checked="formData.permissions[mod.key] === 'r'" @change="setPermission(mod.key, 'r')" class="w-4 h-4 accent-blue-500" />
-                </td>
-                <td class="px-3 py-2 text-center">
-                  <input type="radio" :name="'perm-' + mod.key" value="rw" :checked="formData.permissions[mod.key] === 'rw'" @change="setPermission(mod.key, 'rw')" class="w-4 h-4 accent-green-500" />
-                </td>
-              </tr>
-            </tbody>
-          </table>
+        <label class="block text-sm font-medium text-slate-700 mb-2">路由权限</label>
+        <div class="space-y-2">
+            <div v-for="group in routeGroups" :key="group.module" class="rounded-lg border border-slate-200 overflow-hidden">
+            <!-- 模块标题行（全选/取消） -->
+            <div
+              class="flex items-center gap-2 px-3 py-2 bg-slate-50 border-b border-slate-200 cursor-pointer select-none hover:bg-slate-100 transition-colors"
+              @click="toggleGroup(group.routes)"
+            >
+              <input
+                type="checkbox"
+                :checked="isGroupAllChecked(group.routes)"
+                :indeterminate="isGroupPartialChecked(group.routes)"
+                class="w-4 h-4 accent-blue-500 pointer-events-none"
+                readonly
+              />
+              <i :class="[group.icon, 'text-slate-400 w-4 text-center text-xs']"></i>
+              <span class="text-xs font-semibold text-slate-700">{{ group.label }}</span>
+              <span class="ml-auto text-xs text-slate-400">
+                {{ group.routes.filter(r => isChecked(r.key)).length }} / {{ group.routes.length }}
+              </span>
+            </div>
+            <!-- 路由列表 -->
+            <div class="divide-y divide-slate-100">
+              <label
+                v-for="item in group.routes"
+                :key="item.key"
+                :class="['flex items-center gap-2 px-3 py-1.5', isAuto(item.key) ? 'opacity-60 cursor-not-allowed' : 'hover:bg-slate-50 cursor-pointer']"
+              >
+                <input
+                  type="checkbox"
+                  :checked="isChecked(item.key)"
+                  :disabled="isAuto(item.key)"
+                  @change="togglePerm(item.key)"
+                  class="w-4 h-4 accent-blue-500 flex-shrink-0"
+                />
+                <span :class="['inline-block w-14 text-center text-xs font-mono font-semibold rounded px-1 py-0.5 flex-shrink-0', methodColor[methodOf(item.key)] || 'bg-slate-100 text-slate-600']">
+                  {{ methodOf(item.key) }}
+                </span>
+                <code class="text-xs text-slate-600 break-all">{{ pathOf(item.key) }}</code>
+                <span v-if="isAuto(item.key)" class="ml-auto text-xs text-slate-400 flex-shrink-0">自动</span>
+              </label>
+            </div>
+          </div>
         </div>
       </div>
     </form>

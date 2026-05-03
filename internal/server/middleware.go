@@ -12,9 +12,18 @@ import (
 	svcSystem "isrvd/internal/service/system"
 )
 
-// AuthMiddleware 认证中间件：认证失败时中断请求
-func AuthMiddleware(svc *svcAccount.Service) gin.HandlerFunc {
+// AuthMiddleware 认证中间件：认证失败时中断请求。
+// anon 路由走可选认证（认证失败时放行），其余路由强制认证。
+func AuthMiddleware(routePerms map[string]svcAccount.RouteInfo, svc *svcAccount.Service) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		// anon 路由：可选认证，不强制
+		if info, ok := routePerms[c.Request.Method+" "+c.FullPath()]; ok && info.Access == svcAccount.AccessAnon {
+			if username := svc.MixAuth(c); username != "" {
+				c.Set("username", username)
+			}
+			c.Next()
+			return
+		}
 		username, errMsg := svc.Auth(c)
 		if username == "" {
 			helper.RespondError(c, http.StatusUnauthorized, errMsg)

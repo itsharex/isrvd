@@ -42,14 +42,10 @@ members:
   - username: user1
     password: password1
     homeDirectory: member/user1/
+    # permissions 未配置则所有路由无权限
+    # 格式："METHOD /api/path"，如 "GET /api/docker/containers"
     permissions:
-      filer: rw
-      docker: r
-      compose: r
-
-  - username: user2
-    password: password2
-    homeDirectory: member/user2/
-    # permissions 未配置则所有模块无权限
-    # 可用模块: overview, system, account, shell, filer, agent, apisix, docker, swarm, compose
-    # 可用値: r（只读）, rw（读写），留空或不填表示无权限
+      - GET /api/overview/probe
+      - GET /api/overview/status
+      - GET /api/docker/containers
+      - GET /api/docker/containers/:id

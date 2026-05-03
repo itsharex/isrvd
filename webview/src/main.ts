@@ -10,4 +10,5 @@ import '@xterm/xterm/css/xterm.css'
 import './assets/style.css'
 
 // 创建并挂载应用
-createApp(App).use(router).mount('#app')
+const app = createApp(App)
+app.use(router).mount('#app')

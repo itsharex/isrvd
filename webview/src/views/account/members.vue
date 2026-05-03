@@ -88,7 +88,7 @@ export default toNative(Members)
             <button type="button" @click="loadMembers" class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors">
               <i class="fas fa-rotate"></i>刷新
             </button>
-            <button type="button" @click="openAddMember" class="px-3 py-1.5 rounded-lg bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium flex items-center gap-1.5 transition-colors">
+            <button v-if="actions.hasPerm('POST /api/account/members')" type="button" @click="openAddMember" class="px-3 py-1.5 rounded-lg bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium flex items-center gap-1.5 transition-colors">
               <i class="fas fa-plus"></i>添加
             </button>
           </div>
@@ -108,7 +108,7 @@ export default toNative(Members)
             <button type="button" @click="loadMembers" class="w-9 h-9 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-600 transition-colors" title="刷新">
               <i class="fas fa-rotate text-sm"></i>
             </button>
-            <button type="button" @click="openAddMember" class="w-9 h-9 rounded-lg bg-blue-500 hover:bg-blue-600 flex items-center justify-center text-white transition-colors" title="添加">
+            <button v-if="actions.hasPerm('POST /api/account/members')" type="button" @click="openAddMember" class="w-9 h-9 rounded-lg bg-blue-500 hover:bg-blue-600 flex items-center justify-center text-white transition-colors" title="添加">
               <i class="fas fa-plus text-sm"></i>
             </button>
           </div>
@@ -158,11 +158,10 @@ export default toNative(Members)
                   </td>
                   <td class="px-4 py-3">
                     <div class="flex flex-wrap gap-1">
-                      <template v-for="(perm, mod) in m.permissions" :key="mod">
-                        <span v-if="perm === 'rw'" class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-green-50 text-green-700">{{ mod }}<span class="ml-0.5 opacity-60">rw</span></span>
-                        <span v-else-if="perm === 'r'" class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-600">{{ mod }}<span class="ml-0.5 opacity-60">r</span></span>
-                      </template>
-                      <span v-if="!Object.values(m.permissions || {}).some(p => p)" class="text-xs text-slate-400">-</span>
+                      <span v-if="m.permissions && m.permissions.length > 0" class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-600">
+                        <i class="fas fa-key mr-1 text-xs"></i>{{ m.permissions.length }} 条
+                      </span>
+                      <span v-else class="text-xs text-slate-400">-</span>
                     </div>
                   </td>
                   <td class="px-4 py-3 text-center">
@@ -174,6 +173,7 @@ export default toNative(Members)
                   <td class="px-4 py-3">
                     <div class="flex justify-end items-center gap-0.5">
                       <button 
+                        v-if="actions.hasPerm('PUT /api/account/members/:username')"
                         @click="openEditMember(m)" 
                         :disabled="m.founder"
                         :class="m.founder ? 'btn-icon text-slate-300 cursor-not-allowed' : 'btn-icon text-blue-600 hover:bg-blue-50'" 
@@ -182,6 +182,7 @@ export default toNative(Members)
                         <i class="fas fa-pen text-xs"></i>
                       </button>
                       <button 
+                        v-if="actions.hasPerm('DELETE /api/account/members/:username')"
                         @click="handleDeleteMember(m)" 
                         :disabled="m.founder"
                         :class="m.founder ? 'btn-icon text-slate-300 cursor-not-allowed' : 'btn-icon text-red-600 hover:bg-red-50'" 
@@ -222,20 +223,18 @@ export default toNative(Members)
               <span class="text-xs text-slate-400 flex-shrink-0">家目录</span>
               <code class="text-xs bg-slate-100 px-2 py-1 rounded break-all">{{ m.homeDirectory }}</code>
             </div>
-            <!-- 模块权限 -->
-            <div class="flex items-start gap-2 mb-3">
+            <!-- 路由权限 -->
+            <div class="flex items-center gap-2 mb-3">
               <span class="text-xs text-slate-400 flex-shrink-0">权限</span>
-              <span class="inline-flex flex-wrap gap-1">
-                <template v-for="(perm, mod) in m.permissions" :key="mod">
-                  <span v-if="perm === 'rw'" class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-green-50 text-green-700">{{ mod }}<span class="ml-0.5 opacity-60">rw</span></span>
-                  <span v-else-if="perm === 'r'" class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-600">{{ mod }}<span class="ml-0.5 opacity-60">r</span></span>
-                </template>
-                <span v-if="!Object.values(m.permissions || {}).some(p => p)" class="text-xs text-slate-400">-</span>
+              <span v-if="m.permissions && m.permissions.length > 0" class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-600">
+                <i class="fas fa-key mr-1 text-xs"></i>{{ m.permissions.length }} 条
               </span>
+              <span v-else class="text-xs text-slate-400">-</span>
             </div>
             <!-- 底部：操作按鈕 -->
             <div class="flex flex-wrap gap-1 pt-2 border-t border-slate-100">
               <button 
+                v-if="actions.hasPerm('PUT /api/account/members/:username')"
                 @click="openEditMember(m)" 
                 :disabled="m.founder"
                 :class="m.founder ? 'btn-icon text-slate-300 cursor-not-allowed' : 'btn-icon text-blue-600 hover:bg-blue-50'" 
@@ -244,6 +243,7 @@ export default toNative(Members)
                 <i class="fas fa-pen text-xs"></i><span class="text-xs ml-1">编辑</span>
               </button>
               <button 
+                v-if="actions.hasPerm('DELETE /api/account/members/:username')"
                 @click="handleDeleteMember(m)" 
                 :disabled="m.founder"
                 :class="m.founder ? 'btn-icon text-slate-300 cursor-not-allowed' : 'btn-icon text-red-600 hover:bg-red-50'" 

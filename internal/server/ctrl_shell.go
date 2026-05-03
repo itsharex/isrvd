@@ -18,7 +18,7 @@ import (
 // defineShellRoutes 定义 Shell 模块路由（Web 终端）
 func (app *App) defineShellRoutes() []Route {
 	return []Route{
-		{Method: "GET", Path: "/shell", Handler: app.shellWebSocket, Module: "shell", Label: "终端", Perm: "rw"},
+		{Method: "GET", Path: "/shell", Handler: app.shellWebSocket, Module: "shell", Label: "终端"},
 	}
 }
 

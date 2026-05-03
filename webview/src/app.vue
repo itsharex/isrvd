@@ -3,7 +3,7 @@ import { Component, Provide, Ref, Vue, Watch, toNative } from 'vue-facing-decora
 
 import { APP_ACTIONS_KEY, APP_STATE_KEY, initProvider } from '@/store/state'
 
-import router, { setRouterGuard } from '@/router'
+import { setRouterGuard } from '@/router'
 
 import api from '@/service/api'
 import type { LinkConfig } from '@/service/types'
@@ -14,7 +14,7 @@ import NotificationManager from '@/component/notification.vue'
 import PageAgent from '@/component/page-agent.vue'
 import UserMenu from '@/component/user-menu.vue'
 
-import AuthLogin from '@/views/login.vue'
+import AuthLogin from '@/views/account/login.vue'
 
 const { state, actions } = initProvider()
 setRouterGuard(actions.hasPerm, () => state.permissionsLoaded, actions.isAuthenticated)
@@ -142,8 +142,8 @@ export default toNative(App)
         
         <!-- 用户信息 -->
         <div class="flex items-center gap-1">
-          <PageAgent v-if="state.serviceAvailability.agent" />
-          <div class="hidden sm:block w-px h-5 bg-slate-200 mx-1" v-if="state.serviceAvailability.agent"></div>
+          <PageAgent v-if="actions.hasPerm('agent')" />
+          <div class="hidden sm:block w-px h-5 bg-slate-200 mx-1" v-if="actions.hasPerm('agent')"></div>
           <UserMenu />
         </div>
       </header>

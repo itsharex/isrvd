@@ -71,42 +71,28 @@ func StartApp() {
 
 // Route 定义单个路由的完整信息（同时用于注册和权限验证）
 type Route struct {
-	Method  string          // HTTP 方法：GET/POST/PUT/PATCH/DELETE/ANY
-	Path    string          // 路由路径（Gin 格式，支持 :param 和 *）
-	Handler gin.HandlerFunc // 处理函数
-	Module  string          // 模块名，空字符串表示无需模块权限（如 /auth/*）
-	Label   string          // 模块显示名，用于错误提示
-	Perm    string          // 所需权限：空或"r"=只读，"rw"=读写
+	Method  string                 // HTTP 方法：GET/POST/PUT/PATCH/DELETE/ANY
+	Path    string                 // 路由路径（Gin 格式，支持 :param 和 *）
+	Handler gin.HandlerFunc        // 处理函数
+	Module  string                 // 模块名，空字符串表示无需模块权限
+	Label   string                 // 模块显示名，用于错误提示
+	Access  svcAccount.RouteAccess // 访问级别：anon/auth/perm（默认 perm）
 }
 
 // initRoutes 初始化路由表并注册所有路由
 // 按模块注册路由，每个模块自己管理路由定义和注册
 func (app *App) initRoutes() {
 	r := app.Group(APINamespace)
+	r.Use(AuthMiddleware(app.routePerms, app.accountSvc))
+	r.Use(RoutePermMiddleware(app.routePerms, app.accountSvc))
+	r.Use(AuditMiddleware(app.auditSvc))
 
-	// 公开路由组：MixAuthMiddleware（认证失败时放行）
-	publicGroup := r.Group("")
-	publicGroup.Use(MixAuthMiddleware(app.accountSvc))
-
-	// 注册 account 模块的公开路由（无需认证）
-	publicGroup.GET("/auth/info", app.accountAuthInfo)
-	publicGroup.POST("/auth/login", app.accountLogin)
-
-	// 受保护路由组：AuthMiddleware + RoutePermMiddleware + AuditMiddleware
-	protectedGroup := r.Group("")
-	protectedGroup.Use(AuthMiddleware(app.accountSvc))
-	protectedGroup.Use(RoutePermMiddleware(app.routePerms, app.accountSvc))
-	protectedGroup.Use(AuditMiddleware(app.auditSvc))
-
-	// 加载所有模块的受保护路由定义（含 account 模块）
-	allRoutes := app.collectRoutes()
-
-	// 按条件注册路由（处理服务可用性依赖）
-	for _, route := range allRoutes {
+	// 加载所有模块的路由定义并注册
+	for _, route := range app.collectRoutes() {
 		if !app.isRouteAvailable(route) {
 			continue
 		}
-		app.registerRoute(protectedGroup, route)
+		app.registerRoute(r, route)
 	}
 }
 
@@ -119,7 +105,7 @@ func (app *App) collectRoutes() []Route {
 	routes = append(routes, app.defineOverviewRoutes()...)
 	// 系统设置
 	routes = append(routes, app.defineSystemRoutes()...)
-	// Account 模块：受保护路由（公开路由 /auth/info、/auth/login 由 initRoutes 直接注册）
+	// Account 模块
 	routes = append(routes, app.defineAccountRoutes()...)
 	// Web 终端
 	routes = append(routes, app.defineShellRoutes()...)
@@ -144,7 +130,7 @@ func (app *App) registerRoute(group *gin.RouterGroup, route Route) {
 	app.routePerms[route.Method+" "+APINamespace+route.Path] = svcAccount.RouteInfo{
 		Module: route.Module,
 		Label:  route.Label,
-		Perm:   route.Perm,
+		Access: route.Access,
 	}
 
 	switch route.Method {

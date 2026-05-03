@@ -10,15 +10,27 @@ import (
 	"isrvd/internal/service/account"
 )
 
-// defineAccountRoutes 定义 Account 模块受保护路由（成员管理）
-// 公开路由（/auth/info、/auth/login）由 initRoutes 直接注册
+// defineAccountRoutes 定义 Account 模块路由
 func (app *App) defineAccountRoutes() []Route {
 	return []Route{
-		{Method: "GET", Path: "/account/members", Handler: app.accountListMembers, Module: "account", Label: "成员管理", Perm: "r"},
-		{Method: "POST", Path: "/account/members", Handler: app.accountCreateMember, Module: "account", Label: "成员管理", Perm: "rw"},
-		{Method: "PUT", Path: "/account/members/:username", Handler: app.accountUpdateMember, Module: "account", Label: "成员管理", Perm: "rw"},
-		{Method: "DELETE", Path: "/account/members/:username", Handler: app.accountDeleteMember, Module: "account", Label: "成员管理", Perm: "rw"},
+		{Method: "GET", Path: "/account/info", Handler: app.accountAuthInfo, Module: "account", Label: "账户", Access: account.AccessAnon},
+		{Method: "POST", Path: "/account/login", Handler: app.accountLogin, Module: "account", Label: "账户", Access: account.AccessAnon},
+		{Method: "GET", Path: "/account/routes", Handler: app.accountListRoutes, Module: "account", Label: "成员管理", Access: account.AccessAuth},
+		{Method: "GET", Path: "/account/members", Handler: app.accountListMembers, Module: "account", Label: "成员管理"},
+		{Method: "POST", Path: "/account/members", Handler: app.accountCreateMember, Module: "account", Label: "成员管理"},
+		{Method: "PUT", Path: "/account/members/:username", Handler: app.accountUpdateMember, Module: "account", Label: "成员管理"},
+		{Method: "DELETE", Path: "/account/members/:username", Handler: app.accountDeleteMember, Module: "account", Label: "成员管理"},
 	}
+}
+
+// accountListRoutes 返回所有已注册路由及其权限元信息
+func (app *App) accountListRoutes(c *gin.Context) {
+	routes := make([]account.RouteInfo, 0, len(app.routePerms))
+	for key, info := range app.routePerms {
+		info.Key = key
+		routes = append(routes, info)
+	}
+	helper.RespondSuccess(c, "ok", routes)
 }
 
 // accountAuthInfo 返回当前认证模式及已登录用户信息

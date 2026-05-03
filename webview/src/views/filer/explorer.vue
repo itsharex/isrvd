@@ -128,7 +128,7 @@ export default toNative(FileExplorer)
             >
               <i class="fas fa-rotate"></i><span>刷新</span>
             </button>
-            <template v-if="actions.hasPerm('filer', true)">
+            <template v-if="actions.hasPerm('POST /api/filer/modify')">
               <button 
                 class="hidden md:flex px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium items-center gap-1.5 transition-colors"
                 @click="mkdirModalRef.show()"
@@ -152,7 +152,7 @@ export default toNative(FileExplorer)
             <button @click="refreshFiles()" class="md:hidden w-9 h-9 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-600 transition-colors" title="刷新">
               <i class="fas fa-rotate text-sm"></i>
             </button>
-            <template v-if="actions.hasPerm('filer', true)">
+            <template v-if="actions.hasPerm('POST /api/filer/modify')">
               <button @click="mkdirModalRef.show()" class="md:hidden w-9 h-9 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-600 transition-colors" title="新建目录">
                 <i class="fas fa-folder text-sm"></i>
               </button>
@@ -243,7 +243,7 @@ export default toNative(FileExplorer)
                       >
                         <i class="fas fa-folder-open text-xs"></i>
                       </button>
-                      <template v-if="actions.hasPerm('filer', true)">
+                      <template v-if="actions.hasPerm('POST /api/filer/modify')">
                         <button 
                           class="btn-icon text-amber-600 hover:bg-amber-50"
                           @click="zipModalRef.show(file)" 
@@ -277,7 +277,7 @@ export default toNative(FileExplorer)
                       >
                         <i class="fas fa-download text-xs"></i>
                       </button>
-                      <template v-if="actions.hasPerm('filer', true)">
+                      <template v-if="actions.hasPerm('POST /api/filer/modify')">
                         <button 
                           v-if="isEditableFile(file.name)"
                           class="btn-icon text-violet-600 hover:bg-violet-50"
@@ -370,7 +370,7 @@ export default toNative(FileExplorer)
                   <i class="fas fa-folder-open text-xs"></i>
                   <span class="text-xs ml-1 hidden xs:inline">进入</span>
                 </button>
-                <template v-if="actions.hasPerm('filer', true)">
+                <template v-if="actions.hasPerm('POST /api/filer/modify')">
                   <button 
                     class="btn-icon text-amber-600 hover:bg-amber-50"
                     @click="zipModalRef.show(file)" 
@@ -408,7 +408,7 @@ export default toNative(FileExplorer)
                   <i class="fas fa-download text-xs"></i>
                   <span class="text-xs ml-1 hidden xs:inline">下载</span>
                 </button>
-                <template v-if="actions.hasPerm('filer', true)">
+                <template v-if="actions.hasPerm('POST /api/filer/modify')">
                   <button 
                     v-if="isEditableFile(file.name)"
                     class="btn-icon text-violet-600 hover:bg-violet-50"

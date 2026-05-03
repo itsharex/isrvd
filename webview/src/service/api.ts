@@ -17,7 +17,7 @@ import type {
     SystemProbeResponse, DockerInfo,
     FilerListResponse, FilerReadResponse,
     AuthLoginResponse, AuthInfoResponse,
-    MemberInfo, MemberUpsertRequest,
+    MemberInfo, MemberUpsertRequest, RouteInfo,
     AllConfigResponse,
     ComposeDeployResult,
     SystemStat,
@@ -53,11 +53,15 @@ class ApiService {
     // ==================== Account 账户相关 ====================
 
     login(data: { username: string; password: string }) {
-        return http.post<AuthLoginResponse>('/api/auth/login', data)
+        return http.post<AuthLoginResponse>('/api/account/login', data)
     }
 
     getMe() {
-        return http.get<AuthInfoResponse>('/api/auth/info')
+        return http.get<AuthInfoResponse>('/api/account/info')
+    }
+
+    listRoutes() {
+        return http.get<RouteInfo[]>('/api/account/routes')
     }
 
     listMembers() {

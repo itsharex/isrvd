@@ -68,7 +68,6 @@ type MemberConfig struct {
 	HomeDirectory string `yaml:"homeDirectory" json:"homeDirectory"`
 	// Founder 创始人标志，创始人拥有所有模块的完整权限
 	Founder bool `yaml:"founder" json:"founder"`
-	// Permissions 各模块权限，key 为模块名，value 为 "r"（只读）或 "rw"（读写），空字符串或缺失表示无权限
-	// 可用模块：overview, system, account, shell, filer, agent, apisix, docker, swarm, compose
-	Permissions map[string]string `yaml:"permissions,omitempty" json:"permissions,omitempty"`
+	// Permissions 允许访问的路由列表，格式为 "METHOD /api/path"，如 "GET /api/docker/containers"
+	Permissions []string `yaml:"permissions,omitempty" json:"permissions,omitempty"`
 }

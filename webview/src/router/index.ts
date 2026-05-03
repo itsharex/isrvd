@@ -198,12 +198,12 @@ const router = createRouter({
 })
 
 // 由 app.vue 在 initProvider 后注入，避免循环依赖
-let _hasPerm: ((module: string, write?: boolean) => boolean) | null = null
+let _hasPerm: ((module: string) => boolean) | null = null
 let _permsLoaded: (() => boolean) | null = null
 let _isAuthenticated: (() => boolean) | null = null
 
 export const setRouterGuard = (
-    hasPerm: (module: string, write?: boolean) => boolean,
+    hasPerm: (module: string) => boolean,
     permsLoaded: () => boolean,
     isAuthenticated: () => boolean
 ) => {
@@ -218,11 +218,6 @@ router.beforeEach((to) => {
   if (!_isAuthenticated?.()) return true
   // 权限尚未加载完成时放行（刷新页面场景，等 loadMe 完成后由导航菜单 v-if 控制）
   if (!_permsLoaded?.()) return true
-
-  // 容器终端需要 docker 写权限
-  if (to.name === 'docker-container-exec') {
-    return _hasPerm?.('docker', true) ? true : { path: '/overview' }
-  }
 
   for (const [prefix, module] of routePermMap) {
     if (to.path.startsWith(prefix)) {

@@ -2,6 +2,7 @@ package account
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 
@@ -13,11 +14,21 @@ import (
 	"isrvd/internal/helper"
 )
 
+// RouteAccess 路由访问级别（数值越大，要求越高）
+type RouteAccess int
+
+const (
+	AccessPerm RouteAccess = iota // 0：权限控制，需要登录
+	AccessAuth                    // 1：已认证，需要登录
+	AccessAnon                    // 2：匿名，无需认证
+)
+
 // RouteInfo 路由的权限元信息，供中间件做权限校验
 type RouteInfo struct {
-	Module string // 模块名，空字符串表示无需模块权限
-	Label  string // 模块显示名，用于错误提示
-	Perm   string // 所需权限：空或"r"=只读，"rw"=读写
+	Key    string      `json:"key"`    // "METHOD /api/path"
+	Module string      `json:"module"` // 模块名，空字符串表示无需模块权限校验
+	Label  string      `json:"label"`  // 显示名，用于错误提示
+	Access RouteAccess `json:"access"` // 访问级别：0=perm（默认）/ 1=auth / 2=anon
 }
 
 // Auth 根据配置选择认证方式，返回用户名和错误原因。
@@ -45,10 +56,18 @@ func (s *Service) CheckRoutePerm(routePerms map[string]RouteInfo, method, path, 
 	if !exists {
 		return false, nil
 	}
-	if route.Module == "" {
+	// 匿名路由或无模块限制的路由，无需权限校验
+	if route.Access == AccessAnon || route.Module == "" {
 		return true, nil
 	}
-	return true, s.CheckPerm(username, route.Module, route.Perm, route.Label)
+	// 已认证路由：只需登录，无需特定权限
+	if route.Access == AccessAuth {
+		if username == "" {
+			return true, fmt.Errorf("请先登录")
+		}
+		return true, nil
+	}
+	return true, s.CheckPerm(username, route.Label, method, path)
 }
 
 // GetAuthInfo 返回当前认证模式及已登录用户信息
@@ -187,11 +206,9 @@ func (s *Service) CheckHeaderToken(c *gin.Context) (username, errMsg string) {
 	return username, ""
 }
 
-// CheckPerm 校验用户对指定模块的权限。
-// requiredPerm 为 "rw" 时要求写权限，否则只需读权限。
-// label 用于错误提示，为空时使用 module 代替。
-// 返回 nil 表示有权限，否则返回描述错误原因的 error。
-func (s *Service) CheckPerm(username, module, requiredPerm, label string) error {
+// CheckPerm 校验用户是否有权访问指定路由（"METHOD /api/path"）。
+// label 用于错误提示。返回 nil 表示有权限，否则返回描述错误原因的 error。
+func (s *Service) CheckPerm(username, label, method, path string) error {
 	member, exists := config.Members[username]
 	if !exists {
 		return fmt.Errorf("用户不存在")
@@ -200,18 +217,12 @@ func (s *Service) CheckPerm(username, module, requiredPerm, label string) error 
 	if member.Founder {
 		return nil
 	}
+	routeKey := method + " " + path
+	if slices.Contains(member.Permissions, routeKey) {
+		return nil
+	}
 	if label == "" {
-		label = module
+		label = routeKey
 	}
-	perm := member.Permissions[module]
-	if requiredPerm == "rw" {
-		if perm != "rw" {
-			return fmt.Errorf("无 %s 模块写权限", label)
-		}
-	} else {
-		if perm != "r" && perm != "rw" {
-			return fmt.Errorf("无 %s 模块访问权限", label)
-		}
-	}
-	return nil
+	return fmt.Errorf("无 %s 访问权限", label)
 }

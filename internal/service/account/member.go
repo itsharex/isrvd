@@ -14,9 +14,9 @@ import (
 
 // 哨兵错误，供 handler 层进行错误类型判断
 var (
-	ErrMemberNotFound  = errors.New("成员不存在")
-	ErrMemberExists    = errors.New("用户名已存在")
-	ErrInvalidRequest  = errors.New("用户名不能为空")
+	ErrMemberNotFound   = errors.New("成员不存在")
+	ErrMemberExists     = errors.New("用户名已存在")
+	ErrInvalidRequest   = errors.New("用户名不能为空")
 	ErrFounderProtected = errors.New("创始人不可修改或删除")
 )
 
@@ -31,11 +31,11 @@ func (s *Service) GetMember(username string) *MemberInfo {
 
 // MemberInfo 成员信息（不包含密码明文）
 type MemberInfo struct {
-	Username      string            `json:"username"`
-	HomeDirectory string            `json:"homeDirectory"`
-	PasswordSet   bool              `json:"passwordSet"`
-	Founder       bool              `json:"founder"`
-	Permissions   map[string]string `json:"permissions"`
+	Username      string   `json:"username"`
+	HomeDirectory string   `json:"homeDirectory"`
+	PasswordSet   bool     `json:"passwordSet"`
+	Founder       bool     `json:"founder"`
+	Permissions   []string `json:"permissions"`
 }
 
 // ListMembers 列出所有成员
@@ -51,7 +51,7 @@ func (s *Service) ListMembers() []*MemberInfo {
 func (s *Service) buildMemberInfo(m *config.MemberConfig) *MemberInfo {
 	perms := m.Permissions
 	if perms == nil {
-		perms = map[string]string{}
+		perms = []string{}
 	}
 	return &MemberInfo{
 		Username:      m.Username,
@@ -78,10 +78,10 @@ func (s *Service) ensureHomeDir(home, username string) (string, error) {
 
 // MemberUpsertRequest 成员新建/更新请求
 type MemberUpsertRequest struct {
-	Username      string            `json:"username"`
-	Password      string            `json:"password"`
-	HomeDirectory string            `json:"homeDirectory"`
-	Permissions   map[string]string `json:"permissions"`
+	Username      string   `json:"username"`
+	Password      string   `json:"password"`
+	HomeDirectory string   `json:"homeDirectory"`
+	Permissions   []string `json:"permissions"`
 }
 
 // CreateMember 新建成员

@@ -29,7 +29,7 @@ class ComposeDeploy extends Vue {
 
     // ─── 计算属性 ───
     get swarmAvailable(): boolean {
-        return this.state.serviceAvailability.swarm
+        return this.actions.hasPerm('POST /api/compose/swarm/deploy')
     }
 
     // 应用市场 modal 开关
@@ -151,7 +151,7 @@ export default toNative(ComposeDeploy)
           <button type="button" @click="resetForm()" :disabled="loading" class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors disabled:opacity-50">
               <i class="fas fa-rotate-left"></i>清空
             </button>
-            <button v-if="actions.hasPerm('compose', true)" type="button" @click="openMarketplace()" class="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-xs font-medium flex items-center gap-1.5 transition-colors">
+            <button v-if="actions.hasPerm('POST /api/compose/docker/deploy')" type="button" @click="openMarketplace()" class="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-xs font-medium flex items-center gap-1.5 transition-colors">
               <i class="fas fa-store"></i>应用市场
             </button>
           </div>
@@ -166,7 +166,7 @@ export default toNative(ComposeDeploy)
             </div>
           </div>
           <div class="flex items-center gap-2 flex-shrink-0">
-            <button v-if="actions.hasPerm('compose', true)" type="button" @click="openMarketplace()" class="w-9 h-9 rounded-lg bg-amber-500 hover:bg-amber-600 flex items-center justify-center text-white transition-colors" title="从应用市场选择">
+            <button v-if="actions.hasPerm('POST /api/compose/docker/deploy')" type="button" @click="openMarketplace()" class="w-9 h-9 rounded-lg bg-amber-500 hover:bg-amber-600 flex items-center justify-center text-white transition-colors" title="从应用市场选择">
               <i class="fas fa-store"></i>
             </button>
             <button type="button" @click="resetForm()" :disabled="loading" class="w-9 h-9 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 flex items-center justify-center transition-colors disabled:opacity-50" title="清空">
