@@ -44,9 +44,9 @@ func shellRunTerminal(conn *websocket.Conn, shell, homeDir string) {
 		shellSendMsg(conn, "[提示: "+originalShell+" 不可用，已降级到 "+shell+"]\r\n")
 	}
 
-	cmd := shellBuildCmd(shell, homeDir)
-
+	// PTY 模式（仅非 Windows）
 	if runtime.GOOS != "windows" {
+		cmd := shellBuildCmd(shell, homeDir)
 		ptmx, err := pty.Start(cmd)
 		if err == nil {
 			defer ptmx.Close()
@@ -57,6 +57,8 @@ func shellRunTerminal(conn *websocket.Conn, shell, homeDir string) {
 		shellSendMsg(conn, "[提示: PTY 模式不可用，已降级到 Pipe 模式]\r\n")
 	}
 
+	// Pipe 模式：重新创建 cmd 对象（避免 PTY 失败后 Stdin 已设置）
+	cmd := shellBuildCmd(shell, homeDir)
 	if err := shellRunWithPipe(conn, cmd); err != nil {
 		logman.Error("Pipe 模式启动失败", "shell", shell, "error", err)
 		shellSendMsg(conn, "[启动 "+shell+" 失败: "+err.Error()+"]\r\n")
