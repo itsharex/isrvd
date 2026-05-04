@@ -69,7 +69,7 @@ class MarketplaceModal extends Vue {
     async loadUrl() {
         this.loading = true
         try {
-            const res = await api.getConfig()
+            const res = await api.systemConfig()
             const payload = res.payload as AllConfigResponse
             const url = payload.marketplace?.url || ''
             this.iframeUrl = url

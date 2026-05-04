@@ -89,7 +89,7 @@ class MemberEditModal extends Vue {
         if (this.routeGroups.length > 0) return
         this.routesLoading = true
         try {
-            const res = await api.listRoutes()
+            const res = await api.accountRouteList()
             const items: RouteInfo[] = res.payload || []
             // 收集 access >= 1 的路由（匿名/登录即可），自动勾选且不可取消
             const autoPerms = new Set<string>()
@@ -242,10 +242,10 @@ class MemberEditModal extends Vue {
         this.modalLoading = true
         try {
             if (this.isEdit) {
-                await api.updateMember(this.originalUsername, this.formData)
+                await api.accountMemberUpdate(this.originalUsername, this.formData)
                 this.actions.showNotification('success', '成员更新成功')
             } else {
-                await api.createMember(this.formData)
+                await api.accountMemberCreate(this.formData)
                 this.actions.showNotification('success', '成员添加成功')
             }
             this.isOpen = false

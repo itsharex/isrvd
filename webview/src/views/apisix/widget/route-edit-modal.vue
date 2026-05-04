@@ -172,13 +172,13 @@ class RouteEditModal extends Vue {
     }
 
     async loadResources(allRoutes: ApisixRoute[]) {
-        this.routes = allRoutes || []
+        this.routes = allRoutes
         try {
             const [pc, us, pl, ct] = await Promise.all([
-                api.apisixListPluginConfigs(),
-                api.apisixListUpstreams(),
-                api.apisixListPlugins(),
-                api.listContainers()
+                api.apisixPluginConfigList(),
+                api.apisixUpstreamList(),
+                api.apisixPluginList(),
+                api.dockerContainerList()
             ])
             this.pluginConfigs = pc.payload || []
             this.upstreams = us.payload || []
@@ -196,7 +196,7 @@ class RouteEditModal extends Vue {
             this.modalLoading = true
             this.isOpen = true
             try {
-                const r = (await api.apisixGetRoute(route.id)).payload
+              const r = (await api.apisixRoute(route.id)).payload
                 if (!r) {
                     this.actions.showNotification('error', '加载路由详情失败')
                     this.isOpen = false
@@ -247,11 +247,11 @@ class RouteEditModal extends Vue {
         this.modalLoading = true
         try {
             const payload = buildRoutePayload(this.formData, this.originalUpstream)
-            if (this.isEditMode) {
-                await api.apisixUpdateRoute(this.editingRouteId, payload)
+          if (this.isEditMode) {
+                await api.apisixRouteUpdate(this.editingRouteId, payload)
                 this.actions.showNotification('success', '路由更新成功')
-            } else {
-                await api.apisixCreateRoute(payload)
+          } else {
+                await api.apisixRouteCreate(payload)
                 this.actions.showNotification('success', '路由创建成功')
             }
             this.isOpen = false

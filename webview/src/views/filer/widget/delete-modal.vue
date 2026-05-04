@@ -30,7 +30,7 @@ class DeleteModal extends Vue {
 
     async handleConfirm() {
         if (!this.formData.path) return
-        await api.delete(this.formData.path)
+        await api.filerDelete(this.formData.path)
         this.actions.loadFiles()
         this.isOpen = false
     }

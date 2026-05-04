@@ -23,14 +23,13 @@ class NetworkDetail extends Vue {
     async loadDetail() {
         this.loading = true
         try {
-            const res = await api.networkInspect(this.networkId)
+            const res = await api.dockerNetwork(this.networkId)
             this.detailData = res.payload ?? null
         } catch (e) {
             this.actions.showNotification('error', '获取网络详情失败')
         }
         this.loading = false
     }
-
     // ─── 生命周期 ───
     mounted() {
         this.loadDetail()

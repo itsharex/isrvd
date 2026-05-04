@@ -41,7 +41,7 @@ class ConsumerEditModal extends Vue {
 
     async loadPlugins() {
         try {
-            const pl = await api.apisixListPlugins()
+            const pl = await api.apisixPluginList()
             this.availablePlugins = pl.payload || {}
         } catch {}
     }
@@ -82,9 +82,9 @@ class ConsumerEditModal extends Vue {
                 plugins: this.formData.plugins,
             }
             if (this.isEditMode) {
-                await api.apisixUpdateConsumer(this.formData.username, payload)
+                await api.apisixConsumerUpdate(this.formData.username, payload)
             } else {
-                await api.apisixCreateConsumer({ username: this.formData.username, desc: payload.desc, plugins: payload.plugins } as ApisixCreateConsumerRequest)
+                await api.apisixConsumerCreate({ username: this.formData.username, desc: payload.desc, plugins: payload.plugins } as ApisixCreateConsumerRequest)
             }
             this.isOpen = false
             this.$emit('success')

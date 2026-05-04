@@ -38,7 +38,7 @@ class SSLs extends Vue {
     async loadSSLs() {
         this.loading = true
         try {
-            this.ssls = this.sortSSLs((await api.apisixListSSLs()).payload || [])
+            this.ssls = this.sortSSLs((await api.apisixSSLList()).payload || [])
         } catch {
             this.actions.showNotification('error', '加载证书列表失败')
         }
@@ -88,7 +88,7 @@ class SSLs extends Vue {
             confirmText: '确认删除',
             danger: true,
             onConfirm: async () => {
-                await api.apisixDeleteSSL(id)
+                await api.apisixSSLDelete(id)
                 this.actions.showNotification('success', '删除成功')
                 this.loadSSLs()
             }

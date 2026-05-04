@@ -94,8 +94,8 @@ class ComposeDeploy extends Vue {
         this.loading = true
         try {
             const res = this.target === 'swarm'
-                ? await api.composeDeploySwarm({ content: this.content, projectName })
-                : await api.composeDeployDocker({
+                ? await api.composeSwarmDeploy({ content: this.content, projectName })
+                : await api.composeDockerDeploy({
                     content: this.content,
                     projectName,
                     initURL: this.initURL.trim() || undefined,

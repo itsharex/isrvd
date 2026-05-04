@@ -31,9 +31,9 @@ class ApisixOverview extends Vue {
         this.loading = true
         try {
             const [routesRes, consumersRes, whitelistRes] = await Promise.all([
-                api.apisixListRoutes(),
-                api.apisixListConsumers(),
-                api.apisixGetWhitelist(),
+                api.apisixRouteList(),
+                api.apisixConsumerList(),
+                api.apisixWhitelist(),
             ])
             const routes = routesRes.payload || []
             const consumers = consumersRes.payload || []

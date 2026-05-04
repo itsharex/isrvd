@@ -30,14 +30,13 @@ class Volumes extends Vue {
     async loadVolumes() {
         this.loading = true
         try {
-            const res = await api.listVolumes()
+            const res = await api.dockerVolumeList()
             this.volumes = res.payload || []
         } catch (e) {
-            this.actions.showNotification('error', '加载卷列表失败')
+            this.actions.showNotification('error', '加载数据卷列表失败')
         }
         this.loading = false
     }
-
     handleVolumeAction(vol: DockerVolumeInfo, action: string) {
         this.actions.showConfirm({
             title: '删除数据卷',
@@ -47,7 +46,7 @@ class Volumes extends Vue {
             confirmText: '确认删除',
             danger: true,
             onConfirm: async () => {
-                await api.volumeAction(vol.name, action)
+                await api.dockerVolumeAction(vol.name, action)
                 this.actions.showNotification('success', '数据卷删除成功')
                 this.loadVolumes()
             }

@@ -28,7 +28,7 @@ class MkdirModal extends Vue {
 
     async handleConfirm() {
         if (!this.formData.name.trim()) return
-        await api.mkdir(this.state.currentPath + '/' + this.formData.name)
+        await api.filerMkdir(this.state.currentPath + '/' + this.formData.name)
         this.actions.loadFiles()
         this.isOpen = false
     }

@@ -27,7 +27,7 @@ class ImageDetail extends Vue {
     async loadDetail() {
         this.loading = true
         try {
-            const res = await api.imageInspect(this.imageId)
+            const res = await api.dockerImage(this.imageId)
             this.inspectData = res.payload ?? null
         } catch (e) {
             this.actions.showNotification('error', '获取镜像详情失败')

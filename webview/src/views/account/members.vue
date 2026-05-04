@@ -25,7 +25,7 @@ class Members extends Vue {
     async loadMembers() {
         this.membersLoading = true
         try {
-            const res = await api.listMembers()
+            const res = await api.accountMemberList()
             this.members = res.payload || []
         } catch (e) {
             this.actions.showNotification('error', '加载成员列表失败')
@@ -51,7 +51,7 @@ class Members extends Vue {
             danger: true,
             onConfirm: async () => {
                 try {
-                    await api.deleteMember(m.username)
+                    await api.accountMemberDelete(m.username)
                     this.actions.showNotification('success', '成员删除成功')
                     this.loadMembers()
                 } catch (e) {}

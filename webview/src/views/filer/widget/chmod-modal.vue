@@ -30,7 +30,7 @@ class ChmodModal extends Vue {
 
     async handleConfirm() {
         if (!this.formData.mode.trim()) return
-        await api.chmod(this.formData.path, this.formData.mode)
+        await api.filerChmod(this.formData.path, this.formData.mode)
         this.actions.loadFiles()
         this.isOpen = false
     }

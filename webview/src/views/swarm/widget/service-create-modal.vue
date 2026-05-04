@@ -25,7 +25,7 @@ class ServiceCreateModal extends Vue {
     // ─── 方法 ───
     async loadResources() {
         try {
-            const [imgRes, netRes] = await Promise.all([api.listImages(false), api.listNetworks()])
+            const [imgRes, netRes] = await Promise.all([api.dockerImageList(false), api.dockerNetworkList()])
             this.images = imgRes.payload || []
             this.networks = (netRes.payload || []).filter((n: DockerNetworkInfo) =>
                 n.driver === 'overlay' || n.driver === 'host' || n.driver === 'bridge'
@@ -56,7 +56,7 @@ class ServiceCreateModal extends Vue {
                 return { type: 'bind', source: parts[0], target: parts[1] || parts[0], readOnly: false }
             })
 
-            await api.swarmCreateService({
+            await api.swarmServiceCreate({
                 name: this.form.name,
                 image: this.form.image,
                 mode: this.form.mode,

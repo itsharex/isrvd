@@ -43,7 +43,7 @@ class Containers extends Vue {
     async loadContainers() {
         this.loading = true
         try {
-            const res = await api.listContainers(this.showAll)
+            const res = await api.dockerContainerList(this.showAll)
             this.containers = res.payload || []
         } catch (e) {
             this.actions.showNotification('error', '加载容器列表失败')
@@ -62,7 +62,7 @@ class Containers extends Vue {
             confirmText: `确认${config.confirmText}`,
             danger: config.danger,
             onConfirm: async () => {
-                await api.containerAction(container.id, action)
+                await api.dockerContainerAction(container.id, action)
                 this.actions.showNotification('success', `容器 ${config.confirmText} 成功`)
                 this.loadContainers()
             }
@@ -106,7 +106,7 @@ class Containers extends Vue {
             confirmText: `确认批量${config.confirmText}`,
             danger: config.danger,
             onConfirm: async () => {
-                const promises = this.selectedIds.map(id => api.containerAction(id, action))
+                const promises = this.selectedIds.map(id => api.dockerContainerAction(id, action))
                 await Promise.allSettled(promises)
                 this.actions.showNotification('success', `批量${config.confirmText}操作完成`)
                 this.selectedIds = []

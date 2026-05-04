@@ -32,7 +32,7 @@ class ServiceEditModal extends Vue {
         this.modalLoading = true
         this.isOpen = true
         try {
-            const res = await api.swarmGetServiceCompose(svc.name)
+            const res = await api.swarmServiceCompose(svc.name)
             this.composeContent = res.payload?.content || ''
         } catch (e) {
             this.isOpen = false
@@ -45,7 +45,7 @@ class ServiceEditModal extends Vue {
         if (!this.composeContent.trim()) return
         this.modalLoading = true
         try {
-            await api.composeRedeploySwarm(this.serviceName, { content: this.composeContent })
+            await api.composeSwarmRedeploy(this.serviceName, { content: this.composeContent })
             this.actions.showNotification('success', 'Swarm 服务配置更新成功，已重建服务')
             this.isOpen = false
             this.$emit('success')

@@ -35,7 +35,7 @@ class ModifyModal extends Vue {
 
     // ─── 方法 ───
     async show(file: FilerFileInfo) {
-        const res = await api.read(file.path)
+        const res = await api.filerRead(file.path)
         this.formData.path = file.path
         this.formData.filename = file.name
         this.formData.content = res.payload?.content ?? ''
@@ -43,7 +43,7 @@ class ModifyModal extends Vue {
     }
 
     async handleConfirm() {
-        await api.modify(this.formData.path, this.formData.content)
+        await api.filerModify(this.formData.path, this.formData.content)
         this.actions.loadFiles()
         this.isOpen = false
     }

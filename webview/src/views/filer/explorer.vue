@@ -59,7 +59,7 @@ class FileExplorer extends Vue {
     }
 
     async download(file: FilerFileInfo) {
-        const response = await api.download(file.path)
+        const response = await api.filerDownload(file.path)
         downloadFile(file.name, response)
     }
 
@@ -68,7 +68,7 @@ class FileExplorer extends Vue {
     }
 
     async loadFiles(path: string = this.state.currentPath) {
-        const res = await api.list(path)
+        const res = await api.filerList(path)
         this.files = res.payload?.files || []
         this.state.currentPath = res.payload?.path ?? '/'
     }

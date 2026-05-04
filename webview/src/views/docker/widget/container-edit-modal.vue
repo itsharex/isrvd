@@ -32,7 +32,7 @@ class ContainerEditModal extends Vue {
         this.modalLoading = true
         this.isOpen = true
         try {
-            const res = await api.getContainerCompose(container.name)
+            const res = await api.dockerContainerCompose(container.name)
             this.composeContent = res.payload?.content || ''
         } catch (e) {
             this.isOpen = false
@@ -45,7 +45,7 @@ class ContainerEditModal extends Vue {
         if (!this.composeContent.trim()) return
         this.modalLoading = true
         try {
-            await api.composeRedeployDocker(this.projectName, { content: this.composeContent })
+            await api.composeDockerRedeploy(this.projectName, { content: this.composeContent })
             this.actions.showNotification('success', '容器配置更新成功，已重建容器')
             this.isOpen = false
             this.$emit('success')

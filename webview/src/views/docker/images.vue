@@ -38,7 +38,7 @@ class Images extends Vue {
     async loadImages() {
         this.loading = true
         try {
-            const res = await api.listImages(this.showAllImages)
+            const res = await api.dockerImageList(this.showAllImages)
             this.images = res.payload || []
         } catch (e) {
             this.actions.showNotification('error', '加载镜像列表失败')
@@ -48,7 +48,7 @@ class Images extends Vue {
 
     async loadRegistries() {
         try {
-            const res = await api.listRegistries()
+            const res = await api.dockerRegistryList()
             this.registries = res.payload || []
         } catch (e) {}
     }
@@ -95,7 +95,7 @@ class Images extends Vue {
             danger: false,
             onConfirm: async () => {
                 try {
-                    await api.pullImage(pullImageRef, registryUrl, '')
+                    await api.dockerImagePull(pullImageRef, registryUrl, '')
                     this.actions.showNotification('success', '镜像拉取成功')
                     this.loadImages()
                 } catch (e: any) {
@@ -114,7 +114,7 @@ class Images extends Vue {
             confirmText: '确认删除',
             danger: true,
             onConfirm: async () => {
-                await api.imageAction(image.id, action)
+                await api.dockerImageAction(image.id, action)
                 this.actions.showNotification('success', '镜像删除成功')
                 this.loadImages()
             }

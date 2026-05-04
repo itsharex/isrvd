@@ -60,8 +60,8 @@ class PluginConfigEditModal extends Vue {
     async loadResources() {
         try {
             const [pluginsRes, routesRes] = await Promise.all([
-                api.apisixListPlugins(),
-                api.apisixListRoutes()
+                api.apisixPluginList(),
+                api.apisixRouteList()
             ])
             this.availablePlugins = pluginsRes.payload || {}
             this.routes = routesRes.payload || []
@@ -97,9 +97,9 @@ class PluginConfigEditModal extends Vue {
         try {
             const payload = this.buildPayload()
             if (this.isEditMode) {
-                await api.apisixUpdatePluginConfig(this.formData.id, payload)
+                await api.apisixPluginConfigUpdate(this.formData.id, payload)
             } else {
-                await api.apisixCreatePluginConfig(payload)
+                await api.apisixPluginConfigCreate(payload)
             }
             this.isOpen = false
             this.$emit('success')

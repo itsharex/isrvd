@@ -31,7 +31,7 @@ class Whitelist extends Vue {
     async loadWhitelist() {
         this.loading = true
         try {
-            this.whitelist = (await api.apisixGetWhitelist()).payload || []
+            this.whitelist = (await api.apisixWhitelist()).payload || []
         } catch {
             this.actions.showNotification('error', '加载白名单失败')
         }
@@ -57,7 +57,7 @@ class Whitelist extends Vue {
             confirmText: '确认撤销',
             danger: true,
             onConfirm: async () => {
-                await api.apisixRevokeWhitelist(routeId, consumer)
+                await api.apisixWhitelistRevoke(routeId, consumer)
                 this.actions.showNotification('success', '撤销成功')
                 this.loadWhitelist()
             }

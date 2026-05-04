@@ -56,14 +56,14 @@ class ContainerCreateModal extends Vue {
     // ─── 方法 ───
     async loadImages() {
         try {
-            const res = await api.listImages(false)
+            const res = await api.dockerImageList(false)
             this.images = res.payload || []
         } catch (e) {}
     }
 
     async loadNetworks() {
         try {
-            const res = await api.listNetworks()
+            const res = await api.dockerNetworkList()
             this.networks = res.payload || []
         } catch (e) {}
     }
@@ -150,7 +150,7 @@ class ContainerCreateModal extends Vue {
 
         this.modalLoading = true
         try {
-            await api.composeDeployDocker({ content, projectName })
+            await api.composeDockerDeploy({ content, projectName })
             this.actions.showNotification('success', '容器创建成功')
             this.isOpen = false
             this.$emit('success')

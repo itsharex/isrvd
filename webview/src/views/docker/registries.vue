@@ -36,7 +36,7 @@ class Registries extends Vue {
     async loadRegistries() {
         this.loading = true
         try {
-            const res = await api.listRegistries()
+            const res = await api.dockerRegistryList()
             this.registries = res.payload || []
         } catch (e) {
             this.actions.showNotification('error', '加载仓库列表失败')
@@ -62,7 +62,7 @@ class Registries extends Vue {
             danger: true,
             onConfirm: async () => {
                 try {
-                    await api.deleteRegistry(reg.url)
+                    await api.dockerRegistryDelete(reg.url)
                     this.actions.showNotification('success', '仓库删除成功')
                     this.loadRegistries()
                 } catch (e) {}

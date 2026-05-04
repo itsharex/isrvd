@@ -31,7 +31,7 @@ class ContainerNav extends Vue {
 
     async loadContainer() {
         try {
-            const res = await api.listContainers(true)
+            const res = await api.dockerContainerList(true)
             const list = res.payload || []
             this.container = list.find(c => c.id === this.containerId) ?? null
             if (!this.container) {

@@ -126,7 +126,7 @@ class UpstreamEditModal extends Vue {
 
     async loadContainers() {
         try {
-            const res = await api.listContainers()
+            const res = await api.dockerContainerList()
             this.containers = (res.payload || []).filter(c => c.state === 'running')
         } catch {
             this.containers = []
@@ -179,9 +179,9 @@ class UpstreamEditModal extends Vue {
         this.modalLoading = true
         try {
             if (this.isEditMode) {
-                await api.apisixUpdateUpstream(this.formData.id, payload)
+                await api.apisixUpstreamUpdate(this.formData.id, payload)
             } else {
-                await api.apisixCreateUpstream(payload)
+                await api.apisixUpstreamCreate(payload)
             }
             this.isOpen = false
             this.$emit('success')

@@ -65,7 +65,7 @@ class AuditLogs extends Vue {
     async loadLogs() {
         this.loading = true
         try {
-            const res = await api.getAuditLogs()
+            const res = await api.systemAuditLogs()
             this.logs = res.payload || []
         } catch {
             this.actions.showNotification('error', '获取审计日志失败')

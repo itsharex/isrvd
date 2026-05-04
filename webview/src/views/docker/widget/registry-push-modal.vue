@@ -47,7 +47,7 @@ class RegistryPushModal extends Vue {
     // ─── 方法 ───
     async loadLocalImages() {
         try {
-            const res = await api.listImages(false)
+            const res = await api.dockerImageList(false)
             this.localImages = (res.payload || []).filter((img: DockerImageInfo) => img.repoTags && img.repoTags.length > 0)
         } catch (e) {}
     }
@@ -67,7 +67,7 @@ class RegistryPushModal extends Vue {
         if (!this.pushForm.image.trim() || !this.pushForm.registryUrl.trim()) return
         this.modalLoading = true
         try {
-            await api.pushImage(this.pushForm.image, this.pushForm.registryUrl, this.pushForm.namespace.trim())
+            await api.dockerImagePush(this.pushForm.image, this.pushForm.registryUrl, this.pushForm.namespace.trim())
             this.actions.showNotification('success', '镜像推送成功')
             this.isOpen = false
             this.$emit('success')

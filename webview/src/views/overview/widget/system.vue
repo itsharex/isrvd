@@ -44,7 +44,7 @@ class SystemOverview extends Vue {
     async loadData() {
         this.loading = true
         try {
-            const res = await api.systemStatus()
+            const res = await api.overviewStatus()
             if (res.payload) {
                 this.ready = true
                 this.dispatchData(res.payload)
@@ -59,7 +59,7 @@ class SystemOverview extends Vue {
             return
         }
         try {
-            const res = await api.systemStatus()
+            const res = await api.overviewStatus()
             if (res.payload) {
                 this.dispatchData(res.payload)
             }

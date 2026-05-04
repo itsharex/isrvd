@@ -31,7 +31,7 @@ class VolumeCreateModal extends Vue {
         if (!this.formData.name.trim()) return
         this.modalLoading = true
         try {
-            await api.createVolume(this.formData)
+            await api.dockerVolumeCreate(this.formData)
             this.actions.showNotification('success', '数据卷创建成功')
             this.isOpen = false
             this.$emit('success')

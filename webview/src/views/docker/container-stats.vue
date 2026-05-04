@@ -91,7 +91,7 @@ class ContainerStats extends Vue {
 
     async loadStats() {
         try {
-            const res = await api.containerStats(this.containerId)
+            const res = await api.dockerContainerStats(this.containerId)
             if (this.destroyed || !res.payload) return
             const isFirst = !this.statsData
             this.statsData = res.payload

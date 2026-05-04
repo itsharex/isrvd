@@ -40,7 +40,7 @@ class App extends Vue {
 
     async loadServiceAvailability() {
         try {
-            const res = await api.serviceProbe()
+            const res = await api.overviewProbe()
             this.actions.updateServiceAvailability(res?.payload || {})
         } catch (e) {
             console.warn('Failed to load service probe:', e)
@@ -49,7 +49,7 @@ class App extends Vue {
 
     async loadLinks() {
         try {
-            const res = await api.getConfig()
+            const res = await api.systemConfig()
             this.toolbarLinks = res?.payload?.links || []
         } catch (e) {
             console.warn('Failed to load toolbar links:', e)
@@ -58,7 +58,7 @@ class App extends Vue {
 
     async loadMe() {
         try {
-            const res = await api.getMe()
+            const res = await api.accountInfo()
             const member = res?.payload?.member
             if (member) {
                 this.actions.setPermissions({
@@ -84,7 +84,7 @@ class App extends Vue {
     // ─── 生命周期 ───
     async mounted() {
         try {
-            const res = await api.getMe()
+            const res = await api.accountInfo()
             const mode = res?.payload?.mode
             if (mode === 'header') {
                 // header 认证模式：直接使用代理注入的用户名，无需登录

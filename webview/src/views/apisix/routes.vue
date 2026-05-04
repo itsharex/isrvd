@@ -59,7 +59,7 @@ class Routes extends Vue {
     async loadRoutes() {
         this.loading = true
         try {
-            this.routes = this.sortRoutes((await api.apisixListRoutes()).payload || [])
+            this.routes = this.sortRoutes((await api.apisixRouteList()).payload || [])
         } catch {
             this.actions.showNotification('error', '加载路由列表失败')
         }
@@ -112,7 +112,7 @@ class Routes extends Vue {
             iconColor: ns === 1 ? 'emerald' : 'amber',
             confirmText: `确认${label}`,
             onConfirm: async () => {
-                await api.apisixPatchRouteStatus(id, ns)
+                await api.apisixRouteStatus(id, ns)
                 this.actions.showNotification('success', `路由已${label}`)
                 this.loadRoutes()
             }
@@ -130,7 +130,7 @@ class Routes extends Vue {
             confirmText: '确认删除',
             danger: true,
             onConfirm: async () => {
-                await api.apisixDeleteRoute(id)
+                await api.apisixRouteDelete(id)
                 this.actions.showNotification('success', '删除成功')
                 this.loadRoutes()
             }

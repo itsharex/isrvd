@@ -30,7 +30,7 @@ class RenameModal extends Vue {
 
     async handleConfirm() {
         if (!this.formData.name.trim() || !this.formData.file) return
-        await api.rename(this.formData.file.path, this.formData.name)
+        await api.filerRename(this.formData.file.path, this.formData.name)
         this.actions.loadFiles()
         this.isOpen = false
     }

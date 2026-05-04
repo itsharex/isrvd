@@ -42,7 +42,7 @@ class Nodes extends Vue {
     async loadNodes() {
         this.nodesLoading = true
         try {
-            const res = await api.swarmListNodes()
+            const res = await api.swarmNodeList()
             const list = res.payload || []
             // leader 节点排最前
             this.nodes = list.sort((a: SwarmNodeDTO, b: SwarmNodeDTO) => (b.leader ? 1 : 0) - (a.leader ? 1 : 0))
@@ -63,7 +63,7 @@ class Nodes extends Vue {
             confirmText: `确认${label}`,
             danger: action === 'remove',
             onConfirm: async () => {
-                await api.NodeDTOAction(node.id, action)
+                await api.swarmNodeAction(node.id, action)
                 this.actions.showNotification('success', `节点${label}成功`)
                 this.loadNodes()
             }
@@ -76,7 +76,7 @@ class Nodes extends Vue {
         this.joinTokens = null
         this.copied = false
         try {
-            const res = await api.swarmGetJoinTokens()
+            const res = await api.swarmTokens()
             this.joinTokens = res.payload || null
         } catch (e) {
             this.actions.showNotification('error', '获取加入令牌失败')

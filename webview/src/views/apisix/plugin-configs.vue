@@ -42,7 +42,7 @@ class PluginConfigs extends Vue {
     async loadConfigs() {
         this.loading = true
         try {
-            this.configs = this.sortConfigs((await api.apisixListPluginConfigs()).payload || [])
+            this.configs = this.sortConfigs((await api.apisixPluginConfigList()).payload || [])
         } catch {
             this.actions.showNotification('error', '加载插件配置列表失败')
         }
@@ -84,7 +84,7 @@ class PluginConfigs extends Vue {
             confirmText: '确认删除',
             danger: true,
             onConfirm: async () => {
-                await api.apisixDeletePluginConfig(id)
+                await api.apisixPluginConfigDelete(id)
                 this.actions.showNotification('success', '删除成功')
                 this.loadConfigs()
             }

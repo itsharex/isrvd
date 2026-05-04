@@ -34,7 +34,7 @@ class ImageTagModal extends Vue {
         if (!this.tagRepoTag.trim() || !this.tagImage) return
         this.modalLoading = true
         try {
-            await api.imageTag(this.tagImage.id, this.tagRepoTag.trim())
+            await api.dockerImageTag(this.tagImage.id, this.tagRepoTag.trim())
             this.actions.showNotification('success', '镜像标签添加成功')
             this.isOpen = false
             this.$emit('success')

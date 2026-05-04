@@ -27,7 +27,7 @@ class Networks extends Vue {
     async loadNetworks() {
         this.loading = true
         try {
-            const res = await api.listNetworks()
+            const res = await api.dockerNetworkList()
             this.networks = res.payload || []
         } catch (e) {
             this.actions.showNotification('error', '加载网络列表失败')
@@ -44,7 +44,7 @@ class Networks extends Vue {
             confirmText: '确认删除',
             danger: true,
             onConfirm: async () => {
-                await api.networkAction(net.id, action)
+                await api.dockerNetworkAction(net.id, action)
                 this.actions.showNotification('success', '网络删除成功')
                 this.loadNetworks()
             }

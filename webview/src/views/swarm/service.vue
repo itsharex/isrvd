@@ -50,8 +50,8 @@ class ServiceInfo extends Vue {
         this.loading = true
         try {
             const [detailRes, tasksRes] = await Promise.all([
-                api.swarmInspectService(this.serviceId),
-                api.swarmListTasks(this.serviceId),
+                api.swarmService(this.serviceId),
+                api.swarmTaskList(this.serviceId),
             ])
             this.serviceData = detailRes.payload ?? null
             this.tasks = tasksRes.payload ?? []

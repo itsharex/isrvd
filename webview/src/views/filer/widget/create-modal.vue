@@ -28,7 +28,7 @@ class CreateModal extends Vue {
 
     async handleConfirm() {
         if (!this.formData.name.trim()) return
-        await api.create(this.state.currentPath + '/' + this.formData.name, this.formData.content)
+        await api.filerCreate(this.state.currentPath + '/' + this.formData.name, this.formData.content)
         this.actions.loadFiles()
         this.isOpen = false
     }

@@ -19,7 +19,7 @@ class Login extends Vue {
 
     // ─── 方法 ───
     async handleLogin() {
-        const { payload } = await api.login(this.loginForm)
+        const { payload } = await api.accountLogin(this.loginForm)
         if (!payload) return
 
         this.actions.setAuth({ authMode: 'jwt', ...payload })

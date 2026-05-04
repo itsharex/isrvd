@@ -27,14 +27,13 @@ class VolumeDetail extends Vue {
     async loadDetail() {
         this.loading = true
         try {
-            const res = await api.volumeInspect(this.volumeName)
+            const res = await api.dockerVolume(this.volumeName)
             this.detailData = res.payload ?? null
         } catch (e) {
-            this.actions.showNotification('error', '获取卷详情失败')
+            this.actions.showNotification('error', '获取数据卷详情失败')
         }
         this.loading = false
     }
-
     // ─── 生命周期 ───
     mounted() {
         this.loadDetail()

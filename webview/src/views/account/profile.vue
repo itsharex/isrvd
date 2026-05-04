@@ -58,7 +58,7 @@ class Profile extends Vue {
 
         this.passwordLoading = true
         try {
-            await api.changePassword({
+            await api.accountPasswordChange({
                 oldPassword: this.passwordForm.oldPassword,
                 newPassword: this.passwordForm.newPassword
             })
@@ -78,7 +78,7 @@ class Profile extends Vue {
         }
         this.tokenLoading = true
         try {
-            const res = await api.createApiToken({
+            const res = await api.accountTokenCreate({
                 name: this.tokenForm.name.trim(),
                 expiresIn: this.tokenForm.expiresIn
             })

@@ -56,10 +56,10 @@ class RegistryEditModal extends Vue {
         this.modalLoading = true
         try {
             if (this.isEdit) {
-                await api.updateRegistry(this.originalUrl, this.formData)
+                await api.dockerRegistryUpdate(this.originalUrl, this.formData)
                 this.actions.showNotification('success', '仓库更新成功')
             } else {
-                await api.createRegistry(this.formData)
+                await api.dockerRegistryCreate(this.formData)
                 this.actions.showNotification('success', '仓库添加成功')
             }
             this.isOpen = false

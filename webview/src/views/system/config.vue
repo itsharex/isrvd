@@ -29,7 +29,7 @@ class Config extends Vue {
   async loadConfig(reload = false) {
     this.loading = true
     try {
-      const res = await api.getConfig(reload ? { reload: 'true' } : undefined)
+      const res = await api.systemConfig(reload ? { reload: 'true' } : undefined)
       const payload = res.payload as AllConfigResponse
       this.server = { ...payload.server }
       this.agent = { ...payload.agent }
@@ -49,7 +49,7 @@ class Config extends Vue {
   async saveAll() {
     this.saving = true
     try {
-      await api.updateAllConfig({
+      await api.systemConfigUpdate({
         server: this.server,
         agent: this.agent,
         apisix: this.apisix,

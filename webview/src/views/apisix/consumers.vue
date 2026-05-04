@@ -38,7 +38,7 @@ class Consumers extends Vue {
     async loadConsumers() {
         this.loading = true
         try {
-            const [consRes, wlRes] = await Promise.all([api.apisixListConsumers(), api.apisixGetWhitelist()])
+            const [consRes, wlRes] = await Promise.all([api.apisixConsumerList(), api.apisixWhitelist()])
             this.consumers = consRes.payload || []
             this.whitelist = wlRes.payload || []
         } catch (e) {
@@ -73,7 +73,7 @@ class Consumers extends Vue {
             confirmText: '确认删除',
             danger: true,
             onConfirm: async () => {
-                await api.apisixDeleteConsumer(consumer.username)
+                await api.apisixConsumerDelete(consumer.username)
                 this.actions.showNotification('success', '删除成功')
                 this.loadConsumers()
             }

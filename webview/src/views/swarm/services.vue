@@ -42,7 +42,7 @@ class Services extends Vue {
     async loadServices() {
         this.servicesLoading = true
         try {
-            const res = await api.swarmListServices()
+            const res = await api.swarmServiceList()
             this.services = res.payload || []
         } catch (e) {
             this.actions.showNotification('error', '获取服务列表失败')
@@ -88,7 +88,7 @@ class Services extends Vue {
             iconColor: 'blue',
             confirmText: '确认重部署',
             onConfirm: async () => {
-                await api.swarmRedeployService(svc.id)
+                await api.swarmServiceRedeploy(svc.id)
                 this.actions.showNotification('success', '已触发强制重部署')
                 this.loadServices()
             }

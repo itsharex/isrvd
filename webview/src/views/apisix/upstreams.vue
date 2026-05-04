@@ -46,7 +46,7 @@ class Upstreams extends Vue {
     async loadUpstreams() {
         this.loading = true
         try {
-            this.upstreams = this.sortUpstreams((await api.apisixListUpstreams()).payload || [])
+            this.upstreams = this.sortUpstreams((await api.apisixUpstreamList()).payload || [])
         } catch {
             this.actions.showNotification('error', '加载上游列表失败')
         }
@@ -97,7 +97,7 @@ class Upstreams extends Vue {
             confirmText: '确认删除',
             danger: true,
             onConfirm: async () => {
-                await api.apisixDeleteUpstream(id)
+                await api.apisixUpstreamDelete(id)
                 this.actions.showNotification('success', '删除成功')
                 this.loadUpstreams()
             }

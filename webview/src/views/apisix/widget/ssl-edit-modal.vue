@@ -87,9 +87,9 @@ class SSLEditModal extends Vue {
         try {
             const payload = this.buildPayload()
             if (this.isEditMode) {
-                await api.apisixUpdateSSL(this.formData.id, payload)
+                await api.apisixSSLUpdate(this.formData.id, payload)
             } else {
-                await api.apisixCreateSSL(payload)
+                await api.apisixSSLCreate(payload)
             }
             this.isOpen = false
             this.$emit('success')

@@ -52,7 +52,7 @@ class ImagePullModal extends Vue {
 
     async loadRegistries() {
         try {
-            const res = await api.listRegistries()
+            const res = await api.dockerRegistryList()
             this.registries = res.payload || []
         } catch (e) {}
     }
@@ -71,7 +71,7 @@ class ImagePullModal extends Vue {
         if (!imageRef) return
         this.modalLoading = true
         try {
-            await api.pullImage(imageRef, this.formData.source, '')
+            await api.dockerImagePull(imageRef, this.formData.source, '')
             this.actions.showNotification('success', '镜像拉取成功')
             this.isOpen = false
             this.$emit('success')
@@ -89,7 +89,7 @@ class ImagePullModal extends Vue {
         }
         this.searchLoading = true
         try {
-            const res = await api.imageSearch(keyword)
+            const res = await api.dockerImageSearch(keyword)
             this.searchResults = res.payload || []
         } catch (e) {
             this.actions.showNotification('error', '搜索镜像失败')

@@ -56,7 +56,7 @@ class UploadModal extends Vue {
             const formData = new FormData()
             formData.append('file', this.uploadFiles[i])
             formData.append('path', this.state.currentPath)
-            await api.upload(formData, {
+            await api.filerUpload(formData, {
                 onUploadProgress: (e) => {
                     this.currentFileProgress = e.total ? Math.round((e.loaded / e.total) * 100) : 0
                 }
