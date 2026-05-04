@@ -57,7 +57,7 @@ class Whitelist extends Vue {
             confirmText: '确认撤销',
             danger: true,
             onConfirm: async () => {
-                await api.apisixWhitelistRevoke(routeId, consumer)
+                await api.apisixWhitelistRevoke({ routeId, consumer })
                 this.actions.showNotification('success', '撤销成功')
                 this.loadWhitelist()
             }

@@ -8,7 +8,7 @@ import { APP_ACTIONS_KEY } from '@/store/state'
 import type { AppActions } from '@/store/state'
 
 import api from '@/service/api'
-import type { DockerContainerInfo, DockerContainerStatsResponse } from '@/service/types'
+import type { DockerContainerInfo, DockerContainerStats } from '@/service/types'
 
 import { formatFileSize, hexToRgba, POLL_INTERVAL } from '@/helper/utils'
 
@@ -35,7 +35,7 @@ class ContainerStats extends Vue {
 
     // ─── 数据属性 ───
     container: DockerContainerInfo | null = null
-    statsData: DockerContainerStatsResponse | null = null
+    statsData: DockerContainerStats | null = null
     statsLoading = true
     netRxRate = 0
     netTxRate = 0
@@ -106,7 +106,7 @@ class ContainerStats extends Vue {
         }
     }
 
-    pushPoint(data: DockerContainerStatsResponse) {
+    pushPoint(data: DockerContainerStats) {
         const now = new Date()
         const label = now.getHours().toString().padStart(2, '0') + ':' +
             now.getMinutes().toString().padStart(2, '0') + ':' +

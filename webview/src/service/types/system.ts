@@ -59,7 +59,7 @@ export interface LinkConfig {
     icon?: string
 }
 
-export interface AllConfigResponse {
+export interface AllConfig {
     server: ServerConfig
     agent: AgentConfig
     apisix: ApisixConfig

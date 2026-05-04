@@ -5,7 +5,7 @@ import { APP_ACTIONS_KEY } from '@/store/state'
 import type { AppActions } from '@/store/state'
 
 import api from '@/service/api'
-import type { AllConfigResponse, ComposeMarketplacePick } from '@/service/types'
+import type { AllConfig, ComposeMarketplacePick } from '@/service/types'
 
 // 应用市场 postMessage 协议：仅本组件使用，故就近定义
 interface MarketplaceInstallPayload {
@@ -70,7 +70,7 @@ class MarketplaceModal extends Vue {
         this.loading = true
         try {
             const res = await api.systemConfig()
-            const payload = res.payload as AllConfigResponse
+            const payload = res.payload as AllConfig
             const url = payload.marketplace?.url || ''
             this.iframeUrl = url
             if (url) {

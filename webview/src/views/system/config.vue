@@ -5,7 +5,7 @@ import { APP_ACTIONS_KEY } from '@/store/state'
 import type { AppActions } from '@/store/state'
 
 import api from '@/service/api'
-import type { AllConfigResponse, ServerConfig, AgentConfig, ApisixConfig, DockerConfig, MarketplaceConfig, LinkConfig } from '@/service/types'
+import type { AllConfig, ServerConfig, AgentConfig, ApisixConfig, DockerConfig, MarketplaceConfig, LinkConfig } from '@/service/types'
 
 import IconSelect from '@/component/icon-select.vue'
 
@@ -30,7 +30,7 @@ class Config extends Vue {
     this.loading = true
     try {
       const res = await api.systemConfig(reload ? { reload: 'true' } : undefined)
-      const payload = res.payload as AllConfigResponse
+      const payload = res.payload as AllConfig
       this.server = { ...payload.server }
       this.agent = { ...payload.agent }
       this.apisix = { ...payload.apisix }

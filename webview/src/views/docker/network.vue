@@ -5,14 +5,14 @@ import { APP_ACTIONS_KEY } from '@/store/state'
 import type { AppActions } from '@/store/state'
 
 import api from '@/service/api'
-import type { DockerNetworkInspectResponse } from '@/service/types'
+import type { DockerNetworkInspect } from '@/service/types'
 
 @Component
 class NetworkDetail extends Vue {
     @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
 
     // ─── 数据属性 ───
-    detailData: DockerNetworkInspectResponse | null = null
+    detailData: DockerNetworkInspect | null = null
     loading = false
 
     get networkId() {

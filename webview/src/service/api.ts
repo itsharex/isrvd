@@ -1,29 +1,70 @@
 import type { AxiosRequestConfig } from 'axios'
 import { http, httpBlob } from './axios'
 import type {
-    DockerContainerCreateRequest,
-    DockerContainerInfo, DockerContainerStatsResponse,
-    DockerImageInfo, DockerImageInspectResponse, DockerImageSearchResult,
-    DockerNetworkInfo, DockerNetworkInspectResponse, DockerNetworkCreateRequest,
-    DockerVolumeInfo, DockerVolumeInspectResponse, DockerVolumeCreateRequest,
-    DockerRegistryInfo, DockerRegistryUpsertRequest,
-    SwarmInfo, SwarmNodeDTO, SwarmNodeInspect,
-    SwarmServiceInfo, SwarmServiceDetail, SwarmTask,
-    SwarmCreateServiceRequest,
-    ApisixRoute, ApisixConsumer, ApisixCreateConsumerRequest, ApisixUpdateConsumerRequest,
-    ApisixCreatePluginConfigRequest,
-    ApisixCreateSSLRequest, ApisixCreateUpstreamRequest, ApisixPluginConfig, ApisixSSL,
-    ApisixUpstream, ApisixUpdatePluginConfigRequest, ApisixUpdateSSLRequest, ApisixUpdateUpstreamRequest,
-    SystemProbeResponse, DockerInfo,
-    FilerListResponse, FilerReadResponse,
-    AuthLoginResponse, AuthInfoResponse,
-    MemberInfo, MemberUpsertRequest, RouteInfo,
-    ApiTokenCreateRequest, ApiTokenCreateResponse,
-    ChangePasswordRequest,
-    AllConfigResponse,
-    ComposeDeployResult,
+    // Overview
+    SystemProbe,
     SystemStat,
-    AuditLog
+    // System
+    AllConfig,
+    AuditLog,
+    // Account
+    AuthLogin,
+    AuthLoginResult,
+    AuthInfo,
+    MemberInfo,
+    MemberUpsert,
+    RouteInfo,
+    ApiTokenCreate,
+    ApiTokenResult,
+    ChangePassword,
+    // Filer
+    FilerList,
+    FilerRead,
+    // APISIX
+    ApisixRoute,
+    ApisixConsumer,
+    ApisixConsumerCreate,
+    ApisixConsumerUpdate,
+    ApisixPluginConfigCreate,
+    ApisixPluginConfigUpdate,
+    ApisixSSLCreate,
+    ApisixSSLUpdate,
+    ApisixSSL,
+    ApisixUpstreamCreate,
+    ApisixUpstreamUpdate,
+    ApisixUpstream,
+    ApisixPluginConfig,
+    ApisixRevokeWhitelist,
+    // Docker
+    DockerInfo,
+    DockerContainerInfo,
+    DockerContainerStats,
+    DockerContainerCreate,
+    DockerContainerCompose,
+    DockerImageInfo,
+    DockerImageInspect,
+    DockerImageSearchResult,
+    DockerNetworkInfo,
+    DockerNetworkInspect,
+    DockerNetworkCreate,
+    DockerVolumeInfo,
+    DockerVolumeInspect,
+    DockerVolumeCreate,
+    DockerRegistryInfo,
+    DockerRegistryUpsert,
+    // Swarm
+    SwarmInfo,
+    SwarmNodeDTO,
+    SwarmNodeInspect,
+    SwarmServiceInfo,
+    SwarmServiceDetail,
+    SwarmTask,
+    SwarmCreateService,
+    SwarmServiceCompose,
+    // Compose
+    ComposeDeployResult,
+    ComposeDeploy,
+    ComposeRedeploy
 } from './types'
 
 // API 服务类，统一管理所有 API 请求
@@ -31,7 +72,7 @@ class ApiService {
     // ==================== Overview 系统概览 ====================
 
     overviewProbe() {
-        return http.get<SystemProbeResponse>('/api/overview/probe')
+        return http.get<SystemProbe>('/api/overview/probe')
     }
 
     overviewStatus() {
@@ -41,10 +82,10 @@ class ApiService {
     // ==================== System 系统相关 ====================
 
     systemConfig(params?: Record<string, string>) {
-        return http.get<AllConfigResponse>('/api/system/config', { params })
+        return http.get<AllConfig>('/api/system/config', { params })
     }
 
-    systemConfigUpdate(data: Partial<AllConfigResponse>) {
+    systemConfigUpdate(data: Partial<AllConfig>) {
         return http.put<void>('/api/system/config', data)
     }
 
@@ -54,12 +95,12 @@ class ApiService {
 
     // ==================== Account 账户相关 ====================
 
-    accountLogin(data: { username: string; password: string }) {
-        return http.post<AuthLoginResponse>('/api/account/login', data)
+    accountLogin(data: AuthLogin) {
+        return http.post<AuthLoginResult>('/api/account/login', data)
     }
 
     accountInfo() {
-        return http.get<AuthInfoResponse>('/api/account/info')
+        return http.get<AuthInfo>('/api/account/info')
     }
 
     accountRouteList() {
@@ -70,11 +111,11 @@ class ApiService {
         return http.get<MemberInfo[]>('/api/account/members')
     }
 
-    accountMemberCreate(data: MemberUpsertRequest) {
+    accountMemberCreate(data: MemberUpsert) {
         return http.post<void>('/api/account/member', data)
     }
 
-    accountMemberUpdate(username: string, data: MemberUpsertRequest) {
+    accountMemberUpdate(username: string, data: MemberUpsert) {
         return http.put<void>(`/api/account/member/${encodeURIComponent(username)}`, data)
     }
 
@@ -82,18 +123,18 @@ class ApiService {
         return http.delete<void>(`/api/account/member/${encodeURIComponent(username)}`)
     }
 
-    accountTokenCreate(data: ApiTokenCreateRequest) {
-        return http.post<ApiTokenCreateResponse>('/api/account/token', data)
+    accountTokenCreate(data: ApiTokenCreate) {
+        return http.post<ApiTokenResult>('/api/account/token', data)
     }
 
-    accountPasswordChange(data: ChangePasswordRequest) {
+    accountPasswordChange(data: ChangePassword) {
         return http.put<void>('/api/account/password', data)
     }
 
     // ==================== Filer 文件管理相关 ====================
 
     filerList(path: string) {
-        return http.post<FilerListResponse>('/api/filer/list', { path })
+        return http.post<FilerList>('/api/filer/list', { path })
     }
 
     filerDelete(path: string) {
@@ -113,7 +154,7 @@ class ApiService {
     }
 
     filerRead(path: string) {
-        return http.post<FilerReadResponse>('/api/filer/read', { path })
+        return http.post<FilerRead>('/api/filer/read', { path })
     }
 
     filerModify(path: string, content: string) {
@@ -177,11 +218,11 @@ class ApiService {
         return http.get<ApisixConsumer[]>('/api/apisix/consumers')
     }
 
-    apisixConsumerCreate(data: ApisixCreateConsumerRequest) {
+    apisixConsumerCreate(data: ApisixConsumerCreate) {
         return http.post('/api/apisix/consumer', data)
     }
 
-    apisixConsumerUpdate(username: string, data: ApisixUpdateConsumerRequest) {
+    apisixConsumerUpdate(username: string, data: ApisixConsumerUpdate) {
         return http.put(`/api/apisix/consumer/${username}`, data)
     }
 
@@ -194,8 +235,8 @@ class ApiService {
         return http.get<ApisixRoute[]>('/api/apisix/whitelist')
     }
 
-    apisixWhitelistRevoke(routeId: string, consumerName: string) {
-        return http.post<void>('/api/apisix/whitelist/revoke', { route_id: routeId, consumer_name: consumerName })
+    apisixWhitelistRevoke(payload: ApisixRevokeWhitelist) {
+        return http.post<void>('/api/apisix/whitelist/revoke', payload)
     }
 
     // PluginConfig 管理
@@ -207,11 +248,11 @@ class ApiService {
         return http.get<ApisixPluginConfig>(`/api/apisix/plugin-config/${id}`)
     }
 
-    apisixPluginConfigCreate(data: ApisixCreatePluginConfigRequest) {
+    apisixPluginConfigCreate(data: ApisixPluginConfigCreate) {
         return http.post('/api/apisix/plugin-config', data)
     }
 
-    apisixPluginConfigUpdate(id: string, data: ApisixUpdatePluginConfigRequest) {
+    apisixPluginConfigUpdate(id: string, data: ApisixPluginConfigUpdate) {
         return http.put(`/api/apisix/plugin-config/${id}`, data)
     }
 
@@ -228,11 +269,11 @@ class ApiService {
         return http.get<ApisixUpstream>(`/api/apisix/upstream/${id}`)
     }
 
-    apisixUpstreamCreate(data: ApisixCreateUpstreamRequest) {
+    apisixUpstreamCreate(data: ApisixUpstreamCreate) {
         return http.post('/api/apisix/upstream', data)
     }
 
-    apisixUpstreamUpdate(id: string, data: ApisixUpdateUpstreamRequest) {
+    apisixUpstreamUpdate(id: string, data: ApisixUpstreamUpdate) {
         return http.put(`/api/apisix/upstream/${id}`, data)
     }
 
@@ -249,11 +290,11 @@ class ApiService {
         return http.get<ApisixSSL>(`/api/apisix/ssl/${id}`)
     }
 
-    apisixSSLCreate(data: ApisixCreateSSLRequest) {
+    apisixSSLCreate(data: ApisixSSLCreate) {
         return http.post('/api/apisix/ssl', data)
     }
 
-    apisixSSLUpdate(id: string, data: ApisixUpdateSSLRequest) {
+    apisixSSLUpdate(id: string, data: ApisixSSLUpdate) {
         return http.put(`/api/apisix/ssl/${id}`, data)
     }
 
@@ -281,7 +322,7 @@ class ApiService {
         return http.post<void>(`/api/docker/container/${id}/action`, { action })
     }
 
-    dockerContainerCreate(data: DockerContainerCreateRequest) {
+    dockerContainerCreate(data: DockerContainerCreate) {
         return http.post('/api/docker/container', data)
     }
 
@@ -290,11 +331,11 @@ class ApiService {
     }
 
     dockerContainerStats(id: string) {
-        return http.get<DockerContainerStatsResponse>(`/api/docker/container/${id}/stats`)
+        return http.get<DockerContainerStats>(`/api/docker/container/${id}/stats`)
     }
 
     dockerContainerCompose(name: string) {
-        return http.get<{ content: string }>(`/api/compose/docker/${name}`)
+        return http.get<DockerContainerCompose>(`/api/compose/docker/${name}`)
     }
 
     // 镜像管理
@@ -303,7 +344,7 @@ class ApiService {
     }
 
     dockerImage(id: string) {
-        return http.get<DockerImageInspectResponse>(`/api/docker/image/${id}`)
+        return http.get<DockerImageInspect>(`/api/docker/image/${id}`)
     }
 
     dockerImageAction(id: string, action: string) {
@@ -336,14 +377,14 @@ class ApiService {
     }
 
     dockerNetwork(id: string) {
-        return http.get<DockerNetworkInspectResponse>(`/api/docker/network/${id}`)
+        return http.get<DockerNetworkInspect>(`/api/docker/network/${id}`)
     }
 
     dockerNetworkAction(id: string, action: string) {
         return http.post<void>(`/api/docker/network/${id}/action`, { action })
     }
 
-    dockerNetworkCreate(data: DockerNetworkCreateRequest) {
+    dockerNetworkCreate(data: DockerNetworkCreate) {
         return http.post('/api/docker/network', data)
     }
 
@@ -353,14 +394,14 @@ class ApiService {
     }
 
     dockerVolume(name: string) {
-        return http.get<DockerVolumeInspectResponse>(`/api/docker/volume/${encodeURIComponent(name)}`)
+        return http.get<DockerVolumeInspect>(`/api/docker/volume/${encodeURIComponent(name)}`)
     }
 
     dockerVolumeAction(name: string, action: string) {
         return http.post<void>(`/api/docker/volume/${encodeURIComponent(name)}/action`, { action })
     }
 
-    dockerVolumeCreate(data: DockerVolumeCreateRequest) {
+    dockerVolumeCreate(data: DockerVolumeCreate) {
         return http.post('/api/docker/volume', data)
     }
 
@@ -369,11 +410,11 @@ class ApiService {
         return http.get<DockerRegistryInfo[]>('/api/docker/registries')
     }
 
-    dockerRegistryCreate(data: DockerRegistryUpsertRequest) {
+    dockerRegistryCreate(data: DockerRegistryUpsert) {
         return http.post<void>('/api/docker/registry', data)
     }
 
-    dockerRegistryUpdate(url: string, data: DockerRegistryUpsertRequest) {
+    dockerRegistryUpdate(url: string, data: DockerRegistryUpsert) {
         return http.put<void>('/api/docker/registry', data, { params: { url } })
     }
 
@@ -416,7 +457,7 @@ class ApiService {
         return http.post<void>(`/api/swarm/service/${id}/action`, { action, replicas })
     }
 
-    swarmServiceCreate(data: SwarmCreateServiceRequest) {
+    swarmServiceCreate(data: SwarmCreateService) {
         return http.post('/api/swarm/service', data)
     }
 
@@ -425,7 +466,7 @@ class ApiService {
     }
 
     swarmServiceCompose(name: string) {
-        return http.get<{ content: string }>(`/api/compose/swarm/${name}`)
+        return http.get<SwarmServiceCompose>(`/api/compose/swarm/${name}`)
     }
 
     swarmServiceLogs(id: string, tail = '100') {
@@ -438,10 +479,10 @@ class ApiService {
 
     // ==================== Compose 部署 ====================
 
-    composeDockerDeploy(data: { content: string; projectName: string; initURL?: string; initFile?: File }) {
+    composeDockerDeploy(data: ComposeDeploy) {
         const form = new FormData()
-        form.append('content', data.content)
         form.append('projectName', data.projectName)
+        form.append('content', data.content)
         // 文件优先，二者互斥
         if (data.initFile) {
             form.append('initFile', data.initFile)
@@ -455,11 +496,11 @@ class ApiService {
         return http.post<ComposeDeployResult>('/api/compose/swarm/deploy', data)
     }
 
-    composeDockerRedeploy(name: string, data: { content: string }) {
+    composeDockerRedeploy(name: string, data: ComposeRedeploy) {
         return http.post<ComposeDeployResult>(`/api/compose/docker/${name}/redeploy`, data)
     }
 
-    composeSwarmRedeploy(name: string, data: { content: string }) {
+    composeSwarmRedeploy(name: string, data: ComposeRedeploy) {
         return http.post<ComposeDeployResult>(`/api/compose/swarm/${name}/redeploy`, data)
     }
 }

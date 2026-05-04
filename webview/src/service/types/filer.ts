@@ -9,12 +9,12 @@ export interface FilerFileInfo {
     isDir: boolean
 }
 
-export interface FilerListResponse {
+export interface FilerList {
     path: string
     files: FilerFileInfo[]
 }
 
-export interface FilerReadResponse {
+export interface FilerRead {
     path: string
     content: string
 }

@@ -5,7 +5,7 @@ import { APP_ACTIONS_KEY } from '@/store/state'
 import type { AppActions } from '@/store/state'
 
 import api from '@/service/api'
-import type { ApisixCreateSSLRequest, ApisixSSL, ApisixUpdateSSLRequest } from '@/service/types'
+import type { ApisixSSLCreate, ApisixSSL, ApisixSSLUpdate } from '@/service/types'
 
 import BaseModal from '@/component/modal.vue'
 
@@ -58,8 +58,8 @@ class SSLEditModal extends Vue {
             .filter(Boolean)
     }
 
-    buildPayload(): ApisixCreateSSLRequest | ApisixUpdateSSLRequest {
-        const payload: ApisixCreateSSLRequest = {
+    buildPayload(): ApisixSSLCreate | ApisixSSLUpdate {
+        const payload: ApisixSSLCreate = {
             snis: this.parseSnis(),
             status: Number(this.formData.status)
         }

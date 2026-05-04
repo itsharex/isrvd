@@ -6,12 +6,12 @@ import type { AppActions } from '@/store/state'
 
 import api from '@/service/api'
 import type {
-    ApisixCreateUpstreamRequest,
+    ApisixUpstreamCreate,
     ApisixRouteUpstreamFormNode,
     ApisixUpstream,
     ApisixUpstreamHashOn,
     ApisixUpstreamType,
-    ApisixUpdateUpstreamRequest,
+    ApisixUpstreamUpdate,
     DockerContainerInfo
 } from '@/service/types'
 
@@ -133,7 +133,7 @@ class UpstreamEditModal extends Vue {
         }
     }
 
-    buildPayload(): ApisixCreateUpstreamRequest | ApisixUpdateUpstreamRequest {
+    buildPayload(): ApisixUpstreamCreate | ApisixUpstreamUpdate {
         const nodes = this.formData.nodes
             .map(node => ({
                 host: node.host.trim(),
@@ -142,7 +142,7 @@ class UpstreamEditModal extends Vue {
             }))
             .filter(node => node.host && node.port > 0)
 
-        const payload: ApisixCreateUpstreamRequest = {
+        const payload: ApisixUpstreamCreate = {
             name: this.formData.name.trim(),
             desc: this.formData.desc.trim(),
             type: this.formData.type,

@@ -70,13 +70,13 @@ export interface ApisixConsumer {
     update_time: number
 }
 
-export interface ApisixCreateConsumerRequest {
+export interface ApisixConsumerCreate {
     username: string
     desc?: string
     plugins?: Record<string, unknown>
 }
 
-export interface ApisixUpdateConsumerRequest {
+export interface ApisixConsumerUpdate {
     desc?: string
     plugins?: Record<string, unknown>
 }
@@ -89,13 +89,13 @@ export interface ApisixPluginConfig {
     update_time: number
 }
 
-export interface ApisixCreatePluginConfigRequest {
+export interface ApisixPluginConfigCreate {
     id?: string
     desc?: string
     plugins?: Record<string, unknown>
 }
 
-export interface ApisixUpdatePluginConfigRequest {
+export interface ApisixPluginConfigUpdate {
     desc?: string
     plugins?: Record<string, unknown>
 }
@@ -119,9 +119,9 @@ export interface ApisixUpstream {
     [key: string]: unknown
 }
 
-export type ApisixCreateUpstreamRequest = ApisixUpstream
+export type ApisixUpstreamCreate = ApisixUpstream
 
-export type ApisixUpdateUpstreamRequest = ApisixUpstream
+export type ApisixUpstreamUpdate = ApisixUpstream
 
 export interface ApisixSSL {
     id?: string
@@ -133,11 +133,11 @@ export interface ApisixSSL {
     update_time?: number
 }
 
-export type ApisixCreateSSLRequest = ApisixSSL
+export type ApisixSSLCreate = ApisixSSL
 
-export type ApisixUpdateSSLRequest = ApisixSSL
+export type ApisixSSLUpdate = ApisixSSL
 
-export interface ApisixRevokeWhitelistRequest {
+export interface ApisixRevokeWhitelist {
     routeId: string
     consumer: string
 }

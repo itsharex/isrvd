@@ -6,7 +6,7 @@ import type { AppActions } from '@/store/state'
 
 import api from '@/service/api'
 import { RouteAccessPerm } from '@/service/types'
-import type { MemberInfo, MemberUpsertRequest, RouteInfo } from '@/service/types'
+import type { MemberInfo, MemberUpsert, RouteInfo } from '@/service/types'
 
 import BaseModal from '@/component/modal.vue'
 
@@ -67,7 +67,7 @@ class MemberEditModal extends Vue {
     methodColor = METHOD_COLOR
     // 编辑时保存原始用户名，用于后端定位
     originalUsername = ''
-    formData: MemberUpsertRequest = {
+    formData: MemberUpsert = {
         username: '',
         password: '',
         homeDirectory: '',

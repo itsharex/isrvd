@@ -89,8 +89,13 @@ export interface SwarmServiceInfo {
     updatedAt: string
 }
 
-// SwarmCreateServiceRequest 直接复用 SwarmServiceSpec
-export type SwarmCreateServiceRequest = SwarmServiceSpec
+// SwarmCreateService 直接复用 SwarmServiceSpec
+export type SwarmCreateService = SwarmServiceSpec
+
+// Swarm 服务 Compose
+export interface SwarmServiceCompose {
+    content: string
+}
 
 export interface SwarmTask {
     id: string

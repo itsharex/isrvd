@@ -6,12 +6,11 @@ import type { AppActions } from '@/store/state'
 
 import api from '@/service/api'
 import type {
-    ApisixCreatePluginConfigRequest,
+    ApisixPluginConfigCreate,
     ApisixPluginConfig,
-    ApisixRoute,
-    ApisixUpdatePluginConfigRequest
+    ApisixPluginConfigUpdate,
+    ApisixRoute
 } from '@/service/types'
-
 import BaseModal from '@/component/modal.vue'
 
 import PluginConfigPanel from './plugin-config-panel.vue'
@@ -75,8 +74,8 @@ class PluginConfigEditModal extends Vue {
         this.formData.plugins = plugins
     }
 
-    buildPayload(): ApisixCreatePluginConfigRequest | ApisixUpdatePluginConfigRequest {
-        const payload: ApisixCreatePluginConfigRequest = {
+    buildPayload(): ApisixPluginConfigCreate | ApisixPluginConfigUpdate {
+        const payload: ApisixPluginConfigCreate = {
             desc: this.formData.desc.trim(),
             plugins: this.formData.plugins,
         }

@@ -32,7 +32,7 @@ export interface DockerVolumeMapping {
     readOnly: boolean
 }
 
-export interface DockerContainerCreateRequest {
+export interface DockerContainerCreate {
     image: string
     name?: string
     cmd?: string[]
@@ -49,6 +49,11 @@ export interface DockerContainerCreateRequest {
     privileged?: boolean
     capAdd?: string[]
     capDrop?: string[]
+}
+
+// 容器 Compose
+export interface DockerContainerCompose {
+    content: string
 }
 
 // ─── 容器统计 ───
@@ -82,7 +87,7 @@ export interface DockerContainerProcessList {
     processes: string[][]
 }
 
-export interface DockerContainerStatsResponse {
+export interface DockerContainerStats {
     id: string
     name: string
     cpuPercent: number
@@ -121,7 +126,7 @@ export interface DockerImageLayerInfo {
     empty: boolean
 }
 
-export interface DockerImageInspectResponse {
+export interface DockerImageInspect {
     id: string
     shortId: string
     repoTags: string[]
@@ -166,7 +171,7 @@ export interface DockerNetworkContainerInfo {
     macAddress: string
 }
 
-export interface DockerNetworkInspectResponse {
+export interface DockerNetworkInspect {
     id: string
     name: string
     driver: string
@@ -178,7 +183,7 @@ export interface DockerNetworkInspectResponse {
     containers: DockerNetworkContainerInfo[]
 }
 
-export interface DockerNetworkCreateRequest {
+export interface DockerNetworkCreate {
     name: string
     driver?: string
     subnet?: string
@@ -201,7 +206,7 @@ export interface DockerVolumeUsedByContainer {
     readOnly: boolean
 }
 
-export interface DockerVolumeInspectResponse {
+export interface DockerVolumeInspect {
     name: string
     driver: string
     mountpoint: string
@@ -212,7 +217,7 @@ export interface DockerVolumeInspectResponse {
     usedBy: DockerVolumeUsedByContainer[]
 }
 
-export interface DockerVolumeCreateRequest {
+export interface DockerVolumeCreate {
     name: string
     driver?: string
 }
@@ -226,7 +231,7 @@ export interface DockerRegistryInfo {
     description: string
 }
 
-export interface DockerRegistryUpsertRequest {
+export interface DockerRegistryUpsert {
     name: string
     url: string
     username?: string

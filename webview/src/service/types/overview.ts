@@ -1,6 +1,6 @@
 // ─── 系统探测 ───
 
-export interface SystemProbeResponse {
+export interface SystemProbe {
     apisix: { available: boolean }
     docker: { available: boolean }
     swarm: { available: boolean }

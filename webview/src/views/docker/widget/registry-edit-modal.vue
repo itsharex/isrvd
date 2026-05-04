@@ -5,7 +5,7 @@ import { APP_ACTIONS_KEY } from '@/store/state'
 import type { AppActions } from '@/store/state'
 
 import api from '@/service/api'
-import type { DockerRegistryInfo, DockerRegistryUpsertRequest } from '@/service/types'
+import type { DockerRegistryInfo, DockerRegistryUpsert } from '@/service/types'
 
 import BaseModal from '@/component/modal.vue'
 
@@ -22,7 +22,7 @@ class RegistryEditModal extends Vue {
     modalLoading = false
     // 编辑时保存原始 URL，用于后端定位
     originalUrl = ''
-    formData: DockerRegistryUpsertRequest = { name: '', url: '', username: '', password: '', description: '' }
+    formData: DockerRegistryUpsert = { name: '', url: '', username: '', password: '', description: '' }
 
     // ─── 计算属性 ───
     get isEdit() {

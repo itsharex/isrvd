@@ -5,7 +5,7 @@ import { APP_ACTIONS_KEY } from '@/store/state'
 import type { AppActions } from '@/store/state'
 
 import api from '@/service/api'
-import type { DockerVolumeInspectResponse } from '@/service/types'
+import type { DockerVolumeInspect } from '@/service/types'
 
 import { formatFileSize, formatTime } from '@/helper/utils'
 
@@ -14,7 +14,7 @@ class VolumeDetail extends Vue {
     @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
 
     // ─── 数据属性 ───
-    detailData: DockerVolumeInspectResponse | null = null
+    detailData: DockerVolumeInspect | null = null
     loading = false
     formatFileSize = formatFileSize
     formatTime = formatTime

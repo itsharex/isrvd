@@ -5,7 +5,7 @@ import { APP_ACTIONS_KEY } from '@/store/state'
 import type { AppActions } from '@/store/state'
 
 import api from '@/service/api'
-import type { ApisixConsumer, ApisixCreateConsumerRequest, ApisixUpdateConsumerRequest } from '@/service/types'
+import type { ApisixConsumer, ApisixConsumerCreate, ApisixConsumerUpdate } from '@/service/types'
 
 import BaseModal from '@/component/modal.vue'
 
@@ -77,14 +77,14 @@ class ConsumerEditModal extends Vue {
         }
         this.modalLoading = true
         try {
-            const payload: ApisixUpdateConsumerRequest = {
+            const payload: ApisixConsumerUpdate = {
                 desc: this.formData.desc,
                 plugins: this.formData.plugins,
             }
             if (this.isEditMode) {
                 await api.apisixConsumerUpdate(this.formData.username, payload)
             } else {
-                await api.apisixConsumerCreate({ username: this.formData.username, desc: payload.desc, plugins: payload.plugins } as ApisixCreateConsumerRequest)
+await api.apisixConsumerCreate({ username: this.formData.username, desc: payload.desc, plugins: payload.plugins } as ApisixConsumerCreate)
             }
             this.isOpen = false
             this.$emit('success')

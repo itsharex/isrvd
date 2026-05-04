@@ -5,7 +5,7 @@ import { APP_ACTIONS_KEY } from '@/store/state'
 import type { AppActions } from '@/store/state'
 
 import api from '@/service/api'
-import type { DockerImageInspectResponse } from '@/service/types'
+import type { DockerImageInspect } from '@/service/types'
 
 import { formatFileSize, formatTime } from '@/helper/utils'
 
@@ -14,7 +14,7 @@ class ImageDetail extends Vue {
     @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
 
     // ─── 数据属性 ───
-    inspectData: DockerImageInspectResponse | null = null
+    inspectData: DockerImageInspect | null = null
     loading = false
     formatFileSize = formatFileSize
     formatTime = formatTime

@@ -1,17 +1,17 @@
 // ─── 认证相关 ───
 
-export interface AuthInfoResponse {
+export interface AuthInfo {
     mode: 'jwt' | 'header'
     username?: string
     member?: MemberInfo
 }
 
-export interface AuthLoginRequest {
+export interface AuthLogin {
     username: string
     password: string
 }
 
-export interface AuthLoginResponse {
+export interface AuthLoginResult {
     token: string
     username: string
 }
@@ -40,7 +40,7 @@ export interface MemberInfo {
     permissions: string[]
 }
 
-export interface MemberUpsertRequest {
+export interface MemberUpsert {
     username: string
     // 写入时为空表示保留原值（仅更新场景）
     password: string
@@ -51,19 +51,19 @@ export interface MemberUpsertRequest {
 
 // ─── API Token ───
 
-export interface ApiTokenCreateRequest {
+export interface ApiTokenCreate {
     name: string
     expiresIn: number // 过期时间（秒），0 表示永不过期
 }
 
-export interface ApiTokenCreateResponse {
+export interface ApiTokenResult {
     token: string
     name: string
 }
 
 // ─── 修改密码 ───
 
-export interface ChangePasswordRequest {
+export interface ChangePassword {
     oldPassword: string
     newPassword: string
 }

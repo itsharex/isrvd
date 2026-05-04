@@ -5,7 +5,7 @@ import { APP_ACTIONS_KEY, APP_STATE_KEY } from '@/store/state'
 import type { AppActions, AppState } from '@/store/state'
 
 import api from '@/service/api'
-import type { ApiTokenCreateResponse } from '@/service/types'
+import type { ApiTokenResult } from '@/service/types'
 
 @Component
 class Profile extends Vue {
@@ -29,7 +29,7 @@ class Profile extends Vue {
         expiresIn: 86400 // 默认 24 小时
     }
     tokenLoading = false
-    newToken: ApiTokenCreateResponse | null = null
+    newToken: ApiTokenResult | null = null
 
     // ─── 过期选项 ───
     expiryOptions = [
