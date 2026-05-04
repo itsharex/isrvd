@@ -77,7 +77,8 @@ type DockerInfo struct {
 }
 
 // GetInfo 获取 Docker 概览信息
-func (s *DockerService) GetInfo(ctx context.Context) (*DockerInfo, error) {
+// Info 获取 Docker 信息
+func (s *DockerService) Info(ctx context.Context) (*DockerInfo, error) {
 	daemonInfo, err := s.client.Info(ctx)
 	if err != nil {
 		logman.Error("Docker info failed", "error", err)

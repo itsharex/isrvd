@@ -24,8 +24,8 @@ type Task struct {
 	UpdatedAt   string `json:"updatedAt"`
 }
 
-// ListTasks 获取任务列表
-func (m *SwarmService) ListTasks(ctx context.Context, serviceID string) ([]Task, error) {
+// TaskList 获取任务列表
+func (m *SwarmService) TaskList(ctx context.Context, serviceID string) ([]Task, error) {
 	opts := swarm.TaskListOptions{}
 	if serviceID != "" {
 		f := filters.NewArgs()

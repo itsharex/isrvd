@@ -34,8 +34,8 @@ type ContainerInfo struct {
 	Labels   map[string]string `json:"labels,omitempty"`
 }
 
-// ListContainers 获取容器列表
-func (s *DockerService) ListContainers(ctx context.Context, all bool) ([]*ContainerInfo, error) {
+// ContainerList 获取容器列表
+func (s *DockerService) ContainerList(ctx context.Context, all bool) ([]*ContainerInfo, error) {
 	containers, err := s.client.ContainerList(ctx, container.ListOptions{All: all})
 	if err != nil {
 		logman.Error("List containers failed", "error", err)
@@ -71,8 +71,8 @@ func (s *DockerService) ListContainers(ctx context.Context, all bool) ([]*Contai
 	return result, nil
 }
 
-// InspectContainer 获取容器详细配置（运行态快照依赖此接口）
-func (s *DockerService) InspectContainer(ctx context.Context, id string) (container.InspectResponse, error) {
+// ContainerInspect 获取容器详细配置（运行态快照依赖此接口）
+func (s *DockerService) ContainerInspect(ctx context.Context, id string) (container.InspectResponse, error) {
 	info, err := s.client.ContainerInspect(ctx, id)
 	if err != nil {
 		logman.Error("Inspect container failed", "id", id, "error", err)
@@ -118,8 +118,8 @@ func (s *DockerService) ContainerAction(ctx context.Context, id, action string) 
 	return nil
 }
 
-// GetContainerLogs 获取容器日志
-func (s *DockerService) GetContainerLogs(ctx context.Context, id, tail string) ([]string, error) {
+// ContainerLogs 获取容器日志
+func (s *DockerService) ContainerLogs(ctx context.Context, id, tail string) ([]string, error) {
 	if tail == "" {
 		tail = "100"
 	}
@@ -172,8 +172,8 @@ type ContainerCreateRequest struct {
 	CapDrop    []string          `json:"capDrop"`
 }
 
-// CreateContainer 创建容器
-func (s *DockerService) CreateContainer(ctx context.Context, req ContainerCreateRequest) (string, error) {
+// ContainerCreate 创建容器
+func (s *DockerService) ContainerCreate(ctx context.Context, req ContainerCreateRequest) (string, error) {
 	containerConfig := &container.Config{
 		Image:      req.Image,
 		Cmd:        req.Cmd,
@@ -319,8 +319,8 @@ func (req ContainerUpdateRequest) ToCreateRequest() ContainerCreateRequest {
 	}
 }
 
-// UpdateContainer 更新容器配置并重建
-func (s *DockerService) UpdateContainer(ctx context.Context, req ContainerUpdateRequest) (string, error) {
+// ContainerUpdate 更新容器配置并重建
+func (s *DockerService) ContainerUpdate(ctx context.Context, req ContainerUpdateRequest) (string, error) {
 	// 查找并停止旧容器
 	containers, err := s.client.ContainerList(ctx, container.ListOptions{All: true})
 	if err != nil {
@@ -346,5 +346,5 @@ func (s *DockerService) UpdateContainer(ctx context.Context, req ContainerUpdate
 		_ = s.client.ContainerRemove(ctx, oldContainerID, container.RemoveOptions{Force: true})
 	}
 
-	return s.CreateContainer(ctx, req.ToCreateRequest())
+	return s.ContainerCreate(ctx, req.ToCreateRequest())
 }

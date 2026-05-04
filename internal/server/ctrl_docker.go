@@ -16,36 +16,36 @@ func (app *App) defineDockerRoutes() []Route {
 		// Docker 信息
 		{Method: "GET", Path: "/docker/info", Handler: app.dockerInfo, Module: "docker", Label: "获取 Docker 信息"},
 		// 容器管理
-		{Method: "GET", Path: "/docker/containers", Handler: app.dockerListContainers, Module: "docker", Label: "列出容器"},
-		{Method: "POST", Path: "/docker/container", Handler: app.dockerCreateContainer, Module: "docker", Label: "创建容器"},
+		{Method: "GET", Path: "/docker/containers", Handler: app.dockerContainerList, Module: "docker", Label: "列出容器"},
+		{Method: "POST", Path: "/docker/container", Handler: app.dockerContainerCreate, Module: "docker", Label: "创建容器"},
 		{Method: "GET", Path: "/docker/container/:id/stats", Handler: app.dockerContainerStats, Module: "docker", Label: "查看容器统计"},
 		{Method: "POST", Path: "/docker/container/:id/action", Handler: app.dockerContainerAction, Module: "docker", Label: "操作容器"},
 		{Method: "GET", Path: "/docker/container/:id/logs", Handler: app.dockerContainerLogs, Module: "docker", Label: "查看容器日志"},
 		{Method: "GET", Path: "/docker/container/:id/exec", Handler: app.dockerContainerExec, Module: "docker", Label: "打开容器终端"},
 		// 镜像管理
-		{Method: "GET", Path: "/docker/images", Handler: app.dockerListImages, Module: "docker", Label: "列出镜像"},
-		{Method: "GET", Path: "/docker/images/search", Handler: app.dockerSearchImages, Module: "docker", Label: "搜索镜像"},
+		{Method: "GET", Path: "/docker/images", Handler: app.dockerImageList, Module: "docker", Label: "列出镜像"},
+		{Method: "GET", Path: "/docker/images/search", Handler: app.dockerImageSearch, Module: "docker", Label: "搜索镜像"},
 		{Method: "POST", Path: "/docker/image/:id/action", Handler: app.dockerImageAction, Module: "docker", Label: "操作镜像"},
-		{Method: "POST", Path: "/docker/image/:id/tag", Handler: app.dockerTagImage, Module: "docker", Label: "标记镜像"},
-		{Method: "GET", Path: "/docker/image/:id", Handler: app.dockerInspectImage, Module: "docker", Label: "查看镜像"},
-		{Method: "POST", Path: "/docker/image/build", Handler: app.dockerBuildImage, Module: "docker", Label: "构建镜像"},
-		{Method: "POST", Path: "/docker/image/push", Handler: app.dockerPushImage, Module: "docker", Label: "推送镜像"},
-		{Method: "POST", Path: "/docker/image/pull", Handler: app.dockerPullImage, Module: "docker", Label: "拉取镜像"},
+		{Method: "POST", Path: "/docker/image/:id/tag", Handler: app.dockerImageTag, Module: "docker", Label: "标记镜像"},
+		{Method: "GET", Path: "/docker/image/:id", Handler: app.dockerImageInspect, Module: "docker", Label: "查看镜像"},
+		{Method: "POST", Path: "/docker/image/build", Handler: app.dockerImageBuild, Module: "docker", Label: "构建镜像"},
+		{Method: "POST", Path: "/docker/image/push", Handler: app.dockerImagePush, Module: "docker", Label: "推送镜像"},
+		{Method: "POST", Path: "/docker/image/pull", Handler: app.dockerImagePull, Module: "docker", Label: "拉取镜像"},
 		// 网络管理
-		{Method: "GET", Path: "/docker/networks", Handler: app.dockerListNetworks, Module: "docker", Label: "列出网络"},
+		{Method: "GET", Path: "/docker/networks", Handler: app.dockerNetworkList, Module: "docker", Label: "列出网络"},
 		{Method: "POST", Path: "/docker/network/:id/action", Handler: app.dockerNetworkAction, Module: "docker", Label: "操作网络"},
-		{Method: "POST", Path: "/docker/network", Handler: app.dockerCreateNetwork, Module: "docker", Label: "创建网络"},
+		{Method: "POST", Path: "/docker/network", Handler: app.dockerNetworkCreate, Module: "docker", Label: "创建网络"},
 		{Method: "GET", Path: "/docker/network/:id", Handler: app.dockerNetworkInspect, Module: "docker", Label: "查看网络"},
 		// 卷管理
-		{Method: "GET", Path: "/docker/volumes", Handler: app.dockerListVolumes, Module: "docker", Label: "列出数据卷"},
+		{Method: "GET", Path: "/docker/volumes", Handler: app.dockerVolumeList, Module: "docker", Label: "列出数据卷"},
 		{Method: "POST", Path: "/docker/volume/:name/action", Handler: app.dockerVolumeAction, Module: "docker", Label: "操作数据卷"},
-		{Method: "POST", Path: "/docker/volume", Handler: app.dockerCreateVolume, Module: "docker", Label: "创建数据卷"},
+		{Method: "POST", Path: "/docker/volume", Handler: app.dockerVolumeCreate, Module: "docker", Label: "创建数据卷"},
 		{Method: "GET", Path: "/docker/volume/:name", Handler: app.dockerVolumeInspect, Module: "docker", Label: "查看数据卷"},
 		// 镜像仓库
-		{Method: "GET", Path: "/docker/registries", Handler: app.dockerListRegistries, Module: "docker", Label: "列出镜像仓库"},
-		{Method: "POST", Path: "/docker/registry", Handler: app.dockerCreateRegistry, Module: "docker", Label: "添加镜像仓库"},
-		{Method: "PUT", Path: "/docker/registry", Handler: app.dockerUpdateRegistry, Module: "docker", Label: "更新镜像仓库"},
-		{Method: "DELETE", Path: "/docker/registry", Handler: app.dockerDeleteRegistry, Module: "docker", Label: "删除镜像仓库"},
+		{Method: "GET", Path: "/docker/registries", Handler: app.dockerRegistryList, Module: "docker", Label: "列出镜像仓库"},
+		{Method: "POST", Path: "/docker/registry", Handler: app.dockerRegistryCreate, Module: "docker", Label: "添加镜像仓库"},
+		{Method: "PUT", Path: "/docker/registry", Handler: app.dockerRegistryUpdate, Module: "docker", Label: "更新镜像仓库"},
+		{Method: "DELETE", Path: "/docker/registry", Handler: app.dockerRegistryDelete, Module: "docker", Label: "删除镜像仓库"},
 	}
 }
 
@@ -61,9 +61,9 @@ func (app *App) dockerInfo(c *gin.Context) {
 	helper.RespondSuccess(c, "Docker info retrieved", result)
 }
 
-func (app *App) dockerListContainers(c *gin.Context) {
+func (app *App) dockerContainerList(c *gin.Context) {
 	all := c.DefaultQuery("all", "false") == "true"
-	result, err := app.dockerSvc.ListContainers(c.Request.Context(), all)
+	result, err := app.dockerSvc.ContainerList(c.Request.Context(), all)
 	if err != nil {
 		helper.RespondError(c, http.StatusInternalServerError, err.Error())
 		return
@@ -71,13 +71,13 @@ func (app *App) dockerListContainers(c *gin.Context) {
 	helper.RespondSuccess(c, "Containers listed successfully", result)
 }
 
-func (app *App) dockerCreateContainer(c *gin.Context) {
+func (app *App) dockerContainerCreate(c *gin.Context) {
 	var req pkgdocker.ContainerCreateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		helper.RespondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
-	result, err := app.dockerSvc.CreateContainer(c.Request.Context(), req)
+	result, err := app.dockerSvc.ContainerCreate(c.Request.Context(), req)
 	if err != nil {
 		helper.RespondError(c, http.StatusInternalServerError, err.Error())
 		return
@@ -147,9 +147,9 @@ func (app *App) dockerContainerExec(c *gin.Context) {
 
 // ─── 镜像 ───
 
-func (app *App) dockerListImages(c *gin.Context) {
+func (app *App) dockerImageList(c *gin.Context) {
 	all := c.DefaultQuery("all", "false") == "true"
-	result, err := app.dockerSvc.ListImages(c.Request.Context(), all)
+	result, err := app.dockerSvc.ImageList(c.Request.Context(), all)
 	if err != nil {
 		helper.RespondError(c, http.StatusInternalServerError, err.Error())
 		return
@@ -172,23 +172,23 @@ func (app *App) dockerImageAction(c *gin.Context) {
 	helper.RespondSuccess(c, "Image "+req.Action+" successfully", nil)
 }
 
-func (app *App) dockerTagImage(c *gin.Context) {
+func (app *App) dockerImageTag(c *gin.Context) {
 	var req pkgdocker.ImageTagRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		helper.RespondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	req.ID = c.Param("id")
-	if err := app.dockerSvc.TagImage(c.Request.Context(), req); err != nil {
+	if err := app.dockerSvc.ImageTag(c.Request.Context(), req); err != nil {
 		helper.RespondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 	helper.RespondSuccess(c, "镜像打标签成功", nil)
 }
 
-func (app *App) dockerSearchImages(c *gin.Context) {
+func (app *App) dockerImageSearch(c *gin.Context) {
 	name := c.Query("name")
-	result, err := app.dockerSvc.SearchImages(c.Request.Context(), name)
+	result, err := app.dockerSvc.ImageSearch(c.Request.Context(), name)
 	if err != nil {
 		helper.RespondError(c, http.StatusInternalServerError, err.Error())
 		return
@@ -196,13 +196,13 @@ func (app *App) dockerSearchImages(c *gin.Context) {
 	helper.RespondSuccess(c, "Images searched successfully", result)
 }
 
-func (app *App) dockerBuildImage(c *gin.Context) {
+func (app *App) dockerImageBuild(c *gin.Context) {
 	var req pkgdocker.ImageBuildRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		helper.RespondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
-	result, err := app.dockerSvc.BuildImage(c.Request.Context(), req)
+	result, err := app.dockerSvc.ImageBuild(c.Request.Context(), req)
 	if err != nil {
 		helper.RespondError(c, http.StatusInternalServerError, err.Error())
 		return
@@ -210,20 +210,20 @@ func (app *App) dockerBuildImage(c *gin.Context) {
 	helper.RespondSuccess(c, "镜像构建成功", result)
 }
 
-func (app *App) dockerInspectImage(c *gin.Context) {
+func (app *App) dockerImageInspect(c *gin.Context) {
 	id := c.Param("id")
-	result, err := app.dockerSvc.InspectImage(c.Request.Context(), id)
+	result, err := app.dockerSvc.ImageInspect(c.Request.Context(), id)
 	if err != nil {
 		helper.RespondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "Image inspected successfully", result)
+	helper.RespondSuccess(c, "Image detail retrieved", result)
 }
 
 // ─── 网络 ───
 
-func (app *App) dockerListNetworks(c *gin.Context) {
-	result, err := app.dockerSvc.ListNetworks(c.Request.Context())
+func (app *App) dockerNetworkList(c *gin.Context) {
+	result, err := app.dockerSvc.NetworkList(c.Request.Context())
 	if err != nil {
 		helper.RespondError(c, http.StatusInternalServerError, err.Error())
 		return
@@ -246,13 +246,13 @@ func (app *App) dockerNetworkAction(c *gin.Context) {
 	helper.RespondSuccess(c, "Network "+req.Action+" successfully", nil)
 }
 
-func (app *App) dockerCreateNetwork(c *gin.Context) {
+func (app *App) dockerNetworkCreate(c *gin.Context) {
 	var req pkgdocker.NetworkCreateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		helper.RespondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
-	result, err := app.dockerSvc.CreateNetwork(c.Request.Context(), req)
+	result, err := app.dockerSvc.NetworkCreate(c.Request.Context(), req)
 	if err != nil {
 		helper.RespondError(c, http.StatusInternalServerError, err.Error())
 		return
@@ -267,13 +267,13 @@ func (app *App) dockerNetworkInspect(c *gin.Context) {
 		helper.RespondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "Network inspected successfully", result)
+	helper.RespondSuccess(c, "Network detail retrieved", result)
 }
 
 // ─── 卷 ───
 
-func (app *App) dockerListVolumes(c *gin.Context) {
-	result, err := app.dockerSvc.ListVolumes(c.Request.Context())
+func (app *App) dockerVolumeList(c *gin.Context) {
+	result, err := app.dockerSvc.VolumeList(c.Request.Context())
 	if err != nil {
 		helper.RespondError(c, http.StatusInternalServerError, err.Error())
 		return
@@ -296,13 +296,13 @@ func (app *App) dockerVolumeAction(c *gin.Context) {
 	helper.RespondSuccess(c, "Volume "+req.Action+" successfully", nil)
 }
 
-func (app *App) dockerCreateVolume(c *gin.Context) {
+func (app *App) dockerVolumeCreate(c *gin.Context) {
 	var req pkgdocker.VolumeCreateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		helper.RespondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
-	result, err := app.dockerSvc.CreateVolume(c.Request.Context(), req)
+	result, err := app.dockerSvc.VolumeCreate(c.Request.Context(), req)
 	if err != nil {
 		helper.RespondError(c, http.StatusInternalServerError, err.Error())
 		return
@@ -317,58 +317,58 @@ func (app *App) dockerVolumeInspect(c *gin.Context) {
 		helper.RespondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "Volume inspected successfully", result)
+	helper.RespondSuccess(c, "Volume detail retrieved", result)
 }
 
 // ─── 镜像仓库 ───
 
-func (app *App) dockerListRegistries(c *gin.Context) {
-	helper.RespondSuccess(c, "Registries listed successfully", app.dockerSvc.ListRegistries())
+func (app *App) dockerRegistryList(c *gin.Context) {
+	helper.RespondSuccess(c, "Registries listed successfully", app.dockerSvc.RegistryList())
 }
 
-func (app *App) dockerCreateRegistry(c *gin.Context) {
+func (app *App) dockerRegistryCreate(c *gin.Context) {
 	var req svcDockerRegistryUpsertRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		helper.RespondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
-	if err := app.dockerSvc.CreateRegistry(req); err != nil {
+	if err := app.dockerSvc.RegistryCreate(req); err != nil {
 		helper.RespondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	helper.RespondSuccess(c, "仓库添加成功", nil)
 }
 
-func (app *App) dockerUpdateRegistry(c *gin.Context) {
+func (app *App) dockerRegistryUpdate(c *gin.Context) {
 	originalURL := c.Query("url")
 	var req svcDockerRegistryUpsertRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		helper.RespondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
-	if err := app.dockerSvc.UpdateRegistry(originalURL, req); err != nil {
+	if err := app.dockerSvc.RegistryUpdate(originalURL, req); err != nil {
 		helper.RespondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	helper.RespondSuccess(c, "仓库更新成功", nil)
 }
 
-func (app *App) dockerDeleteRegistry(c *gin.Context) {
+func (app *App) dockerRegistryDelete(c *gin.Context) {
 	url := c.Query("url")
-	if err := app.dockerSvc.DeleteRegistry(url); err != nil {
+	if err := app.dockerSvc.RegistryDelete(url); err != nil {
 		helper.RespondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	helper.RespondSuccess(c, "仓库删除成功", nil)
 }
 
-func (app *App) dockerPushImage(c *gin.Context) {
+func (app *App) dockerImagePush(c *gin.Context) {
 	var req pkgdocker.ImagePushRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		helper.RespondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
-	result, err := app.dockerSvc.PushImage(c.Request.Context(), req)
+	result, err := app.dockerSvc.ImagePush(c.Request.Context(), req)
 	if err != nil {
 		helper.RespondError(c, http.StatusInternalServerError, err.Error())
 		return
@@ -376,13 +376,13 @@ func (app *App) dockerPushImage(c *gin.Context) {
 	helper.RespondSuccess(c, "镜像推送成功", result)
 }
 
-func (app *App) dockerPullImage(c *gin.Context) {
+func (app *App) dockerImagePull(c *gin.Context) {
 	var req pkgdocker.ImagePullRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		helper.RespondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
-	result, err := app.dockerSvc.PullImage(c.Request.Context(), req)
+	result, err := app.dockerSvc.ImagePull(c.Request.Context(), req)
 	if err != nil {
 		helper.RespondError(c, http.StatusInternalServerError, err.Error())
 		return

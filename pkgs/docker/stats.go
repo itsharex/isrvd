@@ -79,7 +79,8 @@ type ContainerStatsResponse struct {
 }
 
 // GetContainerStats 获取容器统计信息
-func (s *DockerService) GetContainerStats(ctx context.Context, id string) (*ContainerStatsResponse, error) {
+// ContainerStats 获取容器统计信息
+func (s *DockerService) ContainerStats(ctx context.Context, id string) (*ContainerStatsResponse, error) {
 	stats, err := s.client.ContainerStats(ctx, id, false)
 	if err != nil {
 		logman.Error("Get container stats failed", "id", id, "error", err)

@@ -109,8 +109,8 @@
 #### 5.4.1 类型命名规范（强制）
 
 - **接口/类型别名**：PascalCase，域名前缀 + 功能描述
-  - 列表/概览：`XxxInfo`（如 `DockerContainerInfo`、`SwarmNodeDTO`）
-  - 详情：`XxxInspect` 或 `XxxDetail`（如 `DockerImageInspect`、`SwarmServiceDetail`）
+  - 列表/概览：`XxxInfo`（如 `DockerContainerInfo`、`SwarmNodeInfo`）
+  - 详情：`XxxDetail`（如 `DockerImageDetail`、`SwarmNodeDetail`）
   - 创建请求：`XxxCreate`（如 `DockerContainerCreate`、`ApisixRouteCreate`）
   - 更新请求：`XxxUpdate`（如 `ApisixConsumerUpdate`）
   - 复用创建类型：`type XxxCreate = XxxSpec`（如 `ApisixUpstreamCreate = ApisixUpstream`）

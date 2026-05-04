@@ -19,14 +19,14 @@ type ContainerLogsResult struct {
 	Logs []string `json:"logs"`
 }
 
-// ListContainers 列出容器
-func (s *Service) ListContainers(ctx context.Context, all bool) (any, error) {
-	return s.docker.ListContainers(ctx, all)
+// ContainerList 列出容器
+func (s *Service) ContainerList(ctx context.Context, all bool) ([]*pkgdocker.ContainerInfo, error) {
+	return s.docker.ContainerList(ctx, all)
 }
 
-// CreateContainer 创建容器
-func (s *Service) CreateContainer(ctx context.Context, req pkgdocker.ContainerCreateRequest) (*ContainerCreateResult, error) {
-	id, err := s.docker.CreateContainer(ctx, req)
+// ContainerCreate 创建容器
+func (s *Service) ContainerCreate(ctx context.Context, req pkgdocker.ContainerCreateRequest) (*ContainerCreateResult, error) {
+	id, err := s.docker.ContainerCreate(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -42,7 +42,7 @@ func (s *Service) ContainerStats(ctx context.Context, id string) (any, error) {
 	if id == "" {
 		return nil, fmt.Errorf("容器ID不能为空")
 	}
-	return s.docker.GetContainerStats(ctx, id)
+	return s.docker.ContainerStats(ctx, id)
 }
 
 // ContainerAction 容器操作
@@ -52,7 +52,7 @@ func (s *Service) ContainerAction(ctx context.Context, req pkgdocker.ContainerAc
 
 // ContainerLogs 获取容器日志
 func (s *Service) ContainerLogs(ctx context.Context, req pkgdocker.ContainerLogsRequest) (*ContainerLogsResult, error) {
-	logs, err := s.docker.GetContainerLogs(ctx, req.ID, req.Tail)
+	logs, err := s.docker.ContainerLogs(ctx, req.ID, req.Tail)
 	if err != nil {
 		return nil, err
 	}
@@ -61,5 +61,5 @@ func (s *Service) ContainerLogs(ctx context.Context, req pkgdocker.ContainerLogs
 
 // Info 获取 Docker 概览信息
 func (s *Service) Info(ctx context.Context) (any, error) {
-	return s.docker.GetInfo(ctx)
+	return s.docker.Info(ctx)
 }

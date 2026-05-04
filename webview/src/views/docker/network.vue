@@ -12,7 +12,7 @@ class NetworkDetail extends Vue {
     @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
 
     // ─── 数据属性 ───
-    detailData: DockerNetworkInspect | null = null
+detailData: DockerNetworkInspect | null = null
     loading = false
 
     get networkId() {

@@ -23,8 +23,8 @@ type ImageInfo struct {
 	Created  int64    `json:"created"`
 }
 
-// ListImages 列出镜像
-func (s *DockerService) ListImages(ctx context.Context, all bool) ([]*ImageInfo, error) {
+// ImageList 列出镜像
+func (s *DockerService) ImageList(ctx context.Context, all bool) ([]*ImageInfo, error) {
 	images, err := s.client.ImageList(ctx, dockerimage.ListOptions{All: all})
 	if err != nil {
 		logman.Error("List images failed", "error", err)
@@ -85,8 +85,8 @@ type ImageTagRequest struct {
 	RepoTag string `json:"repoTag" binding:"required"`
 }
 
-// TagImage 镜像打标签
-func (s *DockerService) TagImage(ctx context.Context, id, repoTag string) error {
+// ImageTag 镜像打标签
+func (s *DockerService) ImageTag(ctx context.Context, id, repoTag string) error {
 	if err := s.client.ImageTag(ctx, id, repoTag); err != nil {
 		logman.Error("Tag image failed", "id", id, "tag", repoTag, "error", err)
 		return err
@@ -104,8 +104,8 @@ type ImageSearchResult struct {
 	StarCount   int    `json:"starCount"`
 }
 
-// SearchImages 搜索镜像
-func (s *DockerService) SearchImages(ctx context.Context, term string) ([]*ImageSearchResult, error) {
+// ImageSearch 搜索镜像
+func (s *DockerService) ImageSearch(ctx context.Context, term string) ([]*ImageSearchResult, error) {
 	results, err := s.client.ImageSearch(ctx, term, registry.SearchOptions{Limit: 25})
 	if err != nil {
 		logman.Error("Search image failed", "term", term, "error", err)
@@ -131,8 +131,8 @@ type ImageBuildRequest struct {
 	Tag        string `json:"tag"`
 }
 
-// BuildImage 构建镜像
-func (s *DockerService) BuildImage(ctx context.Context, dockerfile, tag string) (string, error) {
+// ImageBuild 构建镜像
+func (s *DockerService) ImageBuild(ctx context.Context, dockerfile, tag string) (string, error) {
 	tarBuf, err := buildDockerfileTar(dockerfile)
 	if err != nil {
 		logman.Error("Build dockerfile tar failed", "error", err)
@@ -205,9 +205,9 @@ type ImageInspectResponse struct {
 	LayerDetails []*ImageLayerInfo `json:"layerDetails"`
 }
 
-// EnsureImage 确保镜像存在；若本地不存在则自动从 daemon 配置的 mirror 拉取。
+// ImageEnsure 确保镜像存在；若本地不存在则自动从 daemon 配置的 mirror 拉取。
 // 拉取时不携带认证信息，依赖 daemon 的 mirror/proxy 配置。
-func (s *DockerService) EnsureImage(ctx context.Context, ref string) error {
+func (s *DockerService) ImageEnsure(ctx context.Context, ref string) error {
 	if ref == "" {
 		return nil
 	}
@@ -245,9 +245,9 @@ func (s *DockerService) EnsureImage(ctx context.Context, ref string) error {
 	return nil
 }
 
-// GetImageConfig 获取镜像的原始运行配置（来自 Dockerfile 的默认值）
+// ImageConfig 获取镜像的原始运行配置（来自 Dockerfile 的默认值）
 // 用于在从运行容器反推 compose 时过滤掉镜像内置的默认值
-func (s *DockerService) GetImageConfig(ctx context.Context, imageRef string) (*dockerspec.DockerOCIImageConfig, error) {
+func (s *DockerService) ImageConfig(ctx context.Context, imageRef string) (*dockerspec.DockerOCIImageConfig, error) {
 	img, err := s.client.ImageInspect(ctx, imageRef)
 	if err != nil {
 		logman.Error("Get image config failed", "image", imageRef, "error", err)
@@ -256,8 +256,8 @@ func (s *DockerService) GetImageConfig(ctx context.Context, imageRef string) (*d
 	return img.Config, nil
 }
 
-// InspectImage 获取镜像详情
-func (s *DockerService) InspectImage(ctx context.Context, id string) (*ImageInspectResponse, error) {
+// ImageInspect 获取镜像详情
+func (s *DockerService) ImageInspect(ctx context.Context, id string) (*ImageInspectResponse, error) {
 	img, err := s.client.ImageInspect(ctx, id)
 	if err != nil {
 		logman.Error("Inspect image failed", "id", id, "error", err)

@@ -6,8 +6,8 @@ import (
 	"net/http"
 )
 
-// ListPlugins 获取 Apisix 中所有可用 Plugin 及其 Schema
-func (c *Client) ListPlugins() (map[string]any, error) {
+// PluginList 获取 Apisix 中所有可用 Plugin 及其 Schema
+func (c *Client) PluginList() (map[string]any, error) {
 	data, err := c.doRequest(http.MethodGet, "/plugins?all=true", nil)
 	if err != nil {
 		return nil, err

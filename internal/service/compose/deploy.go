@@ -39,7 +39,7 @@ func (s *DeployService) GetContent(ctx context.Context, target ComposeDeployTarg
 		if s.swarm == nil {
 			return "", fmt.Errorf("swarm manager 未初始化")
 		}
-		info, err := s.swarm.InspectService(ctx, name)
+		info, err := s.swarm.ServiceInspect(ctx, name)
 		if err != nil {
 			return "", err
 		}
@@ -64,12 +64,12 @@ func (s *DeployService) getDockerContent(ctx context.Context, name string) (stri
 	path := filepath.Join(root, name, "compose.yml")
 
 	if _, err := os.Stat(path); err != nil {
-		info, err := s.docker.InspectContainer(ctx, name)
+		info, err := s.docker.ContainerInspect(ctx, name)
 		if err != nil {
 			return "", fmt.Errorf("compose 文件不存在且读取运行态失败: %w", err)
 		}
 		// 获取镜像默认配置，用于过滤 Dockerfile 内置的默认值；失败时降级为不过滤
-		imageConfig, _ := s.docker.GetImageConfig(ctx, info.Config.Image)
+		imageConfig, _ := s.docker.ImageConfig(ctx, info.Config.Image)
 		project, err := compose.ProjectFromInspect(info, imageConfig)
 		if err != nil {
 			return "", err
@@ -344,7 +344,7 @@ func (s *DeployService) deploySwarmProject(ctx context.Context, project *types.P
 		if err != nil {
 			return services, err
 		}
-		id, err := s.swarm.CreateService(ctx, req)
+		id, err := s.swarm.ServiceCreate(ctx, req)
 		if err != nil {
 			return services, fmt.Errorf("创建服务 %s 失败: %w", req.Name, err)
 		}

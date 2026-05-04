@@ -21,8 +21,8 @@ type RegistryInfo struct {
 	Description string `json:"description"`
 }
 
-// ListRegistries 列出已配置的镜像仓库
-func (s *DockerService) ListRegistries() []*RegistryInfo {
+// RegistryList 列出已配置的镜像仓库
+func (s *DockerService) RegistryList() []*RegistryInfo {
 	var registries []*RegistryInfo
 	for _, r := range s.config.Registries {
 		registries = append(registries, &RegistryInfo{
@@ -50,8 +50,8 @@ func (s *DockerService) GetRegistryConfigs() []*RegistryConfig {
 	return s.config.Registries
 }
 
-// AddRegistry 添加仓库
-func (s *DockerService) AddRegistry(reg *RegistryConfig) error {
+// RegistryCreate 添加仓库
+func (s *DockerService) RegistryCreate(reg *RegistryConfig) error {
 	if reg == nil {
 		return fmt.Errorf("registry config is nil")
 	}
@@ -65,8 +65,8 @@ func (s *DockerService) AddRegistry(reg *RegistryConfig) error {
 	return nil
 }
 
-// UpdateRegistry 更新仓库（根据 originalURL 定位）
-func (s *DockerService) UpdateRegistry(originalURL string, reg *RegistryConfig) error {
+// RegistryUpdate 更新仓库（根据 originalURL 定位）
+func (s *DockerService) RegistryUpdate(originalURL string, reg *RegistryConfig) error {
 	if reg == nil {
 		return fmt.Errorf("registry config is nil")
 	}
@@ -91,8 +91,8 @@ func (s *DockerService) UpdateRegistry(originalURL string, reg *RegistryConfig) 
 	return nil
 }
 
-// DeleteRegistry 删除仓库
-func (s *DockerService) DeleteRegistry(url string) error {
+// RegistryDelete 删除仓库
+func (s *DockerService) RegistryDelete(url string) error {
 	idx := s.findRegistryIndex(url)
 	if idx < 0 {
 		return fmt.Errorf("仓库不存在: %s", url)
@@ -127,8 +127,8 @@ type ImagePushRequest struct {
 	Namespace   string `json:"namespace"`
 }
 
-// PushImage 推送镜像到仓库
-func (s *DockerService) PushImage(ctx context.Context, req ImagePushRequest) (string, string, error) {
+// ImagePush 推送镜像到仓库
+func (s *DockerService) ImagePush(ctx context.Context, req ImagePushRequest) (string, string, error) {
 	// 提取镜像的短名称
 	imageName := req.Image
 	if idx := strings.LastIndex(imageName, "/"); idx >= 0 {
@@ -196,9 +196,9 @@ type ImagePullRequest struct {
 	Namespace   string `json:"namespace"`
 }
 
-// PullImage 从仓库拉取镜像到本地
+// ImagePull 从仓库拉取镜像到本地
 // RegistryURL 为空时直接从 Docker Hub / daemon 配置的 mirror 拉取
-func (s *DockerService) PullImage(ctx context.Context, req ImagePullRequest) (string, string, error) {
+func (s *DockerService) ImagePull(ctx context.Context, req ImagePullRequest) (string, string, error) {
 	var imageRef string
 	var authStr string
 

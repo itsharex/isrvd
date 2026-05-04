@@ -19,8 +19,8 @@ type NetworkInfo struct {
 	Network []string `json:"networks,omitempty"`
 }
 
-// ListNetworks 列出网络
-func (s *DockerService) ListNetworks(ctx context.Context) ([]*NetworkInfo, error) {
+// NetworkList 列出网络
+func (s *DockerService) NetworkList(ctx context.Context) ([]*NetworkInfo, error) {
 	networks, err := s.client.NetworkList(ctx, network.ListOptions{})
 	if err != nil {
 		logman.Error("List networks failed", "error", err)
@@ -74,8 +74,8 @@ type NetworkCreateRequest struct {
 	Subnet string `json:"subnet"`
 }
 
-// CreateNetwork 创建网络
-func (s *DockerService) CreateNetwork(ctx context.Context, name, driver string) (string, error) {
+// NetworkCreate 创建网络
+func (s *DockerService) NetworkCreate(ctx context.Context, name, driver string) (string, error) {
 	if driver == "" {
 		driver = "bridge"
 	}
@@ -117,8 +117,8 @@ type NetworkInspectResponse struct {
 	Containers []*NetworkContainerInfo `json:"containers"`
 }
 
-// InspectNetwork 获取网络详情
-func (s *DockerService) InspectNetwork(ctx context.Context, id string) (*NetworkInspectResponse, error) {
+// NetworkInspect 获取网络详情
+func (s *DockerService) NetworkInspect(ctx context.Context, id string) (*NetworkInspectResponse, error) {
 	networkInfo, err := s.client.NetworkInspect(ctx, id, network.InspectOptions{})
 	if err != nil {
 		logman.Error("Network inspect failed", "id", id, "error", err)

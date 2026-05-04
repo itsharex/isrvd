@@ -5,7 +5,7 @@ import { APP_ACTIONS_KEY } from '@/store/state'
 import type { AppActions } from '@/store/state'
 
 import api from '@/service/api'
-import type { SwarmServiceDetail, SwarmTask } from '@/service/types'
+import type { SwarmServiceInspect, SwarmTask } from '@/service/types'
 
 import { formatTime } from '@/helper/utils'
 
@@ -14,7 +14,7 @@ class ServiceInfo extends Vue {
     @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
 
     // ─── 数据属性 ───
-    serviceData: SwarmServiceDetail | null = null
+serviceData: SwarmServiceInspect | null = null
     formatTime = formatTime
     tasks: SwarmTask[] = []
     loading = false

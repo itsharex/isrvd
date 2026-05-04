@@ -28,7 +28,7 @@ func IsApisixAvailable() bool {
 		return false
 	}
 
-	_, err := ApisixClient.ListRoutes()
+	_, err := ApisixClient.RouteList()
 	if err != nil {
 		logman.Error("Apisix client not available", "error", err)
 		return false

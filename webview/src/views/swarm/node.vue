@@ -14,7 +14,7 @@ class NodeDetail extends Vue {
     @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
 
     // ─── 数据属性 ───
-    nodeData: SwarmNodeInspect | null = null
+nodeData: SwarmNodeInspect | null = null
     loading = false
     formatFileSize = formatFileSize
     formatTime = formatTime

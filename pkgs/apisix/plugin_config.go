@@ -15,8 +15,8 @@ type PluginConfig struct {
 	UpdateTime int64          `json:"update_time"`
 }
 
-// ListPluginConfigs 获取所有 Plugin Config 列表
-func (c *Client) ListPluginConfigs() ([]PluginConfig, error) {
+// PluginConfigList 获取所有 Plugin Config 列表
+func (c *Client) PluginConfigList() ([]PluginConfig, error) {
 	data, err := c.doRequest(http.MethodGet, "/plugin_configs", nil)
 	if err != nil {
 		return nil, err
@@ -24,8 +24,8 @@ func (c *Client) ListPluginConfigs() ([]PluginConfig, error) {
 	return parsePluginConfigList(data)
 }
 
-// GetPluginConfig 获取单个 Plugin Config 详情
-func (c *Client) GetPluginConfig(configID string) (*PluginConfig, error) {
+// PluginConfigInspect 获取单个 Plugin Config 详情
+func (c *Client) PluginConfigInspect(configID string) (*PluginConfig, error) {
 	data, err := c.doRequest(http.MethodGet, "/plugin_configs/"+configID, nil)
 	if err != nil {
 		return nil, err
@@ -33,8 +33,8 @@ func (c *Client) GetPluginConfig(configID string) (*PluginConfig, error) {
 	return parseSinglePluginConfig(data)
 }
 
-// CreatePluginConfig 创建 Plugin Config
-func (c *Client) CreatePluginConfig(req PluginConfig) (*PluginConfig, error) {
+// PluginConfigCreate 创建 Plugin Config
+func (c *Client) PluginConfigCreate(req PluginConfig) (*PluginConfig, error) {
 	path := "/plugin_configs"
 	method := http.MethodPost
 	if req.ID != "" {
@@ -48,8 +48,8 @@ func (c *Client) CreatePluginConfig(req PluginConfig) (*PluginConfig, error) {
 	return parseSinglePluginConfig(data)
 }
 
-// UpdatePluginConfig 更新 Plugin Config
-func (c *Client) UpdatePluginConfig(configID string, req PluginConfig) (*PluginConfig, error) {
+// PluginConfigUpdate 更新 Plugin Config
+func (c *Client) PluginConfigUpdate(configID string, req PluginConfig) (*PluginConfig, error) {
 	data, err := c.doRequest(http.MethodPut, "/plugin_configs/"+configID, buildPluginConfigBody(req))
 	if err != nil {
 		return nil, err
@@ -57,8 +57,8 @@ func (c *Client) UpdatePluginConfig(configID string, req PluginConfig) (*PluginC
 	return parseSinglePluginConfig(data)
 }
 
-// DeletePluginConfig 删除 Plugin Config
-func (c *Client) DeletePluginConfig(configID string) error {
+// PluginConfigDelete 删除 Plugin Config
+func (c *Client) PluginConfigDelete(configID string) error {
 	_, err := c.doRequest(http.MethodDelete, "/plugin_configs/"+configID, nil)
 	if err != nil {
 		return err

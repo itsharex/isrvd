@@ -17,9 +17,9 @@ type RegistryUpsertRequest struct {
 	Description string `json:"description"`
 }
 
-// ListRegistries 列出已配置的镜像仓库
-func (s *Service) ListRegistries() any {
-	return s.docker.ListRegistries()
+// RegistryList 列出已配置的镜像仓库
+func (s *Service) RegistryList() any {
+	return s.docker.RegistryList()
 }
 
 // syncRegistriesToConfig 将当前 DockerService 的仓库同步到全局 config 并落盘
@@ -39,8 +39,8 @@ func (s *Service) syncRegistriesToConfig() error {
 	return config.Save()
 }
 
-// CreateRegistry 新建镜像仓库
-func (s *Service) CreateRegistry(req RegistryUpsertRequest) error {
+// RegistryCreate 新建镜像仓库
+func (s *Service) RegistryCreate(req RegistryUpsertRequest) error {
 	reg := &pkgdocker.RegistryConfig{
 		Name:        req.Name,
 		URL:         req.URL,
@@ -48,14 +48,14 @@ func (s *Service) CreateRegistry(req RegistryUpsertRequest) error {
 		Password:    req.Password,
 		Description: req.Description,
 	}
-	if err := s.docker.AddRegistry(reg); err != nil {
+	if err := s.docker.RegistryCreate(reg); err != nil {
 		return err
 	}
 	return s.syncRegistriesToConfig()
 }
 
-// UpdateRegistry 更新镜像仓库
-func (s *Service) UpdateRegistry(originalURL string, req RegistryUpsertRequest) error {
+// RegistryUpdate 更新镜像仓库
+func (s *Service) RegistryUpdate(originalURL string, req RegistryUpsertRequest) error {
 	if originalURL == "" {
 		return fmt.Errorf("缺少 url 参数")
 	}
@@ -66,35 +66,35 @@ func (s *Service) UpdateRegistry(originalURL string, req RegistryUpsertRequest) 
 		Password:    req.Password,
 		Description: req.Description,
 	}
-	if err := s.docker.UpdateRegistry(originalURL, reg); err != nil {
+	if err := s.docker.RegistryUpdate(originalURL, reg); err != nil {
 		return err
 	}
 	return s.syncRegistriesToConfig()
 }
 
-// DeleteRegistry 删除镜像仓库
-func (s *Service) DeleteRegistry(url string) error {
+// RegistryDelete 删除镜像仓库
+func (s *Service) RegistryDelete(url string) error {
 	if url == "" {
 		return fmt.Errorf("缺少 url 参数")
 	}
-	if err := s.docker.DeleteRegistry(url); err != nil {
+	if err := s.docker.RegistryDelete(url); err != nil {
 		return err
 	}
 	return s.syncRegistriesToConfig()
 }
 
-// PushImage 推送镜像到仓库
-func (s *Service) PushImage(ctx context.Context, req pkgdocker.ImagePushRequest) (map[string]string, error) {
-	msg, targetRef, err := s.docker.PushImage(ctx, req)
+// ImagePush 推送镜像到仓库
+func (s *Service) ImagePush(ctx context.Context, req pkgdocker.ImagePushRequest) (map[string]string, error) {
+	msg, targetRef, err := s.docker.ImagePush(ctx, req)
 	if err != nil {
 		return nil, err
 	}
 	return map[string]string{"image": req.Image, "target": targetRef, "message": msg}, nil
 }
 
-// PullImage 从仓库拉取镜像
-func (s *Service) PullImage(ctx context.Context, req pkgdocker.ImagePullRequest) (map[string]string, error) {
-	msg, imageRef, err := s.docker.PullImage(ctx, req)
+// ImagePull 从仓库拉取镜像
+func (s *Service) ImagePull(ctx context.Context, req pkgdocker.ImagePullRequest) (map[string]string, error) {
+	msg, imageRef, err := s.docker.ImagePull(ctx, req)
 	if err != nil {
 		return nil, err
 	}

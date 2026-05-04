@@ -35,8 +35,8 @@ type Route struct {
 	UpdateTime      int64          `json:"update_time"`
 }
 
-// ListRoutes 获取所有路由列表（不过滤插件，用于路由管理页面展示）
-func (c *Client) ListRoutes() ([]Route, error) {
+// RouteList 获取所有路由列表（不过滤插件，用于路由管理页面展示）
+func (c *Client) RouteList() ([]Route, error) {
 	data, err := c.doRequest(http.MethodGet, "/routes", nil)
 	if err != nil {
 		return nil, err
@@ -54,8 +54,8 @@ func (c *Client) ListRoutes() ([]Route, error) {
 	return result, nil
 }
 
-// GetRoute 获取单条路由详情
-func (c *Client) GetRoute(routeID string) (*Route, error) {
+// RouteInspect 获取单条路由详情
+func (c *Client) RouteInspect(routeID string) (*Route, error) {
 	data, err := c.doRequest(http.MethodGet, "/routes/"+routeID, nil)
 	if err != nil {
 		return nil, err
@@ -63,8 +63,8 @@ func (c *Client) GetRoute(routeID string) (*Route, error) {
 	return parseSingleRoute(data)
 }
 
-// CreateRoute 创建路由
-func (c *Client) CreateRoute(req Route) (*Route, error) {
+// RouteCreate 创建路由
+func (c *Client) RouteCreate(req Route) (*Route, error) {
 	data, err := c.doRequest(http.MethodPost, "/routes", buildRouteBody(req))
 	if err != nil {
 		return nil, err
@@ -72,8 +72,8 @@ func (c *Client) CreateRoute(req Route) (*Route, error) {
 	return parseSingleRoute(data)
 }
 
-// UpdateRoute 更新路由
-func (c *Client) UpdateRoute(routeID string, req Route) (*Route, error) {
+// RouteUpdate 更新路由
+func (c *Client) RouteUpdate(routeID string, req Route) (*Route, error) {
 	data, err := c.doRequest(http.MethodPut, "/routes/"+routeID, buildRouteBody(req))
 	if err != nil {
 		return nil, err
@@ -81,8 +81,8 @@ func (c *Client) UpdateRoute(routeID string, req Route) (*Route, error) {
 	return parseSingleRoute(data)
 }
 
-// PatchRouteStatus 仅更新路由的启用/禁用状态（1=启用 0=禁用）
-func (c *Client) PatchRouteStatus(routeID string, status int) error {
+// RouteStatusPatch 仅更新路由的启用/禁用状态（1=启用 0=禁用）
+func (c *Client) RouteStatusPatch(routeID string, status int) error {
 	body := map[string]any{"status": status}
 	_, err := c.doRequest(http.MethodPatch, "/routes/"+routeID, body)
 	if err != nil {
@@ -91,8 +91,8 @@ func (c *Client) PatchRouteStatus(routeID string, status int) error {
 	return nil
 }
 
-// DeleteRoute 删除路由
-func (c *Client) DeleteRoute(routeID string) error {
+// RouteDelete 删除路由
+func (c *Client) RouteDelete(routeID string) error {
 	_, err := c.doRequest(http.MethodDelete, "/routes/"+routeID, nil)
 	if err != nil {
 		return err
@@ -100,8 +100,8 @@ func (c *Client) DeleteRoute(routeID string) error {
 	return nil
 }
 
-// WhitelistRoutes 获取管控路由列表（仅返回同时配置了 key-auth 和 consumer-restriction 的路由）
-func (c *Client) WhitelistRoutes() ([]Route, error) {
+// RouteWhitelistList 获取管控路由列表（仅返回同时配置了 key-auth 和 consumer-restriction 的路由）
+func (c *Client) RouteWhitelistList() ([]Route, error) {
 	data, err := c.doRequest(http.MethodGet, "/routes", nil)
 	if err != nil {
 		return nil, err
@@ -122,8 +122,8 @@ func (c *Client) WhitelistRoutes() ([]Route, error) {
 	return result, nil
 }
 
-// GetRouteWhitelist 获取所有路由的 consumer-restriction 白名单
-func (c *Client) GetRouteWhitelist() ([]Route, error) {
+// RouteWhitelist 获取所有路由的 consumer-restriction 白名单
+func (c *Client) RouteWhitelist() ([]Route, error) {
 	data, err := c.doRequest(http.MethodGet, "/routes", nil)
 	if err != nil {
 		return nil, err
@@ -148,7 +148,7 @@ func (c *Client) GetRouteWhitelist() ([]Route, error) {
 
 // getRouteConsumers 获取指定路由的白名单消费者列表
 func (c *Client) getRouteConsumers(routeID string) ([]string, error) {
-	whitelist, err := c.GetRouteWhitelist()
+	whitelist, err := c.RouteWhitelist()
 	if err != nil {
 		return nil, err
 	}
@@ -161,8 +161,8 @@ func (c *Client) getRouteConsumers(routeID string) ([]string, error) {
 	return []string{}, nil
 }
 
-// RemoveConsumerFromRouteWhitelist 从路由的白名单中移除 consumer
-func (c *Client) RemoveConsumerFromRouteWhitelist(routeID, consumerName string) error {
+// RouteWhitelistRevoke 从路由的白名单中移除 consumer
+func (c *Client) RouteWhitelistRevoke(routeID, consumerName string) error {
 	consumers, err := c.getRouteConsumers(routeID)
 	if err != nil {
 		return err
@@ -180,11 +180,11 @@ func (c *Client) RemoveConsumerFromRouteWhitelist(routeID, consumerName string) 
 	if !found {
 		return fmt.Errorf("用户 %s 不在路由 %s 的白名单中", consumerName, routeID)
 	}
-	return c.UpdateRouteConsumerRestriction(routeID, newConsumers)
+	return c.RouteConsumerRestrictionUpdate(routeID, newConsumers)
 }
 
-// UpdateRouteConsumerRestriction 更新路由的 consumer-restriction 白名单
-func (c *Client) UpdateRouteConsumerRestriction(routeID string, consumers []string) error {
+// RouteConsumerRestrictionUpdate 更新路由的 consumer-restriction 白名单
+func (c *Client) RouteConsumerRestrictionUpdate(routeID string, consumers []string) error {
 	routeData, err := c.doRequest(http.MethodGet, "/routes/"+routeID, nil)
 	if err != nil {
 		return err

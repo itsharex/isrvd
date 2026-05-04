@@ -25,8 +25,8 @@ type Upstream struct {
 	UpdateTime   int64          `json:"update_time"`
 }
 
-// ListUpstreams 获取所有 Upstream 列表
-func (c *Client) ListUpstreams() ([]Upstream, error) {
+// UpstreamList 获取所有 Upstream 列表
+func (c *Client) UpstreamList() ([]Upstream, error) {
 	data, err := c.doRequest(http.MethodGet, "/upstreams", nil)
 	if err != nil {
 		return nil, err
@@ -34,8 +34,8 @@ func (c *Client) ListUpstreams() ([]Upstream, error) {
 	return parseUpstreamList(data)
 }
 
-// GetUpstream 获取单条 Upstream 详情
-func (c *Client) GetUpstream(upstreamID string) (*Upstream, error) {
+// UpstreamInspect 获取单条 Upstream 详情
+func (c *Client) UpstreamInspect(upstreamID string) (*Upstream, error) {
 	data, err := c.doRequest(http.MethodGet, "/upstreams/"+upstreamID, nil)
 	if err != nil {
 		return nil, err
@@ -43,8 +43,8 @@ func (c *Client) GetUpstream(upstreamID string) (*Upstream, error) {
 	return parseSingleUpstream(data)
 }
 
-// CreateUpstream 创建 Upstream
-func (c *Client) CreateUpstream(req Upstream) (*Upstream, error) {
+// UpstreamCreate 创建 Upstream
+func (c *Client) UpstreamCreate(req Upstream) (*Upstream, error) {
 	data, err := c.doRequest(http.MethodPost, "/upstreams", buildUpstreamBody(req))
 	if err != nil {
 		return nil, err
@@ -52,8 +52,8 @@ func (c *Client) CreateUpstream(req Upstream) (*Upstream, error) {
 	return parseSingleUpstream(data)
 }
 
-// UpdateUpstream 更新 Upstream
-func (c *Client) UpdateUpstream(upstreamID string, req Upstream) (*Upstream, error) {
+// UpstreamUpdate 更新 Upstream
+func (c *Client) UpstreamUpdate(upstreamID string, req Upstream) (*Upstream, error) {
 	data, err := c.doRequest(http.MethodPut, "/upstreams/"+upstreamID, buildUpstreamBody(req))
 	if err != nil {
 		return nil, err
@@ -61,8 +61,8 @@ func (c *Client) UpdateUpstream(upstreamID string, req Upstream) (*Upstream, err
 	return parseSingleUpstream(data)
 }
 
-// DeleteUpstream 删除 Upstream
-func (c *Client) DeleteUpstream(upstreamID string) error {
+// UpstreamDelete 删除 Upstream
+func (c *Client) UpstreamDelete(upstreamID string) error {
 	_, err := c.doRequest(http.MethodDelete, "/upstreams/"+upstreamID, nil)
 	if err != nil {
 		return err

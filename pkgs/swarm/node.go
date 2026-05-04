@@ -1,3 +1,4 @@
+// Package swarm 提供 Swarm 相关功能
 package swarm
 
 import (
@@ -9,8 +10,8 @@ import (
 	"github.com/rehiy/pango/logman"
 )
 
-// NodeDTO Swarm 节点信息
-type NodeDTO struct {
+// NodeInfo Swarm 节点信息（列表项）
+type NodeInfo struct {
 	ID            string `json:"id"`
 	Hostname      string `json:"hostname"`
 	Role          string `json:"role"`
@@ -21,17 +22,17 @@ type NodeDTO struct {
 	Leader        bool   `json:"leader"`
 }
 
-// ListNodes 获取节点列表
-func (m *SwarmService) ListNodes(ctx context.Context) ([]NodeDTO, error) {
+// NodeList 获取节点列表
+func (m *SwarmService) NodeList(ctx context.Context) ([]NodeInfo, error) {
 	nodes, err := m.client.NodeList(ctx, swarm.NodeListOptions{})
 	if err != nil {
 		logman.Error("NodeList failed", "error", err)
 		return nil, err
 	}
 
-	var result []NodeDTO
+	var result []NodeInfo
 	for _, n := range nodes {
-		result = append(result, NodeDTO{
+		result = append(result, NodeInfo{
 			ID:            n.ID,
 			Hostname:      n.Description.Hostname,
 			Role:          string(n.Spec.Role),
@@ -100,8 +101,8 @@ type NodeInspect struct {
 	UpdatedAt     string            `json:"updatedAt"`
 }
 
-// InspectNode 获取节点详情
-func (m *SwarmService) InspectNode(ctx context.Context, id string) (*NodeInspect, error) {
+// NodeInspect 获取节点详情
+func (m *SwarmService) NodeInspect(ctx context.Context, id string) (*NodeInspect, error) {
 	node, _, err := m.client.NodeInspectWithRaw(ctx, id)
 	if err != nil {
 		logman.Error("NodeInspect failed", "id", id, "error", err)

@@ -24,8 +24,8 @@ func (m *SwarmService) GetClient() *client.Client {
 	return m.client
 }
 
-// GetJoinTokens 获取加入集群的 token
-func (m *SwarmService) GetJoinTokens(ctx context.Context) (map[string]string, error) {
+// JoinTokenList 获取加入集群的 token
+func (m *SwarmService) JoinTokenList(ctx context.Context) (map[string]string, error) {
 	info, err := m.client.SwarmInspect(ctx)
 	if err != nil {
 		logman.Error("SwarmInspect failed", "error", err)
@@ -37,8 +37,8 @@ func (m *SwarmService) GetJoinTokens(ctx context.Context) (map[string]string, er
 	}, nil
 }
 
-// GetSwarmInfo 获取 Swarm 集群概览
-func (m *SwarmService) GetSwarmInfo(ctx context.Context) (map[string]any, error) {
+// Info 获取 Swarm 集群概览
+func (m *SwarmService) Info(ctx context.Context) (map[string]any, error) {
 	info, err := m.client.SwarmInspect(ctx)
 	if err != nil {
 		logman.Error("SwarmInspect failed", "error", err)

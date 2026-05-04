@@ -10,7 +10,8 @@ export interface SwarmInfo {
     tasks: number
 }
 
-export interface SwarmNodeDTO {
+// 节点列表项
+export interface SwarmNodeInfo {
     id: string
     hostname: string
     role: string
@@ -21,6 +22,7 @@ export interface SwarmNodeDTO {
     leader: boolean
 }
 
+// 节点详情
 export interface SwarmNodeInspect {
     id: string
     hostname: string
@@ -68,15 +70,15 @@ export interface SwarmServiceSpec {
     constraints?: string[]
 }
 
-// SwarmServiceDetail 服务详情（SwarmServiceSpec + 运行时信息）
-export interface SwarmServiceDetail extends SwarmServiceSpec {
+// SwarmServiceInspect 服务详情（SwarmServiceSpec + 运行时信息）
+export interface SwarmServiceInspect extends SwarmServiceSpec {
     id: string
     runningTasks: number
     createdAt: string
     updatedAt: string
 }
 
-// SwarmServiceInfo 服务列表 DTO
+// SwarmServiceInfo 服务列表信息
 export interface SwarmServiceInfo {
     id: string
     name: string

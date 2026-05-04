@@ -14,7 +14,7 @@ class VolumeDetail extends Vue {
     @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
 
     // ─── 数据属性 ───
-    detailData: DockerVolumeInspect | null = null
+detailData: DockerVolumeInspect | null = null
     loading = false
     formatFileSize = formatFileSize
     formatTime = formatTime

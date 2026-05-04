@@ -52,7 +52,7 @@ func IsDockerAvailable(ctx context.Context) bool {
 		return false
 	}
 
-	_, err := DockerService.GetInfo(ctx)
+	_, err := DockerService.Info(ctx)
 	if err != nil {
 		logman.Error("Docker service not available", "error", err)
 		return false

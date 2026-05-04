@@ -16,14 +16,17 @@ import (
 	"isrvd/pkgs/docker"
 )
 
-// ServiceInfo 服务详情
-type ServiceInfo struct {
+// ServiceInspect 服务详情
+type ServiceInspect struct {
 	ServiceSpec
 	ID           string `json:"id"`
 	RunningTasks int    `json:"runningTasks"`
 	CreatedAt    string `json:"createdAt"`
 	UpdatedAt    string `json:"updatedAt"`
 }
+
+// ServiceInfo 服务列表信息
+type ServiceInfo = ServiceInspect
 
 // ServiceSpec 服务可写配置（创建/更新共用）
 type ServiceSpec struct {
@@ -56,8 +59,8 @@ type ServiceMount struct {
 	ReadOnly bool   `json:"readOnly"`
 }
 
-// ListServices 获取服务列表
-func (m *SwarmService) ListServices(ctx context.Context) ([]ServiceInfo, error) {
+// ServiceList 获取服务列表
+func (m *SwarmService) ServiceList(ctx context.Context) ([]ServiceInfo, error) {
 	services, err := m.client.ServiceList(ctx, swarm.ServiceListOptions{})
 	if err != nil {
 		logman.Error("ServiceList failed", "error", err)
@@ -142,8 +145,8 @@ func (m *SwarmService) ServiceAction(ctx context.Context, id, action string, rep
 	return fmt.Errorf("不支持的操作: %s", action)
 }
 
-// CreateService 创建服务
-func (m *SwarmService) CreateService(ctx context.Context, req ServiceSpec) (string, error) {
+// ServiceCreate 创建服务
+func (m *SwarmService) ServiceCreate(ctx context.Context, req ServiceSpec) (string, error) {
 	spec := swarm.ServiceSpec{
 		Annotations: swarm.Annotations{Name: req.Name},
 		TaskTemplate: swarm.TaskSpec{
@@ -220,8 +223,8 @@ func (m *SwarmService) CreateService(ctx context.Context, req ServiceSpec) (stri
 	return resp.ID, nil
 }
 
-// ForceUpdateService 强制重新部署服务
-func (m *SwarmService) ForceUpdateService(ctx context.Context, id string) error {
+// ServiceForceUpdate 强制重新部署服务
+func (m *SwarmService) ServiceForceUpdate(ctx context.Context, id string) error {
 	svc, _, err := m.client.ServiceInspectWithRaw(ctx, id, swarm.ServiceInspectOptions{InsertDefaults: true})
 	if err != nil {
 		logman.Error("ServiceInspect failed", "id", id, "error", err)
@@ -238,8 +241,8 @@ func (m *SwarmService) ForceUpdateService(ctx context.Context, id string) error 
 	return nil
 }
 
-// GetServiceLogs 获取服务日志
-func (m *SwarmService) GetServiceLogs(ctx context.Context, serviceID, tail string) ([]string, error) {
+// ServiceLogs 获取服务日志
+func (m *SwarmService) ServiceLogs(ctx context.Context, serviceID, tail string) ([]string, error) {
 	reader, err := m.client.ServiceLogs(ctx, serviceID, container.LogsOptions{
 		ShowStdout: true,
 		ShowStderr: true,
@@ -260,8 +263,8 @@ func (m *SwarmService) GetServiceLogs(ctx context.Context, serviceID, tail strin
 	return docker.ParseDockerLogs(raw), nil
 }
 
-// InspectService 获取服务详情
-func (m *SwarmService) InspectService(ctx context.Context, id string) (*ServiceInfo, error) {
+// ServiceInspect 获取服务详情
+func (m *SwarmService) ServiceInspect(ctx context.Context, id string) (*ServiceInspect, error) {
 	svc, _, err := m.client.ServiceInspectWithRaw(ctx, id, swarm.ServiceInspectOptions{InsertDefaults: true})
 	if err != nil {
 		logman.Error("InspectService failed", "id", id, "error", err)
@@ -279,7 +282,7 @@ func (m *SwarmService) InspectService(ctx context.Context, id string) (*ServiceI
 		}
 	}
 
-	result := &ServiceInfo{
+	result := &ServiceInspect{
 		ServiceSpec: ServiceSpec{
 			Name:   svc.Spec.Name,
 			Image:  svc.Spec.TaskTemplate.ContainerSpec.Image,

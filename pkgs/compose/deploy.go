@@ -42,11 +42,11 @@ func (s *ComposeService) DeployProject(ctx context.Context, project *types.Proje
 		}
 
 		// 镜像不存在时自动拉取
-		if err := s.docker.EnsureImage(ctx, svc.Image); err != nil {
+		if err := s.docker.ImageEnsure(ctx, svc.Image); err != nil {
 			return containers, fmt.Errorf("确保镜像 %s 存在失败: %w", svc.Image, err)
 		}
 
-		id, err := s.docker.CreateContainer(ctx, req)
+		id, err := s.docker.ContainerCreate(ctx, req)
 		if err != nil {
 			return containers, fmt.Errorf("创建容器 %s 失败: %w", req.Name, err)
 		}
@@ -85,7 +85,7 @@ func collectNetworks(project *types.Project) []string {
 
 // ensureNetwork 确保指定的 bridge 网络存在（不存在则创建）
 func (s *ComposeService) ensureNetwork(ctx context.Context, name string) error {
-	networks, err := s.docker.ListNetworks(ctx)
+	networks, err := s.docker.NetworkList(ctx)
 	if err != nil {
 		return err
 	}
@@ -94,6 +94,6 @@ func (s *ComposeService) ensureNetwork(ctx context.Context, name string) error {
 			return nil
 		}
 	}
-	_, err = s.docker.CreateNetwork(ctx, name, "bridge")
+	_, err = s.docker.NetworkCreate(ctx, name, "bridge")
 	return err
 }

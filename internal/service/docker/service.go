@@ -31,7 +31,7 @@ func (s *Service) CheckAvailability(ctx context.Context) bool {
 	if s.docker == nil {
 		return false
 	}
-	_, err := s.docker.GetInfo(ctx)
+	_, err := s.docker.Info(ctx)
 	return err == nil
 }
 

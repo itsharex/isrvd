@@ -14,7 +14,7 @@ class ImageDetail extends Vue {
     @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
 
     // ─── 数据属性 ───
-    inspectData: DockerImageInspect | null = null
+inspectData: DockerImageInspect | null = null
     loading = false
     formatFileSize = formatFileSize
     formatTime = formatTime

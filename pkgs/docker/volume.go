@@ -19,8 +19,8 @@ type VolumeInfo struct {
 	Size       int64  `json:"size"`
 }
 
-// ListVolumes 列出卷
-func (s *DockerService) ListVolumes(ctx context.Context) ([]*VolumeInfo, error) {
+// VolumeList 列出卷
+func (s *DockerService) VolumeList(ctx context.Context) ([]*VolumeInfo, error) {
 	volumes, err := s.client.VolumeList(ctx, volume.ListOptions{})
 	if err != nil {
 		logman.Error("List volumes failed", "error", err)
@@ -66,8 +66,8 @@ type VolumeCreateRequest struct {
 	Driver string `json:"driver"`
 }
 
-// CreateVolume 创建卷
-func (s *DockerService) CreateVolume(ctx context.Context, name, driver string) (string, string, error) {
+// VolumeCreate 创建卷
+func (s *DockerService) VolumeCreate(ctx context.Context, name, driver string) (string, string, error) {
 	if driver == "" {
 		driver = "local"
 	}
@@ -102,8 +102,8 @@ type VolumeInspectResponse struct {
 	UsedBy     []*VolumeUsedByContainer `json:"usedBy"`
 }
 
-// InspectVolume 获取卷详情
-func (s *DockerService) InspectVolume(ctx context.Context, name string) (*VolumeInspectResponse, error) {
+// VolumeInspect 获取卷详情
+func (s *DockerService) VolumeInspect(ctx context.Context, name string) (*VolumeInspectResponse, error) {
 	volInfo, err := s.client.VolumeInspect(ctx, name)
 	if err != nil {
 		logman.Error("Volume inspect failed", "name", name, "error", err)

@@ -42,22 +42,22 @@ import type {
     DockerContainerCreate,
     DockerContainerCompose,
     DockerImageInfo,
-    DockerImageInspect,
+	DockerImageInspect,
     DockerImageSearchResult,
     DockerNetworkInfo,
-    DockerNetworkInspect,
+	DockerNetworkInspect,
     DockerNetworkCreate,
     DockerVolumeInfo,
-    DockerVolumeInspect,
+	DockerVolumeInspect,
     DockerVolumeCreate,
     DockerRegistryInfo,
     DockerRegistryUpsert,
     // Swarm
     SwarmInfo,
-    SwarmNodeDTO,
-    SwarmNodeInspect,
+    SwarmNodeInfo,
+	SwarmNodeInspect,
     SwarmServiceInfo,
-    SwarmServiceDetail,
+    SwarmServiceInspect,
     SwarmTask,
     SwarmCreateService,
     SwarmServiceCompose,
@@ -344,7 +344,7 @@ class ApiService {
     }
 
     dockerImage(id: string) {
-        return http.get<DockerImageInspect>(`/api/docker/image/${id}`)
+	return http.get<DockerImageInspect>(`/api/docker/image/${id}`)
     }
 
     dockerImageAction(id: string, action: string) {
@@ -377,7 +377,7 @@ class ApiService {
     }
 
     dockerNetwork(id: string) {
-        return http.get<DockerNetworkInspect>(`/api/docker/network/${id}`)
+	return http.get<DockerNetworkInspect>(`/api/docker/network/${id}`)
     }
 
     dockerNetworkAction(id: string, action: string) {
@@ -394,7 +394,7 @@ class ApiService {
     }
 
     dockerVolume(name: string) {
-        return http.get<DockerVolumeInspect>(`/api/docker/volume/${encodeURIComponent(name)}`)
+	return http.get<DockerVolumeInspect>(`/api/docker/volume/${encodeURIComponent(name)}`)
     }
 
     dockerVolumeAction(name: string, action: string) {
@@ -429,7 +429,7 @@ class ApiService {
     }
 
     swarmNodeList() {
-        return http.get<SwarmNodeDTO[]>('/api/swarm/nodes')
+        return http.get<SwarmNodeInfo[]>('/api/swarm/nodes')
     }
 
     swarmTokens() {
@@ -437,7 +437,7 @@ class ApiService {
     }
 
     swarmNode(id: string) {
-        return http.get<SwarmNodeInspect>(`/api/swarm/node/${id}`)
+	return http.get<SwarmNodeInspect>(`/api/swarm/node/${id}`)
     }
 
     swarmNodeAction(id: string, action: string) {
@@ -450,7 +450,7 @@ class ApiService {
     }
 
     swarmService(id: string) {
-        return http.get<SwarmServiceDetail>(`/api/swarm/service/${id}`)
+        return http.get<SwarmServiceInspect>(`/api/swarm/service/${id}`)
     }
 
     swarmServiceAction(id: string, action: string, replicas?: number) {

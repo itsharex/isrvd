@@ -15,24 +15,24 @@ func (app *App) defineSwarmRoutes() []Route {
 		// Swarm 信息
 		{Method: "GET", Path: "/swarm/info", Handler: app.swarmInfo, Module: "swarm", Label: "获取 Swarm 信息"},
 		// 节点管理
-		{Method: "GET", Path: "/swarm/nodes", Handler: app.swarmListNodes, Module: "swarm", Label: "列出 Swarm 节点"},
-		{Method: "GET", Path: "/swarm/node/:id", Handler: app.swarmInspectNode, Module: "swarm", Label: "查看 Swarm 节点"},
-		{Method: "POST", Path: "/swarm/node/:id/action", Handler: app.NodeDTOAction, Module: "swarm", Label: "操作 Swarm 节点"},
-		{Method: "GET", Path: "/swarm/tokens", Handler: app.swarmGetJoinTokens, Module: "swarm", Label: "获取 Swarm 加入令牌"},
+		{Method: "GET", Path: "/swarm/nodes", Handler: app.swarmNodeList, Module: "swarm", Label: "列出 Swarm 节点"},
+		{Method: "GET", Path: "/swarm/node/:id", Handler: app.swarmNodeInspect, Module: "swarm", Label: "查看 Swarm 节点"},
+		{Method: "POST", Path: "/swarm/node/:id/action", Handler: app.swarmNodeAction, Module: "swarm", Label: "操作 Swarm 节点"},
+		{Method: "GET", Path: "/swarm/tokens", Handler: app.swarmJoinTokens, Module: "swarm", Label: "获取 Swarm 加入令牌"},
 		// 服务管理
-		{Method: "GET", Path: "/swarm/services", Handler: app.swarmListServices, Module: "swarm", Label: "列出 Swarm 服务"},
-		{Method: "GET", Path: "/swarm/service/:id", Handler: app.swarmInspectService, Module: "swarm", Label: "查看 Swarm 服务"},
-		{Method: "POST", Path: "/swarm/service", Handler: app.swarmCreateService, Module: "swarm", Label: "创建 Swarm 服务"},
+		{Method: "GET", Path: "/swarm/services", Handler: app.swarmServiceList, Module: "swarm", Label: "列出 Swarm 服务"},
+		{Method: "GET", Path: "/swarm/service/:id", Handler: app.swarmServiceInspect, Module: "swarm", Label: "查看 Swarm 服务"},
+		{Method: "POST", Path: "/swarm/service", Handler: app.swarmServiceCreate, Module: "swarm", Label: "创建 Swarm 服务"},
 		{Method: "POST", Path: "/swarm/service/:id/action", Handler: app.swarmServiceAction, Module: "swarm", Label: "操作 Swarm 服务"},
-		{Method: "POST", Path: "/swarm/service/:id/force-update", Handler: app.swarmForceUpdateService, Module: "swarm", Label: "强制更新 Swarm 服务"},
+		{Method: "POST", Path: "/swarm/service/:id/force-update", Handler: app.swarmServiceForceUpdate, Module: "swarm", Label: "强制更新 Swarm 服务"},
 		{Method: "GET", Path: "/swarm/service/:id/logs", Handler: app.swarmServiceLogs, Module: "swarm", Label: "查看 Swarm 服务日志"},
 		// 任务
-		{Method: "GET", Path: "/swarm/tasks", Handler: app.swarmListTasks, Module: "swarm", Label: "列出 Swarm 任务"},
+		{Method: "GET", Path: "/swarm/tasks", Handler: app.swarmTaskList, Module: "swarm", Label: "列出 Swarm 任务"},
 	}
 }
 
 func (app *App) swarmInfo(c *gin.Context) {
-	result, err := app.swarmSvc.SwarmInfo(c.Request.Context())
+	result, err := app.swarmSvc.Info(c.Request.Context())
 	if err != nil {
 		helper.RespondError(c, http.StatusInternalServerError, err.Error())
 		return
@@ -40,8 +40,8 @@ func (app *App) swarmInfo(c *gin.Context) {
 	helper.RespondSuccess(c, "Swarm info retrieved", result)
 }
 
-func (app *App) swarmListNodes(c *gin.Context) {
-	result, err := app.swarmSvc.ListNodes(c.Request.Context())
+func (app *App) swarmNodeList(c *gin.Context) {
+	result, err := app.swarmSvc.NodeList(c.Request.Context())
 	if err != nil {
 		helper.RespondError(c, http.StatusInternalServerError, err.Error())
 		return
@@ -49,17 +49,17 @@ func (app *App) swarmListNodes(c *gin.Context) {
 	helper.RespondSuccess(c, "Nodes listed", result)
 }
 
-func (app *App) swarmInspectNode(c *gin.Context) {
+func (app *App) swarmNodeInspect(c *gin.Context) {
 	id := c.Param("id")
-	result, err := app.swarmSvc.InspectNode(c.Request.Context(), id)
+	result, err := app.swarmSvc.NodeInspect(c.Request.Context(), id)
 	if err != nil {
 		helper.RespondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "Node inspected", result)
+	helper.RespondSuccess(c, "Node detail retrieved", result)
 }
 
-func (app *App) NodeDTOAction(c *gin.Context) {
+func (app *App) swarmNodeAction(c *gin.Context) {
 	var req struct {
 		Action string `json:"action"`
 	}
@@ -74,8 +74,8 @@ func (app *App) NodeDTOAction(c *gin.Context) {
 	helper.RespondSuccess(c, "Node updated", nil)
 }
 
-func (app *App) swarmListServices(c *gin.Context) {
-	result, err := app.swarmSvc.ListServices(c.Request.Context())
+func (app *App) swarmServiceList(c *gin.Context) {
+	result, err := app.swarmSvc.ServiceList(c.Request.Context())
 	if err != nil {
 		helper.RespondError(c, http.StatusInternalServerError, err.Error())
 		return
@@ -83,23 +83,23 @@ func (app *App) swarmListServices(c *gin.Context) {
 	helper.RespondSuccess(c, "Services listed", result)
 }
 
-func (app *App) swarmInspectService(c *gin.Context) {
+func (app *App) swarmServiceInspect(c *gin.Context) {
 	id := c.Param("id")
-	result, err := app.swarmSvc.InspectService(c.Request.Context(), id)
+	result, err := app.swarmSvc.ServiceInspect(c.Request.Context(), id)
 	if err != nil {
 		helper.RespondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "Service inspected", result)
+	helper.RespondSuccess(c, "Service detail retrieved", result)
 }
 
-func (app *App) swarmCreateService(c *gin.Context) {
+func (app *App) swarmServiceCreate(c *gin.Context) {
 	var req pkgswarm.ServiceSpec
 	if err := c.ShouldBindJSON(&req); err != nil {
 		helper.RespondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
-	id, err := app.swarmSvc.CreateService(c.Request.Context(), req)
+	id, err := app.swarmSvc.ServiceCreate(c.Request.Context(), req)
 	if err != nil {
 		helper.RespondError(c, http.StatusInternalServerError, err.Error())
 		return
@@ -123,8 +123,8 @@ func (app *App) swarmServiceAction(c *gin.Context) {
 	helper.RespondSuccess(c, "Service "+req.Action+" successfully", nil)
 }
 
-func (app *App) swarmForceUpdateService(c *gin.Context) {
-	if err := app.swarmSvc.ForceUpdateService(c.Request.Context(), c.Param("id")); err != nil {
+func (app *App) swarmServiceForceUpdate(c *gin.Context) {
+	if err := app.swarmSvc.ServiceForceUpdate(c.Request.Context(), c.Param("id")); err != nil {
 		helper.RespondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -134,7 +134,7 @@ func (app *App) swarmForceUpdateService(c *gin.Context) {
 func (app *App) swarmServiceLogs(c *gin.Context) {
 	serviceID := c.Param("id")
 	tail := c.DefaultQuery("tail", "100")
-	logs, err := app.swarmSvc.GetServiceLogs(c.Request.Context(), serviceID, tail)
+	logs, err := app.swarmSvc.ServiceLogs(c.Request.Context(), serviceID, tail)
 	if err != nil {
 		helper.RespondError(c, http.StatusInternalServerError, err.Error())
 		return
@@ -142,9 +142,9 @@ func (app *App) swarmServiceLogs(c *gin.Context) {
 	helper.RespondSuccess(c, "Logs retrieved", gin.H{"logs": logs})
 }
 
-func (app *App) swarmListTasks(c *gin.Context) {
+func (app *App) swarmTaskList(c *gin.Context) {
 	serviceID := c.Query("serviceID")
-	result, err := app.swarmSvc.ListTasks(c.Request.Context(), serviceID)
+	result, err := app.swarmSvc.TaskList(c.Request.Context(), serviceID)
 	if err != nil {
 		helper.RespondError(c, http.StatusInternalServerError, err.Error())
 		return
@@ -152,8 +152,8 @@ func (app *App) swarmListTasks(c *gin.Context) {
 	helper.RespondSuccess(c, "Tasks listed", result)
 }
 
-func (app *App) swarmGetJoinTokens(c *gin.Context) {
-	result, err := app.swarmSvc.GetJoinTokens(c.Request.Context())
+func (app *App) swarmJoinTokens(c *gin.Context) {
+	result, err := app.swarmSvc.JoinTokenList(c.Request.Context())
 	if err != nil {
 		helper.RespondError(c, http.StatusInternalServerError, err.Error())
 		return

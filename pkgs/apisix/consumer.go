@@ -18,8 +18,8 @@ type Consumer struct {
 	UpdateTime int64          `json:"update_time"`
 }
 
-// ListConsumers 获取所有 Consumer 列表
-func (c *Client) ListConsumers() ([]Consumer, error) {
+// ConsumerList 获取所有 Consumer 列表
+func (c *Client) ConsumerList() ([]Consumer, error) {
 	data, err := c.doRequest(http.MethodGet, "/consumers", nil)
 	if err != nil {
 		return nil, err
@@ -42,8 +42,8 @@ func (c *Client) ListConsumers() ([]Consumer, error) {
 	return result, nil
 }
 
-// GetConsumerRaw 获取指定 Consumer 的完整（未脱敏）数据
-func (c *Client) GetConsumerRaw(username string) (*Consumer, error) {
+// ConsumerRaw 获取指定 Consumer 的完整（未脱敏）数据
+func (c *Client) ConsumerRaw(username string) (*Consumer, error) {
 	data, err := c.doRequest(http.MethodGet, "/consumers/"+username, nil)
 	if err != nil {
 		return nil, err
@@ -58,10 +58,10 @@ func (c *Client) GetConsumerRaw(username string) (*Consumer, error) {
 	return &raw.Value, nil
 }
 
-// UpdateConsumer 更新 Consumer，支持传入完整 plugins，
+// ConsumerUpdate 更新 Consumer，支持传入完整 plugins，
 // 对于脱敏字段（含 ****** 的 key/password）自动替换为原始值
-func (c *Client) UpdateConsumer(username, desc string, plugins map[string]any) error {
-	raw, err := c.GetConsumerRaw(username)
+func (c *Client) ConsumerUpdate(username, desc string, plugins map[string]any) error {
+	raw, err := c.ConsumerRaw(username)
 	if err != nil {
 		return err
 	}
@@ -80,9 +80,9 @@ func (c *Client) UpdateConsumer(username, desc string, plugins map[string]any) e
 	return err
 }
 
-// CreateConsumer 创建 Consumer，支持传入完整 plugins。
+// ConsumerCreate 创建 Consumer，支持传入完整 plugins。
 // 若 plugins 为空，自动生成 key-auth 插件并返回明文 API Key。
-func (c *Client) CreateConsumer(username, desc string, plugins map[string]any) (*Consumer, error) {
+func (c *Client) ConsumerCreate(username, desc string, plugins map[string]any) (*Consumer, error) {
 	if len(plugins) == 0 {
 		apiKey := strutil.Rand(32)
 		plugins = map[string]any{
@@ -102,8 +102,8 @@ func (c *Client) CreateConsumer(username, desc string, plugins map[string]any) (
 	return &Consumer{Username: username, Desc: desc, Plugins: plugins}, nil
 }
 
-// DeleteConsumer 删除指定 Consumer
-func (c *Client) DeleteConsumer(username string) error {
+// ConsumerDelete 删除指定 Consumer
+func (c *Client) ConsumerDelete(username string) error {
 	_, err := c.doRequest(http.MethodDelete, "/consumers/"+username, nil)
 	if err != nil {
 		return err

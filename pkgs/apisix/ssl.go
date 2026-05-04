@@ -17,8 +17,8 @@ type SSL struct {
 	UpdateTime int64    `json:"update_time"`
 }
 
-// ListSSLs 获取所有 SSL 证书列表
-func (c *Client) ListSSLs() ([]SSL, error) {
+// SSLList 获取所有 SSL 证书列表
+func (c *Client) SSLList() ([]SSL, error) {
 	data, err := c.doRequest(http.MethodGet, "/ssls", nil)
 	if err != nil {
 		return nil, err
@@ -26,8 +26,8 @@ func (c *Client) ListSSLs() ([]SSL, error) {
 	return parseSSLList(data)
 }
 
-// GetSSL 获取单个 SSL 证书详情
-func (c *Client) GetSSL(sslID string) (*SSL, error) {
+// SSLInspect 获取单个 SSL 证书详情
+func (c *Client) SSLInspect(sslID string) (*SSL, error) {
 	data, err := c.doRequest(http.MethodGet, "/ssls/"+sslID, nil)
 	if err != nil {
 		return nil, err
@@ -35,8 +35,8 @@ func (c *Client) GetSSL(sslID string) (*SSL, error) {
 	return parseSingleSSL(data)
 }
 
-// CreateSSL 创建 SSL 证书
-func (c *Client) CreateSSL(req SSL) (*SSL, error) {
+// SSLCreate 创建 SSL 证书
+func (c *Client) SSLCreate(req SSL) (*SSL, error) {
 	data, err := c.doRequest(http.MethodPost, "/ssls", buildSSLBody(req, false))
 	if err != nil {
 		return nil, err
@@ -44,8 +44,8 @@ func (c *Client) CreateSSL(req SSL) (*SSL, error) {
 	return parseSingleSSL(data)
 }
 
-// UpdateSSL 更新 SSL 证书
-func (c *Client) UpdateSSL(sslID string, req SSL) (*SSL, error) {
+// SSLUpdate 更新 SSL 证书
+func (c *Client) SSLUpdate(sslID string, req SSL) (*SSL, error) {
 	data, err := c.doRequest(http.MethodPatch, "/ssls/"+sslID, buildSSLBody(req, true))
 	if err != nil {
 		return nil, err
@@ -53,8 +53,8 @@ func (c *Client) UpdateSSL(sslID string, req SSL) (*SSL, error) {
 	return parseSingleSSL(data)
 }
 
-// DeleteSSL 删除 SSL 证书
-func (c *Client) DeleteSSL(sslID string) error {
+// SSLDelete 删除 SSL 证书
+func (c *Client) SSLDelete(sslID string) error {
 	_, err := c.doRequest(http.MethodDelete, "/ssls/"+sslID, nil)
 	if err != nil {
 		return err
