@@ -124,6 +124,40 @@ func (s *Service) Login(req LoginRequest) (*LoginResponse, error) {
 	return &LoginResponse{Token: tokenString, Username: req.Username}, nil
 }
 
+// CreateApiTokenRequest 创建 API Token 请求
+type CreateApiTokenRequest struct {
+	Name      string `json:"name"`      // 令牌名称（用于标识）
+	ExpiresIn int64  `json:"expiresIn"` // 过期时间（秒），0 表示永不过期
+}
+
+// CreateApiTokenResponse 创建 API Token 响应
+type CreateApiTokenResponse struct {
+	Token string `json:"token"`
+	Name  string `json:"name"`
+}
+
+// CreateApiToken 为已认证用户创建长效 API Token
+func (s *Service) CreateApiToken(username string, req CreateApiTokenRequest) (*CreateApiTokenResponse, error) {
+	claims := jwt.MapClaims{
+		"sub":  username,
+		"iat":  time.Now().Unix(),
+		"type": "api", // 标记为 API token
+		"name": req.Name,
+	}
+	if req.ExpiresIn > 0 {
+		claims["exp"] = time.Now().Add(time.Duration(req.ExpiresIn) * time.Second).Unix()
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	tokenString, err := token.SignedString([]byte(config.JWTSecret))
+	if err != nil {
+		return nil, fmt.Errorf("token 生成失败: %w", err)
+	}
+
+	logman.Info("API token created", "username", username, "name", req.Name)
+	return &CreateApiTokenResponse{Token: tokenString, Name: req.Name}, nil
+}
+
 // ExtractJwtUsername 从 Authorization Header（或 WebSocket query）中解析 JWT，
 // 返回有效且存在于成员列表中的用户名；否则返回空字符串
 func (s *Service) ExtractJwtUsername(c *gin.Context) string {

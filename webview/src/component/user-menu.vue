@@ -36,7 +36,7 @@ export default toNative(UserMenu)
     <span class="hidden sm:inline">{{ state.username }}</span>
   </div>
 
-  <!-- jwt 认证模式：用户名 + 下拉注销 -->
+  <!-- jwt 认证模式：用户名 + 下拉菜单 -->
   <Dropdown v-else v-model:open="menuOpen" placement="bottom" align="right" :close-on-click="true" max-height="320px">
     <template #trigger="{ toggle }">
       <button
@@ -49,6 +49,20 @@ export default toNative(UserMenu)
         <i class="fas fa-chevron-down text-xs text-slate-400 hidden sm:inline transition-transform duration-200" :class="{ 'rotate-180': menuOpen }"></i>
       </button>
     </template>
+
+    <!-- API 令牌 -->
+    <router-link
+      v-if="actions.hasPerm('POST /api/account/token')"
+      to="/account/token"
+      class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+      @click="menuOpen = false"
+    >
+      <i class="fas fa-key"></i>
+      API 令牌
+    </router-link>
+
+    <!-- 分割线 -->
+    <div class="border-t border-slate-100 my-1"></div>
 
     <!-- 注销选项 -->
     <button

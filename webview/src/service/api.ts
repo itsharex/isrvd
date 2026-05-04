@@ -18,6 +18,7 @@ import type {
     FilerListResponse, FilerReadResponse,
     AuthLoginResponse, AuthInfoResponse,
     MemberInfo, MemberUpsertRequest, RouteInfo,
+    ApiTokenCreateRequest, ApiTokenCreateResponse,
     AllConfigResponse,
     ComposeDeployResult,
     SystemStat,
@@ -78,6 +79,10 @@ class ApiService {
 
     deleteMember(username: string) {
         return http.delete<void>(`/api/account/members/${encodeURIComponent(username)}`)
+    }
+
+    createApiToken(data: ApiTokenCreateRequest) {
+        return http.post<ApiTokenCreateResponse>('/api/account/token', data)
     }
 
     // ==================== Filer 文件管理相关 ====================

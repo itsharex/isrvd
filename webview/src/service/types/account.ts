@@ -47,3 +47,15 @@ export interface MemberUpsertRequest {
     homeDirectory: string
     permissions: string[]
 }
+
+// ─── API Token ───
+
+export interface ApiTokenCreateRequest {
+    name: string
+    expiresIn: number // 过期时间（秒），0 表示永不过期
+}
+
+export interface ApiTokenCreateResponse {
+    token: string
+    name: string
+}
