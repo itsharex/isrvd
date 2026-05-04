@@ -19,6 +19,8 @@ import (
 	"isrvd/config"
 )
 
+const maxAuditBufferSize = 100 // 内存缓冲最大条数
+
 // AuditLog 操作审计日志条目。
 type AuditLog struct {
 	Timestamp  time.Time `json:"timestamp"`  // 操作时间
@@ -31,8 +33,6 @@ type AuditLog struct {
 	Success    bool      `json:"success"`    // 是否成功
 	Duration   int64     `json:"duration"`   // 耗时（毫秒）
 }
-
-const maxAuditBufferSize = 100 // 内存缓冲最大条数
 
 // AuditService 审计日志业务服务
 type AuditService struct {
@@ -137,43 +137,36 @@ func (s *AuditService) RecordRequest(c *gin.Context, startTime time.Time, body s
 	})
 }
 
-// ReadRequestBody 读取请求体并回填，对不同 Content-Type 做差异化处理：
-//   - application/octet-stream：整体忽略，返回占位符
+// ReadRequestBody 读取请求体，按 Content-Type 差异化处理：
+//   - application/octet-stream：返回占位符
 //   - multipart/form-data：保留文本字段，文件字段替换为占位符
 //   - 其他：读取全部内容并回填 Body
 func (s *AuditService) ReadRequestBody(c *gin.Context) string {
-	if c.Request.Body == nil {
-		return ""
-	}
-
-	contentType := c.ContentType()
-
 	switch {
-	case strings.HasPrefix(contentType, "application/octet-stream"):
+	case strings.HasPrefix(c.ContentType(), "application/octet-stream"):
 		return "[Binary Omitted]"
 
-	case strings.HasPrefix(contentType, "multipart/form-data"):
-		if err := c.Request.ParseMultipartForm(32 << 20); err != nil || c.Request.MultipartForm == nil {
+	case strings.HasPrefix(c.ContentType(), "multipart/form-data"):
+		form, err := c.MultipartForm()
+		if err != nil || form == nil {
 			return ""
 		}
 		fields := make(map[string]any)
-		for k, vs := range c.Request.MultipartForm.Value {
+		for k, vs := range form.Value {
 			if len(vs) == 1 {
 				fields[k] = vs[0]
 			} else {
 				fields[k] = vs
 			}
 		}
-		for k := range c.Request.MultipartForm.File {
+		for k := range form.File {
 			fields[k] = "[File Omitted]"
 		}
-		data, err := json.Marshal(fields)
-		if err != nil {
-			return ""
-		}
+		data, _ := json.Marshal(fields)
 		return string(data)
 
 	default:
+		// 读取并回填 body，确保后续 handler 可正常读取
 		raw, _ := io.ReadAll(c.Request.Body)
 		c.Request.Body = io.NopCloser(bytes.NewReader(raw))
 		return string(raw)

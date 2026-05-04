@@ -84,15 +84,14 @@ type Route struct {
 func (app *App) initRoutes() {
 	r := app.Group(APINamespace)
 	r.Use(AuthMiddleware(app.routePerms, app.accountSvc))
-	r.Use(RoutePermMiddleware(app.routePerms, app.accountSvc))
+	r.Use(PermMiddleware(app.routePerms, app.accountSvc))
 	r.Use(AuditMiddleware(app.auditSvc))
 
 	// 加载所有模块的路由定义并注册
 	for _, route := range app.collectRoutes() {
-		if !app.isRouteAvailable(route) {
-			continue
+		if app.isRouteAvailable(route) {
+			app.registerRoute(r, route)
 		}
-		app.registerRoute(r, route)
 	}
 }
 
@@ -127,7 +126,8 @@ func (app *App) collectRoutes() []Route {
 
 // registerRoute 注册单个路由，并同步建立 METHOD+完整路由模板的权限索引
 func (app *App) registerRoute(group *gin.RouterGroup, route Route) {
-	app.routePerms[route.Method+" "+APINamespace+route.Path] = svcAccount.RouteInfo{
+	key := route.Method + " " + APINamespace + route.Path
+	app.routePerms[key] = svcAccount.RouteInfo{
 		Module: route.Module,
 		Label:  route.Label,
 		Access: route.Access,

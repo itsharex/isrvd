@@ -12,18 +12,20 @@ import (
 	svcSystem "isrvd/internal/service/system"
 )
 
-// AuthMiddleware 认证中间件：认证失败时中断请求。
-// anon 路由走可选认证（认证失败时放行），其余路由强制认证。
+// AuthMiddleware 认证中间件
+// - AccessAnon 路由：可选认证，失败时放行
+// - 其他路由：强制认证，失败时返回 401
 func AuthMiddleware(routePerms map[string]svcAccount.RouteInfo, svc *svcAccount.Service) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// anon 路由：可选认证，不强制
-		if info, ok := routePerms[c.Request.Method+" "+c.FullPath()]; ok && info.Access == svcAccount.AccessAnon {
+		key := c.Request.Method + " " + c.FullPath()
+		if info, ok := routePerms[key]; ok && info.Access == svcAccount.AccessAnon {
 			if username := svc.MixAuth(c); username != "" {
 				c.Set("username", username)
 			}
 			c.Next()
 			return
 		}
+
 		username, errMsg := svc.Auth(c)
 		if username == "" {
 			helper.RespondError(c, http.StatusUnauthorized, errMsg)
@@ -35,18 +37,9 @@ func AuthMiddleware(routePerms map[string]svcAccount.RouteInfo, svc *svcAccount.
 	}
 }
 
-// MixAuthMiddleware 可选认证中间件：认证成功时写入 username，失败时直接放行
-func MixAuthMiddleware(svc *svcAccount.Service) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		if username := svc.MixAuth(c); username != "" {
-			c.Set("username", username)
-		}
-		c.Next()
-	}
-}
-
-// RoutePermMiddleware 基于 METHOD+PATH 的集中式权限验证中间件
-func RoutePermMiddleware(routePerms map[string]svcAccount.RouteInfo, svc *svcAccount.Service) gin.HandlerFunc {
+// PermMiddleware 权限验证中间件
+// 基于 METHOD+PATH 进行集中式权限校验
+func PermMiddleware(routePerms map[string]svcAccount.RouteInfo, svc *svcAccount.Service) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		path := c.FullPath()
 		if path == "" {
@@ -56,13 +49,12 @@ func RoutePermMiddleware(routePerms map[string]svcAccount.RouteInfo, svc *svcAcc
 		}
 
 		found, err := svc.CheckRoutePerm(routePerms, c.Request.Method, path, c.GetString("username"))
-		if !found {
-			helper.RespondError(c, http.StatusForbidden, "未授权的访问路径")
-			c.Abort()
-			return
-		}
-		if err != nil {
-			helper.RespondError(c, http.StatusForbidden, err.Error())
+		if !found || err != nil {
+			msg := "未授权的访问路径"
+			if err != nil {
+				msg = err.Error()
+			}
+			helper.RespondError(c, http.StatusForbidden, msg)
 			c.Abort()
 			return
 		}
@@ -71,13 +63,11 @@ func RoutePermMiddleware(routePerms map[string]svcAccount.RouteInfo, svc *svcAcc
 	}
 }
 
-// AuditMiddleware 返回操作审计中间件。
-// 记录所有非 GET 请求及 WebSocket 连接的方法、URI、请求体、状态码和耗时。
+// AuditMiddleware 操作审计中间件
+// 记录所有非 GET 请求及 WebSocket 连接
 func AuditMiddleware(svc *svcSystem.AuditService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		isWS := strings.EqualFold(c.GetHeader("Upgrade"), "websocket")
-
-		// GET 请求（非 WebSocket）不记录审计
 		if !isWS && c.Request.Method == http.MethodGet {
 			c.Next()
 			return
@@ -89,7 +79,6 @@ func AuditMiddleware(svc *svcSystem.AuditService) gin.HandlerFunc {
 			body = svc.ReadRequestBody(c)
 		}
 		c.Next()
-
 		svc.RecordRequest(c, startTime, body)
 	}
 }
