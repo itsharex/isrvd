@@ -3,18 +3,6 @@ import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
 // 获取 baseURL 配置
 const baseURL = window.__BASE_URL__ || ''
 
-// 路由前缀与权限模块的映射
-const routePermMap: Array<[string, string]> = [
-  ['/system', 'system'],
-  ['/account', 'account'],
-  ['/shell', 'shell'],
-  ['/filer', 'filer'],
-  ['/apisix', 'apisix'],
-  ['/docker', 'docker'],
-  ['/swarm', 'swarm'],
-  ['/compose', 'compose'],
-]
-
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
@@ -224,11 +212,10 @@ router.beforeEach((to) => {
   // 权限尚未加载完成时放行（刷新页面场景，等 loadMe 完成后由导航菜单 v-if 控制）
   if (!_permsLoaded?.()) return true
 
-  for (const [prefix, module] of routePermMap) {
-    if (to.path.startsWith(prefix)) {
-      if (!_hasPerm?.(module)) return { path: '/overview' }
-      break
-    }
+  // 从路由路径提取模块名（/api/<module>/...）
+  const module = to.path.match(/^\/([^/]+)/)?.[1]
+  if (module && !['overview', 'account'].includes(module)) {
+    if (!_hasPerm?.(module)) return { path: '/overview' }
   }
   return true
 })
