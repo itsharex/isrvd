@@ -311,15 +311,23 @@ class ApiService {
     }
 
     imageTag(id: string, repoTag: string) {
-        return http.post<void>('/api/docker/images/tag', { id, repoTag })
+        return http.post<void>(`/api/docker/image/${id}/tag`, { repoTag })
     }
 
-    imageSearch(term: string) {
-        return http.get<DockerImageSearchResult[]>(`/api/docker/images/search/${encodeURIComponent(term)}`)
+    imageSearch(name: string) {
+        return http.get<DockerImageSearchResult[]>('/api/docker/images/search', { params: { name } })
     }
 
     imageBuild(dockerfile: string, tag = '') {
-        return http.post<void>('/api/docker/images/build', { dockerfile, tag })
+        return http.post<void>('/api/docker/image/build', { dockerfile, tag })
+    }
+
+    pushImage(image: string, registryUrl: string, namespace: string) {
+        return http.post<void>('/api/docker/image/push', { image, registryUrl, namespace })
+    }
+
+    pullFromRegistry(image: string, registryUrl: string, namespace: string) {
+        return http.post<void>('/api/docker/image/pull', { image, registryUrl, namespace })
     }
 
     // 网络管理（修复：使用复数 networks）
@@ -371,14 +379,6 @@ class ApiService {
 
     deleteRegistry(url: string) {
         return http.delete<void>('/api/docker/registry', { params: { url } })
-    }
-
-    pushImage(image: string, registryUrl: string, namespace: string) {
-        return http.post<void>('/api/docker/images/push', { image, registryUrl, namespace })
-    }
-
-    pullFromRegistry(image: string, registryUrl: string, namespace: string) {
-        return http.post<void>('/api/docker/images/pull', { image, registryUrl, namespace })
     }
 
     // ==================== Docker Swarm 管理相关 ====================

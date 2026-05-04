@@ -24,11 +24,13 @@ func (app *App) defineDockerRoutes() []Route {
 		{Method: "GET", Path: "/docker/container/:id/exec", Handler: app.dockerContainerExec, Module: "docker", Label: "打开容器终端"},
 		// 镜像管理
 		{Method: "GET", Path: "/docker/images", Handler: app.dockerListImages, Module: "docker", Label: "列出镜像"},
+		{Method: "GET", Path: "/docker/images/search", Handler: app.dockerSearchImages, Module: "docker", Label: "搜索镜像"},
 		{Method: "POST", Path: "/docker/image/:id/action", Handler: app.dockerImageAction, Module: "docker", Label: "操作镜像"},
-		{Method: "POST", Path: "/docker/images/tag", Handler: app.dockerTagImage, Module: "docker", Label: "标记镜像"},
-		{Method: "GET", Path: "/docker/images/search/:term", Handler: app.dockerSearchImages, Module: "docker", Label: "搜索镜像"},
-		{Method: "POST", Path: "/docker/images/build", Handler: app.dockerBuildImage, Module: "docker", Label: "构建镜像"},
+		{Method: "POST", Path: "/docker/image/:id/tag", Handler: app.dockerTagImage, Module: "docker", Label: "标记镜像"},
 		{Method: "GET", Path: "/docker/image/:id", Handler: app.dockerInspectImage, Module: "docker", Label: "查看镜像"},
+		{Method: "POST", Path: "/docker/image/build", Handler: app.dockerBuildImage, Module: "docker", Label: "构建镜像"},
+		{Method: "POST", Path: "/docker/image/push", Handler: app.dockerPushImage, Module: "docker", Label: "推送镜像"},
+		{Method: "POST", Path: "/docker/image/pull", Handler: app.dockerPullFromRegistry, Module: "docker", Label: "拉取镜像"},
 		// 网络管理
 		{Method: "GET", Path: "/docker/networks", Handler: app.dockerListNetworks, Module: "docker", Label: "列出网络"},
 		{Method: "POST", Path: "/docker/network/:id/action", Handler: app.dockerNetworkAction, Module: "docker", Label: "操作网络"},
@@ -44,8 +46,6 @@ func (app *App) defineDockerRoutes() []Route {
 		{Method: "POST", Path: "/docker/registry", Handler: app.dockerCreateRegistry, Module: "docker", Label: "添加镜像仓库"},
 		{Method: "PUT", Path: "/docker/registry", Handler: app.dockerUpdateRegistry, Module: "docker", Label: "更新镜像仓库"},
 		{Method: "DELETE", Path: "/docker/registry", Handler: app.dockerDeleteRegistry, Module: "docker", Label: "删除镜像仓库"},
-		{Method: "POST", Path: "/docker/images/push", Handler: app.dockerPushImage, Module: "docker", Label: "推送镜像"},
-		{Method: "POST", Path: "/docker/images/pull", Handler: app.dockerPullFromRegistry, Module: "docker", Label: "拉取镜像"},
 	}
 }
 
@@ -178,6 +178,7 @@ func (app *App) dockerTagImage(c *gin.Context) {
 		helper.RespondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
+	req.ID = c.Param("id")
 	if err := app.dockerSvc.TagImage(c.Request.Context(), req); err != nil {
 		helper.RespondError(c, http.StatusInternalServerError, err.Error())
 		return
@@ -186,8 +187,8 @@ func (app *App) dockerTagImage(c *gin.Context) {
 }
 
 func (app *App) dockerSearchImages(c *gin.Context) {
-	term := c.Param("term")
-	result, err := app.dockerSvc.SearchImages(c.Request.Context(), term)
+	name := c.Query("name")
+	result, err := app.dockerSvc.SearchImages(c.Request.Context(), name)
 	if err != nil {
 		helper.RespondError(c, http.StatusInternalServerError, err.Error())
 		return
