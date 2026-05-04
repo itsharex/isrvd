@@ -158,7 +158,6 @@ export default toNative(NavigationBar)
     <!-- 导航链接 -->
     <nav v-if="state.username" class="flex-1 py-4 px-3 space-y-1 overflow-y-auto" @click="closeMobileSidebar">
       <router-link 
-        v-if="actions.hasPerm('GET /api/overview/status')"
         to="/overview" 
         class="flex items-center gap-3 px-3 py-3 text-sm font-medium text-slate-600 rounded-xl transition-all duration-200 hover:bg-slate-100 hover:text-slate-900"
         active-class="bg-blue-50 text-blue-700"
