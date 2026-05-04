@@ -110,10 +110,17 @@ func (s *Service) Login(req LoginRequest) (*LoginResponse, error) {
 		return nil, fmt.Errorf("invalid credentials")
 	}
 
+	// 密码 hash 前 8 位作为校验，修改密码后 token 自动失效
+	pwd := ""
+	if len(member.Password) >= 8 {
+		pwd = member.Password[:8]
+	}
+
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"sub": req.Username,
 		"iat": time.Now().Unix(),
 		"exp": time.Now().Add(24 * time.Hour).Unix(),
+		"pwd": pwd,
 	})
 	tokenString, err := token.SignedString([]byte(config.JWTSecret))
 	if err != nil {
@@ -138,11 +145,23 @@ type CreateApiTokenResponse struct {
 
 // CreateApiToken 为已认证用户创建长效 API Token
 func (s *Service) CreateApiToken(username string, req CreateApiTokenRequest) (*CreateApiTokenResponse, error) {
+	member, exists := config.Members[username]
+	if !exists {
+		return nil, fmt.Errorf("用户不存在")
+	}
+
+	// 密码 hash 前 8 位作为校验，修改密码后 token 自动失效
+	pwd := ""
+	if len(member.Password) >= 8 {
+		pwd = member.Password[:8]
+	}
+
 	claims := jwt.MapClaims{
 		"sub":  username,
 		"iat":  time.Now().Unix(),
 		"type": "api", // 标记为 API token
 		"name": req.Name,
+		"pwd":  pwd,
 	}
 	if req.ExpiresIn > 0 {
 		claims["exp"] = time.Now().Add(time.Duration(req.ExpiresIn) * time.Second).Unix()
@@ -183,10 +202,21 @@ func (s *Service) ExtractJwtUsername(c *gin.Context) string {
 	if !ok {
 		return ""
 	}
+
 	sub, _ := claims["sub"].(string)
-	if _, exists := config.Members[sub]; !exists {
+	member, exists := config.Members[sub]
+	if !exists {
 		return ""
 	}
+
+	// 校验密码 hash（修改密码后自动失效）
+	pwd, _ := claims["pwd"].(string)
+	if pwd != "" && len(member.Password) >= 8 {
+		if pwd != member.Password[:8] {
+			return ""
+		}
+	}
+
 	return sub
 }
 

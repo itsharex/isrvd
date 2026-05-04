@@ -26,14 +26,13 @@ class Profile extends Vue {
     // Token 表单
     tokenForm = {
         name: '',
-        expiresIn: 0
+        expiresIn: 86400 // 默认 24 小时
     }
     tokenLoading = false
     newToken: ApiTokenCreateResponse | null = null
 
     // ─── 过期选项 ───
     expiryOptions = [
-        { label: '永不过期', value: 0 },
         { label: '1 小时', value: 3600 },
         { label: '24 小时', value: 86400 },
         { label: '7 天', value: 604800 },
@@ -275,7 +274,7 @@ export default toNative(Profile)
               <p class="text-xs font-medium text-slate-600 mb-1">安全提示</p>
               <ul class="text-xs text-slate-500 space-y-0.5">
                 <li>• 令牌创建后仅显示一次，请立即复制保存</li>
-                <li>• 令牌基于 JWT 签发，无法撤销，请妥善保管</li>
+                <li>• 修改密码后，所有令牌将自动失效</li>
                 <li>• 如需更换令牌，请重新创建新令牌</li>
               </ul>
             </div>
