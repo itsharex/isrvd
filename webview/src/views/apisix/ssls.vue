@@ -64,12 +64,12 @@ class SSLs extends Vue {
         return `${snis[0]} 等 ${snis.length} 个域名`
     }
 
-    getStatusClass(status?: number) {
-        return status === 0 ? 'bg-slate-100 text-slate-600' : 'bg-emerald-50 text-emerald-700'
+    getStatusClass(ssl: ApisixSSL) {
+        return (ssl.status ?? 1) === 0 ? 'bg-slate-100 text-slate-600' : 'bg-emerald-50 text-emerald-700'
     }
 
-    getStatusText(status?: number) {
-        return status === 0 ? '禁用' : '启用'
+    getStatusText(ssl: ApisixSSL) {
+        return (ssl.status ?? 1) === 0 ? '禁用' : '启用'
     }
 
     formatTs(ts?: number) {
@@ -197,7 +197,7 @@ export default toNative(SSLs)
                   </div>
                 </td>
                 <td class="px-4 py-3">
-                  <span :class="['text-xs px-2 py-1 rounded-full', getStatusClass(ssl.status)]">{{ getStatusText(ssl.status) }}</span>
+                  <span :class="['text-xs px-2 py-1 rounded-full', getStatusClass(ssl)]">{{ getStatusText(ssl) }}</span>
                 </td>
                 <td class="px-4 py-3 whitespace-nowrap text-sm text-slate-600">{{ formatTs(ssl.update_time || ssl.create_time) }}</td>
                 <td class="px-4 py-3">
@@ -231,7 +231,7 @@ export default toNative(SSLs)
                   <div class="text-xs text-slate-400 mt-0.5 truncate font-mono">{{ ssl.id }}</div>
                 </div>
               </div>
-              <span :class="['text-xs px-2 py-1 rounded-full flex-shrink-0', getStatusClass(ssl.status)]">{{ getStatusText(ssl.status) }}</span>
+              <span :class="['text-xs px-2 py-1 rounded-full flex-shrink-0', getStatusClass(ssl)]">{{ getStatusText(ssl) }}</span>
             </div>
 
             <div class="flex items-center gap-2 mb-2">

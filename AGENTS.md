@@ -106,6 +106,18 @@
 
 `service/types/` 按域拆分（`docker`、`swarm`、`apisix`、`compose`、`system`、`account`、`overview`、`filer`），`service/types.ts` 统一 `export *` 导出。Swarm 服务列表 DTO 用 `SwarmServiceInfo`
 
+#### 5.4.1 类型命名规范（强制）
+
+- **接口/类型别名**：PascalCase，域名前缀 + 功能描述
+  - 列表/概览：`XxxInfo`（如 `DockerContainerInfo`、`SwarmNodeDTO`）
+  - 详情：`XxxInspect` 或 `XxxDetail`（如 `DockerImageInspect`、`SwarmServiceDetail`）
+  - 创建请求：`XxxCreate`（如 `DockerContainerCreate`、`ApisixRouteCreate`）
+  - 更新请求：`XxxUpdate`（如 `ApisixConsumerUpdate`）
+  - 复用创建类型：`type XxxCreate = XxxSpec`（如 `ApisixUpstreamCreate = ApisixUpstream`）
+  - 响应结果：`XxxResult`（如 `AuthLoginResult`、`ApiTokenResult`）
+  - 枚举联合：`XxxType` / `XxxMode`（如 `ApisixUpstreamType`、`ComposeDeployTarget`）
+- **禁止**：缩写不规范的命名（如 `DTO` 仅用于数据传输对象，`VO`/`BO` 等后缀不在前端使用）
+
 ### 5.5 卡片与标题栏
 
 列表/详情页统一 `.card mb-4`。标题栏：`bg-slate-50 border-b border-slate-200 rounded-t-2xl px-4 md:px-6 py-3`，容器不写 `flex/justify-between`。必须提供桌面 `hidden md:flex` 与移动 `flex md:hidden` 双布局。详情页右侧仅保留刷新等功能按钮，**不添加返回按钮**（用户通过侧边栏导航）
@@ -182,6 +194,26 @@
 ### 5.12 终端能力
 
 系统终端走 `helper/shell.ts`，容器终端走 `helper/container-exec.ts`，禁止页面直接创建 Terminal/WebSocket 实例
+
+### 5.13 前端方法命名规范（强制）
+
+`ApiService` 类方法命名：`domainResourceAction` 驼峰格式
+
+| 操作 | 命名模式 | 示例 |
+|---|---|---|
+| 列表查询 | `domainResourceList(params?)` | `dockerContainerList()`、`apisixRouteList()` |
+| 单条查询 | `domainResource(id)` | `dockerImage(id)`、`swarmNode(id)` |
+| 创建 | `domainResourceCreate(data)` | `dockerContainerCreate(data)` |
+| 更新 | `domainResourceUpdate(id, data)` | `apisixRouteUpdate(id, data)` |
+| 删除 | `domainResourceDelete(id)` | `dockerImageDelete(id)` |
+| 操作/动作 | `domainResourceAction(id, action, ...)` | `dockerContainerAction(id, 'start')` |
+| 状态切换 | `domainResourceStatus(id, status)` | `apisixRouteStatus(id, 0)` |
+| 统计/日志 | `domainResourceStats(id)` / `domainResourceLogs(id, tail?)` | `dockerContainerStats(id)` |
+
+- **域名前缀**：`docker`、`swarm`、`apisix`、`account`、`system`、`filer`、`compose`
+- **资源名**：单数形式（`container`、`image`、`route`、`consumer`）
+- **分组注释**：方法上方加 `// ==================== XXXX 相关 ====================`
+
 
 ---
 
