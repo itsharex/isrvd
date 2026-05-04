@@ -95,7 +95,7 @@ class Images extends Vue {
             danger: false,
             onConfirm: async () => {
                 try {
-                    await api.pullFromRegistry(pullImageRef, registryUrl, '')
+                    await api.pullImage(pullImageRef, registryUrl, '')
                     this.actions.showNotification('success', '镜像拉取成功')
                     this.loadImages()
                 } catch (e: any) {

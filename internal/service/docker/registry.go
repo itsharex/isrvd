@@ -92,9 +92,9 @@ func (s *Service) PushImage(ctx context.Context, req pkgdocker.ImagePushRequest)
 	return map[string]string{"image": req.Image, "target": targetRef, "message": msg}, nil
 }
 
-// PullFromRegistry 从仓库拉取镜像
-func (s *Service) PullFromRegistry(ctx context.Context, req pkgdocker.ImagePullFromRegistryRequest) (map[string]string, error) {
-	msg, imageRef, err := s.docker.PullFromRegistry(ctx, req)
+// PullImage 从仓库拉取镜像
+func (s *Service) PullImage(ctx context.Context, req pkgdocker.ImagePullRequest) (map[string]string, error) {
+	msg, imageRef, err := s.docker.PullImage(ctx, req)
 	if err != nil {
 		return nil, err
 	}

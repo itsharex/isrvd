@@ -30,7 +30,7 @@ func (app *App) defineDockerRoutes() []Route {
 		{Method: "GET", Path: "/docker/image/:id", Handler: app.dockerInspectImage, Module: "docker", Label: "查看镜像"},
 		{Method: "POST", Path: "/docker/image/build", Handler: app.dockerBuildImage, Module: "docker", Label: "构建镜像"},
 		{Method: "POST", Path: "/docker/image/push", Handler: app.dockerPushImage, Module: "docker", Label: "推送镜像"},
-		{Method: "POST", Path: "/docker/image/pull", Handler: app.dockerPullFromRegistry, Module: "docker", Label: "拉取镜像"},
+		{Method: "POST", Path: "/docker/image/pull", Handler: app.dockerPullImage, Module: "docker", Label: "拉取镜像"},
 		// 网络管理
 		{Method: "GET", Path: "/docker/networks", Handler: app.dockerListNetworks, Module: "docker", Label: "列出网络"},
 		{Method: "POST", Path: "/docker/network/:id/action", Handler: app.dockerNetworkAction, Module: "docker", Label: "操作网络"},
@@ -376,13 +376,13 @@ func (app *App) dockerPushImage(c *gin.Context) {
 	helper.RespondSuccess(c, "镜像推送成功", result)
 }
 
-func (app *App) dockerPullFromRegistry(c *gin.Context) {
-	var req pkgdocker.ImagePullFromRegistryRequest
+func (app *App) dockerPullImage(c *gin.Context) {
+	var req pkgdocker.ImagePullRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		helper.RespondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
-	result, err := app.dockerSvc.PullFromRegistry(c.Request.Context(), req)
+	result, err := app.dockerSvc.PullImage(c.Request.Context(), req)
 	if err != nil {
 		helper.RespondError(c, http.StatusInternalServerError, err.Error())
 		return

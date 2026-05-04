@@ -326,7 +326,7 @@ class ApiService {
         return http.post<void>('/api/docker/image/push', { image, registryUrl, namespace })
     }
 
-    pullFromRegistry(image: string, registryUrl: string, namespace: string) {
+    pullImage(image: string, registryUrl: string, namespace: string) {
         return http.post<void>('/api/docker/image/pull', { image, registryUrl, namespace })
     }
 

@@ -189,16 +189,16 @@ func (s *DockerService) PushImage(ctx context.Context, req ImagePushRequest) (st
 	return lastMessage, targetRef, nil
 }
 
-// ImagePullFromRegistryRequest 从仓库拉取镜像请求
-type ImagePullFromRegistryRequest struct {
+// ImagePullRequest 拉取镜像请求
+type ImagePullRequest struct {
 	Image       string `json:"image" binding:"required"`
 	RegistryURL string `json:"registryUrl"`
 	Namespace   string `json:"namespace"`
 }
 
-// PullFromRegistry 从仓库拉取镜像到本地
+// PullImage 从仓库拉取镜像到本地
 // RegistryURL 为空时直接从 Docker Hub / daemon 配置的 mirror 拉取
-func (s *DockerService) PullFromRegistry(ctx context.Context, req ImagePullFromRegistryRequest) (string, string, error) {
+func (s *DockerService) PullImage(ctx context.Context, req ImagePullRequest) (string, string, error) {
 	var imageRef string
 	var authStr string
 

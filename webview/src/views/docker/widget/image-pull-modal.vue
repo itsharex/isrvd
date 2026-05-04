@@ -71,7 +71,7 @@ class ImagePullModal extends Vue {
         if (!imageRef) return
         this.modalLoading = true
         try {
-            await api.pullFromRegistry(imageRef, this.formData.source, '')
+            await api.pullImage(imageRef, this.formData.source, '')
             this.actions.showNotification('success', '镜像拉取成功')
             this.isOpen = false
             this.$emit('success')
