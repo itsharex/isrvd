@@ -75,12 +75,17 @@ class Images extends Vue {
             this.actions.showNotification('error', '该镜像没有有效的 Tag，无法拉取')
             return
         }
-        // 根据镜像 tag 的 host 自动匹配已配置的 registry，以便携带认证信息
+
+        // 匹配私有仓库以携带认证信息
         const { host: tagHost, name: imageName } = this.parseImageRef(tag)
-        const matchedRegistry = tagHost
-            ? this.registries.find(r => r.url === tagHost || r.url.replace(/^https?:\/\//, '') === tagHost)
-            : null
-        const registryUrl = matchedRegistry ? matchedRegistry.url : ''
+        const matchedRegistry = this.registries.find(r =>
+            r.url === tagHost || r.url.replace(/^https?:\/\//, '') === tagHost
+        )
+
+        // 匹配到仓库：传 imageName 让后端拼接；否则传完整 tag
+        const pullImageRef = matchedRegistry ? imageName : tag
+        const registryUrl = matchedRegistry?.url || ''
+
         this.actions.showConfirm({
             title: '拉取镜像',
             message: `确定要重新拉取镜像 <strong class="text-slate-900">${tag}</strong> 吗？`,
@@ -90,7 +95,7 @@ class Images extends Vue {
             danger: false,
             onConfirm: async () => {
                 try {
-                    await api.pullFromRegistry(imageName, registryUrl, '')
+                    await api.pullFromRegistry(pullImageRef, registryUrl, '')
                     this.actions.showNotification('success', '镜像拉取成功')
                     this.loadImages()
                 } catch (e: any) {
@@ -247,7 +252,7 @@ export default toNative(Images)
                   <button @click="tagModalRef?.show(img)" v-if="actions.hasPerm('POST /api/docker/image/:id/action')" class="btn-icon text-blue-600 hover:bg-blue-50" title="打标签">
                     <i class="fas fa-tag text-xs"></i>
                   </button>
-                  <button @click="pullImage(img)" v-if="actions.hasPerm('POST /api/docker/image/pull')" class="btn-icon text-emerald-600 hover:bg-emerald-50" title="拉取（更新）">
+                  <button @click="pullImage(img)" v-if="actions.hasPerm('POST /api/docker/image/pull')" class="btn-icon text-blue-600 hover:bg-blue-50" title="拉取（更新）">
                     <i class="fas fa-download text-xs"></i>
                   </button>
                   <button @click="openPush(img)" v-if="actions.hasPerm('POST /api/docker/image/:id/action')" :disabled="registries.length === 0" class="btn-icon text-indigo-600 hover:bg-indigo-50 disabled:opacity-40 disabled:cursor-not-allowed" :title="registries.length === 0 ? '暂无可用私有仓库' : '推送到仓库'">
@@ -303,7 +308,7 @@ export default toNative(Images)
             <button @click="tagModalRef?.show(img)" v-if="actions.hasPerm('POST /api/docker/image/:id/action')" class="btn-icon text-blue-600 hover:bg-blue-50" title="打标签">
               <i class="fas fa-tag text-xs"></i><span class="text-xs ml-1">标签</span>
             </button>
-            <button @click="pullImage(img)" v-if="actions.hasPerm('POST /api/docker/image/pull')" class="btn-icon text-emerald-600 hover:bg-emerald-50" title="拉取（更新）">
+            <button @click="pullImage(img)" v-if="actions.hasPerm('POST /api/docker/image/pull')" class="btn-icon text-blue-600 hover:bg-blue-50" title="拉取（更新）">
               <i class="fas fa-download text-xs"></i><span class="text-xs ml-1">拉取</span>
             </button>
             <button @click="openPush(img)" v-if="actions.hasPerm('POST /api/docker/image/:id/action')" :disabled="registries.length === 0" class="btn-icon text-indigo-600 hover:bg-indigo-50 disabled:opacity-40 disabled:cursor-not-allowed" :title="registries.length === 0 ? '暂无可用私有仓库' : '推送到仓库'">
