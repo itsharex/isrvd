@@ -204,7 +204,7 @@ export default toNative(Profile)
       </div>
 
       <!-- API 令牌 -->
-      <div v-else class="p-4 md:p-6">
+      <div v-else-if="actions.hasPerm('POST /api/account/token')" class="p-4 md:p-6">
         <!-- 新令牌提示 -->
         <div v-if="newToken" class="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
           <div class="flex items-start gap-3">
@@ -279,6 +279,12 @@ export default toNative(Profile)
               </ul>
             </div>
           </div>
+        </div>
+      </div>
+      <div v-else class="p-4 md:p-6">
+        <div class="flex flex-col items-center justify-center py-12 text-slate-400">
+          <i class="fas fa-lock text-4xl mb-3"></i>
+          <p class="text-sm">无权限创建 API 令牌</p>
         </div>
       </div>
     </div>
