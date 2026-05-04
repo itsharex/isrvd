@@ -1,49 +1,44 @@
 # AGENTS.md — isrvd Agent Operating Guide
 
-> 本文件定义 AI 代理在 `isrvd` 仓库中的统一工作方式。
-> 本文件是当前仓库唯一代码规范入口。
-> 目标：可执行、可验证、低歧义。
+> 本文件是 `isrvd` 仓库唯一代码规范入口。目标：可执行、可验证、低歧义。
 
 ---
 
-## 1) 指令优先级（必须遵守）
+## 1) 指令优先级
 
-冲突时按此顺序：1) 用户当前明确需求 → 2) 安全与稳定性约束 → 3) 本文件规范 → 4) 现有代码风格与目录约定
-
-无法自动化消解时优先保证：不泄露敏感信息、不引入破坏性变更、不修改需求范围外逻辑
+冲突时：用户明确需求 → 安全稳定性 → 本规范 → 现有代码风格
+无法消解时：不泄露敏感信息、不引入破坏性变更、不修改需求范围外逻辑
 
 ---
 
 ## 2) 工作流
 
-- **先理解再改动**：定位相关模块、调用链、类型与边界，不基于猜测修改
+- **先理解再改动**：定位模块、调用链、类型与边界，不基于猜测修改
 - **小步提交**：最小可行改动，每步可解释"为什么改、改了什么、如何验证"
-- **变更后验证**：至少执行相关静态检查；若无法完整验证，说明已做检查与未覆盖风险
+- **变更后验证**：执行相关静态检查；无法完整验证时说明风险
 
 ---
 
-## 3) 项目架构约束（必须遵守）
+## 3) 项目架构
 
-### 分层与依赖方向
+### 分层依赖方向
 
 `config → internal/registry → pkgs → internal/service → internal/server`
 
 - `pkgs/`：原生客户端层，返回 SDK/底层类型
 - `internal/service/`：业务组合、类型转换、参数校验
-- `internal/server/`：HTTP 入口，解析请求→调用 service→返回响应
+- `internal/server/`：HTTP 入口，解析请求 → 调用 service → 返回响应
 - `internal/registry/`：外部服务初始化、生命周期管理与可用性检查
 
 ### 禁止
 
-- `pkgs/` 依赖 `internal/`
-- handler 中堆叠业务逻辑
-- service/handler 直接从配置创建外部客户端（应经 `registry`）
+- `pkgs/` 依赖 `internal/`；handler 中堆叠业务逻辑；service/handler 直接从配置创建外部客户端
 
 ### 内聚与耦合
 
-- **内聚**：同领域功能聚合同包（`pkgs/docker/`、`pkgs/swarm/`），类型就近定义，不集中 `types.go`；前端 `service/types/` 按域拆分
-- **耦合**：层间通过接口或注入解耦。`pkgs/` 不依赖 `internal/`，service 不感知 HTTP 框架，handler 从 `registry` 获取客户端；前端组件通过 `Provide/Inject` 获取全局状态
-- **判定**：改一个功能只需改一处代码/包/文件；若需同时改多个包同名函数，说明内聚不足
+- 同领域功能聚合同包（`pkgs/docker/`、`pkgs/swarm/`），类型就近定义，不集中 `types.go`
+- 层间通过接口或注入解耦；前端组件通过 `Provide/Inject` 获取全局状态
+- 判定：改一个功能只需改一处；若需同时改多个包同名函数，说明内聚不足
 
 ---
 
@@ -51,13 +46,9 @@
 
 ### HTTP 与响应
 
-- 状态码用 `net/http` 常量，禁止硬编码
-- 成功 `helper.RespondSuccess`，失败 `helper.RespondError`
+- 状态码用 `net/http` 常量；成功 `helper.RespondSuccess`，失败 `helper.RespondError`
 - 绑定优先 `ShouldBindJSON/ShouldBindQuery/ShouldBindURI`，绑定失败返回 `err.Error()`
-
-### WebSocket
-
-统一 `helper.WsUpgrader`，不在 handler 中定义私有 upgrader
+- WebSocket 统一 `helper.WsUpgrader`，不在 handler 中定义私有 upgrader
 
 ### 错误处理
 
@@ -69,15 +60,41 @@
 - 缩写全大写：`CPU`、`ID`、`URL`、`HTTP`
 - 日志统一 `logman`，禁止 `log.Println`/`fmt.Println`；使用键值对不拼接字符串
 
+### 方法命名规范（强制）
+
+**Handler（`internal/server/`）** — 格式：`{module}{Resource}{Action}`
+
+| 操作 | 命名模式 | 示例 |
+|---|---|---|
+| 列表 | `{module}{Resource}List` | `dockerContainerList`、`apisixRouteList` |
+| 单条 | `{module}{Resource}Inspect` | `dockerImageInspect`、`swarmNodeInspect` |
+| 创建/更新/删除 | `{module}{Resource}Create/Update/Delete` | `apisixRouteCreate`、`dockerImageDelete` |
+| 操作/动作 | `{module}{Resource}Action` | `dockerContainerAction`、`swarmNodeAction` |
+| 状态切换 | `{module}{Resource}StatusPatch` | `apisixRouteStatusPatch` |
+| 日志/统计 | `{module}{Resource}Logs/Stats` | `dockerContainerLogs`、`dockerContainerStats` |
+
+**Service / Pkgs（`internal/service/`、`pkgs/`）** — 格式：`{Resource}{Action}`（去掉类名前缀）
+
+| 操作 | 命名模式 | 示例 |
+|---|---|---|
+| 列表/单条 | `{Resource}List` / `{Resource}Inspect` | `RouteList()`、`ImageInspect(id)` |
+| 创建/更新/删除 | `{Resource}Create/Update/Delete` | `RouteCreate(req)`、`RouteDelete(id)` |
+| 状态切换 | `{Resource}StatusPatch` | `RouteStatusPatch(id, status)` |
+| 特殊操作 | `{Resource}{Verb}` | `ContainerAction(id, action)`、`WhitelistRevoke(...)` |
+
+- **模块前缀**：`docker`、`swarm`、`apisix`、`account`、`system`、`filer`、`compose`
+- **资源名**：单数形式，不重复模块语义
+- **禁止**：`动词+资源` 旧式命名（`CreateRoute`、`ListContainers`、`apisixCreateRoute`）
+- **注意**：类名为 `Docker` 时 `ContainerList` 不缩写为 `List`；类名为 `Apisix` 时 `RouteList` 不缩写为 `List`
+
 ### 类型定义
 
-- 请求/响应结构体：定义在对应 handler 子包
-- 业务模型：就近定义在对应 `pkgs` 文件
+- 请求/响应结构体：定义在对应 handler 子包；业务模型：就近定义在对应 `pkgs` 文件
 - 避免跨包重复定义语义相同结构体
 
 ### 配置结构体
 
-- 顶层 `Config`（`config/types.go`），子配置 `Server`、`AgentConfig`、`ApisixConfig`、`DockerConfig`、`MarketplaceConfig`、`MemberConfig`
+- 顶层 `Config`（`config/types.go`），子配置：`Server`、`AgentConfig`、`ApisixConfig`、`DockerConfig`、`MarketplaceConfig`、`MemberConfig`
 - 镜像仓库 `DockerRegistry`（含 `Name`、`URL`、`Username`、`Password`、`Description`）
 - 字段使用指针类型 `*` 和 YAML 标签
 
@@ -95,45 +112,64 @@
 
 - 全局状态 `store/state.ts` 使用 `reactive` + Provide/Inject
 - 键：`APP_STATE_KEY`（`app.state`）、`APP_ACTIONS_KEY`（`app.actions`）
-- 权限状态：`permissionsLoaded`（布尔）、`permissions`（`Record<string, string>`），通过 `hasPerm(module, write?)` 检查权限
+- 权限：`permissionsLoaded`（布尔）、`permissions`（`Record<string, string>`），通过 `hasPerm(module, write?)` 检查
 - 初始化 `initProvider()` 返回 `{ state, actions }`
 
 ### 5.3 API 服务层
 
 `service/api.ts` 单例 `class ApiService`，`export default new ApiService()`。请求统一通过 `http`/`httpBlob`（`service/axios.ts`），前者类型安全已解包为 `APIResponse`，后者 Blob 下载专用
 
-### 5.4 类型定义
+### 5.4 类型定义与命名（强制）
 
-`service/types/` 按域拆分（`docker`、`swarm`、`apisix`、`compose`、`system`、`account`、`overview`、`filer`），`service/types.ts` 统一 `export *` 导出。Swarm 服务列表 DTO 用 `SwarmServiceInfo`
+`service/types/` 按域拆分（`docker`、`swarm`、`apisix`、`compose`、`system`、`account`、`overview`、`filer`），`service/types.ts` 统一 `export *` 导出
 
-#### 5.4.1 类型命名规范（强制）
+| 场景 | 命名 | 示例 |
+|---|---|---|
+| 列表/概览 | `XxxInfo` | `DockerContainerInfo`、`SwarmNodeInfo` |
+| 详情/单条查询 | `XxxDetail` | `DockerImageDetail`、`SwarmNodeDetail` |
+| 创建请求 | `XxxCreate` | `DockerContainerCreate`、`ApisixRouteCreate` |
+| 更新请求 | `XxxUpdate` | `ApisixConsumerUpdate` |
+| 复用创建类型 | `type XxxCreate = XxxSpec` | `ApisixUpstreamCreate = ApisixUpstream` |
+| 响应结果 | `XxxResult` | `AuthLoginResult`、`ApiTokenResult` |
+| 枚举联合 | `XxxType` / `XxxMode` | `ApisixUpstreamType`、`ComposeDeployTarget` |
 
-- **接口/类型别名**：PascalCase，域名前缀 + 功能描述
-  - 列表/概览：`XxxInfo`（如 `DockerContainerInfo`、`SwarmNodeInfo`）
-  - 详情：`XxxDetail`（如 `DockerImageDetail`、`SwarmNodeDetail`）
-  - 创建请求：`XxxCreate`（如 `DockerContainerCreate`、`ApisixRouteCreate`）
-  - 更新请求：`XxxUpdate`（如 `ApisixConsumerUpdate`）
-  - 复用创建类型：`type XxxCreate = XxxSpec`（如 `ApisixUpstreamCreate = ApisixUpstream`）
-  - 响应结果：`XxxResult`（如 `AuthLoginResult`、`ApiTokenResult`）
-  - 枚举联合：`XxxType` / `XxxMode`（如 `ApisixUpstreamType`、`ComposeDeployTarget`）
-- **禁止**：缩写不规范的命名（如 `DTO` 仅用于数据传输对象，`VO`/`BO` 等后缀不在前端使用）
+禁止：`VO`/`BO`/`DTO` 等后缀
 
-### 5.5 卡片与标题栏
+### 5.5 方法命名规范（强制）
 
-列表/详情页统一 `.card mb-4`。标题栏：`bg-slate-50 border-b border-slate-200 rounded-t-2xl px-4 md:px-6 py-3`，容器不写 `flex/justify-between`。必须提供桌面 `hidden md:flex` 与移动 `flex md:hidden` 双布局。详情页右侧仅保留刷新等功能按钮，**不添加返回按钮**（用户通过侧边栏导航）
+`ApiService` 方法命名：`domainResourceAction` 驼峰格式
 
-### 5.6 列表双视图（强制）
+| 操作 | 命名模式 | 示例 |
+|---|---|---|
+| 列表 | `domainResourceList(params?)` | `dockerContainerList()`、`apisixRouteList()` |
+| 单条 | `domainResource(id)` | `dockerImage(id)`、`swarmNode(id)` |
+| 创建/更新/删除 | `domainResourceCreate/Update/Delete` | `dockerContainerCreate(data)`、`dockerImageDelete(id)` |
+| 操作/动作 | `domainResourceAction(id, action)` | `dockerContainerAction(id, 'start')` |
+| 状态切换 | `domainResourceStatus(id, status)` | `apisixRouteStatus(id, 0)` |
+| 统计/日志 | `domainResourceStats/Logs(id)` | `dockerContainerStats(id)` |
 
-桌面：`hidden md:block overflow-x-auto` + `<table>`；移动：`md:hidden space-y-3 p-4` + 卡片列表（**`p-4` 不得省略**，卡片 `rounded-xl border border-slate-200 bg-white p-4`）
+- **域名前缀**：`docker`、`swarm`、`apisix`、`account`、`system`、`filer`、`compose`
+- **资源名**：单数形式
+- **分组注释**：`// ==================== XXXX 相关 ====================`
 
-### 5.7 表格第一列布局（强制）
+### 5.6 卡片与标题栏
 
-- **列宽**：`<td>` 设 `max-w-[280px]`（纯短 ID 列除外，如 swarm/tasks）
-- **副信息第二行**：描述/host/ID 等辅助信息显示在主名称下方，不占独立列（镜像→host、容器→镜像名、网络→ID、仓库→描述、用户/消费者→描述、路由→描述、白名单→无副信息）
-- **截断收缩**：外层 flex 加 `min-w-0`，图标 `flex-shrink-0`，文字容器 `min-w-0` + `truncate block`
-- **副信息样式**：普通 `text-xs text-slate-400 truncate block mt-0.5`；等宽（ID/路径）加 `font-mono`；空值加 `v-if` 不占位
+- 列表/详情页统一 `.card mb-4`
+- 标题栏：`bg-slate-50 border-b border-slate-200 rounded-t-2xl px-4 md:px-6 py-3`，容器不写 `flex/justify-between`
+- 必须提供桌面 `hidden md:flex` 与移动 `flex md:hidden` 双布局
+- 详情页右侧仅保留刷新等功能按钮，**不添加返回按钮**
 
-图标配色（色阶 `400`）：容器 `emerald`/`slate`（按状态）、镜像 `blue`、网络 `purple`、数据卷 `amber`、仓库 `blue-500`、Swarm 服务 `emerald`、节点 `blue`、APISIX 路由 `indigo`、白名单 `amber`、消费者 `violet`、用户 `blue-500`。新增页面复用同模块配色，新模块选未用色（`rose`/`cyan`/`lime` 等）
+### 5.7 列表双视图（强制）
+
+- 桌面：`hidden md:block overflow-x-auto` + `<table>`
+- 移动：`md:hidden space-y-3 p-4` + 卡片列表（**`p-4` 不得省略**，卡片 `rounded-xl border border-slate-200 bg-white p-4`）
+
+### 5.8 表格第一列布局（强制）
+
+- `<td>` 设 `max-w-[280px]`（纯短 ID 列除外）
+- 副信息（描述/host/ID）显示在主名称下方，不占独立列
+- 外层 flex 加 `min-w-0`，图标 `flex-shrink-0`，文字容器 `min-w-0` + `truncate block`
+- 副信息样式：`text-xs text-slate-400 truncate block mt-0.5`；等宽内容加 `font-mono`；空值加 `v-if`
 
 ```html
 <td class="px-4 py-3 max-w-[280px]">
@@ -149,7 +185,9 @@
 </td>
 ```
 
-### 5.8 操作按钮语义色
+图标配色（色阶 `400`）：容器 `emerald`/`slate`（按状态）、镜像 `blue`、网络 `purple`、数据卷 `amber`、仓库 `blue-500`、Swarm 服务 `emerald`、节点 `blue`、路由 `indigo`、白名单 `amber`、消费者 `violet`、用户 `blue-500`。新模块选未用色（`rose`/`cyan`/`lime` 等）
+
+### 5.9 操作按钮语义色
 
 统一格式：`btn-icon text-{color}-600 hover:bg-{color}-50`
 
@@ -166,62 +204,33 @@
 
 > APISIX 域编辑按钮允许 `indigo`（路由）/`violet`（消费者），其余模块统一 `blue`
 
-### 5.9 表单与敏感字段
+### 5.10 表单与敏感字段
 
 - 表单容器 `max-w-3xl space-y-4`
 - label：`block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1`，input 通用 `.input`，help `text-xs text-slate-400 mt-1`
-- 密钥/密码：后端返回脱敏配置（敏感字段 `json:"-"`），前端 `type="password" autocomplete="new-password"`，留空保存=不修改，placeholder："留空保持不变"
+- 密钥/密码：后端敏感字段 `json:"-"`，前端 `type="password" autocomplete="new-password"`，留空保存=不修改，placeholder："留空保持不变"
 
-### 5.10 统一工具与轮询
+### 5.11 统一工具与轮询
 
 通用函数复用 `webview/src/helper/utils.ts`；轮询间隔用 `POLL_INTERVAL`，禁止硬编码
 
-### 5.11 import 分组排序
+### 5.12 import 分组排序
 
 `<script>` 内 import 按以下顺序，组间空一行，组内字母升序：
+1. 第三方库  2. `@/store/...`  3. `@/router`  4. `@/service/...`  5. `@/helper/...`  6. `@/component/...`  7. `@/views/...`  8. 其余 `@/`
 
-1. 第三方库（不以 `@/` 开头）
-2. `@/store/...`
-3. `@/router`
-4. `@/service/...`
-5. `@/helper/...`
-6. `@/component/...`
-7. `@/views/...`
-8. 其余 `@/`
+同模块普通导入在前、`type` 导入在后紧邻。批量整理：`cd webview && python3 sort-imports.py src`（支持 `--dry-run`）
 
-同模块普通导入在前、`type` 导入在后紧邻。可批量整理：`webview/sort-imports.py`（支持 `--dry-run`）
-
-### 5.12 终端能力
+### 5.13 终端能力
 
 系统终端走 `helper/shell.ts`，容器终端走 `helper/container-exec.ts`，禁止页面直接创建 Terminal/WebSocket 实例
-
-### 5.13 前端方法命名规范（强制）
-
-`ApiService` 类方法命名：`domainResourceAction` 驼峰格式
-
-| 操作 | 命名模式 | 示例 |
-|---|---|---|
-| 列表查询 | `domainResourceList(params?)` | `dockerContainerList()`、`apisixRouteList()` |
-| 单条查询 | `domainResource(id)` | `dockerImage(id)`、`swarmNode(id)` |
-| 创建 | `domainResourceCreate(data)` | `dockerContainerCreate(data)` |
-| 更新 | `domainResourceUpdate(id, data)` | `apisixRouteUpdate(id, data)` |
-| 删除 | `domainResourceDelete(id)` | `dockerImageDelete(id)` |
-| 操作/动作 | `domainResourceAction(id, action, ...)` | `dockerContainerAction(id, 'start')` |
-| 状态切换 | `domainResourceStatus(id, status)` | `apisixRouteStatus(id, 0)` |
-| 统计/日志 | `domainResourceStats(id)` / `domainResourceLogs(id, tail?)` | `dockerContainerStats(id)` |
-
-- **域名前缀**：`docker`、`swarm`、`apisix`、`account`、`system`、`filer`、`compose`
-- **资源名**：单数形式（`container`、`image`、`route`、`consumer`）
-- **分组注释**：方法上方加 `// ==================== XXXX 相关 ====================`
-
 
 ---
 
 ## 6) 路由与导航
 
 - `/overview` 概览；`docker/overview`/`swarm/overview` 仅作组件不作独立菜单路由
-- 系统模块：`/system/config`（系统配置）、`/system/audit`（操作审计）
-- 用户管理：`/account/members`
+- 系统模块：`/system/config`、`/system/audit`；用户管理：`/account/members`
 - 折叠子菜单展开状态跟随当前路由（`@Watch` immediate）
 - 侧边栏宽度 `w-16`（折叠）→ `w-64`（展开）
 - 移动端：遮罩 + 抽屉式（`-translate-x-full lg:translate-x-0`），`toggleMobileSidebar`/`closeMobileSidebar`/`openMobileSidebar`；窗口 ≥ 1024px 自动关闭
@@ -242,46 +251,29 @@
 
 1. 禁止硬编码密钥/密码/令牌
 2. 敏感配置仅返回 `xxxSet` 布尔值
-3. 文件系统操作防目录遍历
-4. 解压防 Zip Slip
-5. WebSocket 必须经过认证链路
-6. 关键资源（内置角色等）前后端双重校验
+3. 文件系统操作防目录遍历；解压防 Zip Slip
+4. WebSocket 必须经过认证链路
+5. 关键资源（内置角色等）前后端双重校验
 
 ---
 
 ## 9) 质量门禁（提交前自检）
 
-### 推荐校验命令
-
 ```bash
-# 后端编译/测试
-go test ./...
-
-# 前端类型检查
-cd webview && npm run lint
-
-# 前端 import 排序检查
-cd webview && python3 sort-imports.py --dry-run src
+go test ./...                                        # 后端编译/测试
+cd webview && npm run lint                           # 前端类型检查
+cd webview && python3 sort-imports.py --dry-run src  # import 排序检查
 ```
 
-- 受限环境无法执行完整命令时，至少说明未覆盖项和风险
-- 前端 import 排序修复可执行：`cd webview && python3 sort-imports.py src`
-
-- [ ] 编译通过（后端/前端受影响部分）
-- [ ] 无新增 lint 警告或错误
-- [ ] 关键路径手动验证（最小闭环）
-- [ ] 错误处理与日志符合规范
-- [ ] 未引入明文敏感信息
-
-如无法完整执行，需说明原因与风险
+- [ ] 编译通过；[ ] 无新增 lint 警告；[ ] 关键路径手动验证；[ ] 错误处理与日志符合规范；[ ] 未引入明文敏感信息
 
 ---
 
 ## 10) Git 约定
 
-提交格式：`<type>: <subject>`（类型：`feat`/`fix`/`refactor`/`style`/`docs`/`chore`）
+提交格式：`<type>: <subject>`（`feat`/`fix`/`refactor`/`style`/`docs`/`chore`）
 
-分支：`main`（生产）、`dev`（开发）、`feature/<name>`（功能）、`fix/<name>`（修复）
+分支：`main`（生产）、`dev`（开发）、`feature/<name>`、`fix/<name>`
 
 ---
 
