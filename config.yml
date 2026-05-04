@@ -45,7 +45,6 @@ members:
     # permissions 未配置则所有路由无权限
     # 格式："METHOD /api/path"，如 "GET /api/docker/containers"
     permissions:
-      - GET /api/overview/probe
       - GET /api/overview/status
       - GET /api/docker/containers
-      - GET /api/docker/containers/:id
+      - GET /api/docker/container/:id

@@ -88,7 +88,7 @@ export default toNative(Members)
             <button type="button" @click="loadMembers" class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors">
               <i class="fas fa-rotate"></i>刷新
             </button>
-            <button v-if="actions.hasPerm('POST /api/account/members')" type="button" @click="openAddMember" class="px-3 py-1.5 rounded-lg bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium flex items-center gap-1.5 transition-colors">
+            <button v-if="actions.hasPerm('POST /api/account/member')" type="button" @click="openAddMember" class="px-3 py-1.5 rounded-lg bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium flex items-center gap-1.5 transition-colors">
               <i class="fas fa-plus"></i>添加
             </button>
           </div>
@@ -108,7 +108,7 @@ export default toNative(Members)
             <button type="button" @click="loadMembers" class="w-9 h-9 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-600 transition-colors" title="刷新">
               <i class="fas fa-rotate text-sm"></i>
             </button>
-            <button v-if="actions.hasPerm('POST /api/account/members')" type="button" @click="openAddMember" class="w-9 h-9 rounded-lg bg-blue-500 hover:bg-blue-600 flex items-center justify-center text-white transition-colors" title="添加">
+            <button v-if="actions.hasPerm('POST /api/account/member')" type="button" @click="openAddMember" class="w-9 h-9 rounded-lg bg-blue-500 hover:bg-blue-600 flex items-center justify-center text-white transition-colors" title="添加">
               <i class="fas fa-plus text-sm"></i>
             </button>
           </div>
@@ -173,7 +173,7 @@ export default toNative(Members)
                   <td class="px-4 py-3">
                     <div class="flex justify-end items-center gap-0.5">
                       <button 
-                        v-if="!m.founder && actions.hasPerm('PUT /api/account/members/:username')"
+                        v-if="!m.founder && actions.hasPerm('PUT /api/account/member/:username')"
                         @click="openEditMember(m)" 
                         class="btn-icon text-blue-600 hover:bg-blue-50" 
                         title="编辑"
@@ -181,7 +181,7 @@ export default toNative(Members)
                         <i class="fas fa-pen text-xs"></i>
                       </button>
                       <button 
-                        v-if="!m.founder && actions.hasPerm('DELETE /api/account/members/:username')"
+                        v-if="!m.founder && actions.hasPerm('DELETE /api/account/member/:username')"
                         @click="handleDeleteMember(m)" 
                         class="btn-icon text-red-600 hover:bg-red-50" 
                         title="删除"
@@ -233,7 +233,7 @@ export default toNative(Members)
             <!-- 底部：操作按鈕 -->
             <div class="flex flex-wrap gap-1 pt-2 border-t border-slate-100">
               <button 
-                v-if="!m.founder && actions.hasPerm('PUT /api/account/members/:username')"
+                v-if="!m.founder && actions.hasPerm('PUT /api/account/member/:username')"
                 @click="openEditMember(m)" 
                 class="btn-icon text-blue-600 hover:bg-blue-50" 
                 title="编辑"
@@ -241,7 +241,7 @@ export default toNative(Members)
                 <i class="fas fa-pen text-xs"></i><span class="text-xs ml-1">编辑</span>
               </button>
               <button 
-                v-if="!m.founder && actions.hasPerm('DELETE /api/account/members/:username')"
+                v-if="!m.founder && actions.hasPerm('DELETE /api/account/member/:username')"
                 @click="handleDeleteMember(m)" 
                 class="btn-icon text-red-600 hover:bg-red-50" 
                 title="删除"

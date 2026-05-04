@@ -19,9 +19,9 @@ func (app *App) defineAccountRoutes() []Route {
 		{Method: "POST", Path: "/account/token", Handler: app.accountCreateApiToken, Module: "account", Label: "创建 API 令牌"},
 		{Method: "PUT", Path: "/account/password", Handler: app.accountChangePassword, Module: "account", Label: "修改密码", Access: account.AccessAuth},
 		{Method: "GET", Path: "/account/members", Handler: app.accountListMembers, Module: "account", Label: "列出成员"},
-		{Method: "POST", Path: "/account/members", Handler: app.accountCreateMember, Module: "account", Label: "创建成员"},
-		{Method: "PUT", Path: "/account/members/:username", Handler: app.accountUpdateMember, Module: "account", Label: "更新成员"},
-		{Method: "DELETE", Path: "/account/members/:username", Handler: app.accountDeleteMember, Module: "account", Label: "删除成员"},
+		{Method: "POST", Path: "/account/member", Handler: app.accountCreateMember, Module: "account", Label: "创建成员"},
+		{Method: "PUT", Path: "/account/member/:username", Handler: app.accountUpdateMember, Module: "account", Label: "更新成员"},
+		{Method: "DELETE", Path: "/account/member/:username", Handler: app.accountDeleteMember, Module: "account", Label: "删除成员"},
 	}
 }
 

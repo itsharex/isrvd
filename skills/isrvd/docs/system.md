@@ -92,19 +92,19 @@ GET /api/members
 ### §3.2 创建成员
 
 ```
-POST /api/members
+POST /api/member
 ```
 
 ### §3.3 更新成员
 
 ```
-PUT /api/members/:username
+PUT /api/member/:username
 ```
 
 ### §3.4 删除成员
 
 ```
-DELETE /api/members/:username
+DELETE /api/member/:username
 ```
 
 > ⚠️ 首个系统账号禁止删除（前后端双重保护）。
@@ -124,7 +124,7 @@ DELETE /api/members/:username
     "POST /api/swarm/services",
     "POST /api/apisix/routes",
     "POST /api/system/config",
-    "POST /api/members",
+    "POST /api/member",
     "POST /api/agent/chat"
   ]
 }
@@ -237,7 +237,7 @@ isrvd_post "/members" '{
     "POST /api/swarm/services",
     "POST /api/apisix/routes",
     "POST /api/system/config",
-    "POST /api/members",
+    "POST /api/member",
     "POST /api/agent/chat"
   ]
 }'

@@ -164,7 +164,7 @@ export const initProvider = () => {
 
         hasPerm(module: string): boolean {
             if (state.founder) return true
-            // 精确路由 key 匹配（如 'POST /api/docker/containers/:id/action'）
+            // 精确路由 key 匹配（如 'POST /api/docker/container/:id/action'）
             if (module.includes(' ')) {
                 // 从路由中提取模块名（/api/<module>/...），检查服务可用性
                 const path = module.split(' ')[1]

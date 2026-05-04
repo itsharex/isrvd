@@ -38,13 +38,13 @@ export function getPageInstruction(url: string): string {
     if (path.includes('/apisix/whitelist')) {
         return '当前页面：APISIX IP 白名单管理。可配置允许访问的 IP 地址段。'
     }
-    if (path.includes('/docker/containers') && path.includes('/exec')) {
+    if (path.includes('/docker/container') && path.includes('/exec')) {
         return '当前页面：容器终端。可在容器内执行 Shell 命令，注意操作风险。'
     }
-    if (path.includes('/docker/containers') && path.includes('/logs')) {
+    if (path.includes('/docker/container') && path.includes('/logs')) {
         return '当前页面：容器日志。可实时查看容器标准输出/错误日志，支持搜索过滤。'
     }
-    if (path.includes('/docker/containers') && path.includes('/stats')) {
+    if (path.includes('/docker/container') && path.includes('/stats')) {
         return '当前页面：容器监控。可查看容器 CPU、内存、网络、磁盘 IO 实时指标。'
     }
     if (path.includes('/docker/containers')) {
@@ -71,10 +71,10 @@ export function getPageInstruction(url: string): string {
     if (path.includes('/swarm/services')) {
         return '当前页面：Swarm 服务列表。可创建、扩缩容、更新、删除 Swarm 服务。'
     }
-    if (path.includes('/swarm/services') && path.includes('/logs')) {
+    if (path.includes('/swarm/service') && path.includes('/logs')) {
         return '当前页面：Swarm 服务日志。可查看服务所有任务的聚合日志。'
     }
-    if (path.includes('/swarm/services/')) {
+    if (path.includes('/swarm/service/')) {
         return '当前页面：Swarm 服务详情。可查看服务配置、副本状态、滚动更新历史。'
     }
     if (path.includes('/swarm/tasks')) {

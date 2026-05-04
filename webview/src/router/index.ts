@@ -70,21 +70,21 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/docker/containers.vue')
   },
   {
-    path: '/docker/containers/:id',
+    path: '/docker/container/:id',
     redirect: to => ({ name: 'docker-container-stats', params: { id: to.params.id } })
   },
   {
-    path: '/docker/containers/:id/stats',
+    path: '/docker/container/:id/stats',
     name: 'docker-container-stats',
     component: () => import('@/views/docker/container-stats.vue')
   },
   {
-    path: '/docker/containers/:id/logs',
+    path: '/docker/container/:id/logs',
     name: 'docker-container-logs',
     component: () => import('@/views/docker/container-logs.vue')
   },
   {
-    path: '/docker/containers/:id/exec',
+    path: '/docker/container/:id/exec',
     name: 'docker-container-exec',
     component: () => import('@/views/docker/container-exec.vue')
   },
@@ -94,7 +94,7 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/docker/images.vue')
   },
   {
-    path: '/docker/images/:id',
+    path: '/docker/image/:id',
     name: 'docker-image',
     component: () => import('@/views/docker/image.vue')
   },
@@ -104,7 +104,7 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/docker/networks.vue')
   },
   {
-    path: '/docker/networks/:id',
+    path: '/docker/network/:id',
     name: 'docker-network',
     component: () => import('@/views/docker/network.vue')
   },
@@ -114,7 +114,7 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/docker/volumes.vue')
   },
   {
-    path: '/docker/volumes/:name',
+    path: '/docker/volume/:name',
     name: 'docker-volume',
     component: () => import('@/views/docker/volume.vue')
   },
@@ -134,7 +134,7 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/swarm/nodes.vue')
   },
   {
-    path: '/swarm/nodes/:id',
+    path: '/swarm/node/:id',
     name: 'swarm-node',
     component: () => import('@/views/swarm/node.vue')
   },
@@ -144,12 +144,12 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/swarm/services.vue')
   },
   {
-    path: '/swarm/services/:id',
+    path: '/swarm/service/:id',
     name: 'swarm-service',
     component: () => import('@/views/swarm/service.vue')
   },
   {
-    path: '/swarm/services/:id/logs',
+    path: '/swarm/service/:id/logs',
     name: 'swarm-service-logs',
     component: () => import('@/views/swarm/service-logs.vue')
   },
