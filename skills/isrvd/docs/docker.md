@@ -41,7 +41,7 @@ GET /api/docker/containers?all=true|false
 ### §2.2 创建容器
 
 ```
-POST /api/docker/container/create
+POST /api/docker/container
 ```
 
 请求体 `ContainerCreateRequest`：
@@ -153,7 +153,7 @@ GET /api/docker/image/:id
 ### §3.3 搜索镜像
 
 ```
-GET /api/docker/image/search/:term
+GET /api/docker/images/search?name=关键词
 ```
 
 从 Docker Hub 搜索镜像。
@@ -168,8 +168,8 @@ Body: { "dockerfile": "FROM nginx:latest\nCOPY . /app", "tag": "myimage:v1" }
 ### §3.5 镜像打标签
 
 ```
-POST /api/docker/image/tag
-Body: { "id": "镜像ID或名称", "repoTag": "newrepo:newtag" }
+POST /api/docker/image/:id/tag
+Body: { "repoTag": "newrepo:newtag" }
 ```
 
 ### §3.6 删除镜像
@@ -214,7 +214,7 @@ GET /api/docker/registries
 ### §4.2 添加仓库
 
 ```
-POST /api/docker/registries
+POST /api/docker/registry
 Body: {
   "name": "仓库名",
   "url": "https://registry.example.com",
@@ -227,7 +227,7 @@ Body: {
 ### §4.3 更新仓库
 
 ```
-PUT /api/docker/registries?url=原始URL
+PUT /api/docker/registry?url=原始URL
 Body: { "name": "新名称", "url": "新URL", "username": "user", "password": "pass", "description": "描述" }
 ```
 
@@ -236,7 +236,7 @@ Body: { "name": "新名称", "url": "新URL", "username": "user", "password": "p
 ### §4.4 删除仓库
 
 ```
-DELETE /api/docker/registries?url=仓库URL
+DELETE /api/docker/registry?url=仓库URL
 ```
 
 ---
@@ -258,7 +258,7 @@ GET /api/docker/network/:id
 ### §5.3 创建网络
 
 ```
-POST /api/docker/network/create
+POST /api/docker/network
 Body: { "name": "网络名", "driver": "bridge", "subnet": "172.20.0.0/16" }
 ```
 
@@ -288,7 +288,7 @@ GET /api/docker/volume/:name
 ### §6.3 创建数据卷
 
 ```
-POST /api/docker/volume/create
+POST /api/docker/volume
 Body: { "name": "卷名", "driver": "local" }
 ```
 
@@ -310,7 +310,7 @@ Body: { "action": "remove" }
 isrvd_post "/docker/registry/pull" '{"image":"nginx:latest"}'
 
 # 2. 创建容器
-isrvd_post "/docker/container/create" '{
+isrvd_post "/docker/container" '{
   "image": "nginx:latest",
   "name": "web-server",
   "ports": {"80": "80"},
@@ -332,5 +332,5 @@ isrvd_post "/docker/container/OLD_ID/action" '{"action":"stop"}'
 isrvd_post "/docker/container/OLD_ID/action" '{"action":"remove"}'
 
 # 3. 用新镜像创建容器（保持相同配置）
-isrvd_post "/docker/container/create" '{"image":"nginx:1.25","name":"web-server",...}'
+isrvd_post "/docker/container" '{"image":"nginx:1.25","name":"web-server",...}'
 ```

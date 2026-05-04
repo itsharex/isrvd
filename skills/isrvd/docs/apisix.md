@@ -67,7 +67,7 @@ GET /api/apisix/route/:id
 ## §3 创建路由
 
 ```
-POST /api/apisix/routes
+POST /api/apisix/route
 ```
 
 **最小示例**：
@@ -152,7 +152,7 @@ GET /api/apisix/consumers
 ### §7.2 创建消费者
 
 ```
-POST /api/apisix/consumers
+POST /api/apisix/consumer
 Body: { "username": "consumer1", "desc": "描述" }
 ```
 
@@ -191,7 +191,7 @@ Body: { "route_id": "路由ID", "consumer_name": "名称" }
 ## §9 其他查询
 
 ```
-GET /api/apisix/plugin_configs    # 列出插件配置
+GET /api/apisix/plugin-configs    # 列出插件配置
 GET /api/apisix/plugins           # 列出所有可用插件
 GET /api/apisix/upstreams         # 列出已定义的上游
 ```
@@ -210,7 +210,7 @@ isrvd_get "/apisix/routes"
 isrvd_get "/apisix/upstreams"
 
 # 3. 创建路由
-isrvd_post "/apisix/routes" '{
+isrvd_post "/apisix/route" '{
   "name": "new-service",
   "uri": "/new-service/*",
   "host": "api.example.com",

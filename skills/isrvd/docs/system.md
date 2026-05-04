@@ -1,8 +1,8 @@
 # 系统管理 API
 
-> 系统接口前缀: `/api/system`，账号接口前缀: `/api/auth` 和 `/api/members`，文件接口前缀: `/api/filer`  
+> 系统接口前缀: `/api/system`，账号接口前缀: `/api/account`，文件接口前缀: `/api/filer`
 > 权限基于路由细粒度控制，如 `POST /api/system/config`、
-> `POST /api/members`、`POST /api/filer/list` 等
+> `POST /api/account/member`、`POST /api/filer/list` 等
 
 ---
 
@@ -11,7 +11,7 @@
 ### §1.1 系统资源统计
 
 ```
-GET /api/system/stats
+GET /api/overview/status
 ```
 
 返回 CPU、内存、磁盘使用率等系统资源信息。
@@ -19,7 +19,7 @@ GET /api/system/stats
 ### §1.2 服务可用性探测
 
 ```
-GET /api/system/probe
+GET /api/overview/probe
 ```
 
 返回各服务模块的可用性状态（Docker / Swarm / APISIX）。
@@ -81,30 +81,30 @@ PUT /api/system/config
 
 ## §3 成员管理
 
-> 成员管理接口前缀: `/api/members`，需要对应路由权限（如 `POST /api/members`）
+> 成员管理接口前缀: `/api/account`，需要对应路由权限（如 `POST /api/account/member`）
 
 ### §3.1 列出成员
 
 ```
-GET /api/members
+GET /api/account/members
 ```
 
 ### §3.2 创建成员
 
 ```
-POST /api/member
+POST /api/account/member
 ```
 
 ### §3.3 更新成员
 
 ```
-PUT /api/member/:username
+PUT /api/account/member/:username
 ```
 
 ### §3.4 删除成员
 
 ```
-DELETE /api/member/:username
+DELETE /api/account/member/:username
 ```
 
 > ⚠️ 首个系统账号禁止删除（前后端双重保护）。
@@ -120,11 +120,11 @@ DELETE /api/member/:username
     "POST /api/filer/list",
     "POST /api/filer/upload",
     "POST /api/filer/modify",
-    "POST /api/docker/containers",
-    "POST /api/swarm/services",
-    "POST /api/apisix/routes",
+    "POST /api/docker/container",
+    "POST /api/swarm/service",
+    "POST /api/apisix/route",
     "POST /api/system/config",
-    "POST /api/member",
+    "POST /api/account/member",
     "POST /api/agent/chat"
   ]
 }
@@ -175,7 +175,7 @@ Content-Type: multipart/form-data
 ### §5.1 登录
 
 ```
-POST /api/auth/login
+POST /api/account/login
 Body: { "username": "admin", "password": "secret" }
 Response: { "success": true, "payload": { "token": "jwt-token", "username": "admin" } }
 ```
@@ -183,16 +183,10 @@ Response: { "success": true, "payload": { "token": "jwt-token", "username": "adm
 ### §5.2 获取当前用户信息
 
 ```
-GET /api/auth/info
+GET /api/account/info
 ```
 
 需要认证（JWT 或代理 Header）。
-
-### §5.3 登出
-
-```
-POST /api/auth/logout
-```
 
 ---
 
@@ -207,7 +201,7 @@ WS /api/shell?token=<jwt-token>&shell=bash
 ### §6.2 容器终端
 
 ```
-WS /api/docker/containers/<容器ID>/exec?token=<jwt-token>&shell=/bin/sh
+WS /api/docker/container/<容器ID>/exec?token=<jwt-token>&shell=/bin/sh
 ```
 ---
 
@@ -217,27 +211,27 @@ WS /api/docker/containers/<容器ID>/exec?token=<jwt-token>&shell=/bin/sh
 
 ```bash
 # 系统资源
-isrvd_get "/system/stats"
+isrvd_get "/overview/status"
 
 # 服务可用性
-isrvd_get "/system/probe"
+isrvd_get "/overview/probe"
 ```
 
 ### 创建新用户
 
 ```bash
-isrvd_post "/members" '{
+isrvd_post "/account/member" '{
   "username": "developer",
   "password": "secure-password",
   "homeDirectory": "/data/developer",
   "permissions": [
     "POST /api/filer/list",
     "POST /api/filer/upload",
-    "POST /api/docker/containers",
-    "POST /api/swarm/services",
-    "POST /api/apisix/routes",
+    "POST /api/docker/container",
+    "POST /api/swarm/service",
+    "POST /api/apisix/route",
     "POST /api/system/config",
-    "POST /api/member",
+    "POST /api/account/member",
     "POST /api/agent/chat"
   ]
 }'

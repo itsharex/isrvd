@@ -45,7 +45,7 @@ GET /api/swarm/node/:id
 ### §2.3 获取加入令牌
 
 ```
-GET /api/swarm/join-tokens
+GET /api/swarm/tokens
 ```
 
 返回 manager 和 worker 的加入令牌。
@@ -97,7 +97,7 @@ GET /api/swarm/service/:id
 ### §3.3 创建服务
 
 ```
-POST /api/swarm/service/create
+POST /api/swarm/service
 ```
 
 请求体 `ServiceSpec`：
@@ -185,7 +185,7 @@ POST /api/swarm/service/:id/action
 ### §4.2 强制重新部署
 
 ```
-POST /api/swarm/service/:id/redeploy
+POST /api/swarm/service/:id/force-update
 ```
 
 强制更新服务（拉取最新镜像并重新调度所有任务）。无需请求体。
@@ -218,7 +218,7 @@ GET /api/swarm/tasks?serviceID=xxx
 
 ```bash
 # 1. 创建服务
-isrvd_post "/swarm/service/create" '{
+isrvd_post "/swarm/service" '{
   "name": "api-server",
   "image": "myapp:v1",
   "replicas": 2,
@@ -237,7 +237,7 @@ isrvd_post "/swarm/service/SERVICE_ID/action" '{"action":"scale","replicas":5}'
 
 ```bash
 # 强制重新部署（拉取最新镜像）
-isrvd_post "/swarm/service/SERVICE_ID/redeploy"
+isrvd_post "/swarm/service/SERVICE_ID/force-update"
 
 # 查看任务状态确认更新进度
 isrvd_get "/swarm/tasks?serviceID=SERVICE_ID"
