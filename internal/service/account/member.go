@@ -33,7 +33,6 @@ func (s *Service) GetMember(username string) *MemberInfo {
 type MemberInfo struct {
 	Username      string   `json:"username"`
 	HomeDirectory string   `json:"homeDirectory"`
-	PasswordSet   bool     `json:"passwordSet"`
 	Founder       bool     `json:"founder"`
 	Description   string   `json:"description"`
 	Permissions   []string `json:"permissions"`
@@ -57,7 +56,6 @@ func (s *Service) buildMemberInfo(m *config.MemberConfig) *MemberInfo {
 	return &MemberInfo{
 		Username:      m.Username,
 		HomeDirectory: m.HomeDirectory,
-		PasswordSet:   m.Password != "",
 		Founder:       m.Founder,
 		Description:   m.Description,
 		Permissions:   perms,
