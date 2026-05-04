@@ -136,7 +136,7 @@ export default toNative(Nodes)
             <button @click="loadNodes" class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors">
               <i class="fas fa-rotate"></i>刷新
             </button>
-            <button v-if="actions.hasPerm('POST /api/swarm/nodes/:id/action')" @click="openJoinModal" class="px-3 py-1.5 rounded-lg bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium flex items-center gap-1.5 transition-colors">
+            <button v-if="actions.hasPerm('GET /api/swarm/tokens')" @click="openJoinModal" class="px-3 py-1.5 rounded-lg bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium flex items-center gap-1.5 transition-colors">
               <i class="fas fa-plus"></i>加入
             </button>
           </div>
@@ -153,7 +153,7 @@ export default toNative(Nodes)
             </div>
           </div>
           <div class="flex items-center gap-1.5 flex-shrink-0">
-            <button v-if="actions.hasPerm('POST /api/swarm/nodes/:id/action')" @click="openJoinModal" class="w-9 h-9 rounded-lg bg-blue-500 hover:bg-blue-600 flex items-center justify-center text-white transition-colors" title="加入集群">
+            <button v-if="actions.hasPerm('GET /api/swarm/tokens')" @click="openJoinModal" class="w-9 h-9 rounded-lg bg-blue-500 hover:bg-blue-600 flex items-center justify-center text-white transition-colors" title="加入集群">
               <i class="fas fa-plus text-sm"></i>
             </button>
             <button @click="loadNodes" class="w-9 h-9 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-600 transition-colors" title="刷新">
