@@ -169,3 +169,39 @@ func (s *Service) DeleteMember(username string) error {
 	logman.Info("Member deleted", "username", username)
 	return nil
 }
+
+// ChangePasswordRequest 修改密码请求
+type ChangePasswordRequest struct {
+	OldPassword string `json:"oldPassword"`
+	NewPassword string `json:"newPassword" binding:"required"`
+}
+
+// ChangePassword 修改当前用户密码
+func (s *Service) ChangePassword(username string, req ChangePasswordRequest) error {
+	member, exists := config.Members[username]
+	if !exists {
+		return ErrMemberNotFound
+	}
+
+	// 验证旧密码
+	if req.OldPassword == "" {
+		return fmt.Errorf("请输入原密码")
+	}
+	if !helper.VerifyPassword(req.OldPassword, member.Password) {
+		return fmt.Errorf("原密码错误")
+	}
+
+	// 加密新密码
+	hashedPassword, err := helper.HashPassword(req.NewPassword)
+	if err != nil {
+		return fmt.Errorf("密码加密失败: %w", err)
+	}
+
+	member.Password = hashedPassword
+	if err := config.Save(); err != nil {
+		return fmt.Errorf("保存配置失败: %w", err)
+	}
+
+	logman.Info("Password changed", "username", username)
+	return nil
+}

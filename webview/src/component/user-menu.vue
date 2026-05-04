@@ -50,15 +50,14 @@ export default toNative(UserMenu)
       </button>
     </template>
 
-    <!-- API 令牌 -->
+    <!-- 个人设置 -->
     <router-link
-      v-if="actions.hasPerm('POST /api/account/token')"
-      to="/account/token"
+      to="/account/profile"
       class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:text-blue-600 hover:bg-blue-50 transition-colors"
       @click="menuOpen = false"
     >
-      <i class="fas fa-key"></i>
-      API 令牌
+      <i class="fas fa-user-circle"></i>
+      个人设置
     </router-link>
 
     <!-- 分割线 -->

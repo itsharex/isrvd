@@ -181,9 +181,9 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/account/members.vue')
   },
   {
-    path: '/account/token',
-    name: 'account-token',
-    component: () => import('@/views/account/token.vue')
+    path: '/account/profile',
+    name: 'account-profile',
+    component: () => import('@/views/account/profile.vue')
   },
   {
     path: '/system/config',

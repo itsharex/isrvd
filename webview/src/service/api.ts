@@ -19,6 +19,7 @@ import type {
     AuthLoginResponse, AuthInfoResponse,
     MemberInfo, MemberUpsertRequest, RouteInfo,
     ApiTokenCreateRequest, ApiTokenCreateResponse,
+    ChangePasswordRequest,
     AllConfigResponse,
     ComposeDeployResult,
     SystemStat,
@@ -83,6 +84,10 @@ class ApiService {
 
     createApiToken(data: ApiTokenCreateRequest) {
         return http.post<ApiTokenCreateResponse>('/api/account/token', data)
+    }
+
+    changePassword(data: ChangePasswordRequest) {
+        return http.put<void>('/api/account/password', data)
     }
 
     // ==================== Filer 文件管理相关 ====================

@@ -17,6 +17,7 @@ func (app *App) defineAccountRoutes() []Route {
 		{Method: "POST", Path: "/account/login", Handler: app.accountLogin, Module: "account", Label: "登录账户", Access: account.AccessAnon},
 		{Method: "GET", Path: "/account/routes", Handler: app.accountListRoutes, Module: "account", Label: "列出路由权限", Access: account.AccessAuth},
 		{Method: "POST", Path: "/account/token", Handler: app.accountCreateApiToken, Module: "account", Label: "创建 API 令牌", Access: account.AccessAuth},
+		{Method: "PUT", Path: "/account/password", Handler: app.accountChangePassword, Module: "account", Label: "修改密码", Access: account.AccessAuth},
 		{Method: "GET", Path: "/account/members", Handler: app.accountListMembers, Module: "account", Label: "列出成员"},
 		{Method: "POST", Path: "/account/members", Handler: app.accountCreateMember, Module: "account", Label: "创建成员"},
 		{Method: "PUT", Path: "/account/members/:username", Handler: app.accountUpdateMember, Module: "account", Label: "更新成员"},
@@ -69,6 +70,21 @@ func (app *App) accountCreateApiToken(c *gin.Context) {
 		return
 	}
 	helper.RespondSuccess(c, "令牌创建成功", resp)
+}
+
+// accountChangePassword 修改当前用户密码
+func (app *App) accountChangePassword(c *gin.Context) {
+	var req account.ChangePasswordRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		helper.RespondError(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	username := c.GetString("username")
+	if err := app.accountSvc.ChangePassword(username, req); err != nil {
+		helper.RespondError(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	helper.RespondSuccess(c, "密码修改成功", nil)
 }
 
 // accountListMembers 列出所有成员

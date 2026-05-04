@@ -59,3 +59,10 @@ export interface ApiTokenCreateResponse {
     token: string
     name: string
 }
+
+// ─── 修改密码 ───
+
+export interface ChangePasswordRequest {
+    oldPassword: string
+    newPassword: string
+}
