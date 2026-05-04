@@ -138,6 +138,7 @@ export default toNative(Members)
               <thead>
               <tr class="bg-slate-50 border-b border-slate-200">
                   <th class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">用户名</th>
+                  <th class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">家目录</th>
                   <th class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">权限</th>
                   <th class="w-28 px-4 py-3 text-right text-xs font-semibold text-slate-600 uppercase tracking-wider">操作</th>
                 </tr>
@@ -151,9 +152,12 @@ export default toNative(Members)
                       </div>
                       <div class="min-w-0">
                         <span class="font-medium text-slate-800 truncate block">{{ m.username }}</span>
-                        <code class="text-xs text-slate-400 truncate block mt-0.5">{{ m.homeDirectory }}</code>
+                        <span v-if="m.description" class="text-xs text-slate-400 truncate block mt-0.5">{{ m.description }}</span>
                       </div>
                     </div>
+                  </td>
+                  <td class="px-4 py-3">
+                    <code class="text-xs text-slate-500 font-mono">{{ m.homeDirectory }}</code>
                   </td>
                   <td class="px-4 py-3">
                     <div class="flex flex-wrap gap-1">
@@ -202,6 +206,7 @@ export default toNative(Members)
                 </div>
                 <div class="min-w-0">
                   <span class="font-medium text-slate-800 text-sm truncate block">{{ m.username }}</span>
+                  <span v-if="m.description" class="text-xs text-slate-400 truncate block">{{ m.description }}</span>
                 </div>
               </div>
             </div>
@@ -212,7 +217,7 @@ export default toNative(Members)
                 <i class="fas fa-crown mr-1 text-xs"></i>创始人
               </span>
             </div>
-            <!-- 中间：家目录 -->
+            <!-- 家目录 -->
             <div class="flex items-center gap-2 mb-3">
               <span class="text-xs text-slate-400 flex-shrink-0">家目录</span>
               <code class="text-xs bg-slate-100 px-2 py-1 rounded break-all">{{ m.homeDirectory }}</code>

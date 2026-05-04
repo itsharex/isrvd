@@ -35,6 +35,7 @@ type MemberInfo struct {
 	HomeDirectory string   `json:"homeDirectory"`
 	PasswordSet   bool     `json:"passwordSet"`
 	Founder       bool     `json:"founder"`
+	Description   string   `json:"description"`
 	Permissions   []string `json:"permissions"`
 }
 
@@ -58,6 +59,7 @@ func (s *Service) buildMemberInfo(m *config.MemberConfig) *MemberInfo {
 		HomeDirectory: m.HomeDirectory,
 		PasswordSet:   m.Password != "",
 		Founder:       m.Founder,
+		Description:   m.Description,
 		Permissions:   perms,
 	}
 }
@@ -81,6 +83,7 @@ type MemberUpsertRequest struct {
 	Username      string   `json:"username"`
 	Password      string   `json:"password"`
 	HomeDirectory string   `json:"homeDirectory"`
+	Description   string   `json:"description"`
 	Permissions   []string `json:"permissions"`
 }
 
@@ -108,6 +111,7 @@ func (s *Service) CreateMember(req MemberUpsertRequest) error {
 		Username:      req.Username,
 		Password:      hashedPassword,
 		HomeDirectory: home,
+		Description:   req.Description,
 		Permissions:   req.Permissions,
 	}
 	if err := config.Save(); err != nil {
@@ -143,6 +147,7 @@ func (s *Service) UpdateMember(username string, req MemberUpsertRequest) error {
 	}
 
 	member.HomeDirectory = home
+	member.Description = req.Description
 	member.Permissions = req.Permissions
 
 	if err := config.Save(); err != nil {

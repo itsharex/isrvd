@@ -68,6 +68,8 @@ type MemberConfig struct {
 	HomeDirectory string `yaml:"homeDirectory" json:"homeDirectory"`
 	// Founder 创始人标志，创始人拥有所有模块的完整权限
 	Founder bool `yaml:"founder" json:"founder"`
+	// Description 成员描述信息（可选）
+	Description string `yaml:"description,omitempty" json:"description,omitempty"`
 	// Permissions 允许访问的路由列表，格式为 "METHOD /api/path"，如 "GET /api/docker/containers"
 	Permissions []string `yaml:"permissions,omitempty" json:"permissions,omitempty"`
 }

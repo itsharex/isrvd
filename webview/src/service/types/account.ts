@@ -37,6 +37,7 @@ export interface MemberInfo {
     homeDirectory: string
     passwordSet: boolean
     founder: boolean
+    description: string
     permissions: string[]
 }
 
@@ -45,6 +46,7 @@ export interface MemberUpsertRequest {
     // 写入时为空表示保留原值（仅更新场景）
     password: string
     homeDirectory: string
+    description: string
     permissions: string[]
 }
 

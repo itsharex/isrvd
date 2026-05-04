@@ -68,7 +68,10 @@ class MemberEditModal extends Vue {
     // 编辑时保存原始用户名，用于后端定位
     originalUsername = ''
     formData: MemberUpsertRequest = {
-        username: '', password: '', homeDirectory: '',
+        username: '',
+        password: '',
+        homeDirectory: '',
+        description: '',
         permissions: []
     }
 
@@ -129,13 +132,14 @@ class MemberEditModal extends Vue {
                 username: member.username,
                 password: '',
                 homeDirectory: member.homeDirectory,
+                description: member.description,
                 permissions: perms
             }
             this.permSet = new Set(perms)
         } else {
             this.originalUsername = ''
             this.formData = {
-                username: '', password: '', homeDirectory: '',
+                username: '', password: '', homeDirectory: '', description: '',
                 permissions: []
             }
             this.permSet = new Set()
@@ -280,6 +284,11 @@ export default toNative(MemberEditModal)
         <label class="block text-sm font-medium text-slate-700 mb-2">家目录 <span class="text-slate-400 font-normal">(可选)</span></label>
         <input type="text" v-model="formData.homeDirectory" placeholder="留空则使用 基础目录/用户名" class="input" />
         <p class="mt-1 text-xs text-slate-400">相对路径基于"基础目录"，留空则自动创建为 基础目录/用户名</p>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-2">描述 <span class="text-slate-400 font-normal">(可选)</span></label>
+        <input type="text" v-model="formData.description" placeholder="成员描述信息" class="input" maxlength="64" />
+        <p class="mt-1 text-xs text-slate-400">用于标识成员用途，最长 64 字符</p>
       </div>
       <!-- 路由权限 -->
       <div>
