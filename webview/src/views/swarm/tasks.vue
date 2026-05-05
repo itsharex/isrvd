@@ -209,7 +209,7 @@ export default toNative(Tasks)
               <span class="text-xs break-words" :class="t.err ? 'text-red-500' : 'text-slate-500'">{{ t.err || t.message }}</span>
             </div>
             <!-- 更新时间（最后） -->
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2 mb-3">
               <span class="text-xs text-slate-400 flex-shrink-0">更新</span>
               <span class="text-xs text-slate-500">{{ formatTime(t.updatedAt) }}</span>
             </div>

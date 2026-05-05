@@ -279,6 +279,38 @@
 
 图标配色（色阶 `400`）：容器 `emerald`/`slate`（按状态）、镜像 `blue`、网络 `purple`、数据卷 `amber`、仓库 `blue-500`、Swarm 服务 `emerald`、节点 `blue`、路由 `indigo`、白名单 `amber`、消费者 `violet`、用户 `blue-500`。新模块选未用色（`rose`/`cyan`/`lime` 等）
 
+### 5.9.1 状态文字颜色（强制）
+
+**状态值优先用文字颜色区分，不用 badge**；仅枚举型分类字段（驱动、类型等）才用 badge。
+
+| 状态值 | 颜色 | 示例 |
+|---|---|---|
+| 正常/运行/就绪（running / ready / active / enabled） | `text-emerald-600 font-medium` | 容器 running、节点 ready/active |
+| 异常/停止/下线（stopped / down / error） | `text-red-500 font-medium` | 节点 down |
+| 警告/排空/暂停（drain / paused / warning） | `text-amber-600 font-medium` | 节点 drain |
+| 其他/未知 | `text-slate-500` | — |
+
+- 通配符或空值（如 host `*`）用 `text-slate-400`（无 `font-medium`）
+- 有意义的 host/域名用 `text-teal-600 font-medium`
+- 数值型强调（如运行中任务数）用 `text-emerald-600 font-medium`
+
+### 5.9.2 枚举 badge 配色
+
+枚举型分类字段（驱动、协议、类型等）使用 badge，颜色跟随模块主色：
+
+| 模块/字段 | badge 配色 |
+|---|---|
+| 网络驱动（docker network driver） | `bg-purple-50 text-purple-700` |
+| 路由上游（apisix upstream） | `bg-indigo-50 text-indigo-700` |
+| 其他枚举 | 跟随模块主色，`bg-{color}-50 text-{color}-700` |
+
+### 5.9.3 权限/角色图标颜色
+
+| 角色/权限 | 图标 | 颜色 |
+|---|---|---|
+| 创始人/超级管理员 | `fa-crown` | `text-violet-400` |
+| 有自定义权限 | `fa-key` | `text-amber-400` |
+
 ### 5.10 操作按钮语义色
 
 统一格式：`btn-icon text-{color}-600 hover:bg-{color}-50`

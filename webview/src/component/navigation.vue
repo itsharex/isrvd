@@ -136,19 +136,17 @@ export default toNative(NavigationBar)
     ]"
   >
     <!-- Logo 区域 -->
-    <div class="h-16 flex items-center border-b border-slate-200/50" :class="collapsed ? 'justify-center' : 'px-4'" @click="closeMobileSidebar">
-      <div class="flex items-center" :class="collapsed ? '' : 'space-x-3'">
-        <div class="w-10 h-10 rounded-xl bg-primary-500 flex items-center justify-center shadow-glow">
+    <div class="h-16 flex items-center border-b border-slate-200/50" :class="collapsed ? 'justify-center' : 'px-4'">
+      <div class="flex items-center space-x-3 flex-1 min-w-0" :class="collapsed ? 'justify-center flex-none' : ''">
+        <div class="w-10 h-10 rounded-xl bg-primary-500 flex items-center justify-center shadow-glow flex-shrink-0">
           <i class="fas fa-server text-white text-lg"></i>
         </div>
-        <span v-if="!collapsed" class="text-xl font-bold gradient-text">Isrvd</span>
+        <span v-if="!collapsed" class="text-xl font-bold gradient-text truncate">Isrvd</span>
       </div>
-    </div>
-
-    <!-- 移动端关闭按钮 -->
-    <div class="lg:hidden absolute top-4 right-4">
+      <!-- 移动端关闭按钮，仅展开状态下显示 -->
       <button 
-        class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600 transition-colors"
+        v-if="!collapsed"
+        class="lg:hidden w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-colors flex-shrink-0 ml-2"
         @click="closeMobileSidebar"
       >
         <i class="fas fa-times text-sm"></i>

@@ -227,7 +227,7 @@ export default toNative(Routes)
                   <td class="px-4 py-3"><code class="text-xs font-mono text-slate-700 break-all">{{ getRouteUri(route) }}</code></td>
                 <td class="px-4 py-3"><span :class="getRouteHost(route) === '*' ? 'text-slate-400' : 'text-teal-600 font-medium'" class="text-sm break-all">{{ getRouteHost(route) }}</span></td>
                 <td class="px-4 py-3"><span class="text-xs text-slate-600">{{ getRouteUpstreamType(route) || '-' }}</span></td>
-                <td class="px-4 py-3"><span :class="getRouteUpstreamTagClass(route)" class="inline-block text-xs px-2 py-0.5 rounded-full font-mono break-all">{{ getRouteUpstreamNodes(route) }}</span></td>
+<td class="px-4 py-3"><span :class="getRouteUpstreamTagClass(route)" class="inline-block text-xs px-2 py-0.5 rounded-lg font-mono break-all">{{ getRouteUpstreamNodes(route) }}</span></td>
                 <td class="px-4 py-3">
                   <div class="flex justify-end items-center gap-1">
                     <button v-if="actions.hasPerm('PATCH /api/apisix/route/:id/status')" :class="['btn-icon', route.status === 1 ? 'text-amber-500 hover:bg-amber-50' : 'text-emerald-600 hover:bg-emerald-50']" :title="route.status === 1 ? '禁用' : '启用'" @click="toggleStatus(route)">
@@ -277,9 +277,9 @@ export default toNative(Routes)
               <span class="text-xs text-slate-400 flex-shrink-0">策略</span>
               <span class="text-xs text-slate-500">{{ getRouteUpstreamType(route) || '-' }}</span>
             </div>
-              <div class="flex items-center gap-2 mb-3">
-                <span class="text-xs text-slate-400 flex-shrink-0">上游</span>
-                <span :class="getRouteUpstreamTagClass(route)" class="inline-block text-xs px-2 py-0.5 rounded-full font-mono break-all">{{ getRouteUpstreamNodes(route) }}</span>
+              <div class="flex items-start gap-2 mb-3">
+                <span class="text-xs text-slate-400 flex-shrink-0 mt-0.5">上游</span>
+                <span :class="getRouteUpstreamTagClass(route)" class="inline-block text-xs px-2 py-0.5 rounded-lg font-mono break-all">{{ getRouteUpstreamNodes(route) }}</span>
               </div>
 
             <!-- 底部：操作按钮 -->

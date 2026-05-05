@@ -162,7 +162,7 @@ export default toNative(Networks)
                     </div>
                   </div>
                 </td>
-                <td class="px-4 py-3"><span class="inline-block text-xs px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 font-medium">{{ net.driver }}</span></td>
+                <td class="px-4 py-3"><span class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-medium bg-purple-50 text-purple-700">{{ net.driver }}</span></td>
                 <td class="px-4 py-3 font-mono text-sm text-slate-600">{{ net.subnet || '-' }}</td>
                 <td class="px-4 py-3 text-sm text-slate-600">{{ net.scope }}</td>
                 <td class="px-4 py-3">
@@ -212,9 +212,9 @@ export default toNative(Networks)
             </div>
 
             <!-- 驱动 / 范围 -->
-            <div class="flex items-center gap-2 mb-3">
-              <span class="text-xs text-slate-400 flex-shrink-0">驱动</span>
-              <span class="inline-block text-xs px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 font-medium">{{ net.driver }}</span>
+            <div class="flex items-start gap-2 mb-3">
+              <span class="text-xs text-slate-400 flex-shrink-0 mt-0.5">驱动</span>
+              <span class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-medium bg-purple-50 text-purple-700">{{ net.driver }}</span>
             </div>
             <div class="flex items-center gap-2 mb-3">
               <span class="text-xs text-slate-400 flex-shrink-0">范围</span>

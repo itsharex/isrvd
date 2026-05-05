@@ -468,6 +468,115 @@ def check_h_tags_in_mobile(filepath, lines, tmpl, tmpl_line0):
                    f"移动端卡片内不应使用 h2-h6 标签: {line.strip()[:60]}")
 
 
+# 5.9.1 状态关键词
+_STATE_POSITIVE = re.compile(r'\b(running|ready|active|enabled|healthy)\b', re.I)
+_STATE_NEGATIVE = re.compile(r'\b(stopped|down|error|failed|unhealthy|exited)\b', re.I)
+_STATE_WARNING  = re.compile(r'\b(drain|paused|warning|degraded|pending)\b', re.I)
+
+# 状态值用 badge 背景色（bg-xxx-100/50 + text-xxx-700）的模式
+_BADGE_BG = re.compile(r'bg-(?:emerald|green|red|rose|amber|yellow|orange|slate|gray)-(?:50|100)')
+
+
+def check_status_uses_text_color(filepath, lines, tmpl, tmpl_line0):
+    """
+    5.9.1 状态值应优先用文字颜色区分，不应用 badge 背景色。
+    检测：:class 绑定中同时出现状态关键词 + badge 背景色（bg-xxx-100/50）
+    仅检查 :class=（动态绑定），排除 v-if/v-show 条件判断行。
+    """
+    for i, line in enumerate(lines, 1):
+        stripped = line.strip()
+        # 跳过注释
+        if stripped.startswith('//') or stripped.startswith('*') or stripped.startswith('<!--'):
+            continue
+        # 只检查动态 :class 绑定（排除静态 class= 和 v-if 条件行）
+        if ':class=' not in stripped:
+            continue
+        # 跳过按钮（v-if 条件判断中含状态关键词）
+        if stripped.startswith('<button') or 'btn-icon' in stripped or 'hover:bg-' in stripped:
+            continue
+        # 跳过图标容器（bg-xxx-400 是图标背景）
+        if re.search(r'bg-\w+-400', stripped):
+            continue
+        # 跳过空状态图标容器
+        if 'justify-center' in stripped and re.search(r'\bw-20\b', stripped):
+            continue
+        # 跳过图标容器（w-8/w-10 + justify-center）
+        if re.search(r'\bw-(?:8|9|10)\b', stripped) and 'justify-center' in stripped:
+            continue
+        # 跳过任务状态 badge（getStateClass 属于枚举分类，允许用 badge）
+        if 'getStateClass' in stripped or 'getState(' in stripped:
+            continue
+
+        has_state = (_STATE_POSITIVE.search(stripped) or
+                     _STATE_NEGATIVE.search(stripped) or
+                     _STATE_WARNING.search(stripped))
+        has_badge_bg = _BADGE_BG.search(stripped)
+
+        if has_state and has_badge_bg:
+            # 排除两值枚举 badge（如 running ? bg-emerald-100 : bg-slate-100）
+            # 这类场景只有两种状态，用 badge 是合理的枚举分类展示
+            if re.search(r"'\s*\?\s*'bg-\w+-(?:50|100)", stripped):
+                continue
+            report(filepath, i, "WARN",
+                   f"状态值应用文字颜色（text-xxx-600 font-medium）而非 badge 背景色: {stripped[:100]}")
+
+
+def check_status_text_color_values(filepath, lines, tmpl, tmpl_line0):
+    """
+    5.9.1 状态文字颜色值规范：
+    - 正常/运行/就绪 → text-emerald-600 font-medium
+    - 异常/停止/下线 → text-red-500 font-medium（注意是 red-500 不是 red-600）
+    - 警告/排空/暂停 → text-amber-600 font-medium
+    检测：:class 动态绑定中用了文字颜色表示状态但颜色值不符合规范
+    """
+    for i, line in enumerate(lines, 1):
+        stripped = line.strip()
+        if stripped.startswith('//') or stripped.startswith('*') or stripped.startswith('<!--'):
+            continue
+        # 只检查动态 :class 绑定
+        if ':class=' not in stripped:
+            continue
+        # 跳过按钮行（v-if 条件中含状态关键词）
+        if stripped.startswith('<button') or 'btn-icon' in stripped:
+            continue
+        # 只检查含状态关键词的行
+        if not (_STATE_POSITIVE.search(stripped) or _STATE_NEGATIVE.search(stripped) or _STATE_WARNING.search(stripped)):
+            continue
+        # 跳过图标容器
+        if re.search(r'\bw-(?:8|9|10)\b', stripped) and 'justify-center' in stripped:
+            continue
+        # 跳过 badge 背景（已由上一个检查处理）
+        if _BADGE_BG.search(stripped):
+            continue
+        # 跳过 getStateClass 等函数调用
+        if 'getStateClass' in stripped or 'getState(' in stripped:
+            continue
+
+        # 检查负向状态用了 red-600 而非 red-500
+        if _STATE_NEGATIVE.search(stripped):
+            if 'text-red-600' in stripped and 'font-medium' in stripped:
+                report(filepath, i, "WARN",
+                       f"负向状态（down/error/stopped）应用 text-red-500 而非 text-red-600: {stripped[:100]}")
+
+
+def check_enum_badge_rounded(filepath, lines, tmpl, tmpl_line0):
+    """
+    5.9.2 枚举 badge（驱动、类型等）形状应用 rounded 或 rounded-lg，不得用 rounded-full。
+    覆盖桌面端和移动端。
+    """
+    for i, line in enumerate(lines, 1):
+        stripped = line.strip()
+        if stripped.startswith('//') or stripped.startswith('*') or stripped.startswith('<!--'):
+            continue
+        # 含 rounded-full 且有 px-2 py-0.5（badge 特征）且无 w-（排除圆形图标容器）
+        if ('rounded-full' in stripped
+                and 'px-2' in stripped
+                and ('py-0.5' in stripped or re.search(r'\bpy-1\b', stripped))
+                and not re.search(r'\bw-\d+\b', stripped)):
+            report(filepath, i, "WARN",
+                   f"badge 应用 rounded 或 rounded-lg，不得用 rounded-full: {stripped[:100]}")
+
+
 # ─── 主流程 ──────────────────────────────────────────────────────────────────
 
 CHECKS = [
@@ -486,6 +595,11 @@ CHECKS = [
     check_action_buttons,
     check_desktop_badge_shape,
     check_h_tags_in_mobile,
+    # 5.9.1 状态文字颜色
+    check_status_uses_text_color,
+    check_status_text_color_values,
+    # 5.9.2 枚举 badge 形状
+    check_enum_badge_rounded,
 ]
 
 
