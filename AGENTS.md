@@ -112,7 +112,7 @@
 
 - 全局状态 `store/state.ts` 使用 `reactive` + Provide/Inject
 - 键：`APP_STATE_KEY`（`app.state`）、`APP_ACTIONS_KEY`（`app.actions`）
-- 权限：`permissionsLoaded`（布尔）、`permissions`（`Record<string, string>`），通过 `hasPerm(module, write?)` 检查
+- 权限：`permissionsLoaded`（布尔）、`permissions`（`string[]`，格式为 `"METHOD /api/path"`），通过 `hasPerm(module)` 检查
 - 初始化 `initProvider()` 返回 `{ state, actions }`
 
 ### 5.3 API 服务层
