@@ -70,7 +70,7 @@ export default toNative(ImageTagModal)
       </div>
       <div>
         <label class="block text-sm font-medium text-slate-700 mb-2">新标签</label>
-        <input type="text" v-model="tagRepoTag" placeholder="例如: myimage:v1, registry.example.com/app:latest" class="input" @keyup.enter="handleConfirm" />
+        <input v-model="tagRepoTag" type="text" placeholder="例如: myimage:v1, registry.example.com/app:latest" class="input" @keyup.enter="handleConfirm" />
         <p class="mt-1 text-xs text-slate-400">格式: 仓库路径:标签，如 myapp:v1.0</p>
       </div>
     </div>

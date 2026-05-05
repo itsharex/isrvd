@@ -266,10 +266,10 @@ export default toNative(MemberEditModal)
     show-footer
     @confirm="handleConfirm"
   >
-    <form @submit.prevent="handleConfirm" class="space-y-4">
+    <form class="space-y-4" @submit.prevent="handleConfirm">
       <div>
         <label class="block text-sm font-medium text-slate-700 mb-2">用户名 <span class="text-red-500">*</span></label>
-        <input type="text" v-model="formData.username" placeholder="登录用户名" required :disabled="isEdit" class="input disabled:bg-slate-50 disabled:text-slate-500" autocomplete="off" />
+        <input v-model="formData.username" type="text" placeholder="登录用户名" required :disabled="isEdit" class="input disabled:bg-slate-50 disabled:text-slate-500" autocomplete="off" />
         <p v-if="isEdit" class="mt-1 text-xs text-slate-400">用户名不可修改</p>
       </div>
       <div>
@@ -278,16 +278,16 @@ export default toNative(MemberEditModal)
           <span v-if="!isEdit" class="text-red-500">*</span>
           <span v-else class="text-slate-400 font-normal">(留空则保持不变)</span>
         </label>
-        <input type="password" v-model="formData.password" :placeholder="isEdit ? '留空则保持不变' : '登录密码'" class="input" autocomplete="new-password" />
+        <input v-model="formData.password" type="password" :placeholder="isEdit ? '留空则保持不变' : '登录密码'" class="input" autocomplete="new-password" />
       </div>
       <div>
         <label class="block text-sm font-medium text-slate-700 mb-2">家目录 <span class="text-slate-400 font-normal">(可选)</span></label>
-        <input type="text" v-model="formData.homeDirectory" placeholder="留空则使用 基础目录/用户名" class="input" />
+        <input v-model="formData.homeDirectory" type="text" placeholder="留空则使用 基础目录/用户名" class="input" />
         <p class="mt-1 text-xs text-slate-400">相对路径基于"基础目录"，留空则自动创建为 基础目录/用户名</p>
       </div>
       <div>
         <label class="block text-sm font-medium text-slate-700 mb-2">描述 <span class="text-slate-400 font-normal">(可选)</span></label>
-        <input type="text" v-model="formData.description" placeholder="成员描述信息" class="input" maxlength="64" />
+        <input v-model="formData.description" type="text" placeholder="成员描述信息" class="input" maxlength="64" />
         <p class="mt-1 text-xs text-slate-400">用于标识成员用途，最长 64 字符</p>
       </div>
       <!-- 路由权限 -->
@@ -301,7 +301,7 @@ export default toNative(MemberEditModal)
           </div>
         </div>
         <div class="space-y-2">
-            <div v-for="group in routeGroups" :key="group.module" class="rounded-lg border border-slate-200 overflow-hidden">
+          <div v-for="group in routeGroups" :key="group.module" class="rounded-lg border border-slate-200 overflow-hidden">
             <!-- 模块标题行（全选/取消） -->
             <div
               class="flex items-center gap-2 px-3 py-2 bg-slate-50 border-b border-slate-200 cursor-pointer select-none hover:bg-slate-100 transition-colors"
@@ -331,8 +331,8 @@ export default toNative(MemberEditModal)
                   type="checkbox"
                   :checked="isChecked(item.key)"
                   :disabled="isAuto(item.key)"
-                  @change="togglePerm(item.key)"
                   class="w-4 h-4 accent-blue-500 flex-shrink-0"
+                  @change="togglePerm(item.key)"
                 />
                 <span :class="['inline-block w-14 text-center text-xs font-mono font-semibold rounded px-1 py-0.5 flex-shrink-0', methodColor[methodOf(item.key)] || 'bg-slate-100 text-slate-600']">
                   {{ methodOf(item.key) }}

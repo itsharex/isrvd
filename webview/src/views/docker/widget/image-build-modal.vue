@@ -57,7 +57,7 @@ export default toNative(ImageBuildModal)
     <div class="space-y-4">
       <div>
         <label class="block text-sm font-medium text-slate-700 mb-2">镜像标签</label>
-        <input type="text" v-model="buildTag" placeholder="例如: myapp:v1, custom-image:latest" class="input" />
+        <input v-model="buildTag" type="text" placeholder="例如: myapp:v1, custom-image:latest" class="input" />
         <p class="mt-1 text-xs text-slate-400">留空则使用 custom:latest</p>
       </div>
       <div>

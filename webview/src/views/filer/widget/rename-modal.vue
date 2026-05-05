@@ -51,9 +51,9 @@ export default toNative(RenameModal)
             <i class="fas fa-pen text-slate-400"></i>
           </div>
           <input 
-            type="text" 
             id="target" 
             v-model="formData.name" 
+            type="text" 
             :disabled="state.loading" 
             required
             class="input pl-11"

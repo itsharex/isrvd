@@ -115,10 +115,10 @@ export default toNative(Consumers)
               />
               <i class="fas fa-search absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
             </div>
-            <button @click="loadConsumers()" class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors">
+            <button class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors" @click="loadConsumers()">
               <i class="fas fa-rotate"></i>刷新
             </button>
-            <button v-if="actions.hasPerm('POST /api/apisix/consumer')" @click="openCreateModal()" class="px-3 py-1.5 rounded-lg bg-violet-500 hover:bg-violet-600 text-white text-xs font-medium flex items-center gap-1.5 transition-colors">
+            <button v-if="actions.hasPerm('POST /api/apisix/consumer')" class="px-3 py-1.5 rounded-lg bg-violet-500 hover:bg-violet-600 text-white text-xs font-medium flex items-center gap-1.5 transition-colors" @click="openCreateModal()">
               <i class="fas fa-plus"></i>创建
             </button>
           </div>
@@ -130,15 +130,15 @@ export default toNative(Consumers)
               <i class="fas fa-users text-white"></i>
             </div>
             <div class="min-w-0">
-            <h1 class="text-lg font-semibold text-slate-800 truncate">消费者管理</h1>
+              <h1 class="text-lg font-semibold text-slate-800 truncate">消费者管理</h1>
               <p class="text-xs text-slate-500 truncate">管理 APISIX Consumer</p>
             </div>
           </div>
           <div class="flex items-center gap-1 flex-shrink-0">
-            <button @click="loadConsumers()" class="w-9 h-9 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-600 transition-colors" title="刷新">
+            <button class="w-9 h-9 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-600 transition-colors" title="刷新" @click="loadConsumers()">
               <i class="fas fa-rotate text-sm"></i>
             </button>
-            <button v-if="actions.hasPerm('POST /api/apisix/consumer')" @click="openCreateModal()" class="w-9 h-9 rounded-lg bg-violet-500 hover:bg-violet-600 flex items-center justify-center text-white transition-colors" title="创建">
+            <button v-if="actions.hasPerm('POST /api/apisix/consumer')" class="w-9 h-9 rounded-lg bg-violet-500 hover:bg-violet-600 flex items-center justify-center text-white transition-colors" title="创建" @click="openCreateModal()">
               <i class="fas fa-plus text-sm"></i>
             </button>
           </div>
@@ -216,10 +216,10 @@ export default toNative(Consumers)
                 </td>
                 <td class="px-4 py-3">
                   <div class="flex justify-end items-center gap-0.5">
-                      <button v-if="actions.hasPerm('PUT /api/apisix/consumer/:username')" @click="openEditModal(consumer)" class="btn-icon text-violet-600 hover:bg-violet-50" title="编辑">
+                    <button v-if="actions.hasPerm('PUT /api/apisix/consumer/:username')" class="btn-icon text-violet-600 hover:bg-violet-50" title="编辑" @click="openEditModal(consumer)">
                       <i class="fas fa-pen text-xs"></i>
                     </button>
-                      <button v-if="actions.hasPerm('DELETE /api/apisix/consumer/:username')" @click="deleteConsumer(consumer)" class="btn-icon text-red-600 hover:bg-red-50" title="删除">
+                    <button v-if="actions.hasPerm('DELETE /api/apisix/consumer/:username')" class="btn-icon text-red-600 hover:bg-red-50" title="删除" @click="deleteConsumer(consumer)">
                       <i class="fas fa-trash text-xs"></i>
                     </button>
                   </div>
@@ -242,7 +242,7 @@ export default toNative(Consumers)
                 <div class="w-10 h-10 rounded-lg bg-violet-400 flex items-center justify-center flex-shrink-0">
                   <i class="fas fa-user text-white text-base"></i>
                 </div>
-              <div class="min-w-0">
+                <div class="min-w-0">
                   <div class="flex items-center gap-2">
                     <span class="font-medium text-slate-800 text-sm truncate">{{ consumer.username }}</span>
                   </div>
@@ -276,10 +276,10 @@ export default toNative(Consumers)
             
             <!-- 底部：操作按钮 -->
             <div class="flex flex-wrap gap-1 pt-2 border-t border-slate-100">
-               <button v-if="actions.hasPerm('PUT /api/apisix/consumer/:username')" @click="openEditModal(consumer)" class="btn-icon text-violet-600 hover:bg-violet-50" title="编辑">
+              <button v-if="actions.hasPerm('PUT /api/apisix/consumer/:username')" class="btn-icon text-violet-600 hover:bg-violet-50" title="编辑" @click="openEditModal(consumer)">
                 <i class="fas fa-pen text-xs"></i><span class="text-xs ml-1">编辑</span>
               </button>
-                <button v-if="actions.hasPerm('DELETE /api/apisix/consumer/:username')" @click="deleteConsumer(consumer)" class="btn-icon text-red-600 hover:bg-red-50" title="删除">
+              <button v-if="actions.hasPerm('DELETE /api/apisix/consumer/:username')" class="btn-icon text-red-600 hover:bg-red-50" title="删除" @click="deleteConsumer(consumer)">
                 <i class="fas fa-trash text-xs"></i><span class="text-xs ml-1">删除</span>
               </button>
             </div>

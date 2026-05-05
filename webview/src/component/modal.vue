@@ -103,8 +103,8 @@ export default toNative(BaseModal)
             <button 
               type="button" 
               class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all duration-200 flex-shrink-0"
-              @click="handleCancel"
               :disabled="loading"
+              @click="handleCancel"
             >
               <i class="fas fa-times"></i>
             </button>
@@ -121,18 +121,18 @@ export default toNative(BaseModal)
               <button 
                 type="button" 
                 class="btn-secondary"
-                @click="handleCancel"
                 :disabled="loading"
+                @click="handleCancel"
               >
                 <slot name="cancel-text">取消</slot>
               </button>
               <button 
                 type="button" 
                 class="btn-primary"
-                @click="handleConfirm"
                 :disabled="loading || confirmDisabled"
+                @click="handleConfirm"
               >
-                <i class="fas fa-spinner fa-spin mr-2" v-if="loading"></i>
+                <i v-if="loading" class="fas fa-spinner fa-spin mr-2"></i>
                 <slot name="confirm-text">确认</slot>
               </button>
             </slot>

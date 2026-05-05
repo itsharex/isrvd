@@ -155,7 +155,7 @@ export default toNative(IconSelect)
       </div>
 
       <!-- 分类标签 -->
-      <div class="mb-3" v-if="!searchQuery">
+      <div v-if="!searchQuery" class="mb-3">
         <div class="flex flex-wrap gap-1.5">
           <button
             type="button"

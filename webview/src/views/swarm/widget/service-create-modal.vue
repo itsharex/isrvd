@@ -80,7 +80,7 @@ export default toNative(ServiceCreateModal)
 <template>
   <BaseModal v-model="isOpen" title="创建服务" :loading="loading" show-footer @confirm="handleConfirm">
     <template #confirm-text>创建</template>
-    <form @submit.prevent="handleConfirm" class="space-y-4">
+    <form class="space-y-4" @submit.prevent="handleConfirm">
       <!-- 基础设置 -->
       <div class="grid grid-cols-2 gap-3">
         <div class="col-span-2">
@@ -124,7 +124,7 @@ export default toNative(ServiceCreateModal)
 
       <!-- 高级选项 -->
       <div class="border-t border-slate-200 pt-4">
-        <button type="button" @click="showAdvanced = !showAdvanced" class="flex items-center gap-2 text-sm text-slate-600 hover:text-slate-800">
+        <button type="button" class="flex items-center gap-2 text-sm text-slate-600 hover:text-slate-800" @click="showAdvanced = !showAdvanced">
           <i :class="['fas fa-chevron-down text-xs transition-transform', showAdvanced ? 'rotate-180' : '']"></i>
           高级选项
         </button>

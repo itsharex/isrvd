@@ -51,9 +51,9 @@ export default toNative(ChmodModal)
             <i class="fas fa-key text-slate-400"></i>
           </div>
           <input 
-            type="text" 
             id="fileMode" 
             v-model="formData.mode" 
+            type="text" 
             :disabled="state.loading" 
             required 
             placeholder="755"

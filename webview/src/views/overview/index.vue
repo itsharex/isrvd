@@ -75,7 +75,7 @@ export default toNative(Overview)
               <p class="text-xs text-slate-500">服务状态总览</p>
             </div>
           </div>
-          <button @click="refreshAll" class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors">
+          <button class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors" @click="refreshAll">
             <i class="fas fa-rotate"></i>刷新
           </button>
         </div>
@@ -90,7 +90,7 @@ export default toNative(Overview)
               <p class="text-xs text-slate-500 truncate">服务状态总览</p>
             </div>
           </div>
-          <button @click="refreshAll" class="w-9 h-9 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-600 transition-colors flex-shrink-0" title="刷新">
+          <button class="w-9 h-9 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-600 transition-colors flex-shrink-0" title="刷新" @click="refreshAll">
             <i class="fas fa-rotate text-sm"></i>
           </button>
         </div>

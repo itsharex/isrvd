@@ -121,11 +121,11 @@ export default toNative(ImageSelect)
             v-for="img in group.images"
             :key="img.id + '-' + img.repoTags[0]"
             type="button"
-            @click="select(img.repoTags[0])"
             :class="[
               'w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left transition-all duration-150',
               modelValue === img.repoTags[0] ? 'bg-primary-50 border border-primary-200' : 'hover:bg-slate-50 border border-transparent'
             ]"
+            @click="select(img.repoTags[0])"
           >
             <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" :style="{ background: domainColor(group.domain) + '15' }">
               <i :class="['text-xs', domainIcon(group.domain)]" :style="{ color: domainColor(group.domain) }"></i>

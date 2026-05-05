@@ -99,10 +99,10 @@ export default toNative(Networks)
             </div>
           </div>
           <div class="flex items-center gap-2">
-            <button @click="loadNetworks()" class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors">
+            <button class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors" @click="loadNetworks()">
               <i class="fas fa-rotate"></i>刷新
             </button>
-            <button v-if="actions.hasPerm('POST /api/docker/network')" @click="createModalRef?.show()" class="px-3 py-1.5 rounded-lg bg-purple-500 hover:bg-purple-600 text-white text-xs font-medium flex items-center gap-1.5 transition-colors">
+            <button v-if="actions.hasPerm('POST /api/docker/network')" class="px-3 py-1.5 rounded-lg bg-purple-500 hover:bg-purple-600 text-white text-xs font-medium flex items-center gap-1.5 transition-colors" @click="createModalRef?.show()">
               <i class="fas fa-plus"></i>创建
             </button>
           </div>
@@ -119,10 +119,10 @@ export default toNative(Networks)
             </div>
           </div>
           <div class="flex items-center gap-1 flex-shrink-0">
-            <button @click="loadNetworks()" class="w-9 h-9 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-600 transition-colors" title="刷新">
+            <button class="w-9 h-9 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-600 transition-colors" title="刷新" @click="loadNetworks()">
               <i class="fas fa-rotate text-sm"></i>
             </button>
-            <button v-if="actions.hasPerm('POST /api/docker/network')" @click="createModalRef?.show()" class="w-9 h-9 rounded-lg bg-purple-500 hover:bg-purple-600 flex items-center justify-center text-white transition-colors" title="创建">
+            <button v-if="actions.hasPerm('POST /api/docker/network')" class="w-9 h-9 rounded-lg bg-purple-500 hover:bg-purple-600 flex items-center justify-center text-white transition-colors" title="创建" @click="createModalRef?.show()">
               <i class="fas fa-plus text-sm"></i>
             </button>
           </div>
@@ -167,14 +167,14 @@ export default toNative(Networks)
                 <td class="px-4 py-3 text-sm text-slate-600">{{ net.scope }}</td>
                 <td class="px-4 py-3">
                   <div class="flex justify-end items-center gap-0.5">
-                    <button v-if="actions.hasPerm('GET /api/docker/network/:id')" @click="viewNetworkDetail(net)" class="btn-icon text-slate-600 hover:bg-slate-50" title="详情">
+                    <button v-if="actions.hasPerm('GET /api/docker/network/:id')" class="btn-icon text-slate-600 hover:bg-slate-50" title="详情" @click="viewNetworkDetail(net)">
                       <i class="fas fa-circle-info text-xs"></i>
                     </button>
                     <button
                       v-if="canDeleteNetwork(net) && actions.hasPerm('POST /api/docker/network/:id/action')"
-                      @click="handleNetworkAction(net, 'remove')"
                       class="btn-icon text-red-600 hover:bg-red-50"
                       title="删除"
+                      @click="handleNetworkAction(net, 'remove')"
                     >
                       <i class="fas fa-trash text-xs"></i>
                     </button>
@@ -227,14 +227,14 @@ export default toNative(Networks)
             
             <!-- 底部：操作按钮 -->
             <div class="flex flex-wrap gap-1.5 pt-2 border-t border-slate-100">
-              <button v-if="actions.hasPerm('GET /api/docker/network/:id')" @click="viewNetworkDetail(net)" class="btn-icon text-slate-600 hover:bg-slate-50" title="详情">
+              <button v-if="actions.hasPerm('GET /api/docker/network/:id')" class="btn-icon text-slate-600 hover:bg-slate-50" title="详情" @click="viewNetworkDetail(net)">
                 <i class="fas fa-circle-info text-xs"></i><span class="text-xs ml-1">详情</span>
               </button>
               <button
                 v-if="canDeleteNetwork(net) && actions.hasPerm('POST /api/docker/network/:id/action')"
-                @click="handleNetworkAction(net, 'remove')"
                 class="btn-icon text-red-600 hover:bg-red-50"
                 title="删除"
+                @click="handleNetworkAction(net, 'remove')"
               >
                 <i class="fas fa-trash text-xs"></i><span class="text-xs ml-1">删除</span>
               </button>

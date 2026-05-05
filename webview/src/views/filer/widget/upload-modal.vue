@@ -81,9 +81,9 @@ export default toNative(UploadModal)
       <div>
         <label for="uploadFile" class="block text-sm font-medium text-slate-700 mb-2">选择文件</label>
         <input
-          type="file" id="uploadFile" ref="fileInput" multiple required
-          @change="handleFileChange" :disabled="state.loading"
-          class="input file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
+          id="uploadFile" ref="fileInput" type="file" multiple required
+          :disabled="state.loading" class="input file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
+          @change="handleFileChange"
         >
         <div v-if="hasFiles" class="mt-3 space-y-2">
           <div
@@ -96,14 +96,16 @@ export default toNative(UploadModal)
             }"
           >
             <div class="flex items-center">
-              <div class="w-8 h-8 rounded-lg flex items-center justify-center mr-3 flex-shrink-0"
+              <div
+                class="w-8 h-8 rounded-lg flex items-center justify-center mr-3 flex-shrink-0"
                 :class="{
                   'bg-green-100': fileStatus(index) === 'done',
                   'bg-primary-100': fileStatus(index) === 'active' || !state.loading,
                   'bg-slate-100': fileStatus(index) === 'pending' && state.loading,
                 }"
               >
-                <i class="fas text-sm"
+                <i
+                  class="fas text-sm"
                   :class="{
                     'fa-check text-green-600': fileStatus(index) === 'done',
                     'fa-spinner fa-spin text-primary-600': fileStatus(index) === 'active',
@@ -115,7 +117,8 @@ export default toNative(UploadModal)
               <div class="min-w-0 flex-1">
                 <div class="flex items-center justify-between gap-2">
                   <p class="text-sm font-medium text-slate-700 truncate">{{ file.name }}</p>
-                  <span v-if="fileStatus(index) !== 'pending'" class="text-xs flex-shrink-0"
+                  <span
+                    v-if="fileStatus(index) !== 'pending'" class="text-xs flex-shrink-0"
                     :class="fileStatus(index) === 'done' ? 'text-green-600' : 'text-primary-600'"
                   >{{ fileStatus(index) === 'done' ? 100 : currentFileProgress }}%</span>
                 </div>

@@ -135,7 +135,7 @@ export default toNative(Dropdown)
 </script>
 
 <template>
-  <div class="relative" ref="containerRef">
+  <div ref="containerRef" class="relative">
     <!-- 触发区域 -->
     <slot name="trigger" :open="isOpen" :toggle="() => isOpen = !isOpen" />
   </div>

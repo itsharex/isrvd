@@ -71,13 +71,13 @@ export default toNative(Shell)
             </select>
 
             <button 
-              @click="connected ? handleDisconnect() : handleConnect()" 
               :class="[
                 'px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-colors',
                 connected 
                   ? 'bg-white border border-slate-200 hover:bg-slate-50 text-slate-700' 
                   : 'bg-primary-500 hover:bg-primary-600 text-white'
-              ]"
+              ]" 
+              @click="connected ? handleDisconnect() : handleConnect()"
             >
               <i :class="['fas', connected ? 'fa-plug-circle-xmark' : 'fa-plug']"></i>
               {{ connected ? '断开连接' : '连接' }}
@@ -114,13 +114,13 @@ export default toNative(Shell)
             </select>
 
             <button 
-              @click="connected ? handleDisconnect() : handleConnect()" 
               :class="[
                 'px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-colors justify-center',
                 connected 
                   ? 'bg-white border border-slate-200 hover:bg-slate-50 text-slate-700' 
                   : 'bg-primary-500 hover:bg-primary-600 text-white'
-              ]"
+              ]" 
+              @click="connected ? handleDisconnect() : handleConnect()"
             >
               <i :class="['fas', connected ? 'fa-plug-circle-xmark' : 'fa-plug']"></i>
               <span class="ml-1">{{ connected ? '断开' : '连接' }}</span>

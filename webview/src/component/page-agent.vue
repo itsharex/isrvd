@@ -124,12 +124,12 @@ export default toNative(PageAgentModal)
 
 <template>
   <button
-    @click="togglePanel"
     :title="panelVisible ? '关闭 AI 助手' : '打开 AI 助手'"
     class="btn-ghost px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 flex items-center gap-2"
     :class="panelVisible
       ? 'text-primary-600 bg-primary-50 hover:bg-primary-100'
       : 'text-slate-600 hover:text-primary-600 hover:bg-primary-50'"
+    @click="togglePanel"
   >
     <i class="fas fa-wand-magic-sparkles"></i>
     <span class="hidden sm:inline">AI 助手</span>

@@ -77,17 +77,16 @@ export default toNative(ContainerNav)
       </div>
       <div v-if="container" class="flex items-center gap-2">
         <div class="flex gap-1 bg-slate-100 p-1 rounded-lg">
-          <button v-if="container.state === 'running' && actions.hasPerm('GET /api/docker/container/:id/stats')" @click="switchTab('docker-container-stats')" :class="['px-3 py-1 text-xs font-medium rounded-md transition-all duration-200 flex items-center gap-1.5', activeTab === 'docker-container-stats' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700']">
+          <button v-if="container.state === 'running' && actions.hasPerm('GET /api/docker/container/:id/stats')" :class="['px-3 py-1 text-xs font-medium rounded-md transition-all duration-200 flex items-center gap-1.5', activeTab === 'docker-container-stats' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700']" @click="switchTab('docker-container-stats')">
             <i class="fas fa-chart-line"></i><span>监控</span>
           </button>
-          <button v-if="actions.hasPerm('GET /api/docker/container/:id/logs')" @click="switchTab('docker-container-logs')" :class="['px-3 py-1 text-xs font-medium rounded-md transition-all duration-200 flex items-center gap-1.5', activeTab === 'docker-container-logs' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700']">
+          <button v-if="actions.hasPerm('GET /api/docker/container/:id/logs')" :class="['px-3 py-1 text-xs font-medium rounded-md transition-all duration-200 flex items-center gap-1.5', activeTab === 'docker-container-logs' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700']" @click="switchTab('docker-container-logs')">
             <i class="fas fa-file-lines"></i><span>日志</span>
           </button>
-          <button v-if="container.state === 'running' && actions.hasPerm('GET /api/docker/container/:id/exec')" @click="switchTab('docker-container-exec')" :class="['px-3 py-1 text-xs font-medium rounded-md transition-all duration-200 flex items-center gap-1.5', activeTab === 'docker-container-exec' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700']">
+          <button v-if="container.state === 'running' && actions.hasPerm('GET /api/docker/container/:id/exec')" :class="['px-3 py-1 text-xs font-medium rounded-md transition-all duration-200 flex items-center gap-1.5', activeTab === 'docker-container-exec' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700']" @click="switchTab('docker-container-exec')">
             <i class="fas fa-terminal"></i><span>终端</span>
           </button>
         </div>
-
       </div>
     </div>
     <!-- 移动端布局 -->
@@ -110,16 +109,15 @@ export default toNative(ContainerNav)
             <div><h1 class="text-lg font-semibold text-slate-800">加载中...</h1></div>
           </template>
         </div>
-
       </div>
       <div v-if="container" class="flex justify-center gap-1 bg-slate-100 p-1 rounded-lg">
-        <button v-if="container.state === 'running' && actions.hasPerm('GET /api/docker/container/:id/stats')" @click="switchTab('docker-container-stats')" :class="['px-3 py-1 text-xs font-medium rounded-md transition-all duration-200 flex items-center gap-1.5', activeTab === 'docker-container-stats' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700']">
+        <button v-if="container.state === 'running' && actions.hasPerm('GET /api/docker/container/:id/stats')" :class="['px-3 py-1 text-xs font-medium rounded-md transition-all duration-200 flex items-center gap-1.5', activeTab === 'docker-container-stats' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700']" @click="switchTab('docker-container-stats')">
           <i class="fas fa-chart-line"></i><span class="hidden sm:inline">监控</span>
         </button>
-        <button v-if="actions.hasPerm('GET /api/docker/container/:id/logs')" @click="switchTab('docker-container-logs')" :class="['px-3 py-1 text-xs font-medium rounded-md transition-all duration-200 flex items-center gap-1.5', activeTab === 'docker-container-logs' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700']">
+        <button v-if="actions.hasPerm('GET /api/docker/container/:id/logs')" :class="['px-3 py-1 text-xs font-medium rounded-md transition-all duration-200 flex items-center gap-1.5', activeTab === 'docker-container-logs' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700']" @click="switchTab('docker-container-logs')">
           <i class="fas fa-file-lines"></i><span class="hidden sm:inline">日志</span>
         </button>
-        <button v-if="container.state === 'running' && actions.hasPerm('GET /api/docker/container/:id/exec')" @click="switchTab('docker-container-exec')" :class="['px-3 py-1 text-xs font-medium rounded-md transition-all duration-200 flex items-center gap-1.5', activeTab === 'docker-container-exec' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700']">
+        <button v-if="container.state === 'running' && actions.hasPerm('GET /api/docker/container/:id/exec')" :class="['px-3 py-1 text-xs font-medium rounded-md transition-all duration-200 flex items-center gap-1.5', activeTab === 'docker-container-exec' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700']" @click="switchTab('docker-container-exec')">
           <i class="fas fa-terminal"></i><span class="hidden sm:inline">终端</span>
         </button>
       </div>

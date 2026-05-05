@@ -155,20 +155,22 @@ export default toNative(CapSelect)
             v-for="cap in cat.caps"
             :key="cap.name"
             type="button"
-            @click="select(cap.name)"
             :class="[
               'w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left transition-all duration-150 group',
               isSelected(cap.name)
                 ? toneFor(cap.name).item
                 : 'hover:bg-slate-50 border border-transparent'
             ]"
+            @click="select(cap.name)"
           >
-            <span :class="[
-              'w-4 h-4 rounded flex items-center justify-center flex-shrink-0 transition-all border',
-              isSelected(cap.name)
-                ? toneFor(cap.name).box
-                : 'border-slate-300 group-hover:border-slate-400'
-            ]">
+            <span
+              :class="[
+                'w-4 h-4 rounded flex items-center justify-center flex-shrink-0 transition-all border',
+                isSelected(cap.name)
+                  ? toneFor(cap.name).box
+                  : 'border-slate-300 group-hover:border-slate-400'
+              ]"
+            >
               <i v-if="isSelected(cap.name)" class="fas fa-check text-white text-[9px]"></i>
             </span>
             <div class="flex-1 min-w-0">

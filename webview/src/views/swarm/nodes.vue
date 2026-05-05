@@ -133,10 +133,10 @@ export default toNative(Nodes)
             </div>
           </div>
           <div class="flex items-center gap-2">
-            <button @click="loadNodes" class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors">
+            <button class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors" @click="loadNodes">
               <i class="fas fa-rotate"></i>刷新
             </button>
-            <button v-if="actions.hasPerm('GET /api/swarm/token')" @click="openJoinModal" class="px-3 py-1.5 rounded-lg bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium flex items-center gap-1.5 transition-colors">
+            <button v-if="actions.hasPerm('GET /api/swarm/token')" class="px-3 py-1.5 rounded-lg bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium flex items-center gap-1.5 transition-colors" @click="openJoinModal">
               <i class="fas fa-plus"></i>加入
             </button>
           </div>
@@ -153,10 +153,10 @@ export default toNative(Nodes)
             </div>
           </div>
           <div class="flex items-center gap-1.5 flex-shrink-0">
-            <button v-if="actions.hasPerm('GET /api/swarm/token')" @click="openJoinModal" class="w-9 h-9 rounded-lg bg-blue-500 hover:bg-blue-600 flex items-center justify-center text-white transition-colors" title="加入集群">
+            <button v-if="actions.hasPerm('GET /api/swarm/token')" class="w-9 h-9 rounded-lg bg-blue-500 hover:bg-blue-600 flex items-center justify-center text-white transition-colors" title="加入集群" @click="openJoinModal">
               <i class="fas fa-plus text-sm"></i>
             </button>
-            <button @click="loadNodes" class="w-9 h-9 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-600 transition-colors" title="刷新">
+            <button class="w-9 h-9 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-600 transition-colors" title="刷新" @click="loadNodes">
               <i class="fas fa-rotate text-sm"></i>
             </button>
           </div>
@@ -210,11 +210,11 @@ export default toNative(Nodes)
                 <td class="px-4 py-3 text-xs text-slate-500">{{ n.engineVersion || '-' }}</td>
                 <td class="px-4 py-3">
                   <div class="flex justify-end items-center gap-0.5">
-                    <button v-if="actions.hasPerm('GET /api/swarm/node/:id')" @click="$router.push(`/swarm/node/${n.id}`)" class="btn-icon text-slate-600 hover:bg-slate-50" title="查看详情"><i class="fas fa-circle-info text-xs"></i></button>
-                    <button v-if="n.availability !== 'active' && actions.hasPerm('POST /api/swarm/node/:id/action')"  @click="handleNodeAction(n, 'active')"  class="btn-icon text-emerald-600 hover:bg-emerald-50"   title="激活"><i class="fas fa-play text-xs"></i></button>
-                    <button v-if="n.availability !== 'drain' && actions.hasPerm('POST /api/swarm/node/:id/action')"  @click="handleNodeAction(n, 'drain')"  class="btn-icon text-amber-600 hover:bg-amber-50"   title="排空"><i class="fas fa-arrow-down text-xs"></i></button>
-                    <button v-if="n.availability !== 'pause' && actions.hasPerm('POST /api/swarm/node/:id/action')"  @click="handleNodeAction(n, 'pause')"  class="btn-icon text-slate-600 hover:bg-slate-50"   title="暂停"><i class="fas fa-pause text-xs"></i></button>
-                    <button v-if="actions.hasPerm('POST /api/swarm/node/:id/action')" @click="n.leader ? null : handleNodeAction(n, 'remove')" :disabled="n.leader" :class="n.leader ? 'btn-icon text-slate-300 cursor-not-allowed' : 'btn-icon text-red-600 hover:bg-red-50'" :title="n.leader ? '不能移除 Leader 节点' : '移除'"><i class="fas fa-trash text-xs"></i></button>
+                    <button v-if="actions.hasPerm('GET /api/swarm/node/:id')" class="btn-icon text-slate-600 hover:bg-slate-50" title="查看详情" @click="$router.push(`/swarm/node/${n.id}`)"><i class="fas fa-circle-info text-xs"></i></button>
+                    <button v-if="n.availability !== 'active' && actions.hasPerm('POST /api/swarm/node/:id/action')" class="btn-icon text-emerald-600 hover:bg-emerald-50" title="激活" @click="handleNodeAction(n, 'active')"><i class="fas fa-play text-xs"></i></button>
+                    <button v-if="n.availability !== 'drain' && actions.hasPerm('POST /api/swarm/node/:id/action')" class="btn-icon text-amber-600 hover:bg-amber-50" title="排空" @click="handleNodeAction(n, 'drain')"><i class="fas fa-arrow-down text-xs"></i></button>
+                    <button v-if="n.availability !== 'pause' && actions.hasPerm('POST /api/swarm/node/:id/action')" class="btn-icon text-slate-600 hover:bg-slate-50" title="暂停" @click="handleNodeAction(n, 'pause')"><i class="fas fa-pause text-xs"></i></button>
+                    <button v-if="actions.hasPerm('POST /api/swarm/node/:id/action')" :disabled="n.leader" :class="n.leader ? 'btn-icon text-slate-300 cursor-not-allowed' : 'btn-icon text-red-600 hover:bg-red-50'" :title="n.leader ? '不能移除 Leader 节点' : '移除'" @click="n.leader ? null : handleNodeAction(n, 'remove')"><i class="fas fa-trash text-xs"></i></button>
                   </div>
                 </td>
               </tr>
@@ -248,7 +248,7 @@ export default toNative(Nodes)
             <div class="flex items-center gap-2 mb-3">
               <span class="text-xs text-slate-400 flex-shrink-0">角色</span>
               <span :class="n.role === 'manager' ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-600'" class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-medium capitalize">
-                <i v-if="n.leader"  class="fas fa-crown mr-1 text-[10px]"></i>{{ n.role }}
+                <i v-if="n.leader" class="fas fa-crown mr-1 text-[10px]"></i>{{ n.role }}
               </span>
               <span class="text-xs text-slate-300">|</span>
               <span class="text-xs text-slate-400 flex-shrink-0">状态</span>
@@ -268,19 +268,19 @@ export default toNative(Nodes)
             
             <!-- 底部：操作按钮 -->
             <div class="flex flex-wrap gap-1 pt-2 border-t border-slate-100">
-              <button v-if="actions.hasPerm('GET /api/swarm/node/:id')" @click="$router.push(`/swarm/node/${n.id}`)" class="btn-icon text-slate-600 hover:bg-slate-50" title="查看详情">
+              <button v-if="actions.hasPerm('GET /api/swarm/node/:id')" class="btn-icon text-slate-600 hover:bg-slate-50" title="查看详情" @click="$router.push(`/swarm/node/${n.id}`)">
                 <i class="fas fa-circle-info text-xs"></i><span class="text-xs ml-1">详情</span>
               </button>
-              <button v-if="n.availability !== 'active' && actions.hasPerm('POST /api/swarm/node/:id/action')"  @click="handleNodeAction(n, 'active')"  class="btn-icon text-emerald-600 hover:bg-emerald-50"   title="激活">
+              <button v-if="n.availability !== 'active' && actions.hasPerm('POST /api/swarm/node/:id/action')" class="btn-icon text-emerald-600 hover:bg-emerald-50" title="激活" @click="handleNodeAction(n, 'active')">
                 <i class="fas fa-play text-xs"></i><span class="text-xs ml-1">激活</span>
               </button>
-              <button v-if="n.availability !== 'drain' && actions.hasPerm('POST /api/swarm/node/:id/action')"  @click="handleNodeAction(n, 'drain')"  class="btn-icon text-amber-600 hover:bg-amber-50"   title="排空">
+              <button v-if="n.availability !== 'drain' && actions.hasPerm('POST /api/swarm/node/:id/action')" class="btn-icon text-amber-600 hover:bg-amber-50" title="排空" @click="handleNodeAction(n, 'drain')">
                 <i class="fas fa-arrow-down text-xs"></i><span class="text-xs ml-1">排空</span>
               </button>
-              <button v-if="n.availability !== 'pause' && actions.hasPerm('POST /api/swarm/node/:id/action')"  @click="handleNodeAction(n, 'pause')"  class="btn-icon text-slate-600 hover:bg-slate-50"   title="暂停">
+              <button v-if="n.availability !== 'pause' && actions.hasPerm('POST /api/swarm/node/:id/action')" class="btn-icon text-slate-600 hover:bg-slate-50" title="暂停" @click="handleNodeAction(n, 'pause')">
                 <i class="fas fa-pause text-xs"></i><span class="text-xs ml-1">暂停</span>
               </button>
-              <button v-if="actions.hasPerm('POST /api/swarm/node/:id/action')" @click="n.leader ? null : handleNodeAction(n, 'remove')" :disabled="n.leader" :class="n.leader ? 'btn-icon text-slate-300 cursor-not-allowed' : 'btn-icon text-red-600 hover:bg-red-50'" :title="n.leader ? '不能移除 Leader 节点' : '移除'">
+              <button v-if="actions.hasPerm('POST /api/swarm/node/:id/action')" :disabled="n.leader" :class="n.leader ? 'btn-icon text-slate-300 cursor-not-allowed' : 'btn-icon text-red-600 hover:bg-red-50'" :title="n.leader ? '不能移除 Leader 节点' : '移除'" @click="n.leader ? null : handleNodeAction(n, 'remove')">
                 <i class="fas fa-trash text-xs"></i><span class="text-xs ml-1">移除</span>
               </button>
             </div>
@@ -312,15 +312,19 @@ export default toNative(Nodes)
         <label class="block text-sm font-medium text-slate-700 mb-2">节点角色</label>
         <div class="flex gap-2">
           <button
-            @click="joinTokenRole = 'worker'"
             :class="joinTokenRole === 'worker' ? 'bg-blue-500 text-white border-blue-500' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'"
             class="flex-1 px-3 py-2 rounded-lg border text-sm font-medium transition-colors"
-          >Worker</button>
+            @click="joinTokenRole = 'worker'"
+          >
+            Worker
+          </button>
           <button
-            @click="joinTokenRole = 'manager'"
             :class="joinTokenRole === 'manager' ? 'bg-indigo-500 text-white border-indigo-500' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'"
             class="flex-1 px-3 py-2 rounded-lg border text-sm font-medium transition-colors"
-          >Manager</button>
+            @click="joinTokenRole = 'manager'"
+          >
+            Manager
+          </button>
         </div>
       </div>
       <!-- Manager 地址 -->
@@ -340,10 +344,10 @@ export default toNative(Nodes)
         <div class="relative">
           <pre class="bg-slate-900 text-emerald-400 rounded-xl p-4 text-xs font-mono overflow-x-auto whitespace-pre-wrap break-all pr-12">{{ joinCommand }}</pre>
           <button
-            @click="copyJoinCommand"
             :class="copied ? 'text-emerald-400' : 'text-slate-400 hover:text-white'"
             class="absolute top-3 right-3 w-7 h-7 flex items-center justify-center rounded transition-colors"
             :title="copied ? '已复制' : '复制命令'"
+            @click="copyJoinCommand"
           >
             <i :class="copied ? 'fas fa-check' : 'fas fa-copy'" class="text-xs"></i>
           </button>

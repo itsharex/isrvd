@@ -138,7 +138,7 @@ export default toNative(AuditLogs)
               <option value="">所有用户</option>
               <option v-for="username in uniqueUsernames" :key="username" :value="username">{{ username }}</option>
             </select>
-            <button @click="loadLogs()" class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors whitespace-nowrap">
+            <button class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors whitespace-nowrap" @click="loadLogs()">
               <i class="fas fa-rotate"></i>刷新
             </button>
           </div>
@@ -155,7 +155,7 @@ export default toNative(AuditLogs)
                 <p class="text-xs text-slate-500 truncate">记录所有用户操作行为</p>
               </div>
             </div>
-            <button @click="loadLogs()" class="w-9 h-9 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-600 transition-colors flex-shrink-0">
+            <button class="w-9 h-9 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-600 transition-colors flex-shrink-0" @click="loadLogs()">
               <i class="fas fa-rotate text-sm"></i>
             </button>
           </div>
@@ -213,8 +213,10 @@ export default toNative(AuditLogs)
                 </td>
                 <!-- 方法 -->
                 <td class="px-4 py-3">
-                  <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium font-mono"
-                        :class="methodClass(log.method)">{{ log.method }}</span>
+                  <span
+                    class="inline-flex items-center px-2 py-1 rounded text-xs font-medium font-mono"
+                    :class="methodClass(log.method)"
+                  >{{ log.method }}</span>
                 </td>
                 <!-- URI -->
                 <td class="px-4 py-3 max-w-[240px]">
@@ -222,7 +224,7 @@ export default toNative(AuditLogs)
                 </td>
                 <!-- Body -->
                 <td class="px-4 py-3 max-w-[200px]">
-                  <button v-if="log.body" @click="showDetail(log)" class="text-left w-full group">
+                  <button v-if="log.body" class="text-left w-full group" @click="showDetail(log)">
                     <code class="text-xs text-slate-500 font-mono truncate block group-hover:text-primary-600 transition-colors">{{ formatBody(log.body) }}</code>
                   </button>
                   <span v-else class="text-xs text-slate-300">-</span>
@@ -247,8 +249,10 @@ export default toNative(AuditLogs)
 
         <!-- 移动卡片列表 -->
         <div class="md:hidden space-y-3 p-4">
-          <div v-for="(log, idx) in filteredLogs" :key="idx"
-               class="rounded-xl border border-slate-200 bg-white p-4">
+          <div
+            v-for="(log, idx) in filteredLogs" :key="idx"
+            class="rounded-xl border border-slate-200 bg-white p-4"
+          >
             <!-- 顶部：用户 + 时间 -->
             <div class="flex items-center justify-between mb-3">
               <div class="flex items-center gap-2 min-w-0 flex-1">
@@ -265,15 +269,17 @@ export default toNative(AuditLogs)
 
             <!-- 方法 + URI -->
             <div class="flex items-center gap-2 mb-2">
-              <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium font-mono flex-shrink-0"
-                    :class="methodClass(log.method)">{{ log.method }}</span>
+              <span
+                class="inline-flex items-center px-2 py-1 rounded text-xs font-medium font-mono flex-shrink-0"
+                :class="methodClass(log.method)"
+              >{{ log.method }}</span>
               <code class="text-xs text-slate-700 font-mono truncate">{{ log.uri }}</code>
             </div>
 
             <!-- Body -->
             <div v-if="log.body" class="flex items-center gap-2 mb-2">
               <span class="text-xs text-slate-400 flex-shrink-0">Body</span>
-              <button @click="showDetail(log)" class="flex items-center gap-1 min-w-0">
+              <button class="flex items-center gap-1 min-w-0" @click="showDetail(log)">
                 <code class="text-xs text-slate-500 font-mono truncate">{{ formatBody(log.body) }}</code>
                 <i class="fas fa-arrow-up-right-from-square text-xs text-primary-500 flex-shrink-0"></i>
               </button>
@@ -298,8 +304,10 @@ export default toNative(AuditLogs)
     <BaseModal v-model="detailOpen" :show-footer="false">
       <template #title>
         <div class="flex items-center gap-2">
-          <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium font-mono"
-                :class="methodClass(detailLog?.method || '')">{{ detailLog?.method }}</span>
+          <span
+            class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium font-mono"
+            :class="methodClass(detailLog?.method || '')"
+          >{{ detailLog?.method }}</span>
           <code class="text-sm text-slate-700 font-mono truncate">{{ detailLog?.uri }}</code>
         </div>
       </template>

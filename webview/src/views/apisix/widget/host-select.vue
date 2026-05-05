@@ -89,11 +89,11 @@ export default toNative(HostSelect)
             v-for="c in group.containers"
             :key="group.network + '-' + c.id"
             type="button"
-            @click="select(c.name)"
             :class="[
               'w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left transition-all duration-150',
               modelValue === c.name ? 'bg-primary-50 border border-primary-200' : 'hover:bg-slate-50 border border-transparent'
             ]"
+            @click="select(c.name)"
           >
             <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" :style="{ background: networkColor(group.network) + '15' }">
               <i class="fas fa-cube text-xs" :style="{ color: networkColor(group.network) }"></i>

@@ -124,10 +124,10 @@ export default toNative(Profile)
             </div>
           </div>
           <div class="bg-slate-100 p-1 rounded-lg flex items-center gap-0.5">
-            <button type="button" @click="activeTab = 'password'" :class="['px-3 py-1 rounded-md text-xs font-medium transition-colors', activeTab === 'password' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700']">
+            <button type="button" :class="['px-3 py-1 rounded-md text-xs font-medium transition-colors', activeTab === 'password' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700']" @click="activeTab = 'password'">
               <i class="fas fa-lock mr-1"></i>修改密码
             </button>
-            <button type="button" @click="activeTab = 'token'" :class="['px-3 py-1 rounded-md text-xs font-medium transition-colors', activeTab === 'token' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700']">
+            <button type="button" :class="['px-3 py-1 rounded-md text-xs font-medium transition-colors', activeTab === 'token' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700']" @click="activeTab = 'token'">
               <i class="fas fa-key mr-1"></i>API 令牌
             </button>
           </div>
@@ -144,10 +144,10 @@ export default toNative(Profile)
         </div>
         <!-- 移动端 Tab -->
         <div class="flex md:hidden mt-3 bg-slate-100 p-1 rounded-lg gap-0.5">
-          <button type="button" @click="activeTab = 'password'" :class="['flex-1 px-2 py-1 rounded-md text-xs font-medium transition-colors', activeTab === 'password' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500']">
+          <button type="button" :class="['flex-1 px-2 py-1 rounded-md text-xs font-medium transition-colors', activeTab === 'password' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500']" @click="activeTab = 'password'">
             <i class="fas fa-lock mr-1"></i>修改密码
           </button>
-          <button type="button" @click="activeTab = 'token'" :class="['flex-1 px-2 py-1 rounded-md text-xs font-medium transition-colors', activeTab === 'token' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500']">
+          <button type="button" :class="['flex-1 px-2 py-1 rounded-md text-xs font-medium transition-colors', activeTab === 'token' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500']" @click="activeTab = 'token'">
             <i class="fas fa-key mr-1"></i>API 令牌
           </button>
         </div>
@@ -155,7 +155,7 @@ export default toNative(Profile)
 
       <!-- 修改密码 -->
       <div v-if="activeTab === 'password'" class="p-4 md:p-6">
-        <form @submit.prevent="handleChangePassword" class="max-w-3xl space-y-4">
+        <form class="max-w-3xl space-y-4" @submit.prevent="handleChangePassword">
           <div>
             <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">原密码</label>
             <input
@@ -195,8 +195,8 @@ export default toNative(Profile)
               :disabled="passwordLoading || !passwordForm.newPassword"
               class="px-4 py-2 rounded-lg bg-blue-500 hover:bg-blue-600 disabled:bg-slate-300 disabled:cursor-not-allowed text-white text-sm font-medium flex items-center gap-2 transition-colors"
             >
-              <i class="fas fa-check" v-if="!passwordLoading"></i>
-              <i class="fas fa-spinner fa-spin" v-else></i>
+              <i v-if="!passwordLoading" class="fas fa-check"></i>
+              <i v-else class="fas fa-spinner fa-spin"></i>
               确认修改
             </button>
           </div>
@@ -216,18 +216,18 @@ export default toNative(Profile)
               <p class="text-xs text-emerald-700 mb-3">请立即复制保存，此令牌仅显示一次：</p>
               <div class="flex items-center gap-2">
                 <code class="flex-1 px-3 py-2 bg-white rounded-lg text-xs font-mono text-slate-700 break-all border border-emerald-200">{{ newToken.token }}</code>
-                <button @click="copyToken(newToken.token)" class="flex-shrink-0 px-3 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-medium flex items-center gap-1.5 transition-colors">
+                <button class="flex-shrink-0 px-3 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-medium flex items-center gap-1.5 transition-colors" @click="copyToken(newToken.token)">
                   <i class="fas fa-copy"></i>复制
                 </button>
               </div>
             </div>
-            <button @click="dismissNewToken()" class="flex-shrink-0 w-8 h-8 rounded-lg text-emerald-600 hover:bg-emerald-100 flex items-center justify-center transition-colors">
+            <button class="flex-shrink-0 w-8 h-8 rounded-lg text-emerald-600 hover:bg-emerald-100 flex items-center justify-center transition-colors" @click="dismissNewToken()">
               <i class="fas fa-times"></i>
             </button>
           </div>
         </div>
 
-        <form @submit.prevent="handleCreateToken" class="max-w-3xl space-y-4">
+        <form class="max-w-3xl space-y-4" @submit.prevent="handleCreateToken">
           <div>
             <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">令牌名称</label>
             <input
@@ -253,8 +253,8 @@ export default toNative(Profile)
               :disabled="tokenLoading || !tokenForm.name.trim()"
               class="px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 disabled:bg-slate-300 disabled:cursor-not-allowed text-white text-sm font-medium flex items-center gap-2 transition-colors"
             >
-              <i class="fas fa-plus" v-if="!tokenLoading"></i>
-              <i class="fas fa-spinner fa-spin" v-else></i>
+              <i v-if="!tokenLoading" class="fas fa-plus"></i>
+              <i v-else class="fas fa-spinner fa-spin"></i>
               创建令牌
             </button>
           </div>

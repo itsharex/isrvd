@@ -280,7 +280,7 @@ export default toNative(RouteEditModal)
       <div class="border border-slate-200 rounded-xl p-4">
         <div class="flex items-center justify-between mb-3">
           <div>
-          <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider">上游配置</label>
+            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider">上游配置</label>
             <p class="text-xs text-slate-400 mt-1">支持直接输入单个上游、引用已有上游或暂不配置上游</p>
           </div>
         </div>
@@ -298,8 +298,8 @@ export default toNative(RouteEditModal)
         <div v-if="formData.upstream_mode === 'nodes'" class="space-y-3">
           <div>
             <div class="grid grid-cols-[2fr_1fr] gap-2 items-center">
-              <HostSelect :model-value="formData.upstream_nodes[0]?.host || ''" :containers="containers" placeholder="127.0.0.1 或 容器名" @update:modelValue="updateUpstreamNode(0, 'host', $event)" />
-              <PortSelect :model-value="formData.upstream_nodes[0]?.port || ''" :ports="getPortsByHost(formData.upstream_nodes[0]?.host || '')" placeholder="80" @update:modelValue="updateUpstreamNode(0, 'port', $event)" />
+              <HostSelect :model-value="formData.upstream_nodes[0]?.host || ''" :containers="containers" placeholder="127.0.0.1 或 容器名" @update:model-value="updateUpstreamNode(0, 'host', $event)" />
+              <PortSelect :model-value="formData.upstream_nodes[0]?.port || ''" :ports="getPortsByHost(formData.upstream_nodes[0]?.host || '')" placeholder="80" @update:model-value="updateUpstreamNode(0, 'port', $event)" />
             </div>
             <p class="text-xs text-slate-400 mt-2">直接输入模式仅提交一个上游节点；如需多节点负载均衡，请先在「上游管理」中创建后再引用。</p>
           </div>
@@ -340,12 +340,12 @@ export default toNative(RouteEditModal)
 
         <div class="pt-3 border-t border-slate-100">
           <PluginConfigPanel
+            ref="pluginPanel"
             :plugins="formData.plugins"
             :available-plugins="availablePlugins"
             :show-import="true"
             :routes="routes"
             @update:plugins="onPluginsUpdate"
-            ref="pluginPanel"
           />
         </div>
       </div>
@@ -353,8 +353,8 @@ export default toNative(RouteEditModal)
 
     <template #footer>
       <div class="flex justify-end gap-2">
-        <button @click="isOpen = false" class="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50">取消</button>
-        <button @click="handleConfirm()" :disabled="modalLoading" class="px-4 py-2 text-sm font-medium text-white bg-indigo-500 rounded-lg hover:bg-indigo-600 disabled:opacity-50 shadow-sm">
+        <button class="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50" @click="isOpen = false">取消</button>
+        <button :disabled="modalLoading" class="px-4 py-2 text-sm font-medium text-white bg-indigo-500 rounded-lg hover:bg-indigo-600 disabled:opacity-50 shadow-sm" @click="handleConfirm()">
           <i v-if="modalLoading" class="fas fa-spinner fa-spin mr-1"></i>{{ isEditMode ? '保存' : '创建' }}
         </button>
       </div>

@@ -94,7 +94,7 @@ export default toNative(Tasks)
               <option value="">全部服务</option>
               <option v-for="s in services" :key="s.id" :value="s.id">{{ s.name }}</option>
             </select>
-            <button @click="loadTasks()" class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors">
+            <button class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors" @click="loadTasks()">
               <i class="fas fa-rotate"></i>刷新
             </button>
           </div>
@@ -111,7 +111,7 @@ export default toNative(Tasks)
                 <p class="text-xs text-slate-500 truncate">查看 Swarm 集群任务状态</p>
               </div>
             </div>
-            <button @click="loadTasks()" class="w-9 h-9 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-600 transition-colors flex-shrink-0">
+            <button class="w-9 h-9 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-600 transition-colors flex-shrink-0" @click="loadTasks()">
               <i class="fas fa-rotate text-sm"></i>
             </button>
           </div>
@@ -146,7 +146,7 @@ export default toNative(Tasks)
               <tr v-for="t in filteredTasks" :key="t.id" class="hover:bg-slate-50 transition-colors">
                 <td class="px-4 py-3"><code class="text-xs text-slate-500 font-mono">{{ t.id.slice(0, 12) }}</code></td>
                 <td class="px-4 py-3">
-                  <button @click="goServiceDetail(t.serviceID)" class="text-xs text-emerald-600 hover:text-emerald-700 hover:underline">
+                  <button class="text-xs text-emerald-600 hover:text-emerald-700 hover:underline" @click="goServiceDetail(t.serviceID)">
                     {{ t.serviceName || t.serviceID?.slice(0, 12) }}
                   </button>
                 </td>
@@ -155,7 +155,7 @@ export default toNative(Tasks)
                   <span :class="taskStateClass(t.state)" class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-medium capitalize">{{ t.state }}</span>
                 </td>
                 <td class="px-4 py-3">
-                  <button v-if="t.nodeID" @click="goNodeDetail(t.nodeID)" class="text-xs text-blue-600 hover:text-blue-700 hover:underline">
+                  <button v-if="t.nodeID" class="text-xs text-blue-600 hover:text-blue-700 hover:underline" @click="goNodeDetail(t.nodeID)">
                     {{ t.nodeName || t.nodeID.slice(0, 12) }}
                   </button>
                   <span v-else class="text-xs text-slate-400">-</span>
@@ -188,12 +188,12 @@ export default toNative(Tasks)
             </div>
             <div class="flex items-center gap-2 mb-3">
               <span class="text-xs text-slate-400 flex-shrink-0">服务</span>
-              <button @click="goServiceDetail(t.serviceID)" class="text-xs text-emerald-600 hover:text-emerald-700 hover:underline truncate">
+              <button class="text-xs text-emerald-600 hover:text-emerald-700 hover:underline truncate" @click="goServiceDetail(t.serviceID)">
                 {{ t.serviceName || t.serviceID?.slice(0, 12) }}
               </button>
               <span class="text-xs text-slate-300">|</span>
               <span class="text-xs text-slate-400 flex-shrink-0">节点</span>
-              <button v-if="t.nodeID" @click="goNodeDetail(t.nodeID)" class="text-xs text-blue-600 hover:text-blue-700 hover:underline">
+              <button v-if="t.nodeID" class="text-xs text-blue-600 hover:text-blue-700 hover:underline" @click="goNodeDetail(t.nodeID)">
                 {{ t.nodeName || t.nodeID.slice(0, 12) }}
               </button>
               <span v-else class="text-xs text-slate-400">-</span>

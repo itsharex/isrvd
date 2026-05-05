@@ -46,8 +46,8 @@ export default toNative(ConfirmModal)
           <button 
             type="button" 
             class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all duration-200"
-            @click="actions.closeConfirm"
             :disabled="state.confirm.loading"
+            @click="actions.closeConfirm"
           >
             <i class="fas fa-times"></i>
           </button>
@@ -78,18 +78,18 @@ export default toNative(ConfirmModal)
           <button 
             type="button" 
             class="btn-secondary"
-            @click="actions.closeConfirm"
             :disabled="state.confirm.loading"
+            @click="actions.closeConfirm"
           >
             取消
           </button>
           <button 
             type="button" 
             :class="state.confirm.danger ? 'btn-danger' : 'btn-primary'"
-            @click="actions.handleConfirm"
             :disabled="state.confirm.loading"
+            @click="actions.handleConfirm"
           >
-            <i class="fas fa-spinner fa-spin mr-2" v-if="state.confirm.loading"></i>
+            <i v-if="state.confirm.loading" class="fas fa-spinner fa-spin mr-2"></i>
             {{ state.confirm.loading ? '处理中...' : state.confirm.confirmText }}
           </button>
         </div>

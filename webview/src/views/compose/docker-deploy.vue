@@ -149,10 +149,10 @@ export default toNative(ComposeDeploy)
             </div>
           </div>
           <div class="flex items-center gap-2">
-          <button type="button" @click="resetForm()" :disabled="loading" class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors disabled:opacity-50">
+            <button type="button" :disabled="loading" class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors disabled:opacity-50" @click="resetForm()">
               <i class="fas fa-rotate-left"></i>清空
             </button>
-            <button v-if="actions.hasPerm('POST /api/compose/docker/deploy')" type="button" @click="openMarketplace()" class="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-xs font-medium flex items-center gap-1.5 transition-colors">
+            <button v-if="actions.hasPerm('POST /api/compose/docker/deploy')" type="button" class="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-xs font-medium flex items-center gap-1.5 transition-colors" @click="openMarketplace()">
               <i class="fas fa-store"></i>应用市场
             </button>
           </div>
@@ -167,18 +167,18 @@ export default toNative(ComposeDeploy)
             </div>
           </div>
           <div class="flex items-center gap-2 flex-shrink-0">
-            <button v-if="actions.hasPerm('POST /api/compose/docker/deploy')" type="button" @click="openMarketplace()" class="w-9 h-9 rounded-lg bg-amber-500 hover:bg-amber-600 flex items-center justify-center text-white transition-colors" title="从应用市场选择">
+            <button v-if="actions.hasPerm('POST /api/compose/docker/deploy')" type="button" class="w-9 h-9 rounded-lg bg-amber-500 hover:bg-amber-600 flex items-center justify-center text-white transition-colors" title="从应用市场选择" @click="openMarketplace()">
               <i class="fas fa-store"></i>
             </button>
-            <button type="button" @click="resetForm()" :disabled="loading" class="w-9 h-9 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 flex items-center justify-center transition-colors disabled:opacity-50" title="清空">
+            <button type="button" :disabled="loading" class="w-9 h-9 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 flex items-center justify-center transition-colors disabled:opacity-50" title="清空" @click="resetForm()">
               <i class="fas fa-rotate-left"></i>
             </button>
           </div>
         </div>
       </div>
 
-        <!-- 表单 -->
-        <div class="p-4 md:p-6 space-y-4 max-w-5xl">
+      <!-- 表单 -->
+      <div class="p-4 md:p-6 space-y-4 max-w-5xl">
         <!-- 应用市场预填提示 -->
         <div v-if="fromMarketplace" class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 flex items-start gap-2 text-xs">
           <i class="fas fa-circle-info text-amber-500 mt-0.5"></i>
@@ -193,20 +193,20 @@ export default toNative(ComposeDeploy)
           <div class="inline-flex gap-1 bg-slate-100 p-1 rounded-lg">
             <button
               type="button"
-              @click="selectTarget('docker')"
               :class="['px-3 py-1 text-xs font-medium rounded-md transition-all duration-200 flex items-center gap-1.5',
-                target === 'docker' ? 'bg-white text-amber-600 shadow-sm' : 'text-slate-500 hover:text-slate-700']"
+                       target === 'docker' ? 'bg-white text-amber-600 shadow-sm' : 'text-slate-500 hover:text-slate-700']"
+              @click="selectTarget('docker')"
             >
               <i class="fab fa-docker"></i><span>单机容器</span>
             </button>
             <button
               type="button"
-              @click="selectTarget('swarm')"
               :disabled="!swarmAvailable"
               :class="['px-3 py-1 text-xs font-medium rounded-md transition-all duration-200 flex items-center gap-1.5',
-                target === 'swarm' ? 'bg-white text-amber-600 shadow-sm'
-                  : (swarmAvailable ? 'text-slate-500 hover:text-slate-700' : 'text-slate-300 cursor-not-allowed')]"
+                       target === 'swarm' ? 'bg-white text-amber-600 shadow-sm'
+                       : (swarmAvailable ? 'text-slate-500 hover:text-slate-700' : 'text-slate-300 cursor-not-allowed')]"
               :title="swarmAvailable ? '' : '当前节点未启用 Swarm'"
+              @click="selectTarget('swarm')"
             >
               <i class="fas fa-cubes"></i><span>Swarm 服务</span>
             </button>
@@ -219,8 +219,8 @@ export default toNative(ComposeDeploy)
             实例名 <span class="text-red-500">*</span>
           </label>
           <input
-            type="text"
             v-model="projectName"
+            type="text"
             placeholder="例如 my-app"
             class="input"
             :disabled="loading"
@@ -240,8 +240,8 @@ export default toNative(ComposeDeploy)
           </label>
           <div class="flex items-center gap-2">
             <input
-              type="text"
               v-model="initURL"
+              type="text"
               placeholder="zip 下载 URL，例如 http://example.com/init.zip"
               class="input flex-1"
               :disabled="loading || !!initFile"
@@ -250,8 +250,8 @@ export default toNative(ComposeDeploy)
             <!-- 隐藏真实 input，用自定义按钮触发 -->
             <label
               :class="['flex-shrink-0 flex items-center gap-1.5 px-4 py-2.5 rounded-xl border text-sm font-medium cursor-pointer transition-colors select-none',
-                loading ? 'opacity-50 cursor-not-allowed' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50',
-                initFile ? 'border-blue-300 bg-blue-50 text-blue-600' : '']"
+                       loading ? 'opacity-50 cursor-not-allowed' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50',
+                       initFile ? 'border-blue-300 bg-blue-50 text-blue-600' : '']"
             >
               <i class="fas fa-paperclip"></i>
               <span>{{ initFile ? initFile.name : '上传 zip' }}</span>
@@ -284,9 +284,9 @@ export default toNative(ComposeDeploy)
         <div class="flex flex-col sm:flex-row sm:items-center gap-3 pt-2">
           <button
             type="button"
-            @click="handleDeploy()"
             :disabled="!canSubmit"
             class="whitespace-nowrap flex-shrink-0 self-start px-5 py-2 rounded-lg bg-blue-500 hover:bg-blue-600 disabled:bg-slate-300 disabled:cursor-not-allowed text-white text-sm font-medium flex items-center gap-2 transition-colors"
+            @click="handleDeploy()"
           >
             <i v-if="loading" class="fas fa-spinner fa-spin"></i>
             <i v-else class="fas fa-rocket"></i>

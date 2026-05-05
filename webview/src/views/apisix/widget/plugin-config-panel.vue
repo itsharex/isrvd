@@ -175,8 +175,8 @@ export default toNative(PluginConfigPanel)
         <p class="text-xs text-slate-400 mt-1">{{ showImport ? '可直接编辑 JSON，也支持从现有路由导入' : '可直接编辑 JSON，或从插件列表添加' }}</p>
       </div>
       <div class="flex items-center gap-2">
-        <button @click="openPluginPanel" :class="['px-3 py-1.5 text-xs rounded-lg border transition-colors', showPluginPanel ? 'border-indigo-300 text-indigo-600 bg-indigo-50' : 'border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50']"><i class="fas fa-puzzle-piece mr-1"></i>添加插件</button>
-        <button v-if="showImport" @click="openImportPanel" :class="['px-3 py-1.5 text-xs rounded-lg border transition-colors', showImportPanel ? 'border-indigo-300 text-indigo-600 bg-indigo-50' : 'border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50']"><i class="fas fa-file-import mr-1"></i>从路由导入</button>
+        <button :class="['px-3 py-1.5 text-xs rounded-lg border transition-colors', showPluginPanel ? 'border-indigo-300 text-indigo-600 bg-indigo-50' : 'border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50']" @click="openPluginPanel"><i class="fas fa-puzzle-piece mr-1"></i>添加插件</button>
+        <button v-if="showImport" :class="['px-3 py-1.5 text-xs rounded-lg border transition-colors', showImportPanel ? 'border-indigo-300 text-indigo-600 bg-indigo-50' : 'border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50']" @click="openImportPanel"><i class="fas fa-file-import mr-1"></i>从路由导入</button>
       </div>
     </div>
 
@@ -195,14 +195,16 @@ export default toNative(PluginConfigPanel)
           :disabled="plugins[name] !== undefined"
           :class="['px-2.5 py-1.5 text-xs rounded-lg text-left truncate transition-colors border', plugins[name] !== undefined ? 'bg-indigo-50 text-indigo-500 border-indigo-100 cursor-default' : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-200 hover:border-slate-300']"
           @click="addPresetPlugin(name)"
-        ><i v-if="plugins[name] !== undefined" class="fas fa-check text-[9px] mr-1"></i>{{ name }}</button>
+        >
+          <i v-if="plugins[name] !== undefined" class="fas fa-check text-[9px] mr-1"></i>{{ name }}
+        </button>
       </div>
     </div>
 
     <!-- 从路由导入面板 -->
     <div v-if="showImportPanel" class="rounded-lg border border-slate-200 overflow-hidden mt-3">
       <div class="px-3 py-2 bg-slate-50 border-b border-slate-100">
-        <select v-model="importRouteId" @change="onImportRouteChange" class="w-full text-xs bg-white border border-slate-200 rounded-md px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-400 focus:border-indigo-300">
+        <select v-model="importRouteId" class="w-full text-xs bg-white border border-slate-200 rounded-md px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-400 focus:border-indigo-300" @change="onImportRouteChange">
           <option value="">选择来源路由...</option>
           <option v-for="r in routes" :key="r.id" :value="r.id">{{ r.name || r.id }}</option>
         </select>
@@ -211,22 +213,22 @@ export default toNative(PluginConfigPanel)
       <div v-else-if="Object.keys(importRoutePlugins).length > 0" class="p-2 space-y-2">
         <div class="max-h-32 overflow-y-auto space-y-0.5">
           <label v-for="(_, name) in importRoutePlugins" :key="name" class="flex items-center gap-2 text-xs cursor-pointer rounded-lg px-2.5 py-1.5 hover:bg-slate-50 transition-colors">
-            <input type="checkbox" :checked="selectedImportPlugins.has(name)" @change="toggleImportPlugin(name)" class="rounded border-slate-300 text-indigo-500 focus:ring-indigo-500" />
+            <input type="checkbox" :checked="selectedImportPlugins.has(name)" class="rounded border-slate-300 text-indigo-500 focus:ring-indigo-500" @change="toggleImportPlugin(name)" />
             <span class="text-slate-700">{{ name }}</span>
           </label>
         </div>
-        <button @click="importPluginsFromRoute" class="w-full py-1.5 text-xs bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-colors font-medium">导入选中 {{ selectedImportPlugins.size }} 个插件</button>
+        <button class="w-full py-1.5 text-xs bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-colors font-medium" @click="importPluginsFromRoute">导入选中 {{ selectedImportPlugins.size }} 个插件</button>
       </div>
       <div v-else-if="importRouteId" class="py-5 text-center text-xs text-slate-400">该路由没有插件配置</div>
     </div>
 
     <!-- 已添加插件 tags -->
     <div v-if="currentPluginNames.length > 0" class="flex flex-wrap gap-1 mt-3">
-      <span v-for="name in currentPluginNames" :key="name" class="inline-flex items-center gap-1 px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded text-xs">{{ name }}<button @click="removePlugin(name)" class="hover:text-red-500 transition-colors"><i class="fas fa-xmark text-[10px]"></i></button></span>
+      <span v-for="name in currentPluginNames" :key="name" class="inline-flex items-center gap-1 px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded text-xs">{{ name }}<button class="hover:text-red-500 transition-colors" @click="removePlugin(name)"><i class="fas fa-xmark text-[10px]"></i></button></span>
     </div>
 
     <!-- JSON 编辑器 -->
-    <textarea :value="pluginsJson" @blur="syncPluginsFromJson" @input="onPluginsJsonInput" rows="8" :class="['input font-mono text-sm mt-3', pluginsJsonError ? 'border-red-300 bg-red-50' : '']" placeholder='{"key-auth": {"key": "your-api-key"}}'></textarea>
+    <textarea :value="pluginsJson" rows="8" :class="['input font-mono text-sm mt-3', pluginsJsonError ? 'border-red-300 bg-red-50' : '']" placeholder='{"key-auth": {"key": "your-api-key"}}' @blur="syncPluginsFromJson" @input="onPluginsJsonInput"></textarea>
     <p v-if="pluginsJsonError" class="text-xs text-red-500 mt-1">{{ pluginsJsonError }}</p>
   </div>
 </template>

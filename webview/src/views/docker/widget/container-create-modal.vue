@@ -173,7 +173,7 @@ export default toNative(ContainerCreateModal)
   >
     <template #confirm-text>创建</template>
 
-    <form @submit.prevent="handleConfirm" class="space-y-4">
+    <form class="space-y-4" @submit.prevent="handleConfirm">
       <!-- 基础设置 -->
       <div class="grid grid-cols-2 gap-3">
         <div class="col-span-2">
@@ -182,7 +182,7 @@ export default toNative(ContainerCreateModal)
         </div>
         <div>
           <label class="block text-sm font-medium text-slate-700 mb-2">容器名称 <span class="text-red-500">*</span></label>
-          <input type="text" v-model="formData.name" placeholder="my-container" required class="input" />
+          <input v-model="formData.name" type="text" placeholder="my-container" required class="input" />
         </div>
         <div>
           <label class="block text-sm font-medium text-slate-700 mb-2">网络模式</label>
@@ -214,14 +214,14 @@ export default toNative(ContainerCreateModal)
 
       <!-- 高级选项 -->
       <div class="border-t border-slate-200 pt-4">
-        <button type="button" @click="showAdvanced = !showAdvanced" class="flex items-center gap-2 text-sm text-slate-600 hover:text-slate-800">
+        <button type="button" class="flex items-center gap-2 text-sm text-slate-600 hover:text-slate-800" @click="showAdvanced = !showAdvanced">
           <i :class="['fas fa-chevron-down text-xs transition-transform', showAdvanced ? 'rotate-180' : '']"></i>
           高级选项
         </button>
         <div v-if="showAdvanced" class="mt-4 space-y-4">
           <div>
             <label class="block text-sm font-medium text-slate-700 mb-2">启动命令</label>
-            <input type="text" v-model="formData.cmd" placeholder="覆盖默认命令" class="input font-mono text-sm" />
+            <input v-model="formData.cmd" type="text" placeholder="覆盖默认命令" class="input font-mono text-sm" />
           </div>
           <div class="grid grid-cols-2 gap-3">
             <div>
@@ -232,27 +232,27 @@ export default toNative(ContainerCreateModal)
             </div>
             <div>
               <label class="block text-sm font-medium text-slate-700 mb-2">主机名</label>
-              <input type="text" v-model="formData.hostname" placeholder="容器主机名" class="input" />
+              <input v-model="formData.hostname" type="text" placeholder="容器主机名" class="input" />
             </div>
           </div>
           <div class="grid grid-cols-2 gap-3">
             <div>
               <label class="block text-sm font-medium text-slate-700 mb-2">内存限制 (MB)</label>
-              <input type="number" v-model="formData.memory" placeholder="512" class="input" />
+              <input v-model="formData.memory" type="number" placeholder="512" class="input" />
             </div>
             <div>
               <label class="block text-sm font-medium text-slate-700 mb-2">CPU 限制 (核心)</label>
-              <input type="number" step="0.1" v-model="formData.cpus" placeholder="1.5" class="input" />
+              <input v-model="formData.cpus" type="number" step="0.1" placeholder="1.5" class="input" />
             </div>
           </div>
           <div class="grid grid-cols-2 gap-3">
             <div>
               <label class="block text-sm font-medium text-slate-700 mb-2">工作目录</label>
-              <input type="text" v-model="formData.workdir" placeholder="/app" class="input" />
+              <input v-model="formData.workdir" type="text" placeholder="/app" class="input" />
             </div>
             <div>
               <label class="block text-sm font-medium text-slate-700 mb-2">运行用户</label>
-              <input type="text" v-model="formData.user" placeholder="root" class="input" />
+              <input v-model="formData.user" type="text" placeholder="root" class="input" />
             </div>
           </div>
         </div>
@@ -260,7 +260,7 @@ export default toNative(ContainerCreateModal)
 
       <!-- 安全配置 -->
       <div class="border-t border-slate-200 pt-4">
-        <button type="button" @click="showSecurity = !showSecurity" class="flex items-center gap-2 text-sm text-slate-600 hover:text-slate-800">
+        <button type="button" class="flex items-center gap-2 text-sm text-slate-600 hover:text-slate-800" @click="showSecurity = !showSecurity">
           <i :class="['fas fa-chevron-down text-xs transition-transform', showSecurity ? 'rotate-180' : '']"></i>
           安全配置
           <span v-if="formData.privileged || formData.capAdd?.length || formData.capDrop?.length" class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700">

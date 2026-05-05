@@ -49,9 +49,9 @@ export default toNative(MkdirModal)
             <i class="fas fa-folder text-slate-400"></i>
           </div>
           <input 
-            type="text" 
             id="dirName" 
             v-model="formData.name" 
+            type="text" 
             :disabled="state.loading" 
             required
             class="input pl-11"

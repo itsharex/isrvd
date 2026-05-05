@@ -250,7 +250,7 @@ export default toNative(UpstreamEditModal)
             <h3 class="text-sm font-semibold text-slate-700">节点配置</h3>
             <p class="text-xs text-slate-400 mt-0.5">填写后端服务地址和权重</p>
           </div>
-          <button type="button" @click="addNode()" class="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-emerald-600 text-xs font-medium flex items-center gap-1">
+          <button type="button" class="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-emerald-600 text-xs font-medium flex items-center gap-1" @click="addNode()">
             <i class="fas fa-plus"></i>添加节点
           </button>
         </div>
@@ -258,18 +258,18 @@ export default toNative(UpstreamEditModal)
           <div v-for="(node, index) in formData.nodes" :key="index" class="grid grid-cols-12 gap-2 p-3 items-end">
             <div class="col-span-12 md:col-span-5">
               <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Host</label>
-              <HostSelect :model-value="node.host" :containers="containers" placeholder="127.0.0.1 或 容器名" @update:modelValue="updateNode(index, 'host', $event)" />
+              <HostSelect :model-value="node.host" :containers="containers" placeholder="127.0.0.1 或 容器名" @update:model-value="updateNode(index, 'host', $event)" />
             </div>
             <div class="col-span-5 md:col-span-3">
               <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Port</label>
-              <PortSelect :model-value="String(node.port || '')" :ports="getPortsByHost(node.host)" placeholder="8080" @update:modelValue="updateNode(index, 'port', $event)" />
+              <PortSelect :model-value="String(node.port || '')" :ports="getPortsByHost(node.host)" placeholder="8080" @update:model-value="updateNode(index, 'port', $event)" />
             </div>
             <div class="col-span-5 md:col-span-3">
               <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">权重</label>
               <input v-model.number="node.weight" type="number" min="0" class="input" />
             </div>
             <div class="col-span-2 md:col-span-1 flex h-12 items-center justify-end">
-              <button type="button" @click="removeNode(index)" :disabled="formData.nodes.length <= 1" class="btn-icon text-red-600 hover:bg-red-50 disabled:text-slate-300 disabled:cursor-not-allowed" title="删除节点">
+              <button type="button" :disabled="formData.nodes.length <= 1" class="btn-icon text-red-600 hover:bg-red-50 disabled:text-slate-300 disabled:cursor-not-allowed" title="删除节点" @click="removeNode(index)">
                 <i class="fas fa-trash text-xs"></i>
               </button>
             </div>
@@ -280,8 +280,8 @@ export default toNative(UpstreamEditModal)
 
     <template #footer>
       <div class="flex justify-end gap-2">
-        <button @click="isOpen = false" class="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50">取消</button>
-        <button @click="handleConfirm()" :disabled="modalLoading" class="px-4 py-2 text-sm font-medium text-white bg-emerald-500 rounded-lg hover:bg-emerald-600 disabled:opacity-50 shadow-sm">
+        <button class="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50" @click="isOpen = false">取消</button>
+        <button :disabled="modalLoading" class="px-4 py-2 text-sm font-medium text-white bg-emerald-500 rounded-lg hover:bg-emerald-600 disabled:opacity-50 shadow-sm" @click="handleConfirm()">
           <i v-if="modalLoading" class="fas fa-spinner fa-spin mr-1"></i>{{ isEditMode ? '保存' : '创建' }}
         </button>
       </div>

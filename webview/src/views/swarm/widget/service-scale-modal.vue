@@ -50,7 +50,7 @@ export default toNative(ServiceScaleModal)
       </div>
       <div>
         <label class="block text-sm font-medium text-slate-700 mb-2">目标副本数</label>
-        <input type="number" v-model.number="replicas" min="0" max="100" class="input" />
+        <input v-model.number="replicas" type="number" min="0" max="100" class="input" />
         <p class="mt-1 text-xs text-slate-400">当前运行中副本：{{ service.runningTasks }} / {{ service.replicas }}</p>
       </div>
     </div>

@@ -185,10 +185,10 @@ export default toNative(MarketplaceModal)
                 </div>
               </div>
               <div class="flex items-center gap-2">
-                <button type="button" @click="loadUrl()" class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors">
+                <button type="button" class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors" @click="loadUrl()">
                   <i class="fas fa-rotate"></i>刷新
                 </button>
-                <button type="button" @click="close()" class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all duration-200">
+                <button type="button" class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all duration-200" @click="close()">
                   <i class="fas fa-times"></i>
                 </button>
               </div>
@@ -205,10 +205,10 @@ export default toNative(MarketplaceModal)
                 </div>
               </div>
               <div class="flex items-center gap-1.5 flex-shrink-0">
-                <button type="button" @click="loadUrl()" class="w-9 h-9 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-600 transition-colors" title="刷新">
+                <button type="button" class="w-9 h-9 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-600 transition-colors" title="刷新" @click="loadUrl()">
                   <i class="fas fa-rotate text-sm"></i>
                 </button>
-                <button type="button" @click="close()" class="w-9 h-9 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-600 transition-colors" title="关闭">
+                <button type="button" class="w-9 h-9 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-600 transition-colors" title="关闭" @click="close()">
                   <i class="fas fa-times text-sm"></i>
                 </button>
               </div>
@@ -230,7 +230,7 @@ export default toNative(MarketplaceModal)
               </div>
               <h2 class="text-base font-semibold text-slate-800 mb-1">尚未配置应用市场</h2>
               <p class="text-sm text-slate-500 mb-4">请前往「系统设置 → 应用市场」配置站点 URL</p>
-              <button type="button" @click="openConfig()" class="px-4 py-2 rounded-lg bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium flex items-center gap-1.5 transition-colors">
+              <button type="button" class="px-4 py-2 rounded-lg bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium flex items-center gap-1.5 transition-colors" @click="openConfig()">
                 <i class="fas fa-gear"></i>前往配置
               </button>
             </div>

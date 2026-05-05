@@ -118,10 +118,10 @@ export default toNative(PluginConfigs)
               <input v-model="searchText" type="text" placeholder="搜索 ID、描述或插件..." class="pl-8 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent w-56" />
               <i class="fas fa-search absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
             </div>
-            <button @click="loadConfigs()" class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors">
+            <button class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors" @click="loadConfigs()">
               <i class="fas fa-rotate"></i>刷新
             </button>
-            <button v-if="actions.hasPerm('POST /api/apisix/plugin-config')" @click="openCreateModal()" class="px-3 py-1.5 rounded-lg bg-rose-500 hover:bg-rose-600 text-white text-xs font-medium flex items-center gap-1.5 transition-colors">
+            <button v-if="actions.hasPerm('POST /api/apisix/plugin-config')" class="px-3 py-1.5 rounded-lg bg-rose-500 hover:bg-rose-600 text-white text-xs font-medium flex items-center gap-1.5 transition-colors" @click="openCreateModal()">
               <i class="fas fa-plus"></i>创建
             </button>
           </div>
@@ -138,10 +138,10 @@ export default toNative(PluginConfigs)
             </div>
           </div>
           <div class="flex items-center gap-1 flex-shrink-0">
-            <button @click="loadConfigs()" class="w-9 h-9 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-600 transition-colors" title="刷新">
+            <button class="w-9 h-9 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-600 transition-colors" title="刷新" @click="loadConfigs()">
               <i class="fas fa-rotate text-sm"></i>
             </button>
-            <button v-if="actions.hasPerm('POST /api/apisix/plugin-config')" @click="openCreateModal()" class="w-9 h-9 rounded-lg bg-rose-500 hover:bg-rose-600 flex items-center justify-center text-white transition-colors" title="创建">
+            <button v-if="actions.hasPerm('POST /api/apisix/plugin-config')" class="w-9 h-9 rounded-lg bg-rose-500 hover:bg-rose-600 flex items-center justify-center text-white transition-colors" title="创建" @click="openCreateModal()">
               <i class="fas fa-plus text-sm"></i>
             </button>
           </div>
@@ -201,10 +201,10 @@ export default toNative(PluginConfigs)
                 <td class="px-4 py-3 whitespace-nowrap text-sm text-slate-600">{{ formatTs(config.create_time) }}</td>
                 <td class="px-4 py-3">
                   <div class="flex justify-end items-center gap-0.5">
-                      <button v-if="actions.hasPerm('PUT /api/apisix/plugin-config/:id')" @click="openEditModal(config)" class="btn-icon text-blue-600 hover:bg-blue-50" title="编辑">
+                    <button v-if="actions.hasPerm('PUT /api/apisix/plugin-config/:id')" class="btn-icon text-blue-600 hover:bg-blue-50" title="编辑" @click="openEditModal(config)">
                       <i class="fas fa-pen text-xs"></i>
                     </button>
-                      <button v-if="actions.hasPerm('DELETE /api/apisix/plugin-config/:id')" @click="deleteConfig(config)" class="btn-icon text-red-600 hover:bg-red-50" title="删除">
+                    <button v-if="actions.hasPerm('DELETE /api/apisix/plugin-config/:id')" class="btn-icon text-red-600 hover:bg-red-50" title="删除" @click="deleteConfig(config)">
                       <i class="fas fa-trash text-xs"></i>
                     </button>
                   </div>
@@ -242,10 +242,10 @@ export default toNative(PluginConfigs)
             </div>
 
             <div class="flex flex-wrap gap-1 pt-2 border-t border-slate-100">
-                <button v-if="actions.hasPerm('PUT /api/apisix/plugin-config/:id')" @click="openEditModal(config)" class="btn-icon text-blue-600 hover:bg-blue-50" title="编辑">
+              <button v-if="actions.hasPerm('PUT /api/apisix/plugin-config/:id')" class="btn-icon text-blue-600 hover:bg-blue-50" title="编辑" @click="openEditModal(config)">
                 <i class="fas fa-pen text-xs"></i><span class="text-xs ml-1">编辑</span>
               </button>
-                <button v-if="actions.hasPerm('DELETE /api/apisix/plugin-config/:id')" @click="deleteConfig(config)" class="btn-icon text-red-600 hover:bg-red-50" title="删除">
+              <button v-if="actions.hasPerm('DELETE /api/apisix/plugin-config/:id')" class="btn-icon text-red-600 hover:bg-red-50" title="删除" @click="deleteConfig(config)">
                 <i class="fas fa-trash text-xs"></i><span class="text-xs ml-1">删除</span>
               </button>
             </div>

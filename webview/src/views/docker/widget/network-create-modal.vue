@@ -51,10 +51,10 @@ export default toNative(NetworkCreateModal)
     @confirm="handleConfirm"
   >
     <template #confirm-text>确认创建</template>
-    <form @submit.prevent="handleConfirm" class="space-y-4">
+    <form class="space-y-4" @submit.prevent="handleConfirm">
       <div>
         <label class="block text-sm font-medium text-slate-700 mb-2">网络名称</label>
-        <input type="text" v-model="formData.name" placeholder="例如: my-network" required class="input" />
+        <input v-model="formData.name" type="text" placeholder="例如: my-network" required class="input" />
       </div>
       <div>
         <label class="block text-sm font-medium text-slate-700 mb-2">驱动类型</label>
@@ -67,7 +67,7 @@ export default toNative(NetworkCreateModal)
       </div>
       <div>
         <label class="block text-sm font-medium text-slate-700 mb-2">子网 CIDR（可选）</label>
-        <input type="text" v-model="formData.subnet" placeholder="例如: 172.20.0.0/16" class="input" />
+        <input v-model="formData.subnet" type="text" placeholder="例如: 172.20.0.0/16" class="input" />
       </div>
     </form>
   </BaseModal>

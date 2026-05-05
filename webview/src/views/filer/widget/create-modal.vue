@@ -39,7 +39,7 @@ export default toNative(CreateModal)
 
 <template>
   <BaseModal ref="modalRef" v-model="isOpen" title="新建文件" :loading="state.loading" :confirm-disabled="!formData.name.trim()" @confirm="handleConfirm">
-    <form @submit.prevent="handleConfirm" class="space-y-5">
+    <form class="space-y-5" @submit.prevent="handleConfirm">
       <div>
         <label for="fileName" class="block text-sm font-medium text-slate-700 mb-2">
           文件名称
@@ -49,9 +49,9 @@ export default toNative(CreateModal)
             <i class="fas fa-file text-slate-400"></i>
           </div>
           <input 
-            type="text" 
             id="fileName" 
             v-model="formData.name" 
+            type="text" 
             :disabled="state.loading" 
             required
             class="input pl-11"
@@ -65,8 +65,8 @@ export default toNative(CreateModal)
         </label>
         <textarea 
           id="fileContent" 
-          rows="10" 
           v-model="formData.content" 
+          rows="10" 
           :disabled="state.loading"
           class="input font-mono text-sm"
           placeholder="请输入文件内容..."

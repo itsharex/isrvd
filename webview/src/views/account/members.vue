@@ -85,10 +85,10 @@ export default toNative(Members)
             </div>
           </div>
           <div class="flex items-center gap-2">
-            <button type="button" @click="loadMembers" class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors">
+            <button type="button" class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors" @click="loadMembers">
               <i class="fas fa-rotate"></i>刷新
             </button>
-            <button v-if="actions.hasPerm('POST /api/account/member')" type="button" @click="openAddMember" class="px-3 py-1.5 rounded-lg bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium flex items-center gap-1.5 transition-colors">
+            <button v-if="actions.hasPerm('POST /api/account/member')" type="button" class="px-3 py-1.5 rounded-lg bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium flex items-center gap-1.5 transition-colors" @click="openAddMember">
               <i class="fas fa-plus"></i>添加
             </button>
           </div>
@@ -105,10 +105,10 @@ export default toNative(Members)
             </div>
           </div>
           <div class="flex items-center gap-1 flex-shrink-0">
-            <button type="button" @click="loadMembers" class="w-9 h-9 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-600 transition-colors" title="刷新">
+            <button type="button" class="w-9 h-9 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-600 transition-colors" title="刷新" @click="loadMembers">
               <i class="fas fa-rotate text-sm"></i>
             </button>
-            <button v-if="actions.hasPerm('POST /api/account/member')" type="button" @click="openAddMember" class="w-9 h-9 rounded-lg bg-blue-500 hover:bg-blue-600 flex items-center justify-center text-white transition-colors" title="添加">
+            <button v-if="actions.hasPerm('POST /api/account/member')" type="button" class="w-9 h-9 rounded-lg bg-blue-500 hover:bg-blue-600 flex items-center justify-center text-white transition-colors" title="添加" @click="openAddMember">
               <i class="fas fa-plus text-sm"></i>
             </button>
           </div>
@@ -135,72 +135,72 @@ export default toNative(Members)
         <!-- 桌面端表格 -->
         <div class="hidden md:block overflow-x-auto">
           <table class="w-full border-collapse">
-              <thead>
+            <thead>
               <tr class="bg-slate-50 border-b border-slate-200">
-                  <th class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">用户名</th>
-                  <th class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">家目录</th>
-                  <th class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">权限</th>
-                  <th class="w-28 px-4 py-3 text-right text-xs font-semibold text-slate-600 uppercase tracking-wider">操作</th>
-                </tr>
-              </thead>
-              <tbody class="bg-white divide-y divide-slate-100">
-                <tr v-for="m in members" :key="m.username" class="hover:bg-slate-50 transition-colors">
-                  <td class="px-4 py-3 max-w-[280px]">
-                    <div class="flex items-center gap-2 min-w-0">
-                      <div class="w-8 h-8 rounded-lg bg-blue-500 flex items-center justify-center flex-shrink-0">
-                        <i class="fas fa-user text-white text-sm"></i>
-                      </div>
-                      <div class="min-w-0">
-                        <span class="font-medium text-slate-800 truncate block">{{ m.username }}</span>
-                        <span v-if="m.description" class="text-xs text-slate-400 truncate block mt-0.5">{{ m.description }}</span>
-                      </div>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">用户名</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">家目录</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">权限</th>
+                <th class="w-28 px-4 py-3 text-right text-xs font-semibold text-slate-600 uppercase tracking-wider">操作</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-slate-100">
+              <tr v-for="m in members" :key="m.username" class="hover:bg-slate-50 transition-colors">
+                <td class="px-4 py-3 max-w-[280px]">
+                  <div class="flex items-center gap-2 min-w-0">
+                    <div class="w-8 h-8 rounded-lg bg-blue-500 flex items-center justify-center flex-shrink-0">
+                      <i class="fas fa-user text-white text-sm"></i>
                     </div>
-                  </td>
-                  <td class="px-4 py-3">
-                    <code class="text-xs text-slate-500 font-mono">{{ m.homeDirectory }}</code>
-                  </td>
-                  <td class="px-4 py-3">
-                    <div class="flex flex-wrap gap-1">
-                      <span v-if="m.founder" class="inline-flex items-center justify-center px-2 py-0.5 rounded text-xs font-medium bg-violet-50 text-violet-700">
-                        <i class="fas fa-crown mr-1"></i>创始人
-                      </span>
-                      <span v-else-if="m.permissions && m.permissions.length > 0" class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-600">
-                        <i class="fas fa-key mr-1 text-xs"></i>{{ m.permissions.length }} 条
-                      </span>
-                      <span v-else class="text-xs text-slate-400">-</span>
+                    <div class="min-w-0">
+                      <span class="font-medium text-slate-800 truncate block">{{ m.username }}</span>
+                      <span v-if="m.description" class="text-xs text-slate-400 truncate block mt-0.5">{{ m.description }}</span>
                     </div>
-                  </td>
-                  <td class="px-4 py-3">
-                    <div class="flex justify-end items-center gap-0.5">
-                      <button 
-                        v-if="!m.founder && actions.hasPerm('PUT /api/account/member/:username')"
-                        @click="openEditMember(m)" 
-                        class="btn-icon text-blue-600 hover:bg-blue-50" 
-                        title="编辑"
-                      >
-                        <i class="fas fa-pen text-xs"></i>
-                      </button>
-                      <button 
-                        v-if="!m.founder && actions.hasPerm('DELETE /api/account/member/:username')"
-                        @click="handleDeleteMember(m)" 
-                        class="btn-icon text-red-600 hover:bg-red-50" 
-                        title="删除"
-                      >
-                        <i class="fas fa-trash text-xs"></i>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+                  </div>
+                </td>
+                <td class="px-4 py-3">
+                  <code class="text-xs text-slate-500 font-mono">{{ m.homeDirectory }}</code>
+                </td>
+                <td class="px-4 py-3">
+                  <div class="flex flex-wrap gap-1">
+                    <span v-if="m.founder" class="inline-flex items-center justify-center px-2 py-0.5 rounded text-xs font-medium bg-violet-50 text-violet-700">
+                      <i class="fas fa-crown mr-1"></i>创始人
+                    </span>
+                    <span v-else-if="m.permissions && m.permissions.length > 0" class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-600">
+                      <i class="fas fa-key mr-1 text-xs"></i>{{ m.permissions.length }} 条
+                    </span>
+                    <span v-else class="text-xs text-slate-400">-</span>
+                  </div>
+                </td>
+                <td class="px-4 py-3">
+                  <div class="flex justify-end items-center gap-0.5">
+                    <button 
+                      v-if="!m.founder && actions.hasPerm('PUT /api/account/member/:username')"
+                      class="btn-icon text-blue-600 hover:bg-blue-50" 
+                      title="编辑" 
+                      @click="openEditMember(m)"
+                    >
+                      <i class="fas fa-pen text-xs"></i>
+                    </button>
+                    <button 
+                      v-if="!m.founder && actions.hasPerm('DELETE /api/account/member/:username')"
+                      class="btn-icon text-red-600 hover:bg-red-50" 
+                      title="删除" 
+                      @click="handleDeleteMember(m)"
+                    >
+                      <i class="fas fa-trash text-xs"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
         <!-- 移动端卡片 -->
         <div class="md:hidden space-y-3 p-4">
           <div v-for="m in members" :key="m.username" class="rounded-xl border border-slate-200 bg-white p-4 transition-all hover:shadow-sm">
             <!-- 顶部：用户信息 -->
             <div class="flex items-center justify-between mb-3">
-                <div class="flex items-center gap-3 min-w-0 flex-1">
+              <div class="flex items-center gap-3 min-w-0 flex-1">
                 <div class="w-10 h-10 rounded-lg bg-blue-500 flex items-center justify-center flex-shrink-0">
                   <i class="fas fa-user text-white text-base"></i>
                 </div>
@@ -234,17 +234,17 @@ export default toNative(Members)
             <div class="flex flex-wrap gap-1 pt-2 border-t border-slate-100">
               <button 
                 v-if="!m.founder && actions.hasPerm('PUT /api/account/member/:username')"
-                @click="openEditMember(m)" 
                 class="btn-icon text-blue-600 hover:bg-blue-50" 
-                title="编辑"
+                title="编辑" 
+                @click="openEditMember(m)"
               >
                 <i class="fas fa-pen text-xs"></i><span class="text-xs ml-1">编辑</span>
               </button>
               <button 
                 v-if="!m.founder && actions.hasPerm('DELETE /api/account/member/:username')"
-                @click="handleDeleteMember(m)" 
                 class="btn-icon text-red-600 hover:bg-red-50" 
-                title="删除"
+                title="删除" 
+                @click="handleDeleteMember(m)"
               >
                 <i class="fas fa-trash text-xs"></i><span class="text-xs ml-1">删除</span>
               </button>

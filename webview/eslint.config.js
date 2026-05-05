@@ -15,8 +15,8 @@ export default tseslint.config(
   // TypeScript 推荐规则
   ...tseslint.configs.recommended,
 
-  // Vue 推荐规则（vue3-essential：组件结构/语法正确性；格式由 Prettier 负责）
-  ...pluginVue.configs['flat/essential'],
+  // Vue 推荐规则
+  ...pluginVue.configs['flat/recommended'],
 
   // 项目自定义规则
   {
@@ -49,14 +49,16 @@ export default tseslint.config(
       }],
       // Vue：禁止 v-html（XSS 风险）
       'vue/no-v-html': 'off',
+      // 取消 HTML 属性引号检查
+      'vue/html-quotes': 'off',
       // 关闭与 Prettier 冲突的 HTML 格式规则
       'vue/html-self-closing': 'off',
-      'vue/html-indent': 'off',
-      'vue/html-closing-bracket-newline': 'off',
-      'vue/multiline-html-element-content-newline': 'off',
       'vue/singleline-html-element-content-newline': 'off',
       'vue/max-attributes-per-line': 'off',
-      'vue/attributes-order': 'off',
+      'vue/first-attribute-linebreak': ['error', {
+        singleline: 'beside',    // 单行时的行为
+        multiline: 'below'       // 多行时的行为
+      }],
 
       // 通用
       'no-empty': 'off',

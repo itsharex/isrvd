@@ -119,8 +119,8 @@ export default toNative(App)
       >
         <!-- 移动端菜单切换按钮 -->
         <button
-          @click="toggleMobileMenu"
           class="lg:hidden p-2 rounded-lg hover:bg-slate-100 transition-colors"
+          @click="toggleMobileMenu"
         >
           <i class="fas fa-bars text-slate-600"></i>
         </button>
@@ -143,7 +143,7 @@ export default toNative(App)
         <!-- 用户信息 -->
         <div class="flex items-center gap-1">
           <PageAgent v-if="actions.hasPerm('agent')" />
-          <div class="hidden sm:block w-px h-5 bg-slate-200 mx-1" v-if="actions.hasPerm('agent')"></div>
+          <div v-if="actions.hasPerm('agent')" class="hidden sm:block w-px h-5 bg-slate-200 mx-1"></div>
           <UserMenu />
         </div>
       </header>

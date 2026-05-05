@@ -52,7 +52,7 @@ export default toNative(Login)
         </div>
 
         <!-- Form -->
-        <form @submit.prevent="handleLogin" class="space-y-5">
+        <form class="space-y-5" @submit.prevent="handleLogin">
           <div>
             <label for="username" class="block text-sm font-medium text-slate-700 mb-2">
               用户名
@@ -62,9 +62,9 @@ export default toNative(Login)
                 <i class="fas fa-user text-slate-400"></i>
               </div>
               <input 
-                type="text" 
                 id="username" 
                 v-model="loginForm.username" 
+                type="text" 
                 required
                 class="input pl-11"
                 placeholder="请输入用户名"
@@ -81,9 +81,9 @@ export default toNative(Login)
                 <i class="fas fa-lock text-slate-400"></i>
               </div>
               <input 
-                type="password" 
                 id="password" 
                 v-model="loginForm.password" 
+                type="password" 
                 required
                 class="input pl-11"
                 placeholder="请输入密码"
@@ -96,8 +96,8 @@ export default toNative(Login)
             :disabled="state.loading"
             class="btn-primary w-full py-3 text-base font-semibold mt-6"
           >
-            <i class="fas fa-spinner fa-spin mr-2" v-if="state.loading"></i>
-            <i class="fas fa-sign-in-alt mr-2" v-else></i>
+            <i v-if="state.loading" class="fas fa-spinner fa-spin mr-2"></i>
+            <i v-else class="fas fa-sign-in-alt mr-2"></i>
             {{ state.loading ? '登录中...' : '登录' }}
           </button>
         </form>

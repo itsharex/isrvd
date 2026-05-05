@@ -94,7 +94,7 @@ export default toNative(Whitelist)
               <input v-model="searchText" type="text" placeholder="搜索路由或用户..." class="pl-8 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent w-48" />
               <i class="fas fa-search absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
             </div>
-            <button @click="loadWhitelist()" class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors">
+            <button class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors" @click="loadWhitelist()">
               <i class="fas fa-rotate"></i>刷新
             </button>
           </div>
@@ -110,7 +110,7 @@ export default toNative(Whitelist)
               <p class="text-xs text-slate-500 truncate">管理路由的 Consumer 白名单</p>
             </div>
           </div>
-          <button @click="loadWhitelist()" class="w-9 h-9 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-600 transition-colors flex-shrink-0" title="刷新">
+          <button class="w-9 h-9 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-600 transition-colors flex-shrink-0" title="刷新" @click="loadWhitelist()">
             <i class="fas fa-rotate text-sm"></i>
           </button>
         </div>
@@ -171,7 +171,7 @@ export default toNative(Whitelist)
                     <span v-for="consumer in (route.consumers || [])" :key="consumer" class="inline-flex items-center gap-1.5 px-2 py-0.5 bg-amber-50 text-amber-800 rounded-lg text-xs group">
                       <i class="fas fa-user text-amber-500 text-[10px]"></i>
                       <span class="break-all">{{ consumer }}</span>
-                      <button v-if="actions.hasPerm('POST /api/apisix/whitelist/revoke')" @click="revokeConsumer(route, consumer)" class="opacity-0 group-hover:opacity-100 hover:text-red-500 transition-all" title="撤销"><i class="fas fa-xmark text-[10px]"></i></button>
+                      <button v-if="actions.hasPerm('POST /api/apisix/whitelist/revoke')" class="opacity-0 group-hover:opacity-100 hover:text-red-500 transition-all" title="撤销" @click="revokeConsumer(route, consumer)"><i class="fas fa-xmark text-[10px]"></i></button>
                     </span>
                   </div>
                 </td>
@@ -210,7 +210,7 @@ export default toNative(Whitelist)
                 <span v-for="consumer in (route.consumers || [])" :key="consumer" class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 text-amber-800 rounded-lg text-xs">
                   <i class="fas fa-user text-amber-500 text-[10px]"></i>
                   <span class="break-all">{{ consumer }}</span>
-                  <button v-if="actions.hasPerm('POST /api/apisix/whitelist/revoke')" @click="revokeConsumer(route, consumer)" class="hover:text-red-500 transition-colors" title="撤销"><i class="fas fa-xmark text-[10px]"></i></button>
+                  <button v-if="actions.hasPerm('POST /api/apisix/whitelist/revoke')" class="hover:text-red-500 transition-colors" title="撤销" @click="revokeConsumer(route, consumer)"><i class="fas fa-xmark text-[10px]"></i></button>
                 </span>
               </div>
             </div>

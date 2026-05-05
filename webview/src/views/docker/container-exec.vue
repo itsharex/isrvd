@@ -72,13 +72,13 @@ export default toNative(ContainerTerminal)
         <!-- 桌面端工具栏 -->
         <div class="hidden md:flex md:items-center justify-between mb-4">
           <div class="flex items-center gap-3">
-            <select v-model="terminalShell" @change="handleShellChange" :disabled="terminalConnected" class="w-28 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs text-slate-700 hover:border-slate-300 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed">
+            <select v-model="terminalShell" :disabled="terminalConnected" class="w-28 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs text-slate-700 hover:border-slate-300 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed" @change="handleShellChange">
               <option value="/bin/sh">/bin/sh</option>
               <option value="/bin/bash">/bin/bash</option>
               <option value="/bin/ash">/bin/ash</option>
             </select>
           </div>
-          <button @click="terminalConnected ? handleTerminalDisconnect() : handleTerminalConnect()" :class="['px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-colors', terminalConnected ? 'bg-white border border-slate-200 hover:bg-slate-50 text-slate-700' : 'bg-emerald-500 hover:bg-emerald-600 text-white']">
+          <button :class="['px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-colors', terminalConnected ? 'bg-white border border-slate-200 hover:bg-slate-50 text-slate-700' : 'bg-emerald-500 hover:bg-emerald-600 text-white']" @click="terminalConnected ? handleTerminalDisconnect() : handleTerminalConnect()">
             <i :class="['fas', terminalConnected ? 'fa-plug-circle-xmark' : 'fa-plug']"></i>
             {{ terminalConnected ? '断开连接' : '连接' }}
           </button>
@@ -86,12 +86,12 @@ export default toNative(ContainerTerminal)
         <!-- 移动端工具栏 -->
         <div class="block md:hidden space-y-3 mb-4">
           <div class="flex items-center gap-2">
-            <select v-model="terminalShell" @change="handleShellChange" :disabled="terminalConnected" class="flex-1 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs text-slate-700 hover:border-slate-300 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed">
+            <select v-model="terminalShell" :disabled="terminalConnected" class="flex-1 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs text-slate-700 hover:border-slate-300 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed" @change="handleShellChange">
               <option value="/bin/sh">/bin/sh</option>
               <option value="/bin/bash">/bin/bash</option>
               <option value="/bin/ash">/bin/ash</option>
             </select>
-            <button @click="terminalConnected ? handleTerminalDisconnect() : handleTerminalConnect()" :class="['px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-colors min-w-[80px]', terminalConnected ? 'bg-white border border-slate-200 hover:bg-slate-50 text-slate-700' : 'bg-emerald-500 hover:bg-emerald-600 text-white']">
+            <button :class="['px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-colors min-w-[80px]', terminalConnected ? 'bg-white border border-slate-200 hover:bg-slate-50 text-slate-700' : 'bg-emerald-500 hover:bg-emerald-600 text-white']" @click="terminalConnected ? handleTerminalDisconnect() : handleTerminalConnect()">
               <i :class="['fas', terminalConnected ? 'fa-plug-circle-xmark' : 'fa-plug']"></i>
               <span class="ml-1">{{ terminalConnected ? '断开' : '连接' }}</span>
             </button>

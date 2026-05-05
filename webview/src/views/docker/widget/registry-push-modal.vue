@@ -88,7 +88,7 @@ export default toNative(RegistryPushModal)
     @confirm="handleConfirm"
   >
     <template #confirm-text>开始推送</template>
-    <form @submit.prevent="handleConfirm" class="space-y-4">
+    <form class="space-y-4" @submit.prevent="handleConfirm">
       <div>
         <label class="block text-sm font-medium text-slate-700 mb-2">本地镜像</label>
         <select v-model="pushForm.image" class="input" required>
@@ -105,7 +105,7 @@ export default toNative(RegistryPushModal)
       </div>
       <div>
         <label class="block text-sm font-medium text-slate-700 mb-2">命名空间 <span class="text-slate-400 font-normal">(可选)</span></label>
-        <input type="text" v-model="pushForm.namespace" placeholder="例如: myteam" class="input" />
+        <input v-model="pushForm.namespace" type="text" placeholder="例如: myteam" class="input" />
         <p class="mt-1 text-xs text-slate-400">镜像将被推送为: {{ pushTargetPreview }}</p>
       </div>
     </form>

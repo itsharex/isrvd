@@ -93,24 +93,24 @@ export default toNative(SystemOverview)
 </script>
 
 <template>
-    <div>
-        <div v-if="loading" class="flex items-center justify-center py-10">
-            <div class="w-8 h-8 spinner mr-2"></div>
-            <span class="text-slate-400 text-sm">加载中...</span>
-        </div>
-
-        <div v-show="!loading && ready" class="space-y-5">
-            <SystemInfo ref="infoRef" />
-            <SystemCpuMem ref="cpuMemRef" />
-            <SystemGpu ref="gpuRef" />
-            <SystemDisk ref="diskRef" />
-            <SystemNetwork ref="networkRef" />
-            <SystemGo ref="goRef" />
-        </div>
-
-        <div v-show="!loading && !ready" class="flex items-center gap-3 py-6 px-4 rounded-xl bg-slate-50">
-            <i class="fas fa-triangle-exclamation text-2xl text-slate-300"></i>
-            <p class="text-sm text-slate-500">获取系统信息失败</p>
-        </div>
+  <div>
+    <div v-if="loading" class="flex items-center justify-center py-10">
+      <div class="w-8 h-8 spinner mr-2"></div>
+      <span class="text-slate-400 text-sm">加载中...</span>
     </div>
+
+    <div v-show="!loading && ready" class="space-y-5">
+      <SystemInfo ref="infoRef" />
+      <SystemCpuMem ref="cpuMemRef" />
+      <SystemGpu ref="gpuRef" />
+      <SystemDisk ref="diskRef" />
+      <SystemNetwork ref="networkRef" />
+      <SystemGo ref="goRef" />
+    </div>
+
+    <div v-show="!loading && !ready" class="flex items-center gap-3 py-6 px-4 rounded-xl bg-slate-50">
+      <i class="fas fa-triangle-exclamation text-2xl text-slate-300"></i>
+      <p class="text-sm text-slate-500">获取系统信息失败</p>
+    </div>
+  </div>
 </template>

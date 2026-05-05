@@ -29,7 +29,7 @@ export default toNative(Breadcrumb)
     <ol class="flex items-center space-x-1 text-sm">
       <li>
         <a 
-            class="flex items-center px-3 py-1.5 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all duration-200"
+          class="flex items-center px-3 py-1.5 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all duration-200"
           href="#" 
           @click="navigateTo('/')"
         >

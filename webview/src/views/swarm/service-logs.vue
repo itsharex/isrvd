@@ -76,14 +76,14 @@ export default toNative(ServiceLogs)
           </div>
           <div class="flex items-center gap-2">
             <div class="flex gap-1 bg-slate-100 p-1 rounded-lg">
-              <button @click="switchTab('swarm-service-info')" :class="['px-3 py-1 text-xs font-medium rounded-md transition-all duration-200 flex items-center gap-1.5', activeTab() === 'swarm-service-info' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700']">
+              <button :class="['px-3 py-1 text-xs font-medium rounded-md transition-all duration-200 flex items-center gap-1.5', activeTab() === 'swarm-service-info' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700']" @click="switchTab('swarm-service-info')">
                 <i class="fas fa-circle-info"></i><span>详情</span>
               </button>
-              <button @click="switchTab('swarm-service-logs')" :class="['px-3 py-1 text-xs font-medium rounded-md transition-all duration-200 flex items-center gap-1.5', activeTab() === 'swarm-service-logs' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700']">
+              <button :class="['px-3 py-1 text-xs font-medium rounded-md transition-all duration-200 flex items-center gap-1.5', activeTab() === 'swarm-service-logs' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700']" @click="switchTab('swarm-service-logs')">
                 <i class="fas fa-file-lines"></i><span>日志</span>
               </button>
             </div>
-            <button @click="loadLogs()" class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors">
+            <button class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors" @click="loadLogs()">
               <i class="fas fa-rotate"></i>刷新
             </button>
           </div>
@@ -100,15 +100,15 @@ export default toNative(ServiceLogs)
                 <p class="text-xs text-slate-500 font-mono truncate">{{ serviceId.slice(0, 12) }}</p>
               </div>
             </div>
-            <button @click="loadLogs()" class="w-9 h-9 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-600 transition-colors flex-shrink-0" title="刷新">
+            <button class="w-9 h-9 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-600 transition-colors flex-shrink-0" title="刷新" @click="loadLogs()">
               <i class="fas fa-rotate text-sm"></i>
             </button>
           </div>
           <div class="flex justify-center gap-1 bg-slate-100 p-1 rounded-lg">
-            <button @click="switchTab('swarm-service-info')" :class="['px-3 py-1 text-xs font-medium rounded-md transition-all duration-200 flex items-center gap-1.5', activeTab() === 'swarm-service-info' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700']">
+            <button :class="['px-3 py-1 text-xs font-medium rounded-md transition-all duration-200 flex items-center gap-1.5', activeTab() === 'swarm-service-info' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700']" @click="switchTab('swarm-service-info')">
               <i class="fas fa-circle-info"></i><span class="hidden sm:inline">详情</span>
             </button>
-            <button @click="switchTab('swarm-service-logs')" :class="['px-3 py-1 text-xs font-medium rounded-md transition-all duration-200 flex items-center gap-1.5', activeTab() === 'swarm-service-logs' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700']">
+            <button :class="['px-3 py-1 text-xs font-medium rounded-md transition-all duration-200 flex items-center gap-1.5', activeTab() === 'swarm-service-logs' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700']" @click="switchTab('swarm-service-logs')">
               <i class="fas fa-file-lines"></i><span class="hidden sm:inline">日志</span>
             </button>
           </div>
@@ -119,7 +119,7 @@ export default toNative(ServiceLogs)
       <div class="p-4 md:p-6 space-y-3">
         <div class="flex items-center gap-2">
           <label class="text-xs text-slate-500 flex-shrink-0">最近行数</label>
-          <select v-model="logsTail" @change="loadLogs()" class="w-24 px-2 py-1 bg-white border border-slate-200 rounded-lg text-xs text-slate-700">
+          <select v-model="logsTail" class="w-24 px-2 py-1 bg-white border border-slate-200 rounded-lg text-xs text-slate-700" @change="loadLogs()">
             <option value="50">50</option>
             <option value="100">100</option>
             <option value="200">200</option>

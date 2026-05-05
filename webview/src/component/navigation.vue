@@ -148,8 +148,8 @@ export default toNative(NavigationBar)
     <!-- 移动端关闭按钮 -->
     <div class="lg:hidden absolute top-4 right-4">
       <button 
-        @click="closeMobileSidebar"
         class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600 transition-colors"
+        @click="closeMobileSidebar"
       >
         <i class="fas fa-times text-sm"></i>
       </button>
@@ -192,19 +192,19 @@ export default toNative(NavigationBar)
         <!-- 折叠状态只显示图标，点击展开侧边栏 -->
         <button
           v-if="collapsed"
-          @click.stop="toggleApisix"
           class="flex items-center justify-center w-full px-3 py-3 text-sm font-medium text-slate-600 rounded-xl transition-all duration-200 hover:bg-slate-100 hover:text-slate-900"
           :class="{ 'bg-blue-50 text-blue-700': isActive('/apisix/') }"
           title="APISIX 网关"
+          @click.stop="toggleApisix"
         >
           <i class="fas fa-cloud"></i>
         </button>
         <!-- 有权限：展开状态显示完整子菜单 -->
         <template v-else>
           <button
-            @click.stop="toggleApisix"
             class="flex items-center gap-3 px-3 py-3 w-full text-sm font-medium text-slate-600 rounded-xl transition-all duration-200 hover:bg-slate-100 hover:text-slate-900"
             :class="{ 'bg-blue-50 text-blue-700 hover:bg-blue-100': isActive('/apisix/') }"
+            @click.stop="toggleApisix"
           >
             <i class="fas fa-cloud"></i>
             <span>APISIX 网关</span>
@@ -277,19 +277,19 @@ export default toNative(NavigationBar)
         <!-- 折叠状态只显示图标，点击展开侧边栏 -->
         <button
           v-if="collapsed"
-          @click.stop="toggleDocker"
           class="flex items-center justify-center w-full px-3 py-3 text-sm font-medium text-slate-600 rounded-xl transition-all duration-200 hover:bg-slate-100 hover:text-slate-900"
           :class="{ 'bg-blue-50 text-blue-700': isActive('/docker/') }"
           title="Docker 服务"
+          @click.stop="toggleDocker"
         >
           <i class="fab fa-docker"></i>
         </button>
         <!-- 展开状态：显示完整子菜单 -->
         <template v-else>
           <button
-            @click.stop="toggleDocker"
             class="flex items-center gap-3 px-3 py-3 w-full text-sm font-medium text-slate-600 rounded-xl transition-all duration-200 hover:bg-slate-100 hover:text-slate-900"
             :class="{ 'bg-blue-50 text-blue-700 hover:bg-blue-100': isActive('/docker/') }"
+            @click.stop="toggleDocker"
           >
             <i class="fab fa-docker"></i>
             <span>Docker 服务</span>
@@ -353,19 +353,19 @@ export default toNative(NavigationBar)
         <!-- 折叠状态只显示图标，点击展开侧边栏 -->
         <button
           v-if="collapsed"
-          @click.stop="toggleSwarm"
           class="flex items-center justify-center w-full px-3 py-3 text-sm font-medium text-slate-600 rounded-xl transition-all duration-200 hover:bg-slate-100 hover:text-slate-900"
           :class="{ 'bg-blue-50 text-blue-700': isActive('/swarm') }"
           title="Swarm 集群"
+          @click.stop="toggleSwarm"
         >
           <i class="fas fa-circle-nodes"></i>
         </button>
         <!-- 有权限：展开状态显示完整子菜单 -->
         <template v-else>
           <button
-            @click.stop="toggleSwarm"
             class="flex items-center gap-3 px-3 py-3 w-full text-sm font-medium text-slate-600 rounded-xl transition-all duration-200 hover:bg-slate-100 hover:text-slate-900"
             :class="{ 'bg-blue-50 text-blue-700 hover:bg-blue-100': isActive('/swarm') }"
+            @click.stop="toggleSwarm"
           >
             <i class="fas fa-circle-nodes"></i>
             <span>Swarm 集群</span>
@@ -468,10 +468,10 @@ export default toNative(NavigationBar)
         <i class="fab fa-github text-base"></i>
       </a>
       <button 
-        @click="$emit('update:collapsed', !collapsed)"
         class="flex items-center justify-center gap-2 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors"
         :class="collapsed ? 'w-full h-10' : 'flex-1 h-10 text-xs font-medium'"
         :title="collapsed ? '展开菜单' : '收起菜单'"
+        @click="$emit('update:collapsed', !collapsed)"
       >
         <i :class="collapsed ? 'fas fa-chevron-right' : 'fas fa-chevron-left'"></i>
         <span v-if="!collapsed">收起菜单</span>

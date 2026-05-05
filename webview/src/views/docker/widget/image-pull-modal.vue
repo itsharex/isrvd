@@ -117,7 +117,7 @@ export default toNative(ImagePullModal)
     show-footer
     @confirm="handleConfirm"
   >
-    <form @submit.prevent="handleConfirm" class="max-w-3xl space-y-4">
+    <form class="max-w-3xl space-y-4" @submit.prevent="handleConfirm">
       <section>
         <div class="space-y-3">
           <div>
@@ -145,8 +145,6 @@ export default toNative(ImagePullModal)
               <span class="text-slate-400">（未配置加速器）</span>
             </div>
           </div>
-
-
         </div>
       </section>
 
@@ -154,13 +152,13 @@ export default toNative(ImagePullModal)
         <div class="space-y-3">
           <div class="flex gap-2">
             <input
-              type="text"
               v-model="searchKeyword"
+              type="text"
               placeholder="例如: nginx、redis、ubuntu"
               class="input flex-1"
               @keydown.enter.prevent="handleSearchImage"
             />
-            <button type="button" @click="handleSearchImage" :disabled="searchLoading" class="px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-800 text-white text-xs font-medium flex items-center gap-1.5 transition-colors disabled:opacity-50">
+            <button type="button" :disabled="searchLoading" class="px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-800 text-white text-xs font-medium flex items-center gap-1.5 transition-colors disabled:opacity-50" @click="handleSearchImage">
               <i :class="['fas', searchLoading ? 'fa-spinner fa-spin' : 'fa-search']"></i>
               {{ searchLoading ? '搜索中' : '搜索' }}
             </button>
@@ -171,8 +169,8 @@ export default toNative(ImagePullModal)
               v-for="item in searchResults"
               :key="item.name"
               type="button"
-              @click="selectSearchResult(item)"
               class="w-full rounded-lg px-3 py-2.5 text-left hover:bg-slate-50 transition-colors"
+              @click="selectSearchResult(item)"
             >
               <div class="flex items-center justify-between gap-3">
                 <div class="min-w-0 flex items-center gap-2">
@@ -194,7 +192,7 @@ export default toNative(ImagePullModal)
         <div class="space-y-4">
           <div>
             <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">镜像引用</label>
-            <input type="text" v-model="formData.image" placeholder="例如: nginx, redis:alpine, library/ubuntu:22.04, myteam/app:v1" required class="input font-mono" />
+            <input v-model="formData.image" type="text" placeholder="例如: nginx, redis:alpine, library/ubuntu:22.04, myteam/app:v1" required class="input font-mono" />
             <p class="text-xs text-slate-400 mt-1">
               未指定 tag 时默认拉取 latest；选择私有仓库时不需要重复填写仓库地址。
             </p>

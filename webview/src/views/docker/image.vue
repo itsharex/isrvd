@@ -61,7 +61,7 @@ export default toNative(ImageDetail)
             </div>
           </div>
           <div class="flex items-center gap-2">
-            <button @click="loadDetail()" class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors">
+            <button class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors" @click="loadDetail()">
               <i class="fas fa-rotate"></i>刷新
             </button>
           </div>
@@ -78,7 +78,7 @@ export default toNative(ImageDetail)
             </div>
           </div>
           <div class="flex items-center gap-1 flex-shrink-0">
-            <button @click="loadDetail()" class="w-9 h-9 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-600 transition-colors" title="刷新">
+            <button class="w-9 h-9 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-600 transition-colors" title="刷新" @click="loadDetail()">
               <i class="fas fa-rotate text-sm"></i>
             </button>
           </div>
@@ -209,10 +209,11 @@ export default toNative(ImageDetail)
               <div class="flex items-start gap-2">
                 <!-- 层序号 + 类型标记 -->
                 <div class="flex items-center gap-1.5 shrink-0 mt-0.5">
-                  <span class="w-6 h-6 rounded flex items-center justify-center text-xs font-bold"
+                  <span
+                    class="w-6 h-6 rounded flex items-center justify-center text-xs font-bold"
                     :class="layer.empty ? 'bg-slate-100 text-slate-400' : 'bg-blue-50 text-blue-600'"
                   >{{ inspectData.layerDetails.length - idx }}</span>
-            <span v-if="!layer.empty" class="inline-flex items-center px-1.5 py-0.5 rounded-lg text-xs font-medium bg-emerald-50 text-emerald-700">
+                  <span v-if="!layer.empty" class="inline-flex items-center px-1.5 py-0.5 rounded-lg text-xs font-medium bg-emerald-50 text-emerald-700">
                     {{ formatFileSize(layer.size) }}
                   </span>
                   <span v-else class="inline-flex items-center px-1.5 py-0.5 rounded-lg text-xs font-medium bg-slate-100 text-slate-400">

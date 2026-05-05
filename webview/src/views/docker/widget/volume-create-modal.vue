@@ -52,10 +52,10 @@ export default toNative(VolumeCreateModal)
     @confirm="handleConfirm"
   >
     <template #confirm-text>确认创建</template>
-    <form @submit.prevent="handleConfirm" class="space-y-4">
+    <form class="space-y-4" @submit.prevent="handleConfirm">
       <div>
         <label class="block text-sm font-medium text-slate-700 mb-2">卷名称</label>
-        <input type="text" v-model="formData.name" placeholder="例如: my-data" required class="input" />
+        <input v-model="formData.name" type="text" placeholder="例如: my-data" required class="input" />
       </div>
       <div>
         <label class="block text-sm font-medium text-slate-700 mb-2">驱动类型</label>
