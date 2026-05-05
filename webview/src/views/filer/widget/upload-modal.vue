@@ -1,8 +1,11 @@
 <script lang="ts">
 import { Component, Inject, Ref, Vue, toNative } from 'vue-facing-decorator'
 
-import { APP_STATE_KEY, APP_ACTIONS_KEY } from '@/store/state'
-import type { AppActions, AppState } from '@/store/state'
+import { APP_STATE_KEY } from '@/store/state'
+import type { AppState } from '@/store/state'
+
+import { FILER_STATE_KEY, FILER_ACTIONS_KEY } from '@/store/filer'
+import type { FilerActions, FilerState } from '@/store/filer'
 
 import api from '@/service/api'
 
@@ -13,8 +16,9 @@ import BaseModal from '@/component/modal.vue'
     components: { BaseModal }
 })
 class UploadModal extends Vue {
-    @Inject({ from: APP_STATE_KEY }) readonly state!: AppState
-    @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
+    @Inject({ from: APP_STATE_KEY }) readonly appState!: AppState
+    @Inject({ from: FILER_STATE_KEY }) readonly filerState!: FilerState
+    @Inject({ from: FILER_ACTIONS_KEY }) readonly filerActions!: FilerActions
 
     @Ref readonly fileInput!: HTMLInputElement
 
@@ -28,7 +32,7 @@ class UploadModal extends Vue {
 
     // 文件状态：done | active | pending
     fileStatus(index: number) {
-        if (!this.state.loading) return 'pending'
+        if (!this.appState.loading) return 'pending'
         if (index < this.uploadProgress) return 'done'
         if (index === this.uploadProgress) return 'active'
         return 'pending'
@@ -55,7 +59,7 @@ class UploadModal extends Vue {
         for (let i = 0; i < this.uploadFiles.length; i++) {
             const formData = new FormData()
             formData.append('file', this.uploadFiles[i])
-            formData.append('path', this.state.currentPath)
+            formData.append('path', this.filerState.currentPath)
             await api.filerUpload(formData, {
                 onUploadProgress: (e) => {
                     this.currentFileProgress = e.total ? Math.round((e.loaded / e.total) * 100) : 0
@@ -64,7 +68,7 @@ class UploadModal extends Vue {
             this.uploadProgress++
             this.currentFileProgress = 0
         }
-        this.actions.loadFiles()
+        this.filerActions.loadFiles()
         this.uploadFiles = []
         this.uploadProgress = 0
         if (this.fileInput) this.fileInput.value = ''
@@ -76,13 +80,13 @@ export default toNative(UploadModal)
 </script>
 
 <template>
-  <BaseModal ref="modalRef" v-model="isOpen" title="上传文件" :loading="state.loading" :confirm-disabled="!hasFiles" @confirm="handleConfirm">
+  <BaseModal ref="modalRef" v-model="isOpen" title="上传文件" :loading="appState.loading" :confirm-disabled="!hasFiles" @confirm="handleConfirm">
     <form @submit.prevent="handleConfirm">
       <div>
         <label for="uploadFile" class="block text-sm font-medium text-slate-700 mb-2">选择文件</label>
         <input
           id="uploadFile" ref="fileInput" type="file" multiple required
-          :disabled="state.loading" class="input file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
+          :disabled="appState.loading" class="input file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
           @change="handleFileChange"
         >
         <div v-if="hasFiles" class="mt-3 space-y-2">
@@ -91,8 +95,8 @@ export default toNative(UploadModal)
             class="p-3 rounded-lg border"
             :class="{
               'bg-green-50 border-green-200': fileStatus(index) === 'done',
-              'bg-primary-50 border-primary-200': fileStatus(index) === 'active' || !state.loading,
-              'bg-slate-50 border-slate-200': fileStatus(index) === 'pending' && state.loading,
+              'bg-primary-50 border-primary-200': fileStatus(index) === 'active' || !appState.loading,
+              'bg-slate-50 border-slate-200': fileStatus(index) === 'pending' && appState.loading,
             }"
           >
             <div class="flex items-center">
@@ -100,8 +104,8 @@ export default toNative(UploadModal)
                 class="w-8 h-8 rounded-lg flex items-center justify-center mr-3 flex-shrink-0"
                 :class="{
                   'bg-green-100': fileStatus(index) === 'done',
-                  'bg-primary-100': fileStatus(index) === 'active' || !state.loading,
-                  'bg-slate-100': fileStatus(index) === 'pending' && state.loading,
+                  'bg-primary-100': fileStatus(index) === 'active' || !appState.loading,
+                  'bg-slate-100': fileStatus(index) === 'pending' && appState.loading,
                 }"
               >
                 <i
@@ -109,8 +113,8 @@ export default toNative(UploadModal)
                   :class="{
                     'fa-check text-green-600': fileStatus(index) === 'done',
                     'fa-spinner fa-spin text-primary-600': fileStatus(index) === 'active',
-                    'fa-file text-primary-600': !state.loading,
-                    'fa-file text-slate-400': fileStatus(index) === 'pending' && state.loading,
+                    'fa-file text-primary-600': !appState.loading,
+                    'fa-file text-slate-400': fileStatus(index) === 'pending' && appState.loading,
                   }"
                 ></i>
               </div>
@@ -135,13 +139,13 @@ export default toNative(UploadModal)
           </div>
           <p v-if="uploadFiles.length > 1" class="text-xs text-slate-400 text-right">
             共 {{ uploadFiles.length }} 个文件，合计 {{ (totalSize / 1024).toFixed(2) }} KB
-            <span v-if="state.loading">（{{ uploadProgress }}/{{ uploadFiles.length }}）</span>
+            <span v-if="appState.loading">（{{ uploadProgress }}/{{ uploadFiles.length }}）</span>
           </p>
         </div>
       </div>
     </form>
     <template #confirm-text>
-      {{ state.loading ? `上传中 ${uploadProgress}/${uploadFiles.length}...` : '开始上传' }}
+      {{ appState.loading ? `上传中 ${uploadProgress}/${uploadFiles.length}...` : '开始上传' }}
     </template>
   </BaseModal>
 </template>

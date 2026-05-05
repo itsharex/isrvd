@@ -12,8 +12,11 @@ import { yaml } from '@codemirror/lang-yaml'
 import { Codemirror } from 'vue-codemirror'
 import { Component, Inject, Vue, toNative } from 'vue-facing-decorator'
 
-import { APP_STATE_KEY, APP_ACTIONS_KEY } from '@/store/state'
-import type { AppActions, AppState } from '@/store/state'
+import { APP_STATE_KEY } from '@/store/state'
+import type { AppState } from '@/store/state'
+
+import { FILER_ACTIONS_KEY } from '@/store/filer'
+import type { FilerActions } from '@/store/filer'
 
 import api from '@/service/api'
 import type { FilerFileInfo } from '@/service/types'
@@ -25,8 +28,8 @@ import BaseModal from '@/component/modal.vue'
     components: { BaseModal, Codemirror }
 })
 class ModifyModal extends Vue {
-    @Inject({ from: APP_STATE_KEY }) readonly state!: AppState
-    @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
+    @Inject({ from: APP_STATE_KEY }) readonly appState!: AppState
+    @Inject({ from: FILER_ACTIONS_KEY }) readonly filerActions!: FilerActions
 
     // ─── 数据属性 ───
     isOpen = false
@@ -44,7 +47,7 @@ class ModifyModal extends Vue {
 
     async handleConfirm() {
         await api.filerModify(this.formData.path, this.formData.content)
-        this.actions.loadFiles()
+        this.filerActions.loadFiles()
         this.isOpen = false
     }
 }
@@ -53,12 +56,12 @@ export default toNative(ModifyModal)
 </script>
 
 <template>
-  <BaseModal ref="modalRef" v-model="isOpen" :title="'编辑: ' + formData.filename" :loading="state.loading" @confirm="handleConfirm">
+  <BaseModal ref="modalRef" v-model="isOpen" :title="'编辑: ' + formData.filename" :loading="appState.loading" @confirm="handleConfirm">
     <div class="rounded-xl overflow-hidden border border-slate-200">
-      <Codemirror v-model="formData.content" :style="{ height: '60vh' }" :extensions="extensions" :disabled="state.loading" />
+      <Codemirror v-model="formData.content" :style="{ height: '60vh' }" :extensions="extensions" :disabled="appState.loading" />
     </div>
     <template #confirm-text>
-      {{ state.loading ? '保存中...' : '保存文件' }}
+      {{ appState.loading ? '保存中...' : '保存文件' }}
     </template>
   </BaseModal>
 </template>

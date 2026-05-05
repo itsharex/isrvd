@@ -2,7 +2,7 @@ import { reactive } from 'vue'
 
 import { interceptors } from '@/service/axios'
 import api from '@/service/api'
-import type { FilerFileInfo, LinkConfig } from '@/service/types'
+import type { LinkConfig } from '@/service/types'
 
 export const APP_STATE_KEY = 'app.state'
 export const APP_ACTIONS_KEY = 'app.actions'
@@ -46,8 +46,6 @@ export interface AppState {
     serviceAvailability: ServiceAvailability
     toolbarLinks: LinkConfig[]
     loading: boolean
-    currentPath: string
-    files: FilerFileInfo[]
     notifications: Notification[]
     confirm: {
         show: boolean
@@ -69,7 +67,6 @@ export interface AppActions {
     clearAuth(): void
     isAuthenticated(): boolean
     hasPerm(module: string): boolean
-    loadFiles(path?: string): Promise<void>
     showNotification(type: string, message: string): void
     clearNotification(id: number): void
     showConfirm(options: ConfirmOptions): void
@@ -92,8 +89,6 @@ const createInitialState = (): AppState => ({
     serviceAvailability: { agent: false, apisix: false, docker: false, swarm: false, compose: false },
     toolbarLinks: [],
     loading: false,
-    currentPath: '/',
-    files: [],
     notifications: [],
     confirm: { show: false, title: '', message: '', icon: '', iconColor: 'blue', confirmText: '确认', danger: false, loading: false, onConfirm: null }
 })
@@ -209,10 +204,6 @@ export const initProvider = () => {
                 const path = key.split(' ')[1]
                 return path && (path.startsWith(`/api/${module}/`) || path === `/api/${module}`)
             })
-        },
-
-        async loadFiles(path = state.currentPath) {
-            console.log('loadFiles:', path)
         },
 
         showNotification(type, message) {

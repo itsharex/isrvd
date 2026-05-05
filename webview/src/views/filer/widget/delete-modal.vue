@@ -1,8 +1,11 @@
 <script lang="ts">
 import { Component, Inject, Vue, toNative } from 'vue-facing-decorator'
 
-import { APP_STATE_KEY, APP_ACTIONS_KEY } from '@/store/state'
-import type { AppActions, AppState } from '@/store/state'
+import { APP_STATE_KEY } from '@/store/state'
+import type { AppState } from '@/store/state'
+
+import { FILER_ACTIONS_KEY } from '@/store/filer'
+import type { FilerActions } from '@/store/filer'
 
 import api from '@/service/api'
 import type { FilerFileInfo } from '@/service/types'
@@ -14,8 +17,8 @@ import BaseModal from '@/component/modal.vue'
     components: { BaseModal }
 })
 class DeleteModal extends Vue {
-    @Inject({ from: APP_STATE_KEY }) readonly state!: AppState
-    @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
+    @Inject({ from: APP_STATE_KEY }) readonly appState!: AppState
+    @Inject({ from: FILER_ACTIONS_KEY }) readonly filerActions!: FilerActions
 
     // ─── 数据属性 ───
     isOpen = false
@@ -31,7 +34,7 @@ class DeleteModal extends Vue {
     async handleConfirm() {
         if (!this.formData.path) return
         await api.filerDelete(this.formData.path)
-        this.actions.loadFiles()
+        this.filerActions.loadFiles()
         this.isOpen = false
     }
 }
@@ -40,7 +43,7 @@ export default toNative(DeleteModal)
 </script>
 
 <template>
-  <BaseModal ref="modalRef" v-model="isOpen" title="确认删除" :loading="state.loading" @confirm="handleConfirm">
+  <BaseModal ref="modalRef" v-model="isOpen" title="确认删除" :loading="appState.loading" @confirm="handleConfirm">
     <div class="text-center py-6">
       <div class="w-20 h-20 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
         <i class="fas fa-trash text-3xl text-red-500"></i>
@@ -54,7 +57,7 @@ export default toNative(DeleteModal)
       </p>
     </div>
     <template #confirm-text>
-      {{ state.loading ? '删除中...' : '确认删除' }}
+      {{ appState.loading ? '删除中...' : '确认删除' }}
     </template>
   </BaseModal>
 </template>

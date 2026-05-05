@@ -2,6 +2,7 @@
 import { Component, Provide, Ref, Vue, toNative } from 'vue-facing-decorator'
 
 import { APP_ACTIONS_KEY, APP_STATE_KEY, initProvider } from '@/store/state'
+import { FILER_ACTIONS_KEY, FILER_STATE_KEY, initFilerProvider } from '@/store/filer'
 
 import { setRouterGuard } from '@/router'
 
@@ -14,6 +15,7 @@ import UserMenu from '@/component/user-menu.vue'
 import AuthLogin from '@/views/account/login.vue'
 
 const { state, actions } = initProvider()
+const { state: filerState, actions: filerActions } = initFilerProvider()
 setRouterGuard(actions.hasPerm, () => state.permissionsLoaded, actions.isAuthenticated)
 
 @Component({
@@ -22,6 +24,8 @@ setRouterGuard(actions.hasPerm, () => state.permissionsLoaded, actions.isAuthent
 class App extends Vue {
     @Provide(APP_STATE_KEY) state = state
     @Provide(APP_ACTIONS_KEY) actions = actions
+    @Provide(FILER_STATE_KEY) filerState = filerState
+    @Provide(FILER_ACTIONS_KEY) filerActions = filerActions
     sidebarCollapsed = false
 
     @Ref readonly navigationRef!: InstanceType<typeof NavigationBar>
