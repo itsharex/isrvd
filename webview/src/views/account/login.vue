@@ -23,7 +23,7 @@ class Login extends Vue {
         if (!payload) return
 
         this.actions.setAuth({ authMode: 'jwt', ...payload })
-        await this.actions.loadAppData()
+        await this.actions.initialize()
         this.loginForm.username = ''
         this.loginForm.password = ''
     }

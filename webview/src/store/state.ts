@@ -68,7 +68,6 @@ export interface AppActions {
     setAuth(data: { authMode: 'jwt' | 'header'; token: string; username: string }): void
     clearAuth(): void
     isAuthenticated(): boolean
-    setPermissions(data: { founder?: boolean; permissions: string[] }): void
     hasPerm(module: string): boolean
     loadFiles(path?: string): Promise<void>
     showNotification(type: string, message: string): void
@@ -126,7 +125,9 @@ export const initProvider = () => {
                 if (payload?.mode === 'header' && payload.username) {
                     this.setAuth({ authMode: 'header', token: '', username: payload.username })
                 } else if (payload?.username && payload.member) {
-                    this.setPermissions({ founder: payload.member.founder, permissions: payload.member.permissions || [] })
+                    state.permissionsLoaded = true
+                    state.founder = payload.member.founder || false
+                    state.permissions = payload.member.permissions || []
                 } else {
                     this.clearAuth()
                 }
@@ -142,8 +143,7 @@ export const initProvider = () => {
 
         async loadAppData() {
             try {
-                const [authRes, probeRes, configRes] = await Promise.all([
-                    api.accountInfo(),
+                const [probeRes, configRes] = await Promise.all([
                     api.overviewProbe(),
                     api.systemConfig(),
                 ])
@@ -160,11 +160,6 @@ export const initProvider = () => {
                 }
 
                 state.toolbarLinks = configRes?.payload?.links || []
-
-                const member = authRes?.payload?.member
-                if (member) {
-                    this.setPermissions({ founder: member.founder, permissions: member.permissions || [] })
-                }
             } catch (e) {
                 console.error('Load app data failed:', e)
             }
@@ -172,8 +167,8 @@ export const initProvider = () => {
 
         setAuth(data) {
             state.authMode = data.authMode
-            state.token = data.token
             state.username = data.username
+            state.token = data.token || ''
             if (data.authMode === 'jwt') {
                 localStorage.setItem('app-token', data.token)
                 localStorage.setItem('app-username', data.username)
@@ -191,13 +186,7 @@ export const initProvider = () => {
             localStorage.removeItem('app-username')
         },
 
-        isAuthenticated: () => !!state.token,
-
-        setPermissions(data) {
-            state.permissionsLoaded = true
-            state.founder = data.founder || false
-            state.permissions = data.permissions || []
-        },
+        isAuthenticated: () => !!state.username,
 
         hasPerm(module) {
             const checkAvailability = (seg: string): boolean => {
