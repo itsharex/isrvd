@@ -27,7 +27,7 @@ class ChmodModal extends Vue {
     // ─── 方法 ───
     show(file: FilerFileInfo) {
         this.formData.path = file.path
-        this.formData.mode = file.mode
+        this.formData.mode = file.modeO
         this.isOpen = true
     }
 

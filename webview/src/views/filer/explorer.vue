@@ -299,6 +299,14 @@ export default toNative(FileExplorer)
                         <i class="fas fa-download text-xs"></i>
                       </button>
                       <button 
+                        v-if="file.name.endsWith('.zip') && appActions.hasPerm('POST /api/filer/unzip')"
+                        class="btn-icon text-amber-600 hover:bg-amber-50"
+                        title="解压" 
+                        @click="unzipModalRef.show(file)"
+                      >
+                        <i class="fas fa-file-zipper text-xs"></i>
+                      </button>
+                      <button 
                         v-if="isEditableFile(file.name) && appActions.hasPerm('POST /api/filer/read') && appActions.hasPerm('POST /api/filer/modify')"
                         class="btn-icon text-violet-600 hover:bg-violet-50"
                         title="编辑" 
@@ -359,38 +367,35 @@ export default toNative(FileExplorer)
                   <i :class="getFileIcon(file)" class="text-white text-base"></i>
                 </div>
                 <div class="min-w-0">
-                  <div class="flex items-center gap-2 min-w-0">
-                    <a 
-                      v-if="file.isDir" 
-                      href="#" 
-                      class="font-medium text-slate-800 hover:text-primary-600 transition-colors text-sm truncate" 
-                      @click="navigateTo(file.path)"
-                    >
-                      {{ file.name }}
-                    </a>
-                    <span v-else class="font-medium text-slate-800 text-sm truncate">{{ file.name }}</span>
-                  </div>
-                  <div class="flex items-center gap-3 mt-1">
-                    <span v-if="!file.isDir" class="text-xs text-slate-500">
-                      {{ formatFileSize(file.size) }}
-                    </span>
-                    <span v-else class="text-xs text-slate-400">目录</span>
-                    <span class="text-xs text-slate-500">{{ formatTime(file.modTime) }}</span>
-                  </div>
+                  <a 
+                    v-if="file.isDir" 
+                    href="#" 
+                    class="font-medium text-slate-800 hover:text-primary-600 transition-colors text-sm truncate block leading-tight min-h-0" 
+                    @click="navigateTo(file.path)"
+                  >
+                    {{ file.name }}
+                  </a>
+                  <span v-else class="font-medium text-slate-800 text-sm truncate block">{{ file.name }}</span>
+                  <span v-if="!file.isDir" class="text-xs text-slate-400 truncate block mt-0.5">{{ formatFileSize(file.size) }}</span>
+                  <span v-else class="text-xs text-slate-400 truncate block mt-0.5">目录</span>
                 </div>
               </div>
             </div>
-            
-            <!-- 中间：权限信息 -->
-            <div class="mb-3">
-              <p class="text-xs text-slate-500 mb-1">权限</p>
-              <code class="px-2 py-1 bg-slate-100 rounded text-xs text-slate-700 font-mono">
-                {{ file.mode }}
-              </code>
+
+            <!-- 时间 -->
+            <div class="flex items-center gap-2 mb-2">
+              <span class="text-xs text-slate-400 w-16 flex-shrink-0">修改时间</span>
+              <span class="text-xs text-slate-600">{{ formatTime(file.modTime) }}</span>
             </div>
-            
+
+            <!-- 权限 -->
+            <div class="flex items-center gap-2 mb-0">
+              <span class="text-xs text-slate-400 w-16 flex-shrink-0">权限</span>
+              <code class="text-xs text-slate-600 font-mono">{{ file.mode }}</code>
+            </div>
+
             <!-- 底部：操作按钮 -->
-            <div class="flex flex-wrap gap-1 pt-2 border-t border-slate-100">
+            <div class="flex flex-wrap gap-1 pt-2 mt-2 border-t border-slate-100">
               <!-- Directory Actions -->
               <template v-if="file.isDir">
                 <button 
@@ -450,6 +455,15 @@ export default toNative(FileExplorer)
                 >
                   <i class="fas fa-download text-xs"></i>
                   <span class="text-xs ml-1 hidden xs:inline">下载</span>
+                </button>
+                <button 
+                  v-if="file.name.endsWith('.zip') && appActions.hasPerm('POST /api/filer/unzip')"
+                  class="btn-icon text-amber-600 hover:bg-amber-50"
+                  title="解压" 
+                  @click="unzipModalRef.show(file)"
+                >
+                  <i class="fas fa-file-zipper text-xs"></i>
+                  <span class="text-xs ml-1 hidden xs:inline">解压</span>
                 </button>
                 <button 
                   v-if="isEditableFile(file.name) && appActions.hasPerm('POST /api/filer/read') && appActions.hasPerm('POST /api/filer/modify')"

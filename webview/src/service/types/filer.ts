@@ -5,6 +5,7 @@ export interface FilerFileInfo {
     path: string
     size: number
     mode: string
+    modeO: string
     modTime: string
     isDir: boolean
 }
