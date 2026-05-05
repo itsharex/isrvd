@@ -77,40 +77,7 @@ def install_prettier():
         log_success("Prettier 已安装")
 
 
-def create_prettier_config():
-    """创建 Prettier 配置文件"""
-    root_dir = Path(__file__).parent.parent
-    config_file = root_dir / ".prettierrc"
-    ignore_file = root_dir / ".prettierignore"
-    
-    if not config_file.exists():
-        log_info("创建 Prettier 配置文件...")
-        config_file.write_text("""{
-  "semi": true,
-  "singleQuote": true,
-  "tabWidth": 2,
-  "trailingComma": "es5",
-  "printWidth": 100,
-  "bracketSpacing": true,
-  "arrowParens": "always",
-  "endOfLine": "lf",
-  "vueIndentScriptAndStyle": false,
-  "htmlWhitespaceSensitivity": "css",
-  "plugins": ["@prettier/plugin-phtml", "prettier-plugin-tailwindcss"]
-}
-""")
-        log_success("Prettier 配置文件已创建")
-    else:
-        log_info("Prettier 配置文件已存在")
-    
-    if not ignore_file.exists():
-        ignore_file.write_text("""node_modules
-dist
-*.min.js
-*.min.css
-package-lock.json
-""")
-        log_success(".prettierignore 已创建")
+
 
 
 def format_code(dry_run=False):
@@ -216,10 +183,8 @@ def main():
     
     if action == "install":
         install_prettier()
-        create_prettier_config()
     elif action == "format":
         install_prettier()
-        create_prettier_config()
         format_code(dry_run)
     elif action == "imports":
         sort_imports(dry_run)
@@ -227,7 +192,6 @@ def main():
         type_check()
     elif action == "all":
         install_prettier()
-        create_prettier_config()
         if dry_run:
             log_info("预览模式：检查需要格式化的文件...")
             format_code(dry_run=True)

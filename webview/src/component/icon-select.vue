@@ -39,7 +39,7 @@ const { ALL_ICONS, CATEGORIES } = (() => {
 
     // 构建全部图标列表
     const icons: FaIcon[] = []
-    for (const [name, info] of Object.entries(iconFamilies as Record<string, any>)) {
+    for (const [name, info] of Object.entries(iconFamilies as Record<string, { label: string; familyStylesByLicense?: { free?: { style: string }[] } }>)) {
         for (const s of info.familyStylesByLicense?.free ?? []) {
             if (s.style === 'solid') {
                 icons.push({ name: `fas fa-${name}`, label: info.label, category: iconCategoryMap.get(name) ?? '' })

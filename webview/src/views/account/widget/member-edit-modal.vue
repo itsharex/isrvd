@@ -102,14 +102,14 @@ class MemberEditModal extends Vue {
             const groupMap = new Map<string, RouteItem[]>()
             for (const item of items) {
                 if (!groupMap.has(item.module)) groupMap.set(item.module, [])
-                groupMap.get(item.module)!.push({ key: item.key, label: item.label || item.key, access: item.access })
+                groupMap.get(item.module)?.push({ key: item.key, label: item.label || item.key, access: item.access })
             }
             // 按预定义顺序排列模块，未知模块追加到末尾
             const ordered: RouteGroup[] = []
             for (const mod of moduleOrder) {
                 if (groupMap.has(mod)) {
                     const meta = MODULE_META[mod] || { icon: 'fas fa-circle', label: mod }
-                    ordered.push({ module: mod, label: meta.label, icon: meta.icon, routes: groupMap.get(mod)! })
+                    ordered.push({ module: mod, label: meta.label, icon: meta.icon, routes: groupMap.get(mod) ?? [] })
                     groupMap.delete(mod)
                 }
             }

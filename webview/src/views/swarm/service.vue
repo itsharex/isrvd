@@ -39,7 +39,8 @@ serviceData: SwarmServiceInspect | null = null
             if (!map.has(key)) {
                 map.set(key, { nodeID: t.nodeID, nodeName: t.nodeName || t.nodeID, running: 0, total: 0 })
             }
-            const entry = map.get(key)!
+            const entry = map.get(key)
+            if (!entry) continue
             entry.total++
             if (t.state === 'running') entry.running++
         }

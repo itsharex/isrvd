@@ -11,6 +11,7 @@ import type {
     ApisixPluginConfigUpdate,
     ApisixRoute
 } from '@/service/types'
+
 import BaseModal from '@/component/modal.vue'
 
 import PluginConfigPanel from './plugin-config-panel.vue'

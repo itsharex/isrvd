@@ -87,7 +87,7 @@ export const interceptors = (
      */
     const handleError = (error: unknown, isBlob = false) => {
         state.loading = false
-        const err = error as { response?: { status?: number; data?: any }; request?: unknown }
+        const err = error as { response?: { status?: number; data?: { message?: string } }; request?: unknown }
         if (err.response?.status === 401) {
             actions.showNotification('error', '登录已过期，请重新登录')
             actions.clearAuth()

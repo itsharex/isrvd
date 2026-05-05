@@ -98,8 +98,8 @@ class Images extends Vue {
                     await api.dockerImagePull(pullImageRef, registryUrl, '')
                     this.actions.showNotification('success', '镜像拉取成功')
                     this.loadImages()
-                } catch (e: any) {
-                    this.actions.showNotification('error', e.message || '镜像拉取失败')
+                } catch (e: unknown) {
+                    this.actions.showNotification('error', (e instanceof Error ? e.message : '') || '镜像拉取失败')
                 }
             }
         })

@@ -61,7 +61,7 @@ class SystemDisk extends Vue {
         if (!this.currentDiskIO?.length) return null
         const devName = device.split('/').pop()
         return this.currentDiskIO.find(d => d.Name === devName)
-            || this.currentDiskIO.find(d => devName!.startsWith(d.Name)) || null
+            || this.currentDiskIO.find(d => devName?.startsWith(d.Name)) || null
     }
 
     currentDiskRate(name: string, dir: string): number {

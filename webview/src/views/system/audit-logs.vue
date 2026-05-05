@@ -92,7 +92,7 @@ class AuditLogs extends Vue {
         return duration < 1000 ? `${duration}ms` : `${(duration / 1000).toFixed(2)}s`
     }
 
-    unwrapJson(parsed: any): any {
+    unwrapJson(parsed: unknown): unknown {
         if (typeof parsed === 'string') {
             try { return JSON.parse(parsed) } catch { }
         }

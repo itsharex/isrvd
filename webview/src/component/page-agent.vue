@@ -108,13 +108,13 @@ class PageAgentModal extends Vue {
 
     showPanel() {
         if (!this.isAgentAlive()) return
-        this.agent!.panel.show()
+        this.agent?.panel.show()
         this.panelVisible = true
     }
 
     hidePanel() {
         if (!this.isAgentAlive()) return
-        this.agent!.panel.hide()
+        this.agent?.panel.hide()
         this.panelVisible = false
     }
 }
