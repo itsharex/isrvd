@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
 """
 前端代码批量格式化脚本
-功能：安装依赖、格式化代码、整理 import、类型检查
+功能：安装依赖、格式化代码、整理 import、类型检查、ESLint 检查
 """
 
 import subprocess
 import sys
+import argparse
+import time
 from pathlib import Path
-
+from concurrent.futures import ThreadPoolExecutor
+from typing import List, Tuple, Optional
 
 # 颜色输出
 class Color:
@@ -15,48 +18,52 @@ class Color:
     GREEN = '\033[0;32m'
     YELLOW = '\033[1;33m'
     BLUE = '\033[0;34m'
+    CYAN = '\033[0;36m'
     NC = '\033[0m'
-
 
 def log_info(msg):
     print(f"{Color.BLUE}[INFO]{Color.NC} {msg}")
 
-
 def log_success(msg):
     print(f"{Color.GREEN}[SUCCESS]{Color.NC} {msg}")
-
 
 def log_warn(msg):
     print(f"{Color.YELLOW}[WARN]{Color.NC} {msg}")
 
-
 def log_error(msg):
     print(f"{Color.RED}[ERROR]{Color.NC} {msg}")
 
+def log_debug(msg):
+    print(f"{Color.CYAN}[DEBUG]{Color.NC} {msg}")
 
-def run_command(cmd, check=True, capture=False):
-    """运行命令"""
+def run_command(cmd: str, check: bool = True, capture: bool = False, timeout: int = 300) -> Tuple[bool, Optional[str], Optional[str]]:
+    """运行命令，支持超时控制"""
     try:
         if capture:
-            result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+            result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=timeout)
             return result.returncode == 0, result.stdout, result.stderr
         else:
-            result = subprocess.run(cmd, shell=True)
+            result = subprocess.run(cmd, shell=True, timeout=timeout)
             return result.returncode == 0, None, None
+    except subprocess.TimeoutExpired:
+        log_error(f"命令执行超时: {cmd}")
+        if check:
+            sys.exit(1)
+        return False, None, "Timeout"
     except Exception as e:
         if check:
             log_error(f"命令执行失败: {e}")
             sys.exit(1)
         return False, None, str(e)
 
-
 def check_npm():
     """检查 npm 是否可用"""
+    log_info("检查 npm 环境...")
     success, _, _ = run_command("npm --version", check=False, capture=True)
     if not success:
         log_error("npm 未安装，请先安装 Node.js")
         sys.exit(1)
-
+    log_success("npm 环境正常")
 
 def install_prettier():
     """安装 Prettier（如果未安装）"""
@@ -71,37 +78,85 @@ def install_prettier():
         )
         if not success:
             log_warn("Prettier 插件安装失败，使用基础配置")
-            run_command("npm install --save-dev prettier")
+            run_command("npm install --save-dev prettier", check=False)
         log_success("Prettier 安装完成")
     else:
         log_success("Prettier 已安装")
 
+def run_typescript_check() -> bool:
+    """执行 TypeScript 类型检查"""
+    log_info("执行 TypeScript 类型检查...")
+    start_time = time.time()
+    
+    success, stdout, stderr = run_command("vue-tsc --noEmit", check=False, capture=True)
+    elapsed = time.time() - start_time
+    
+    if success:
+        log_success(f"TypeScript 类型检查通过 (耗时: {elapsed:.2f}s)")
+        return True
+    else:
+        log_warn(f"TypeScript 类型检查发现问题 (耗时: {elapsed:.2f}s)")
+        if stderr:
+            log_debug(stderr)
+        return False
 
+def run_eslint_check(dry_run: bool = False) -> bool:
+    """执行 ESLint 检查或修复"""
+    if dry_run:
+        log_info("执行 ESLint 检查...")
+        cmd = "eslint src --ext .ts,.vue"
+    else:
+        log_info("执行 ESLint 修复...")
+        cmd = "eslint src --ext .ts,.vue --fix"
+    
+    start_time = time.time()
+    success, stdout, stderr = run_command(cmd, check=False, capture=True)
+    elapsed = time.time() - start_time
+    
+    if success:
+        if dry_run:
+            log_success(f"ESLint 检查通过 (耗时: {elapsed:.2f}s)")
+        else:
+            log_success(f"ESLint 修复完成 (耗时: {elapsed:.2f}s)")
+        return True
+    else:
+        if dry_run:
+            log_warn(f"ESLint 检查发现问题 (耗时: {elapsed:.2f}s)")
+        else:
+            log_warn(f"ESLint 修复发现问题 (耗时: {elapsed:.2f}s)")
+        return False
 
-
-
-def format_code(dry_run=False):
+def format_code(dry_run: bool = False) -> bool:
     """格式化代码"""
     log_info("开始格式化代码...")
     
     patterns = ["src/**/*.vue", "src/**/*.ts", "src/**/*.js"]
+    all_success = True
     
     for pattern in patterns:
         if dry_run:
             cmd = f"npx prettier --check '{pattern}'"
+            log_info(f"检查格式化: {pattern}")
         else:
             cmd = f"npx prettier --write '{pattern}'"
             log_info(f"格式化: {pattern}")
         
-        success, _, err = run_command(cmd, check=False, capture=True)
-        if not success and not dry_run:
-            log_warn(f"部分文件格式化失败: {pattern}")
+        success, stdout, stderr = run_command(cmd, check=False, capture=True)
+        if not success:
+            if dry_run:
+                log_warn(f"格式化检查失败: {pattern}")
+            else:
+                log_warn(f"格式化失败: {pattern}")
+            all_success = False
+        elif stdout and "All matched files use Prettier code style!" in stdout:
+            log_info(f"{pattern}: 格式正确")
     
-    if not dry_run:
+    if not dry_run and all_success:
         log_success("代码格式化完成")
+    
+    return all_success
 
-
-def sort_imports(dry_run=False):
+def sort_imports(dry_run: bool = False) -> bool:
     """整理 import 语句"""
     log_info("整理 import 语句...")
     
@@ -112,97 +167,146 @@ def sort_imports(dry_run=False):
         cmd = f"python3 {sort_script}"
         if dry_run:
             cmd += " --dry-run"
-        run_command(cmd)
-        log_success("import 语句整理完成")
+        success, _, _ = run_command(cmd, check=False)
+        if success:
+            log_success("import 语句整理完成")
+            return True
+        else:
+            log_warn("import 语句整理失败")
+            return False
     else:
         log_warn("sort-imports.py 脚本不存在，跳过")
+        return True
 
-
-def type_check():
-    """类型检查"""
-    log_info("执行 TypeScript 类型检查...")
+def run_parallel_tasks(tasks: List[Tuple[callable, tuple]], max_workers: int = 2) -> bool:
+    """并行执行任务"""
+    all_success = True
     
-    success, _, _ = run_command("npm run lint", check=False)
-    if success:
-        log_success("类型检查通过")
-    else:
-        log_warn("类型检查发现问题，请手动检查")
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        futures = []
+        for task_func, args in tasks:
+            futures.append(executor.submit(task_func, *args))
+        
+        for future in futures:
+            try:
+                success = future.result(timeout=600)
+                if not success:
+                    all_success = False
+            except Exception as e:
+                log_error(f"任务执行异常: {e}")
+                all_success = False
+    
+    return all_success
 
-
-def show_help():
-    """显示帮助"""
-    print("""用法: python format.py [选项]
+def main():
+    parser = argparse.ArgumentParser(description="前端代码格式化工具", add_help=False)
+    parser.add_argument("--install", action="store_true", help="仅安装 Prettier")
+    parser.add_argument("--format", action="store_true", help="仅执行格式化")
+    parser.add_argument("--imports", action="store_true", help="仅整理 import")
+    parser.add_argument("--check", action="store_true", help="仅执行类型检查")
+    parser.add_argument("--eslint", action="store_true", help="仅执行 ESLint 检查")
+    parser.add_argument("--all", action="store_true", help="执行所有步骤（默认）")
+    parser.add_argument("--dry-run", action="store_true", help="预览模式（不修改文件）")
+    parser.add_argument("--parallel", action="store_true", help="启用并行执行")
+    parser.add_argument("-h", "--help", action="store_true", help="显示帮助信息")
+    
+    args = parser.parse_args()
+    
+    if args.help:
+        print("""用法: python format.py [选项]
 
 选项:
   --install     仅安装 Prettier
   --format      仅执行格式化
   --imports     仅整理 import
-  --check       仅执行类型检查
+  --check       仅执行 TypeScript 类型检查
+  --eslint      仅执行 ESLint 检查
   --all         执行所有步骤（默认）
   --dry-run     预览模式（不修改文件）
+  --parallel    启用并行执行（仅对某些任务有效）
   -h, --help    显示帮助信息
 
 示例:
   python format.py                  # 执行完整格式化流程
   python format.py --format         # 仅格式化代码
   python format.py --dry-run        # 预览将要修改的文件
+  python format.py --check --eslint # 执行类型和 ESLint 检查
+  python format.py --all --parallel # 并行执行所有任务
 """)
-
-
-def main():
-    action = "all"
-    dry_run = False
+        sys.exit(0)
     
-    # 解析参数
-    args = sys.argv[1:]
-    for arg in args:
-        if arg == "--install":
-            action = "install"
-        elif arg == "--format":
-            action = "format"
-        elif arg == "--imports":
-            action = "imports"
-        elif arg == "--check":
-            action = "check"
-        elif arg == "--all":
-            action = "all"
-        elif arg == "--dry-run":
-            dry_run = True
-        elif arg in ["-h", "--help"]:
-            show_help()
-            sys.exit(0)
-        else:
-            log_error(f"未知参数: {arg}")
-            show_help()
-            sys.exit(1)
+    # 确定执行模式
+    if sum([args.install, args.format, args.imports, args.check, args.eslint]) == 0:
+        action = "all"
+    else:
+        action = "custom"
+    
+    dry_run = args.dry_run
+    use_parallel = args.parallel
     
     log_info("前端代码格式化工具")
     log_info("========================")
     
     check_npm()
     
-    if action == "install":
-        install_prettier()
-    elif action == "format":
-        install_prettier()
-        format_code(dry_run)
-    elif action == "imports":
-        sort_imports(dry_run)
-    elif action == "check":
-        type_check()
-    elif action == "all":
-        install_prettier()
-        if dry_run:
-            log_info("预览模式：检查需要格式化的文件...")
-            format_code(dry_run=True)
-            sort_imports(dry_run=True)
-        else:
-            format_code()
-            sort_imports()
-            type_check()
+    start_time = time.time()
     
-    log_success("完成！")
-
+    try:
+        if args.install:
+            install_prettier()
+        elif args.format:
+            install_prettier()
+            format_code(dry_run)
+        elif args.imports:
+            sort_imports(dry_run)
+        elif args.check:
+            run_typescript_check()
+        elif args.eslint:
+            run_eslint_check(dry_run)
+        elif action == "all":
+            install_prettier()
+            
+            if dry_run:
+                log_info("预览模式：检查代码质量...")
+                
+                if use_parallel:
+                    tasks = [
+                        (format_code, (True,)),
+                        (run_typescript_check, ()),
+                        (run_eslint_check, (True,)),
+                        (sort_imports, (True,))
+                    ]
+                    run_parallel_tasks(tasks)
+                else:
+                    format_code(True)
+                    run_typescript_check()
+                    run_eslint_check(True)
+                    sort_imports(True)
+            else:
+                if use_parallel:
+                    # 格式化和其他任务可以并行
+                    tasks = [
+                        (format_code, (False,)),
+                        (run_typescript_check, ()),
+                        (sort_imports, (False,))
+                    ]
+                    run_parallel_tasks(tasks)
+                    # ESLint 修复放在最后
+                    run_eslint_check(False)
+                else:
+                    format_code()
+                    run_typescript_check()
+                    sort_imports()
+                    run_eslint_check(False)
+    except KeyboardInterrupt:
+        log_warn("用户中断执行")
+        sys.exit(1)
+    except Exception as e:
+        log_error(f"执行过程中发生错误: {e}")
+        sys.exit(1)
+    
+    elapsed = time.time() - start_time
+    log_success(f"完成！总耗时: {elapsed:.2f}s")
 
 if __name__ == "__main__":
     main()
