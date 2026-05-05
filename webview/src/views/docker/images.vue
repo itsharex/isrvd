@@ -69,7 +69,7 @@ class Images extends Vue {
     }
 
     async pullImage(image: DockerImageInfo) {
-        const tag = image.repoTags.find(t => t !== '<none>:<none>')
+        const tag = image.repoTags.find(t => t && t !== '<none>:<none>')
         if (!tag || tag === '<none>:<none>') {
             this.actions.showNotification('error', '该镜像没有有效的 Tag，无法拉取')
             return
@@ -87,7 +87,7 @@ class Images extends Vue {
 
         this.actions.showConfirm({
             title: '拉取镜像',
-            message: `确定要重新拉取镜像 <strong class="text-slate-900">${tag}</strong> 吗？`,
+            message: `确定要重新拉取镜像 <strong class="text-slate-900">${tag || image.shortId}</strong> 吗？`,
             icon: 'fa-download',
             iconColor: 'blue',
             confirmText: '确认拉取',
@@ -105,9 +105,10 @@ class Images extends Vue {
     }
 
     handleImageAction(image: DockerImageInfo, action: string) {
+        const tag = image.repoTags.find(t => t && t !== '<none>:<none>')
         this.actions.showConfirm({
             title: '删除镜像',
-            message: `确定要删除镜像 <strong class="text-slate-900">${image.repoTags[0] || image.id}</strong> 吗？`,
+            message: `确定要删除镜像 <strong class="text-slate-900">${tag || image.shortId}</strong> 吗？`,
             icon: 'fa-trash',
             iconColor: 'red',
             confirmText: '确认删除',
@@ -215,6 +216,7 @@ export default toNative(Images)
             <thead>
               <tr class="bg-slate-50 border-b border-slate-200">
                 <th class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">镜像</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">标签</th>
                 <th class="w-32 px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">大小</th>
                 <th class="w-36 px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">创建时间</th>
                 <th class="w-40 px-4 py-3 text-right text-xs font-semibold text-slate-600 uppercase tracking-wider">操作</th>
@@ -223,23 +225,23 @@ export default toNative(Images)
             <tbody class="bg-white divide-y divide-slate-100">
               <tr v-for="img in images" :key="img.id" class="hover:bg-slate-50 transition-colors">
                 <td class="px-4 py-3 max-w-[280px]">
-                  <div class="flex flex-col gap-0.5">
-                    <div class="flex items-center gap-2 min-w-0">
-                      <div class="w-8 h-8 rounded-lg bg-blue-400 flex items-center justify-center flex-shrink-0">
-                        <i class="fas fa-compact-disc text-white text-sm"></i>
-                      </div>
-                      <div class="min-w-0">
-                        <span class="font-medium text-slate-800 truncate block">{{ parseImageRef(img.repoTags[0]).name }}</span>
-                        <span v-if="parseImageRef(img.repoTags[0]).host" class="text-xs text-slate-400 truncate block mt-0.5">{{ parseImageRef(img.repoTags[0]).host }}</span>
-                        <code v-else class="text-xs text-slate-400 font-mono truncate block mt-0.5">{{ img.shortId }}</code>
-                      </div>
+                  <div class="flex items-center gap-2 min-w-0">
+                    <div class="w-8 h-8 rounded-lg bg-blue-400 flex items-center justify-center flex-shrink-0">
+                      <i class="fas fa-compact-disc text-white text-sm"></i>
                     </div>
-                    <div v-if="img.repoTags.length > 1" class="ml-10 flex flex-wrap gap-1">
-                      <span v-for="(tag, idx) in img.repoTags.slice(1)" :key="idx" class="inline-flex items-center px-1.5 py-0.5 rounded-lg text-xs font-medium bg-blue-50 text-blue-600">
-                        {{ tag }}
-                      </span>
+                    <div class="min-w-0">
+                      <span class="font-medium text-slate-800 truncate block">{{ parseImageRef(img.repoTags[0]).name.replace(/:[^:]+$/, '') }}</span>
+                      <code class="text-xs text-slate-400 font-mono truncate block mt-0.5">{{ img.shortId }}</code>
                     </div>
                   </div>
+                </td>
+                <td class="px-4 py-3">
+                  <div v-if="img.repoTags && img.repoTags.length > 0" class="flex flex-wrap gap-1">
+                    <span v-for="(tag, idx) in img.repoTags" :key="idx" class="inline-flex items-center px-1.5 py-0.5 rounded-lg text-xs font-medium bg-blue-50 text-blue-600">
+                      {{ tag }}
+                    </span>
+                  </div>
+                  <span v-else class="text-sm text-slate-400">-</span>
                 </td>
                 <td class="px-4 py-3 text-sm text-slate-600">{{ formatFileSize(img.size) }}</td>
                 <td class="px-4 py-3 whitespace-nowrap text-sm text-slate-600">{{ formatTime(new Date(img.created * 1000).toISOString()) }}</td>
@@ -280,9 +282,18 @@ export default toNative(Images)
                 <i class="fas fa-compact-disc text-white text-base"></i>
               </div>
               <div class="min-w-0">
-                <span class="font-medium text-slate-800 text-sm truncate block">{{ parseImageRef(img.repoTags[0]).name }}</span>
-                <span v-if="parseImageRef(img.repoTags[0]).host" class="text-xs text-slate-400 truncate block mt-0.5">{{ parseImageRef(img.repoTags[0]).host }}</span>
-                <code v-else class="text-xs text-slate-400 font-mono truncate block mt-0.5">{{ img.shortId }}</code>
+                <span class="font-medium text-slate-800 text-sm truncate block">{{ parseImageRef(img.repoTags[0]).name.replace(/:[^:]+$/, '') }}</span>
+                <code class="text-xs text-slate-400 font-mono truncate block mt-0.5">{{ img.shortId }}</code>
+              </div>
+            </div>
+
+            <!-- 标签 -->
+            <div v-if="img.repoTags && img.repoTags.length > 0" class="flex items-start gap-2 mb-3">
+              <span class="text-xs text-slate-400 flex-shrink-0 mt-0.5">标签</span>
+              <div class="flex flex-wrap gap-1">
+                <span v-for="(tag, idx) in img.repoTags" :key="idx" class="inline-flex items-center px-1.5 py-0.5 rounded-lg text-xs font-medium bg-blue-50 text-blue-600">
+                  {{ tag }}
+                </span>
               </div>
             </div>
 
@@ -290,13 +301,9 @@ export default toNative(Images)
             <div class="flex items-center gap-2 mb-3">
               <span class="text-xs text-slate-400 flex-shrink-0">创建</span>
               <span class="text-xs text-slate-500">{{ formatTime(new Date(img.created * 1000).toISOString()) }}</span>
-            </div>
-          
-            <!-- 其他标签 -->
-            <div v-if="img.repoTags.length > 1" class="flex flex-wrap gap-1 mb-3">
-              <span v-for="(tag, idx) in img.repoTags.slice(1)" :key="idx" class="inline-flex items-center px-1.5 py-0.5 rounded-lg text-xs font-medium bg-blue-50 text-blue-600">
-                {{ tag }}
-              </span>
+              <span class="text-xs text-slate-300">|</span>
+              <span class="text-xs text-slate-400 flex-shrink-0">大小</span>
+              <span class="text-xs text-slate-500">{{ formatFileSize(img.size) }}</span>
             </div>
           
             <!-- 底部：操作按钮 -->

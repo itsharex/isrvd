@@ -13,7 +13,6 @@ import ContainerCreateModal from './widget/container-create-modal.vue'
 import ContainerEditModal from './widget/container-edit-modal.vue'
 
 @Component({
-    expose: ['load', 'show'],
     components: { ContainerCreateModal, ContainerEditModal }
 })
 class Containers extends Vue {
@@ -27,8 +26,6 @@ class Containers extends Vue {
     containers: DockerContainerInfo[] = []
     loading = false
     showAll = false
-    selectedIds: string[] = []
-    batchMode = false
 
     readonly actionConfigs: Record<string, { icon: string; iconColor: string; title: string; confirmText: string; danger?: boolean }> = {
         start: { icon: 'fa-play', iconColor: 'emerald', title: '启动容器', confirmText: '启动' },
@@ -54,9 +51,11 @@ class Containers extends Vue {
     handleContainerAction(container: DockerContainerInfo, action: string) {
         const config = this.actionConfigs[action]
         if (!config) return
+        // 获取显示名称：优先名称，其次短 ID
+        const displayName = container.name || container.id.substring(0, 12)
         this.actions.showConfirm({
             title: config.title,
-            message: `确定要${config.confirmText}容器 <strong class="text-slate-900">${container.name || container.id}</strong> 吗？`,
+            message: `确定要${config.confirmText}容器 <strong class="text-slate-900">${displayName}</strong> 吗？`,
             icon: config.icon,
             iconColor: config.iconColor,
             confirmText: `确认${config.confirmText}`,
@@ -71,48 +70,6 @@ class Containers extends Vue {
 
     createContainerModal() {
         this.containerCreateModalRef?.show()
-    }
-
-    toggleBatchMode() {
-        this.batchMode = !this.batchMode
-        if (!this.batchMode) {
-            this.selectedIds = []
-        }
-    }
-
-    toggleSelect(id: string) {
-        if (this.selectedIds.includes(id)) {
-            this.selectedIds = this.selectedIds.filter(i => i !== id)
-        } else {
-            this.selectedIds.push(id)
-        }
-    }
-
-    selectAll() {
-        this.selectedIds = this.selectedIds.length === this.containers.length
-            ? []
-            : this.containers.map(ct => ct.id)
-    }
-
-    batchAction(action: string) {
-        if (this.selectedIds.length === 0) return
-        const config = this.actionConfigs[action]
-        if (!config) return
-        this.actions.showConfirm({
-            title: `批量${config.confirmText}`,
-            message: `确定要批量${config.confirmText} <strong class="text-slate-900">${this.selectedIds.length}</strong> 个容器吗？`,
-            icon: config.icon,
-            iconColor: config.iconColor,
-            confirmText: `确认批量${config.confirmText}`,
-            danger: config.danger,
-            onConfirm: async () => {
-                const promises = this.selectedIds.map(id => api.dockerContainerAction(id, action))
-                await Promise.allSettled(promises)
-                this.actions.showNotification('success', `批量${config.confirmText}操作完成`)
-                this.selectedIds = []
-                this.loadContainers()
-            }
-        })
     }
 
     formatImageName(image: string) {
@@ -157,18 +114,6 @@ export default toNative(Containers)
                 <i class="fas fa-layer-group"></i><span>全部</span>
               </button>
             </div>
-            <button v-if="batchMode && selectedIds.length > 0 && actions.hasPerm('POST /api/docker/container/:id/action')" class="px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-medium flex items-center gap-1.5 transition-colors" title="批量启动" @click="batchAction('start')">
-              <i class="fas fa-play"></i>
-            </button>
-            <button v-if="batchMode && selectedIds.length > 0 && actions.hasPerm('POST /api/docker/container/:id/action')" class="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-xs font-medium flex items-center gap-1.5 transition-colors" title="批量停止" @click="batchAction('stop')">
-              <i class="fas fa-stop"></i>
-            </button>
-            <button v-if="batchMode && selectedIds.length > 0 && actions.hasPerm('POST /api/docker/container/:id/action')" class="px-3 py-1.5 rounded-lg bg-red-500 hover:bg-red-600 text-white text-xs font-medium flex items-center gap-1.5 transition-colors" title="批量删除" @click="batchAction('remove')">
-              <i class="fas fa-trash"></i>
-            </button>
-            <button :class="['px-3 py-1.5 rounded-lg border text-xs font-medium flex items-center gap-1.5 transition-colors', batchMode ? 'bg-blue-50 border-blue-200 text-blue-600' : 'bg-white border-slate-200 hover:bg-slate-50 text-slate-700']" @click="toggleBatchMode()">
-              <i class="fas fa-check-double"></i><span>{{ batchMode ? '取消多选' : '多选' }}</span>
-            </button>
             <button class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors" @click="loadContainers()">
               <i class="fas fa-rotate"></i>刷新
             </button>
@@ -190,9 +135,6 @@ export default toNative(Containers)
               </div>
             </div>
             <div class="flex items-center gap-1 flex-shrink-0">
-              <button :class="['w-9 h-9 rounded-lg border flex items-center justify-center transition-colors', batchMode ? 'bg-blue-50 border-blue-200 text-blue-600' : 'bg-white border-slate-200 hover:bg-slate-50 text-slate-700']" :title="batchMode ? '取消多选' : '多选'" @click="toggleBatchMode()">
-                <i class="fas fa-check-double text-sm"></i>
-              </button>
               <button class="w-9 h-9 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-600 transition-colors" title="刷新" @click="loadContainers()">
                 <i class="fas fa-rotate text-sm"></i>
               </button>
@@ -200,18 +142,6 @@ export default toNative(Containers)
                 <i class="fas fa-plus text-sm"></i>
               </button>
             </div>
-          </div>
-          <!-- 批量操作（移动端） -->
-          <div v-if="batchMode && selectedIds.length > 0 && actions.hasPerm('POST /api/docker/container/:id/action')" class="flex items-center gap-1 mb-2">
-            <button class="flex-1 px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-medium flex items-center justify-center gap-1.5 transition-colors" @click="batchAction('start')">
-              <i class="fas fa-play"></i>批量启动
-            </button>
-            <button class="flex-1 px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-xs font-medium flex items-center justify-center gap-1.5 transition-colors" @click="batchAction('stop')">
-              <i class="fas fa-stop"></i>批量停止
-            </button>
-            <button class="flex-1 px-3 py-1.5 rounded-lg bg-red-500 hover:bg-red-600 text-white text-xs font-medium flex items-center justify-center gap-1.5 transition-colors" @click="batchAction('remove')">
-              <i class="fas fa-trash"></i>批量删除
-            </button>
           </div>
           <div class="flex justify-center gap-1 bg-slate-100 p-1 rounded-lg">
             <button :class="['px-3 py-1 text-xs font-medium rounded-md transition-all duration-200 flex items-center gap-1.5', !showAll ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700']" @click="showAll = false; loadContainers()">
@@ -236,9 +166,6 @@ export default toNative(Containers)
           <table class="w-full border-collapse">
             <thead>
               <tr class="bg-slate-50 border-b border-slate-200">
-                <th v-if="batchMode" class="w-10 px-4 py-3 text-left text-xs font-semibold text-slate-600">
-                  <input type="checkbox" :checked="selectedIds.length === containers.length && containers.length > 0" class="rounded border-slate-300 text-emerald-500 focus:ring-emerald-500" @change="selectAll" />
-                </th>
                 <th class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">名称</th>
                 <th class="w-32 px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">状态</th>
                 <th class="w-48 px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">端口</th>
@@ -247,10 +174,7 @@ export default toNative(Containers)
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-slate-100">
-              <tr v-for="ct in containers" :key="ct.id" :class="['hover:bg-slate-50 transition-colors', selectedIds.includes(ct.id) ? 'bg-blue-50' : '']">
-                <td v-if="batchMode" class="px-4 py-3">
-                  <input type="checkbox" :checked="selectedIds.includes(ct.id)" class="rounded border-slate-300 text-emerald-500 focus:ring-emerald-500" @change="toggleSelect(ct.id)" />
-                </td>
+              <tr v-for="ct in containers" :key="ct.id" class="hover:bg-slate-50 transition-colors">
                 <td class="px-4 py-3 max-w-[280px]">
                   <div class="flex items-center gap-2 min-w-0">
                     <div :class="['w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0', ct.state === 'running' ? 'bg-emerald-400' : 'bg-slate-400']">
@@ -309,24 +233,19 @@ export default toNative(Containers)
 
         <!-- 移动端卡片视图 -->
         <div class="md:hidden space-y-3 p-4">
-          <div 
-            v-for="ct in containers" 
+          <div
+            v-for="ct in containers"
             :key="ct.id"
-            :class="['rounded-xl border border-slate-200 bg-white p-4 transition-all', selectedIds.includes(ct.id) ? 'border-blue-300 bg-blue-50' : '']"
+            class="rounded-xl border border-slate-200 bg-white p-4 transition-all hover:shadow-sm"
           >
             <!-- 顶部：名称和状态 -->
-            <div class="flex items-center justify-between mb-3">
-              <div class="flex items-center gap-3 min-w-0 flex-1">
-                <div :class="['w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0', ct.state === 'running' ? 'bg-emerald-400' : 'bg-slate-400']">
-                  <i class="fas fa-box text-white text-base"></i>
-                </div>
-                <div class="min-w-0">
-                  <span class="font-medium text-slate-800 text-sm truncate block" :title="ct.name || ct.id">{{ ct.name || ct.id }}</span>
-                  <code class="text-xs text-slate-400 truncate block mt-0.5" :title="ct.image">{{ formatImageName(ct.image) }}</code>
-                </div>
+            <div class="flex items-center gap-3 min-w-0 mb-3">
+              <div :class="['w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0', ct.state === 'running' ? 'bg-emerald-400' : 'bg-slate-400']">
+                <i class="fas fa-box text-white text-base"></i>
               </div>
-              <div v-if="batchMode" class="ml-2 flex-shrink-0">
-                <input type="checkbox" :checked="selectedIds.includes(ct.id)" class="rounded border-slate-300 text-emerald-500 focus:ring-emerald-500" @change="toggleSelect(ct.id)" />
+              <div class="min-w-0">
+                <span class="font-medium text-slate-800 text-sm truncate block" :title="ct.name || ct.id">{{ ct.name || ct.id }}</span>
+                <code class="text-xs text-slate-400 truncate block mt-0.5" :title="ct.image">{{ formatImageName(ct.image) }}</code>
               </div>
             </div>
 
