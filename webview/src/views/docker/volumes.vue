@@ -152,7 +152,7 @@ export default toNative(Volumes)
                 <td class="px-4 py-3 font-mono text-xs text-slate-500 truncate max-w-xs" :title="vol.mountpoint">{{ vol.mountpoint }}</td>
                 <td class="px-4 py-3 whitespace-nowrap text-sm text-slate-600">{{ formatTime(vol.createdAt) }}</td>
                 <td class="px-4 py-3">
-                  <div class="flex justify-end items-center gap-0.5">
+                  <div class="flex justify-end items-center gap-1">
                     <button v-if="actions.hasPerm('GET /api/docker/volume/:name')" class="btn-icon text-slate-600 hover:bg-slate-50" title="详情" @click="viewVolumeDetail(vol)">
                       <i class="fas fa-circle-info text-xs"></i>
                     </button>
@@ -174,19 +174,19 @@ export default toNative(Volumes)
             class="rounded-xl border border-slate-200 bg-white p-4 transition-all hover:shadow-sm"
           >
             <!-- 顶部：卷信息和图标 -->
-            <div class="flex items-center gap-3 min-w-0 mb-3">
+            <div class="flex items-center gap-3 min-w-0 flex-1 mb-3">
               <div class="w-10 h-10 rounded-lg bg-amber-400 flex items-center justify-center flex-shrink-0">
                 <i class="fas fa-database text-white text-base"></i>
               </div>
               <div class="min-w-0">
                 <span class="font-medium text-slate-800 text-sm truncate block" :title="vol.name">{{ vol.name }}</span>
-                <span class="text-xs text-slate-500 mt-0.5 block">{{ vol.driver }}</span>
+                <span class="text-xs text-slate-400 truncate block mt-0.5">{{ vol.driver }}</span>
               </div>
             </div>
 
             <!-- 挂载点 -->
             <div class="flex items-start gap-2 mb-3">
-              <span class="text-xs text-slate-400 flex-shrink-0 mt-0.5">挂载点</span>
+              <span class="text-xs text-slate-400 flex-shrink-0">挂载点</span>
               <code class="font-mono text-xs text-slate-500 break-all" :title="vol.mountpoint">{{ vol.mountpoint }}</code>
             </div>
 

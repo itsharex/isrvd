@@ -33,30 +33,6 @@
     }
   }
 
-  /* 移动端优化：改善触摸体验 */
-  @media (hover: none) and (pointer: coarse) {
-    .btn, button, .btn-primary, .btn-secondary {
-      @apply min-h-[44px] min-w-[44px];
-    }
-    
-    .router-link, a {
-      @apply min-h-[44px];
-    }
-  }
-
-  /* 应用加载状态 */
-  .app-wait {
-    @apply fixed inset-0 z-[9999] flex flex-col items-center justify-center;
-    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
-  }
-
-  .app-wait::before {
-    content: '';
-    @apply absolute inset-0;
-    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-    opacity: 0.3;
-  }
-
   /* 自定义滚动条 */
   ::-webkit-scrollbar {
     @apply w-2 h-2;
@@ -74,7 +50,7 @@
     @apply bg-slate-400;
   }
 
-  /* 移动端滚动条优化 */
+  /* 移动端优化 */
   @media (max-width: 768px) {
     ::-webkit-scrollbar {
       @apply w-1 h-1;
@@ -95,10 +71,10 @@
     box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.1);
   }
 
-  /* 移动端输入框优化 */
+  /* 移动端优化：防止 iOS 缩放 */
   @media (max-width: 768px) {
     input, textarea, select {
-      @apply text-base; /* 防止 iOS 缩放 */
+      @apply text-base;
     }
     
     input[type="text"],
@@ -107,19 +83,31 @@
     input[type="number"],
     input[type="tel"],
     textarea {
-      font-size: 16px !important; /* 防止 iOS 缩放 */
+      font-size: 16px !important;
     }
+  }
+
+  /* 应用加载状态 */
+  .app-wait {
+    @apply fixed inset-0 z-[9999] flex flex-col items-center justify-center;
+    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+  }
+
+  .app-wait::before {
+    content: '';
+    @apply absolute inset-0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    opacity: 0.3;
   }
 }
 
 @layer components {
-
   /* 卡片样式 */
   .card {
     @apply bg-white rounded-2xl shadow-soft border border-slate-200/60;
   }
 
-  /* 移动端卡片优化 */
+  /* 移动端优化 */
   @media (max-width: 768px) {
     .card {
       @apply rounded-xl; /* 移动端圆角稍小 */
@@ -129,13 +117,6 @@
   /* 模态框样式 */
   .modal-card {
     @apply bg-white rounded-2xl shadow-2xl border border-slate-200;
-  }
-
-  /* 移动端模态框优化 */
-  @media (max-width: 768px) {
-    .modal-card {
-      @apply rounded-xl m-4; /* 移动端边距和圆角优化 */
-    }
   }
 
   /* 按钮样式 */
@@ -190,17 +171,6 @@
     @apply focus:outline-none focus:ring-2 focus:ring-primary-500;
   }
 
-  /* 移动端按钮优化 */
-  @media (max-width: 768px) {
-    .btn {
-      @apply min-h-[44px]; /* 触摸友好高度 */
-    }
-    
-    .btn-icon {
-      @apply min-h-[44px] min-w-[44px] flex items-center justify-center; /* 触摸友好尺寸，内容居中 */
-    }
-  }
-
   /* 输入框样式 */
   .input {
     @apply w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl;
@@ -212,13 +182,6 @@
   select.input {
     @apply pr-8 truncate;
     background-position: right 0.5rem center;
-  }
-
-  /* 移动端输入框优化 */
-  @media (max-width: 768px) {
-    .input {
-      @apply py-3; /* 移动端触摸友好 */
-    }
   }
 
   /* 徽章样式 */

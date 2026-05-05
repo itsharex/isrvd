@@ -22,7 +22,7 @@ export default defineConfig({
         changeOrigin: true,
         ws: true
       },
-      '/api/docker/containers': {
+      '/api/docker/container': {
         target: 'ws://localhost:8080',
         changeOrigin: true,
         ws: true

@@ -14,7 +14,7 @@ class ServiceInfo extends Vue {
     @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
 
     // ─── 数据属性 ───
-serviceData: SwarmServiceInspect | null = null
+    serviceData: SwarmServiceInspect | null = null
     formatTime = formatTime
     tasks: SwarmTask[] = []
     loading = false
@@ -158,9 +158,7 @@ export default toNative(ServiceInfo)
             </div>
             <div>
               <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">模式</label>
-              <div class="px-3 py-2 bg-slate-50 rounded-lg">
-                <span class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-medium bg-slate-100 text-slate-600 capitalize">{{ serviceData.mode }}</span>
-              </div>
+              <div class="px-3 py-2 bg-slate-50 rounded-lg text-slate-700 capitalize">{{ serviceData.mode }}</div>
             </div>
             <div>
               <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">副本</label>
@@ -255,7 +253,7 @@ export default toNative(ServiceInfo)
                 <span class="text-emerald-600 font-medium">{{ node.running }}</span>
                 <span class="text-slate-400"> / {{ node.total }} 任务</span>
               </span>
-              <span :class="['inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium', node.running > 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500']">{{ node.running > 0 ? '运行中' : '空闲' }}</span>
+              <span class="text-xs text-slate-500">{{ node.running > 0 ? '运行中' : '空闲' }}</span>
             </div>
           </div>
         </div>

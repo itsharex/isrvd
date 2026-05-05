@@ -162,16 +162,17 @@ export default toNative(ComposeDeploy)
             <div class="w-9 h-9 rounded-lg bg-violet-500 flex items-center justify-center flex-shrink-0">
               <i class="fas fa-file-code text-white"></i>
             </div>
-            <div class="min-w-0 flex-1">
-              <h1 class="text-base font-semibold text-slate-800 truncate">Compose 部署</h1>
+          <div class="min-w-0 flex-1">
+              <h1 class="text-lg font-semibold text-slate-800 truncate">Compose 部署</h1>
+              <p class="text-xs text-slate-500 truncate">粘贴 compose.yml 或从应用市场选择</p>
             </div>
           </div>
           <div class="flex items-center gap-2 flex-shrink-0">
-            <button v-if="actions.hasPerm('POST /api/compose/docker/deploy')" type="button" class="w-9 h-9 rounded-lg bg-amber-500 hover:bg-amber-600 flex items-center justify-center text-white transition-colors" title="从应用市场选择" @click="openMarketplace()">
-              <i class="fas fa-store"></i>
-            </button>
             <button type="button" :disabled="loading" class="w-9 h-9 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 flex items-center justify-center transition-colors disabled:opacity-50" title="清空" @click="resetForm()">
               <i class="fas fa-rotate-left"></i>
+            </button>
+            <button v-if="actions.hasPerm('POST /api/compose/docker/deploy')" type="button" class="w-9 h-9 rounded-lg bg-amber-500 hover:bg-amber-600 flex items-center justify-center text-white transition-colors" title="从应用市场选择" @click="openMarketplace()">
+              <i class="fas fa-store"></i>
             </button>
           </div>
         </div>
@@ -249,7 +250,7 @@ export default toNative(ComposeDeploy)
             <span class="text-xs text-slate-400 flex-shrink-0">或</span>
             <!-- 隐藏真实 input，用自定义按钮触发 -->
             <label
-              :class="['flex-shrink-0 flex items-center gap-1.5 px-4 py-2.5 rounded-xl border text-sm font-medium cursor-pointer transition-colors select-none',
+              :class="['flex-shrink-0 flex items-center gap-1.5 h-[46px] px-4 rounded-xl border text-sm font-medium cursor-pointer transition-colors select-none',
                        loading ? 'opacity-50 cursor-not-allowed' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50',
                        initFile ? 'border-blue-300 bg-blue-50 text-blue-600' : '']"
             >

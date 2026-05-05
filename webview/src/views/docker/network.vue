@@ -12,7 +12,7 @@ class NetworkDetail extends Vue {
     @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
 
     // ─── 数据属性 ───
-detailData: DockerNetworkInspect | null = null
+    detailData: DockerNetworkInspect | null = null
     loading = false
 
     get networkId() {
@@ -62,7 +62,7 @@ export default toNative(NetworkDetail)
           </div>
         </div>
         <!-- 移动端 -->
-        <div class="flex md:hidden items-center justify-between gap-2">
+        <div class="flex md:hidden items-center justify-between">
           <div class="flex items-center gap-3 min-w-0 flex-1">
             <div class="w-9 h-9 rounded-lg bg-purple-500 flex items-center justify-center flex-shrink-0">
               <i class="fas fa-network-wired text-white"></i>
@@ -102,9 +102,7 @@ export default toNative(NetworkDetail)
             </div>
             <div>
               <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">驱动</label>
-              <div class="px-3 py-2 bg-slate-50 rounded-lg">
-                <span class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-medium bg-slate-100 text-slate-600">{{ detailData.driver }}</span>
-              </div>
+                <div class="px-3 py-2 bg-slate-50 rounded-lg text-slate-700">{{ detailData.driver }}</div>
             </div>
             <div>
               <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">范围</label>

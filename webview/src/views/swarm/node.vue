@@ -14,7 +14,7 @@ class NodeDetail extends Vue {
     @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
 
     // ─── 数据属性 ───
-nodeData: SwarmNodeInspect | null = null
+    nodeData: SwarmNodeInspect | null = null
     loading = false
     formatFileSize = formatFileSize
     formatTime = formatTime
@@ -73,12 +73,14 @@ export default toNative(NodeDetail)
               <p class="text-xs text-slate-500 font-mono truncate max-w-xs">Node ID: {{ nodeId }}</p>
             </div>
           </div>
-          <button class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors" @click="loadDetail()">
-            <i class="fas fa-rotate"></i>刷新
-          </button>
+          <div class="flex items-center gap-2">
+            <button class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors" @click="loadDetail()">
+              <i class="fas fa-rotate"></i>刷新
+            </button>
+          </div>
         </div>
         <!-- 移动端 -->
-        <div class="flex md:hidden items-center justify-between gap-2">
+        <div class="flex md:hidden items-center justify-between">
           <div class="flex items-center gap-3 min-w-0 flex-1">
             <div class="w-9 h-9 rounded-lg bg-blue-500 flex items-center justify-center flex-shrink-0">
               <i class="fas fa-server text-white"></i>
@@ -114,9 +116,7 @@ export default toNative(NodeDetail)
               <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">主机名</label>
               <div class="px-3 py-2 bg-slate-50 rounded-lg text-slate-700 flex items-center gap-2">
                 {{ nodeData.hostname }}
-                <span v-if="nodeData.leader" class="inline-flex items-center px-1.5 py-0.5 rounded-lg text-xs font-medium bg-indigo-100 text-indigo-700">
-                  <i class="fas fa-crown mr-1 text-[10px]"></i>Leader
-                </span>
+                <span v-if="nodeData.leader" class="text-xs text-indigo-600"><i class="fas fa-crown mr-1"></i>Leader</span>
               </div>
             </div>
             <div>
@@ -125,21 +125,15 @@ export default toNative(NodeDetail)
             </div>
             <div>
               <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">角色</label>
-              <div class="px-3 py-2 bg-slate-50 rounded-lg">
-                <span :class="nodeData.role === 'manager' ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-600'" class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-medium capitalize">{{ nodeData.role }}</span>
-              </div>
+              <div class="px-3 py-2 bg-slate-50 rounded-lg text-slate-700 capitalize">{{ nodeData.role }}</div>
             </div>
             <div>
               <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">状态</label>
-              <div class="px-3 py-2 bg-slate-50 rounded-lg">
-                <span :class="nodeStateClass(nodeData.state)" class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-medium capitalize">{{ nodeData.state }}</span>
-              </div>
+              <div class="px-3 py-2 bg-slate-50 rounded-lg text-slate-700 capitalize">{{ nodeData.state }}</div>
             </div>
             <div>
               <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">可用性</label>
-              <div class="px-3 py-2 bg-slate-50 rounded-lg">
-                <span :class="availabilityClass(nodeData.availability)" class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-medium capitalize">{{ nodeData.availability }}</span>
-              </div>
+              <div class="px-3 py-2 bg-slate-50 rounded-lg text-slate-700 capitalize">{{ nodeData.availability }}</div>
             </div>
             <div>
               <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">引擎版本</label>

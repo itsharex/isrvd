@@ -100,7 +100,7 @@ export default toNative(Whitelist)
           </div>
         </div>
         <!-- 移动端 -->
-        <div class="flex md:hidden items-center justify-between gap-2">
+        <div class="flex md:hidden items-center justify-between">
           <div class="flex items-center gap-3 min-w-0 flex-1">
             <div class="w-9 h-9 rounded-lg bg-amber-500 flex items-center justify-center flex-shrink-0">
               <i class="fas fa-shield-halved text-white"></i>
@@ -140,7 +140,7 @@ export default toNative(Whitelist)
       </div>
 
       <!-- 列表 -->
-      <div v-else>
+      <div v-else class="space-y-3">
         <!-- 桌面端表格 -->
         <div class="hidden md:block overflow-x-auto">
           <table class="w-full border-collapse">
@@ -204,7 +204,7 @@ export default toNative(Whitelist)
             </div>
 
             <!-- 用户列表 -->
-            <div class="flex items-start gap-2">
+            <div class="flex items-start gap-2 mb-3">
               <span class="text-xs text-slate-400 flex-shrink-0 mt-0.5">用户</span>
               <div class="flex flex-wrap gap-1.5">
                 <span v-for="consumer in (route.consumers || [])" :key="consumer" class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 text-amber-800 rounded-lg text-xs">

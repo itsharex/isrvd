@@ -82,8 +82,8 @@ export default toNative(Registries)
 
 <template>
   <div>
+    <!-- Toolbar Bar -->
     <div class="card mb-4">
-      <!-- Toolbar Bar -->
       <div class="bg-slate-50 border-b border-slate-200 rounded-t-2xl px-4 md:px-6 py-3">
         <!-- 桌面端 -->
         <div class="hidden md:flex items-center justify-between">
@@ -154,9 +154,9 @@ export default toNative(Registries)
                     <div class="w-8 h-8 rounded-lg bg-blue-500 flex items-center justify-center flex-shrink-0">
                       <i class="fab fa-docker text-white text-sm"></i>
                     </div>
-                    <div class="flex flex-col min-w-0">
+                    <div class="min-w-0">
                       <span class="font-medium text-slate-800 truncate block">Docker Hub</span>
-                      <span class="text-xs text-slate-400 font-normal">默认</span>
+                      <span class="text-xs text-slate-400 truncate block mt-0.5">默认</span>
                     </div>
                   </div>
                 </td>
@@ -170,10 +170,8 @@ export default toNative(Registries)
                     </template>
                   </div>
                 </td>
-                <td class="px-4 py-3">
-                  <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-slate-100 text-slate-500">
-                    <i class="fas fa-lock-open mr-1"></i>匿名
-                  </span>
+                <td class="px-4 py-3 text-sm text-slate-600">
+                  <i class="fas fa-lock-open text-slate-400 mr-1"></i>匿名
                 </td>
                 <td class="px-4 py-3 text-right text-xs text-slate-400">—</td>
               </tr>
@@ -184,23 +182,23 @@ export default toNative(Registries)
                     <div class="w-8 h-8 rounded-lg bg-purple-400 flex items-center justify-center flex-shrink-0">
                       <i class="fas fa-warehouse text-white text-sm"></i>
                     </div>
-                    <div class="flex flex-col min-w-0">
+                    <div class="min-w-0">
                       <span class="font-medium text-slate-800 truncate block">{{ reg.name }}</span>
-                      <span v-if="reg.description" class="text-xs text-slate-400 font-normal truncate block">{{ reg.description }}</span>
+                      <span v-if="reg.description" class="text-xs text-slate-400 truncate block mt-0.5">{{ reg.description }}</span>
                     </div>
                   </div>
                 </td>
                 <td class="px-4 py-3"><code class="text-xs bg-slate-100 px-2 py-1 rounded">{{ reg.url }}</code></td>
-                <td class="px-4 py-3">
-                  <span v-if="reg.username" class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-green-50 text-green-700">
-                    <i class="fas fa-user mr-1"></i>{{ reg.username }}
-                  </span>
-                  <span v-else class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-slate-100 text-slate-500">
-                    <i class="fas fa-lock-open mr-1"></i>匿名
-                  </span>
+                <td class="px-4 py-3 text-sm text-slate-600">
+                  <template v-if="reg.username">
+                    <i class="fas fa-user text-slate-400 mr-1"></i>{{ reg.username }}
+                  </template>
+                  <template v-else>
+                    <i class="fas fa-lock-open text-slate-400 mr-1"></i>匿名
+                  </template>
                 </td>
                 <td class="px-4 py-3">
-                  <div class="flex justify-end items-center gap-0.5">
+                  <div class="flex justify-end items-center gap-1">
                     <button v-if="actions.hasPerm('PUT /api/docker/registry')" class="btn-icon text-blue-600 hover:bg-blue-50" title="编辑" @click="openEdit(reg)">
                       <i class="fas fa-pen text-xs"></i>
                     </button>
@@ -218,64 +216,60 @@ export default toNative(Registries)
         <div class="md:hidden space-y-3 p-4">
           <!-- Docker Hub 卡片 -->
           <div class="rounded-xl border border-slate-200 bg-white p-4 transition-all hover:shadow-sm">
-            <div class="flex items-center gap-3 mb-3">
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center gap-3 min-w-0 flex-1">
               <div class="w-10 h-10 rounded-lg bg-blue-500 flex items-center justify-center flex-shrink-0">
                 <i class="fab fa-docker text-white text-base"></i>
               </div>
               <div class="min-w-0">
-                <h3 class="font-medium text-slate-800 text-sm">Docker Hub</h3>
-                <span class="text-xs text-slate-400">默认</span>
+                <span class="font-medium text-slate-800 text-sm truncate block">Docker Hub</span>
+                <span class="text-xs text-slate-400 truncate block mt-0.5">默认</span>
+              </div>
               </div>
             </div>
 
-            <div class="space-y-2">
-              <div class="flex items-start gap-2">
-                <span class="text-xs text-slate-400 flex-shrink-0 mt-0.5">地址</span>
-                <code class="text-xs bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded break-all">{{ indexServerAddress || 'https://index.docker.io/v1/' }}</code>
+            <div class="flex items-start gap-2 mb-3">
+              <span class="text-xs text-slate-400 flex-shrink-0 mt-0.5">地址</span>
+              <code class="text-xs bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded break-all">{{ indexServerAddress || 'https://index.docker.io/v1/' }}</code>
+            </div>
+            <template v-if="daemonMirrors.length > 0">
+              <div v-for="mirror in daemonMirrors" :key="mirror" class="flex items-center gap-2 mb-3">
+                <span class="text-xs text-slate-400 flex-shrink-0">加速</span>
+                <code class="text-xs bg-sky-50 text-sky-700 px-1.5 py-0.5 rounded truncate flex items-center gap-1">
+                  <i class="fas fa-bolt text-sky-400 text-xs"></i>{{ mirror }}
+                </code>
               </div>
-              <template v-if="daemonMirrors.length > 0">
-                <div v-for="mirror in daemonMirrors" :key="mirror" class="flex items-center gap-2">
-                  <span class="text-xs text-slate-400 flex-shrink-0">加速</span>
-                  <code class="text-xs bg-sky-50 text-sky-700 px-1.5 py-0.5 rounded truncate flex items-center gap-1">
-                    <i class="fas fa-bolt text-sky-400 text-xs"></i>{{ mirror }}
-                  </code>
-                </div>
-              </template>
-              <div class="flex items-center gap-2">
-                <span class="text-xs text-slate-400 flex-shrink-0">认证</span>
-                <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-slate-100 text-slate-500">
-                  <i class="fas fa-lock-open mr-1"></i>匿名
-                </span>
-              </div>
+            </template>
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-xs text-slate-400 flex-shrink-0">认证</span>
+              <span class="text-xs text-slate-500"><i class="fas fa-lock-open text-slate-400 mr-1"></i>匿名</span>
             </div>
           </div>
 
           <!-- 私有仓库卡片 -->
           <div v-for="reg in registries" :key="reg.url" class="rounded-xl border border-slate-200 bg-white p-4 transition-all hover:shadow-sm">
-            <div class="flex items-center gap-3 min-w-0 mb-3">
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center gap-3 min-w-0 flex-1">
               <div class="w-10 h-10 rounded-lg bg-purple-400 flex items-center justify-center flex-shrink-0">
                 <i class="fas fa-warehouse text-white text-base"></i>
               </div>
               <div class="min-w-0">
-                <h3 class="font-medium text-slate-800 text-sm truncate">{{ reg.name }}</h3>
-                <span v-if="reg.description" class="text-xs text-slate-400 truncate block">{{ reg.description }}</span>
+                <span class="font-medium text-slate-800 text-sm truncate block">{{ reg.name }}</span>
+                <span v-if="reg.description" class="text-xs text-slate-400 truncate block mt-0.5">{{ reg.description }}</span>
+              </div>
               </div>
             </div>
 
-            <div class="space-y-2 mb-3">
-              <div class="flex items-center gap-2">
-                <span class="text-xs text-slate-400 flex-shrink-0">地址</span>
-                <code class="text-xs bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded truncate">{{ reg.url }}</code>
-              </div>
-              <div class="flex items-center gap-2">
-                <span class="text-xs text-slate-400 flex-shrink-0">认证</span>
-                <span v-if="reg.username" class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-green-50 text-green-700">
-                  <i class="fas fa-user mr-1"></i>{{ reg.username }}
-                </span>
-                <span v-else class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-slate-100 text-slate-500">
-                  <i class="fas fa-lock-open mr-1"></i>匿名
-                </span>
-              </div>
+            <div class="flex items-start gap-2 mb-3">
+              <span class="text-xs text-slate-400 flex-shrink-0 mt-0.5">地址</span>
+              <code class="text-xs bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded truncate">{{ reg.url }}</code>
+            </div>
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-xs text-slate-400 flex-shrink-0">认证</span>
+              <span class="text-xs text-slate-500">
+                <template v-if="reg.username"><i class="fas fa-user text-slate-400 mr-1"></i>{{ reg.username }}</template>
+                <template v-else><i class="fas fa-lock-open text-slate-400 mr-1"></i>匿名</template>
+              </span>
             </div>
 
             <!-- 底部：操作按钮 -->

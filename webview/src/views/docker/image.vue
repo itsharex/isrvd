@@ -14,7 +14,7 @@ class ImageDetail extends Vue {
     @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
 
     // ─── 数据属性 ───
-inspectData: DockerImageInspect | null = null
+    inspectData: DockerImageInspect | null = null
     loading = false
     formatFileSize = formatFileSize
     formatTime = formatTime
@@ -67,7 +67,7 @@ export default toNative(ImageDetail)
           </div>
         </div>
         <!-- 移动端 -->
-        <div class="flex md:hidden items-center justify-between gap-2">
+        <div class="flex md:hidden items-center justify-between">
           <div class="flex items-center gap-3 min-w-0 flex-1">
             <div class="w-9 h-9 rounded-lg bg-blue-500 flex items-center justify-center flex-shrink-0">
               <i class="fas fa-compact-disc text-white"></i>
@@ -128,13 +128,13 @@ export default toNative(ImageDetail)
           </div>
         </div>
 
-        <!-- 标签 -->
-        <div v-if="inspectData.repoTags && inspectData.repoTags.length > 0">
-          <h2 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">标签</h2>
-          <div class="flex flex-wrap gap-1.5">
-            <span v-for="tag in inspectData.repoTags" :key="tag" class="inline-flex items-center px-2 py-1 rounded-lg text-xs font-medium bg-blue-50 text-blue-700">{{ tag }}</span>
+          <!-- 标签 -->
+          <div v-if="inspectData.repoTags && inspectData.repoTags.length > 0">
+            <h2 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">标签</h2>
+            <div class="space-y-1">
+              <div v-for="tag in inspectData.repoTags" :key="tag" class="text-xs font-mono text-slate-700">{{ tag }}</div>
+            </div>
           </div>
-        </div>
 
         <!-- Digest -->
         <div v-if="inspectData.repoDigests && inspectData.repoDigests.length > 0">
@@ -160,12 +160,10 @@ export default toNative(ImageDetail)
               <label class="block text-xs text-slate-500 mb-1">CMD</label>
               <code class="block px-3 py-2 bg-slate-50 rounded-lg text-xs font-mono text-slate-700">{{ inspectData.cmd.join(' ') }}</code>
             </div>
-            <div v-if="inspectData.exposedPorts && inspectData.exposedPorts.length > 0">
-              <label class="block text-xs text-slate-500 mb-1">暴露端口</label>
-              <div class="flex flex-wrap gap-1.5">
-                <span v-for="port in inspectData.exposedPorts" :key="port" class="inline-flex items-center px-2 py-1 rounded-lg text-xs font-medium bg-emerald-50 text-emerald-700">{{ port }}</span>
+              <div v-if="inspectData.exposedPorts && inspectData.exposedPorts.length > 0">
+                <label class="block text-xs text-slate-500 mb-1">暴露端口</label>
+                <div class="text-xs font-mono text-slate-700">{{ inspectData.exposedPorts.join(', ') }}</div>
               </div>
-            </div>
             <div v-if="!inspectData.workingDir && !inspectData.entrypoint?.length && !inspectData.cmd?.length && !inspectData.exposedPorts?.length" class="text-sm text-slate-400">
               无运行配置
             </div>
@@ -208,18 +206,14 @@ export default toNative(ImageDetail)
             >
               <div class="flex items-start gap-2">
                 <!-- 层序号 + 类型标记 -->
-                <div class="flex items-center gap-1.5 shrink-0 mt-0.5">
-                  <span
-                    class="w-6 h-6 rounded flex items-center justify-center text-xs font-bold"
-                    :class="layer.empty ? 'bg-slate-100 text-slate-400' : 'bg-blue-50 text-blue-600'"
-                  >{{ inspectData.layerDetails.length - idx }}</span>
-                  <span v-if="!layer.empty" class="inline-flex items-center px-1.5 py-0.5 rounded-lg text-xs font-medium bg-emerald-50 text-emerald-700">
-                    {{ formatFileSize(layer.size) }}
-                  </span>
-                  <span v-else class="inline-flex items-center px-1.5 py-0.5 rounded-lg text-xs font-medium bg-slate-100 text-slate-400">
-                    空层
-                  </span>
-                </div>
+                  <div class="flex items-center gap-1.5 shrink-0 mt-0.5">
+                    <span
+                      class="w-6 h-6 rounded flex items-center justify-center text-xs font-bold"
+                      :class="layer.empty ? 'bg-slate-100 text-slate-400' : 'bg-blue-50 text-blue-600'"
+                    >{{ inspectData.layerDetails.length - idx }}</span>
+                    <span v-if="!layer.empty" class="text-xs text-slate-500">{{ formatFileSize(layer.size) }}</span>
+                    <span v-else class="text-xs text-slate-400">空层</span>
+                  </div>
                 <!-- 构建命令 -->
                 <div class="flex-1 min-w-0">
                   <code class="text-xs font-mono text-slate-700 break-all leading-relaxed">{{ layer.createdBy || '(无命令)' }}</code>

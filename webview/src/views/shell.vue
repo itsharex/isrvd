@@ -47,11 +47,11 @@ export default toNative(Shell)
         <!-- 桌面端工具栏 -->
         <div class="hidden md:flex md:items-center justify-between">
           <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-slate-700 flex items-center justify-center">
-              <i class="fas fa-terminal text-white text-base"></i>
+            <div class="w-9 h-9 rounded-lg bg-slate-700 flex items-center justify-center">
+              <i class="fas fa-terminal text-white text-sm"></i>
             </div>
             <div>
-              <h3 class="font-semibold text-slate-800 text-base">Shell 终端</h3>
+              <h1 class="text-lg font-semibold text-slate-800">Shell 终端</h1>
               <p class="text-xs text-slate-500">连接到远程服务器</p>
             </div>
           </div>
@@ -88,13 +88,13 @@ export default toNative(Shell)
         <!-- 移动端工具栏 -->
         <div class="block md:hidden">
           <div class="flex items-center justify-between mb-3">
-            <div class="flex items-center gap-3">
-              <div class="w-9 h-9 rounded-lg bg-slate-700 flex items-center justify-center">
+            <div class="flex items-center gap-3 min-w-0 flex-1">
+              <div class="w-9 h-9 rounded-lg bg-slate-700 flex items-center justify-center flex-shrink-0">
                 <i class="fas fa-terminal text-white text-sm"></i>
               </div>
-              <div>
-                <h3 class="font-semibold text-slate-800 text-sm">Shell 终端</h3>
-                <p class="text-xs text-slate-500">连接到远程服务器</p>
+              <div class="min-w-0">
+                <h1 class="text-lg font-semibold text-slate-800 truncate">Shell 终端</h1>
+                <p class="text-xs text-slate-500 truncate">连接到远程服务器</p>
               </div>
             </div>
           </div>

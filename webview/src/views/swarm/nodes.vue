@@ -152,12 +152,12 @@ export default toNative(Nodes)
               <p class="text-xs text-slate-500 truncate">管理 Swarm 集群节点</p>
             </div>
           </div>
-          <div class="flex items-center gap-1.5 flex-shrink-0">
-            <button v-if="actions.hasPerm('GET /api/swarm/token')" class="w-9 h-9 rounded-lg bg-blue-500 hover:bg-blue-600 flex items-center justify-center text-white transition-colors" title="加入集群" @click="openJoinModal">
-              <i class="fas fa-plus text-sm"></i>
-            </button>
+          <div class="flex items-center gap-1 flex-shrink-0">
             <button class="w-9 h-9 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-600 transition-colors" title="刷新" @click="loadNodes">
               <i class="fas fa-rotate text-sm"></i>
+            </button>
+            <button v-if="actions.hasPerm('GET /api/swarm/token')" class="w-9 h-9 rounded-lg bg-blue-500 hover:bg-blue-600 flex items-center justify-center text-white transition-colors" title="加入集群" @click="openJoinModal">
+              <i class="fas fa-plus text-sm"></i>
             </button>
           </div>
         </div>
@@ -195,21 +195,19 @@ export default toNative(Nodes)
                     </div>
                   </div>
                 </td>
-                <td class="px-4 py-3">
-                  <span :class="n.role === 'manager' ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-600'" class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-medium capitalize">
-                    <i v-if="n.leader" class="fas fa-crown mr-1 text-[10px]"></i>{{ n.role }}
-                  </span>
+                <td class="px-4 py-3 text-xs capitalize">
+                  <span :class="n.role === 'manager' ? 'text-indigo-600 font-medium' : 'text-slate-500'" class="whitespace-nowrap">{{ n.role }}</span>
                 </td>
-                <td class="px-4 py-3">
-                  <span :class="nodeStateClass(n.state)" class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-medium capitalize">{{ n.state }}</span>
+                <td class="px-4 py-3 text-xs capitalize">
+                  <span :class="n.state === 'ready' ? 'text-emerald-600 font-medium' : n.state === 'down' ? 'text-red-500 font-medium' : 'text-slate-500'">{{ n.state }}</span>
                 </td>
-                <td class="px-4 py-3">
-                  <span :class="availabilityClass(n.availability)" class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-medium capitalize">{{ n.availability }}</span>
+                <td class="px-4 py-3 text-xs capitalize">
+                  <span :class="n.availability === 'active' ? 'text-emerald-600 font-medium' : n.availability === 'drain' ? 'text-amber-600 font-medium' : 'text-slate-500'">{{ n.availability }}</span>
                 </td>
                 <td class="px-4 py-3 font-mono text-xs text-slate-500">{{ n.addr || '-' }}</td>
                 <td class="px-4 py-3 text-xs text-slate-500">{{ n.engineVersion || '-' }}</td>
                 <td class="px-4 py-3">
-                  <div class="flex justify-end items-center gap-0.5">
+                  <div class="flex justify-end items-center gap-1">
                     <button v-if="actions.hasPerm('GET /api/swarm/node/:id')" class="btn-icon text-slate-600 hover:bg-slate-50" title="查看详情" @click="$router.push(`/swarm/node/${n.id}`)"><i class="fas fa-circle-info text-xs"></i></button>
                     <button v-if="n.availability !== 'active' && actions.hasPerm('POST /api/swarm/node/:id/action')" class="btn-icon text-emerald-600 hover:bg-emerald-50" title="激活" @click="handleNodeAction(n, 'active')"><i class="fas fa-play text-xs"></i></button>
                     <button v-if="n.availability !== 'drain' && actions.hasPerm('POST /api/swarm/node/:id/action')" class="btn-icon text-amber-600 hover:bg-amber-50" title="排空" @click="handleNodeAction(n, 'drain')"><i class="fas fa-arrow-down text-xs"></i></button>
@@ -230,44 +228,42 @@ export default toNative(Nodes)
             class="rounded-xl border border-slate-200 bg-white p-4 transition-all hover:shadow-sm"
           >
             <!-- 顶部：主机名和图标 -->
-            <div class="flex items-center justify-between mb-3">
-              <div class="flex items-center gap-3 min-w-0 flex-1">
-                <div class="w-10 h-10 rounded-lg bg-blue-400 flex items-center justify-center flex-shrink-0">
-                  <i class="fas fa-server text-white text-base"></i>
-                </div>
-                <div class="min-w-0">
-                  <div class="flex items-center gap-2">
-                    <span class="font-medium text-slate-800 text-sm truncate">{{ n.hostname }}</span>
-                  </div>
-                  <div class="text-xs text-slate-400 font-mono">{{ n.id }}</div>
-                </div>
+            <div class="flex items-center gap-3 min-w-0 flex-1 mb-3">
+              <div class="w-10 h-10 rounded-lg bg-blue-400 flex items-center justify-center flex-shrink-0">
+                <i class="fas fa-server text-white text-base"></i>
+              </div>
+              <div class="min-w-0">
+                <span class="font-medium text-slate-800 text-sm truncate block">{{ n.hostname }}</span>
+                <span class="text-xs text-slate-400 font-mono truncate block mt-0.5">{{ n.id }}</span>
               </div>
             </div>
             
-            <!-- 中间：角色、状态、可用性信息 -->
-            <div class="flex items-center gap-2 mb-3">
+            <!-- 角色 | 状态（关联：节点身份与健康） -->
+            <div class="flex items-center gap-1.5 mb-3 flex-nowrap">
               <span class="text-xs text-slate-400 flex-shrink-0">角色</span>
-              <span :class="n.role === 'manager' ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-600'" class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-medium capitalize">
-                <i v-if="n.leader" class="fas fa-crown mr-1 text-[10px]"></i>{{ n.role }}
-              </span>
-              <span class="text-xs text-slate-300">|</span>
-              <span class="text-xs text-slate-400 flex-shrink-0">状态</span>
-              <span :class="nodeStateClass(n.state)" class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-medium capitalize">{{ n.state }}</span>
-              <span class="text-xs text-slate-300">|</span>
-              <span class="text-xs text-slate-400 flex-shrink-0">可用性</span>
-              <span :class="availabilityClass(n.availability)" class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-medium capitalize">{{ n.availability }}</span>
+              <span :class="n.role === 'manager' ? 'text-indigo-600 font-medium' : 'text-slate-600'" class="text-xs capitalize whitespace-nowrap flex-shrink-0">{{ n.role }}</span>
+              <span class="text-xs text-slate-200">|</span>
+              <span class="text-xs text-slate-400">状态</span>
+              <span :class="n.state === 'ready' ? 'text-emerald-600 font-medium' : n.state === 'down' ? 'text-red-500 font-medium' : 'text-slate-500'" class="text-xs capitalize">{{ n.state }}</span>
             </div>
+            <!-- 可用性（调度状态，独立） -->
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-xs text-slate-400 flex-shrink-0">可用性</span>
+              <span :class="n.availability === 'active' ? 'text-emerald-600' : n.availability === 'drain' ? 'text-amber-600' : 'text-slate-500'" class="text-xs capitalize">{{ n.availability }}</span>
+            </div>
+            <!-- IP 地址（独立） -->
             <div class="flex items-center gap-2 mb-3">
               <span class="text-xs text-slate-400 flex-shrink-0">IP 地址</span>
-              <span class="text-xs text-slate-600">{{ n.addr || '-' }}</span>
+              <span class="text-xs text-slate-500 font-mono">{{ n.addr || '-' }}</span>
             </div>
+            <!-- 引擎版本（独立） -->
             <div class="flex items-center gap-2 mb-3">
               <span class="text-xs text-slate-400 flex-shrink-0">引擎版本</span>
-              <span class="text-xs text-slate-600">{{ n.engineVersion || '-' }}</span>
+              <span class="text-xs text-slate-500">{{ n.engineVersion || '-' }}</span>
             </div>
             
             <!-- 底部：操作按钮 -->
-            <div class="flex flex-wrap gap-1 pt-2 border-t border-slate-100">
+            <div class="flex flex-wrap gap-1.5 pt-2 border-t border-slate-100">
               <button v-if="actions.hasPerm('GET /api/swarm/node/:id')" class="btn-icon text-slate-600 hover:bg-slate-50" title="查看详情" @click="$router.push(`/swarm/node/${n.id}`)">
                 <i class="fas fa-circle-info text-xs"></i><span class="text-xs ml-1">详情</span>
               </button>
@@ -292,6 +288,7 @@ export default toNative(Nodes)
           <i class="fas fa-server text-4xl text-slate-300"></i>
         </div>
         <p class="text-slate-600 font-medium mb-1">暂无节点</p>
+        <p class="text-sm text-slate-400">当前集群没有可用节点</p>
       </div>
     </div>
   </div>

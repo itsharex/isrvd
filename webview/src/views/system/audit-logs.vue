@@ -155,7 +155,7 @@ export default toNative(AuditLogs)
                 <p class="text-xs text-slate-500 truncate">记录所有用户操作行为</p>
               </div>
             </div>
-            <button class="w-9 h-9 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-600 transition-colors flex-shrink-0" @click="loadLogs()">
+            <button class="w-9 h-9 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-600 transition-colors flex-shrink-0" title="刷新" @click="loadLogs()">
               <i class="fas fa-rotate text-sm"></i>
             </button>
           </div>
@@ -241,7 +241,7 @@ export default toNative(AuditLogs)
                 <!-- 耗时 -->
                 <td class="px-4 py-3 text-xs text-slate-500">{{ formatDuration(log.duration) }}</td>
                 <!-- 时间 -->
-                <td class="px-4 py-3 text-xs text-slate-500 whitespace-nowrap">{{ formatTimestamp(log.timestamp) }}</td>
+                <td class="px-4 py-3 text-xs text-slate-600 whitespace-nowrap">{{ formatTimestamp(log.timestamp) }}</td>
               </tr>
             </tbody>
           </table>
@@ -251,7 +251,7 @@ export default toNative(AuditLogs)
         <div class="md:hidden space-y-3 p-4">
           <div
             v-for="(log, idx) in filteredLogs" :key="idx"
-            class="rounded-xl border border-slate-200 bg-white p-4"
+            class="rounded-xl border border-slate-200 bg-white p-4 transition-all hover:shadow-sm"
           >
             <!-- 顶部：用户 + 时间 -->
             <div class="flex items-center justify-between mb-3">
@@ -268,7 +268,7 @@ export default toNative(AuditLogs)
             </div>
 
             <!-- 方法 + URI -->
-            <div class="flex items-center gap-2 mb-2">
+            <div class="flex items-center gap-2 mb-3">
               <span
                 class="inline-flex items-center px-2 py-1 rounded text-xs font-medium font-mono flex-shrink-0"
                 :class="methodClass(log.method)"
@@ -277,7 +277,7 @@ export default toNative(AuditLogs)
             </div>
 
             <!-- Body -->
-            <div v-if="log.body" class="flex items-center gap-2 mb-2">
+            <div v-if="log.body" class="flex items-center gap-2 mb-3">
               <span class="text-xs text-slate-400 flex-shrink-0">Body</span>
               <button class="flex items-center gap-1 min-w-0" @click="showDetail(log)">
                 <code class="text-xs text-slate-500 font-mono truncate">{{ formatBody(log.body) }}</code>

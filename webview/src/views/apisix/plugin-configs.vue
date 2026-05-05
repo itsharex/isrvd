@@ -192,16 +192,16 @@ export default toNative(PluginConfigs)
                     </div>
                   </div>
                 </td>
-                <td class="px-4 py-3">
-                  <div class="flex flex-wrap gap-1">
-                    <span v-for="name in getPluginNames(config)" :key="name" class="text-xs bg-rose-50 px-2 py-1 rounded text-rose-700">{{ name }}</span>
-                    <span v-if="getPluginNames(config).length === 0" class="text-xs text-slate-400">未配置</span>
-                  </div>
-                </td>
+                  <td class="px-4 py-3">
+                    <div v-if="getPluginNames(config).length > 0" class="flex flex-wrap gap-1">
+                      <span v-for="name in getPluginNames(config)" :key="name" class="inline-flex items-center px-1.5 py-0.5 bg-rose-50 text-rose-700 rounded text-xs">{{ name }}</span>
+                    </div>
+                    <span v-else class="text-xs text-slate-400">未配置</span>
+                  </td>
                 <td class="px-4 py-3 whitespace-nowrap text-sm text-slate-600">{{ formatTs(config.create_time) }}</td>
                 <td class="px-4 py-3">
-                  <div class="flex justify-end items-center gap-0.5">
-                    <button v-if="actions.hasPerm('PUT /api/apisix/plugin-config/:id')" class="btn-icon text-blue-600 hover:bg-blue-50" title="编辑" @click="openEditModal(config)">
+                  <div class="flex justify-end items-center gap-1">
+                    <button v-if="actions.hasPerm('PUT /api/apisix/plugin-config/:id')" class="btn-icon text-rose-600 hover:bg-rose-50" title="编辑" @click="openEditModal(config)">
                       <i class="fas fa-pen text-xs"></i>
                     </button>
                     <button v-if="actions.hasPerm('DELETE /api/apisix/plugin-config/:id')" class="btn-icon text-red-600 hover:bg-red-50" title="删除" @click="deleteConfig(config)">
@@ -232,17 +232,20 @@ export default toNative(PluginConfigs)
               </div>
             </div>
 
-            <div class="flex items-start gap-2 mb-2">
-              <span class="text-xs text-slate-400 flex-shrink-0">插件</span>
-              <span class="text-xs bg-rose-50 px-2 py-1 rounded text-rose-700 break-all">{{ getPluginSummary(config) }}</span>
-            </div>
+              <div class="flex items-start gap-2 mb-3">
+                <span class="text-xs text-slate-400 flex-shrink-0 mt-0.5">插件</span>
+                <div v-if="getPluginNames(config).length > 0" class="flex flex-wrap gap-1">
+                  <span v-for="name in getPluginNames(config)" :key="name" class="inline-flex items-center px-1.5 py-0.5 bg-rose-50 text-rose-700 rounded text-xs">{{ name }}</span>
+                </div>
+                <span v-else class="text-xs text-slate-400">未配置</span>
+              </div>
             <div class="flex items-center gap-2 mb-3">
               <span class="text-xs text-slate-400 flex-shrink-0">创建</span>
-              <span class="text-xs text-slate-600">{{ formatTs(config.create_time) }}</span>
+              <span class="text-xs text-slate-500">{{ formatTs(config.create_time) }}</span>
             </div>
 
-            <div class="flex flex-wrap gap-1 pt-2 border-t border-slate-100">
-              <button v-if="actions.hasPerm('PUT /api/apisix/plugin-config/:id')" class="btn-icon text-blue-600 hover:bg-blue-50" title="编辑" @click="openEditModal(config)">
+            <div class="flex flex-wrap gap-1.5 pt-2 border-t border-slate-100">
+              <button v-if="actions.hasPerm('PUT /api/apisix/plugin-config/:id')" class="btn-icon text-rose-600 hover:bg-rose-50" title="编辑" @click="openEditModal(config)">
                 <i class="fas fa-pen text-xs"></i><span class="text-xs ml-1">编辑</span>
               </button>
               <button v-if="actions.hasPerm('DELETE /api/apisix/plugin-config/:id')" class="btn-icon text-red-600 hover:bg-red-50" title="删除" @click="deleteConfig(config)">

@@ -197,12 +197,12 @@ export default toNative(SSLs)
                   </div>
                 </td>
                 <td class="px-4 py-3">
-                  <span :class="['text-xs px-2 py-1 rounded-full', getStatusClass(ssl)]">{{ getStatusText(ssl) }}</span>
+                  <span :class="['text-xs px-2 py-1 rounded', getStatusClass(ssl)]">{{ getStatusText(ssl) }}</span>
                 </td>
                 <td class="px-4 py-3 whitespace-nowrap text-sm text-slate-600">{{ formatTs(ssl.update_time || ssl.create_time) }}</td>
                 <td class="px-4 py-3">
-                  <div class="flex justify-end items-center gap-0.5">
-                    <button v-if="actions.hasPerm('PUT /api/apisix/ssl/:id')" class="btn-icon text-blue-600 hover:bg-blue-50" title="编辑" @click="openEditModal(ssl)">
+                  <div class="flex justify-end items-center gap-1">
+                    <button v-if="actions.hasPerm('PUT /api/apisix/ssl/:id')" class="btn-icon text-cyan-600 hover:bg-cyan-50" title="编辑" @click="openEditModal(ssl)">
                       <i class="fas fa-pen text-xs"></i>
                     </button>
                     <button v-if="actions.hasPerm('DELETE /api/apisix/ssl/:id')" class="btn-icon text-red-600 hover:bg-red-50" title="删除" @click="deleteSSL(ssl)">
@@ -231,20 +231,20 @@ export default toNative(SSLs)
                   <div class="text-xs text-slate-400 mt-0.5 truncate font-mono">{{ ssl.id }}</div>
                 </div>
               </div>
-              <span :class="['text-xs px-2 py-1 rounded-full flex-shrink-0', getStatusClass(ssl)]">{{ getStatusText(ssl) }}</span>
+              <span :class="['text-xs px-2 py-1 rounded flex-shrink-0', getStatusClass(ssl)]">{{ getStatusText(ssl) }}</span>
             </div>
 
-            <div class="flex items-center gap-2 mb-2">
+            <div class="flex items-center gap-2 mb-3">
               <span class="text-xs text-slate-400 flex-shrink-0">SNI</span>
-              <span class="text-xs text-slate-600 break-all">{{ getSNISummary(ssl) }}</span>
+              <span class="text-xs text-slate-500 break-all">{{ getSNISummary(ssl) }}</span>
             </div>
             <div class="flex items-center gap-2 mb-3">
               <span class="text-xs text-slate-400 flex-shrink-0">更新</span>
-              <span class="text-xs text-slate-600">{{ formatTs(ssl.update_time || ssl.create_time) }}</span>
+              <span class="text-xs text-slate-500">{{ formatTs(ssl.update_time || ssl.create_time) }}</span>
             </div>
 
-            <div class="flex flex-wrap gap-1 pt-2 border-t border-slate-100">
-              <button v-if="actions.hasPerm('PUT /api/apisix/ssl/:id')" class="btn-icon text-blue-600 hover:bg-blue-50" title="编辑" @click="openEditModal(ssl)">
+            <div class="flex flex-wrap gap-1.5 pt-2 border-t border-slate-100">
+              <button v-if="actions.hasPerm('PUT /api/apisix/ssl/:id')" class="btn-icon text-cyan-600 hover:bg-cyan-50" title="编辑" @click="openEditModal(ssl)">
                 <i class="fas fa-pen text-xs"></i><span class="text-xs ml-1">编辑</span>
               </button>
               <button v-if="actions.hasPerm('DELETE /api/apisix/ssl/:id')" class="btn-icon text-red-600 hover:bg-red-50" title="删除" @click="deleteSSL(ssl)">

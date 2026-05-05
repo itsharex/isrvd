@@ -162,11 +162,11 @@ export default toNative(Networks)
                     </div>
                   </div>
                 </td>
-                <td class="px-4 py-3 text-sm text-slate-600">{{ net.driver }}</td>
+                <td class="px-4 py-3"><span class="inline-block text-xs px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 font-medium">{{ net.driver }}</span></td>
                 <td class="px-4 py-3 font-mono text-sm text-slate-600">{{ net.subnet || '-' }}</td>
                 <td class="px-4 py-3 text-sm text-slate-600">{{ net.scope }}</td>
                 <td class="px-4 py-3">
-                  <div class="flex justify-end items-center gap-0.5">
+                  <div class="flex justify-end items-center gap-1">
                     <button v-if="actions.hasPerm('GET /api/docker/network/:id')" class="btn-icon text-slate-600 hover:bg-slate-50" title="详情" @click="viewNetworkDetail(net)">
                       <i class="fas fa-circle-info text-xs"></i>
                     </button>
@@ -201,7 +201,7 @@ export default toNative(Networks)
             class="rounded-xl border border-slate-200 bg-white p-4 transition-all hover:shadow-sm"
           >
             <!-- 顶部：网络信息和图标 -->
-            <div class="flex items-center gap-3 min-w-0 mb-3">
+            <div class="flex items-center gap-3 min-w-0 flex-1 mb-3">
               <div class="w-10 h-10 rounded-lg bg-purple-400 flex items-center justify-center flex-shrink-0">
                 <i class="fas fa-network-wired text-white text-base"></i>
               </div>
@@ -211,18 +211,19 @@ export default toNative(Networks)
               </div>
             </div>
 
-            <!-- 驱动 / 范围 / 子网 -->
+            <!-- 驱动 / 范围 -->
             <div class="flex items-center gap-2 mb-3">
               <span class="text-xs text-slate-400 flex-shrink-0">驱动</span>
-              <span class="text-xs text-slate-600">{{ net.driver }}</span>
-              <span class="text-xs text-slate-300">|</span>
+              <span class="inline-block text-xs px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 font-medium">{{ net.driver }}</span>
+            </div>
+            <div class="flex items-center gap-2 mb-3">
               <span class="text-xs text-slate-400 flex-shrink-0">范围</span>
-              <span class="text-xs text-slate-600">{{ net.scope }}</span>
+              <span class="text-xs text-slate-500">{{ net.scope }}</span>
             </div>
 
             <div class="flex items-center gap-2 mb-3">
               <span class="text-xs text-slate-400 flex-shrink-0">子网</span>
-              <code class="font-mono text-xs text-slate-600">{{ net.subnet || '-' }}</code>
+              <code class="font-mono text-xs text-slate-500">{{ net.subnet || '-' }}</code>
             </div>
             
             <!-- 底部：操作按钮 -->

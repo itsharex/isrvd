@@ -192,9 +192,9 @@ export default toNative(Services)
                   </template>
                   <template v-else>-</template>
                 </td>
-                <td class="px-4 py-3 text-sm text-slate-500">{{ svc.updatedAt?.slice(0, 16).replace('T', ' ') }}</td>
+                <td class="px-4 py-3 text-sm text-slate-600">{{ svc.updatedAt?.slice(0, 16).replace('T', ' ') }}</td>
                 <td class="px-4 py-3">
-                  <div class="flex justify-end items-center gap-0.5">
+                  <div class="flex justify-end items-center gap-1">
                     <button v-if="actions.hasPerm('GET /api/swarm/service/:id')" class="btn-icon text-slate-600 hover:bg-slate-50" title="详情" @click="$router.push({ name: 'swarm-service-info', params: { id: svc.id } })"><i class="fas fa-circle-info text-xs"></i></button>
                     <button v-if="actions.hasPerm('GET /api/swarm/service/:id/logs')" class="btn-icon text-slate-600 hover:bg-slate-50" title="日志" @click="$router.push({ name: 'swarm-service-logs', params: { id: svc.id } })"><i class="fas fa-file-lines text-xs"></i></button>
                     <button v-if="svc.mode === 'replicated' && actions.hasPerm('POST /api/swarm/service/:id/action')" class="btn-icon text-indigo-600 hover:bg-indigo-50" title="扩缩容" @click="openScaleModal(svc)"><i class="fas fa-up-right-and-down-left-from-center text-xs"></i></button>
@@ -245,7 +245,7 @@ export default toNative(Services)
             
             <!-- 端口信息 -->
             <div v-if="svc.ports && svc.ports.length" class="flex items-start gap-2 mb-3">
-              <span class="text-xs text-slate-400 flex-shrink-0 mt-0.5">端口</span>
+              <span class="text-xs text-slate-400 flex-shrink-0">端口</span>
               <div class="font-mono text-xs text-slate-500">
                 <div v-for="p in svc.ports" :key="p.publishedPort">{{ p.publishedPort }}:{{ p.targetPort }}/{{ p.protocol }}</div>
               </div>
@@ -258,7 +258,7 @@ export default toNative(Services)
             </div>
             
             <!-- 底部：操作按钮 -->
-            <div class="flex flex-wrap gap-1 pt-2 border-t border-slate-100">
+            <div class="flex flex-wrap gap-1.5 pt-2 border-t border-slate-100">
               <button v-if="actions.hasPerm('GET /api/swarm/service/:id')" class="btn-icon text-slate-600 hover:bg-slate-50" title="详情" @click="$router.push({ name: 'swarm-service-info', params: { id: svc.id } })">
                 <i class="fas fa-circle-info text-xs"></i><span class="text-xs ml-1">详情</span>
               </button>
@@ -286,6 +286,7 @@ export default toNative(Services)
           <i class="fas fa-cubes text-4xl text-slate-300"></i>
         </div>
         <p class="text-slate-600 font-medium mb-1">暂无服务</p>
+        <p class="text-sm text-slate-400">点击「创建」添加 Swarm 服务</p>
       </div>
     </div>
 

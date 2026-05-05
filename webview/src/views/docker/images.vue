@@ -42,7 +42,8 @@ class Images extends Vue {
             this.images = res.payload || []
         } catch {
             this.actions.showNotification('error', '加载镜像列表失败')
-        }        this.loading = false
+        }
+        this.loading = false
     }
 
     async loadRegistries() {
@@ -133,8 +134,8 @@ export default toNative(Images)
 
 <template>
   <div>
+    <!-- Toolbar Bar -->
     <div class="card mb-4">
-      <!-- Toolbar Bar -->
       <div class="bg-slate-50 border-b border-slate-200 rounded-t-2xl px-4 md:px-6 py-3">
         <!-- 桌面端 -->
         <div class="hidden md:flex items-center justify-between">
@@ -168,35 +169,33 @@ export default toNative(Images)
           </div>
         </div>
         <!-- 移动端 -->
-        <div class="block md:hidden">
-          <div class="flex items-center justify-between mb-3">
-            <div class="flex items-center gap-3 min-w-0">
-              <div class="w-9 h-9 rounded-lg bg-blue-500 flex items-center justify-center flex-shrink-0">
-                <i class="fas fa-compact-disc text-white"></i>
-              </div>
-              <div class="min-w-0">
-                <h1 class="text-lg font-semibold text-slate-800 truncate">镜像管理</h1>
-                <p class="text-xs text-slate-500 truncate">管理 Docker 镜像</p>
-              </div>
+        <div class="flex md:hidden items-center justify-between">
+          <div class="flex items-center gap-3 min-w-0 flex-1">
+            <div class="w-9 h-9 rounded-lg bg-blue-500 flex items-center justify-center flex-shrink-0">
+              <i class="fas fa-compact-disc text-white"></i>
             </div>
-            <div class="flex items-center gap-1 flex-shrink-0">
-              <button class="w-9 h-9 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-600 transition-colors" title="刷新" @click="loadImages()">
-                <i class="fas fa-rotate text-sm"></i>
-              </button>
-              <button v-if="actions.hasPerm('POST /api/docker/image/:id/action')" class="w-9 h-9 rounded-lg bg-blue-500 hover:bg-blue-600 flex items-center justify-center text-white transition-colors" title="构建" @click="buildModalRef?.show()">
-                <i class="fas fa-hammer text-sm"></i>
-              </button>
-              <button v-if="actions.hasPerm('POST /api/docker/image/pull')" class="w-9 h-9 rounded-lg bg-blue-500 hover:bg-blue-600 flex items-center justify-center text-white transition-colors" title="拉取" @click="pullModalRef?.show()">
-                <i class="fas fa-download text-sm"></i>
-              </button>
+            <div class="min-w-0">
+              <h1 class="text-lg font-semibold text-slate-800 truncate">镜像管理</h1>
+              <p class="text-xs text-slate-500 truncate">管理 Docker 镜像</p>
             </div>
           </div>
-          <div class="flex justify-center gap-1 bg-slate-100 p-1 rounded-lg">
-            <button :class="['px-3 py-1 text-xs font-medium rounded-md transition-all duration-200 flex items-center gap-1.5', !showAllImages ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700']" @click="showAllImages = false; loadImages()">
-              <i class="fas fa-cube"></i><span>顶层</span>
+          <div class="flex items-center gap-1 flex-shrink-0">
+            <div class="flex gap-1 bg-slate-100 p-1 rounded-lg mr-1">
+              <button :class="['px-2 py-1 text-xs font-medium rounded-md transition-all duration-200 flex items-center gap-1', !showAllImages ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700']" @click="showAllImages = false; loadImages()">
+                <i class="fas fa-cube"></i>
+              </button>
+              <button :class="['px-2 py-1 text-xs font-medium rounded-md transition-all duration-200 flex items-center gap-1', showAllImages ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700']" @click="showAllImages = true; loadImages()">
+                <i class="fas fa-layer-group"></i>
+              </button>
+            </div>
+            <button class="w-9 h-9 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-600 transition-colors" title="刷新" @click="loadImages()">
+              <i class="fas fa-rotate text-sm"></i>
             </button>
-            <button :class="['px-3 py-1 text-xs font-medium rounded-md transition-all duration-200 flex items-center gap-1.5', showAllImages ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700']" @click="showAllImages = true; loadImages()">
-              <i class="fas fa-layer-group"></i><span>全部</span>
+            <button v-if="actions.hasPerm('POST /api/docker/image/:id/action')" class="w-9 h-9 rounded-lg bg-blue-500 hover:bg-blue-600 flex items-center justify-center text-white transition-colors" title="构建" @click="buildModalRef?.show()">
+              <i class="fas fa-hammer text-sm"></i>
+            </button>
+            <button v-if="actions.hasPerm('POST /api/docker/image/pull')" class="w-9 h-9 rounded-lg bg-blue-500 hover:bg-blue-600 flex items-center justify-center text-white transition-colors" title="拉取" @click="pullModalRef?.show()">
+              <i class="fas fa-download text-sm"></i>
             </button>
           </div>
         </div>
@@ -235,18 +234,16 @@ export default toNative(Images)
                     </div>
                   </div>
                 </td>
-                <td class="px-4 py-3">
-                  <div v-if="img.repoTags && img.repoTags.length > 0" class="flex flex-wrap gap-1">
-                    <span v-for="(tag, idx) in img.repoTags" :key="idx" class="inline-flex items-center px-1.5 py-0.5 rounded-lg text-xs font-medium bg-blue-50 text-blue-600">
-                      {{ tag }}
-                    </span>
-                  </div>
-                  <span v-else class="text-sm text-slate-400">-</span>
-                </td>
+                  <td class="px-4 py-3">
+                    <div v-if="img.repoTags && img.repoTags.length > 0" class="flex flex-wrap gap-1">
+                      <span v-for="(tag, idx) in img.repoTags" :key="idx" class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-mono bg-blue-50 text-blue-600">{{ tag }}</span>
+                    </div>
+                    <span v-else class="text-sm text-slate-400">-</span>
+                  </td>
                 <td class="px-4 py-3 text-sm text-slate-600">{{ formatFileSize(img.size) }}</td>
                 <td class="px-4 py-3 whitespace-nowrap text-sm text-slate-600">{{ formatTime(new Date(img.created * 1000).toISOString()) }}</td>
                 <td class="px-4 py-3">
-                  <div class="flex justify-end items-center gap-0.5">
+                  <div class="flex justify-end items-center gap-1">
                     <button v-if="actions.hasPerm('GET /api/docker/image/:id')" class="btn-icon text-slate-600 hover:bg-slate-50" title="查看详情" @click="$router.push('/docker/image/' + img.id)">
                       <i class="fas fa-circle-info text-xs"></i>
                     </button>
@@ -277,7 +274,7 @@ export default toNative(Images)
             class="rounded-xl border border-slate-200 bg-white p-4 transition-all hover:shadow-sm"
           >
             <!-- 顶部：镜像信息和图标 -->
-            <div class="flex items-center gap-3 min-w-0 mb-3">
+            <div class="flex items-center gap-3 min-w-0 flex-1 mb-3">
               <div class="w-10 h-10 rounded-lg bg-blue-400 flex items-center justify-center flex-shrink-0">
                 <i class="fas fa-compact-disc text-white text-base"></i>
               </div>
@@ -287,21 +284,21 @@ export default toNative(Images)
               </div>
             </div>
 
-            <!-- 标签 -->
-            <div v-if="img.repoTags && img.repoTags.length > 0" class="flex items-start gap-2 mb-3">
-              <span class="text-xs text-slate-400 flex-shrink-0 mt-0.5">标签</span>
-              <div class="flex flex-wrap gap-1">
-                <span v-for="(tag, idx) in img.repoTags" :key="idx" class="inline-flex items-center px-1.5 py-0.5 rounded-lg text-xs font-medium bg-blue-50 text-blue-600">
-                  {{ tag }}
-                </span>
+              <!-- 标签 -->
+              <div v-if="img.repoTags && img.repoTags.length > 0" class="flex items-start gap-2 mb-3">
+                <span class="text-xs text-slate-400 flex-shrink-0 mt-0.5">标签</span>
+                <div class="flex flex-wrap gap-1">
+                  <span v-for="(tag, idx) in img.repoTags" :key="idx" class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-mono bg-blue-50 text-blue-600">{{ tag }}</span>
+                </div>
               </div>
-            </div>
 
             <!-- 创建时间 -->
             <div class="flex items-center gap-2 mb-3">
               <span class="text-xs text-slate-400 flex-shrink-0">创建</span>
               <span class="text-xs text-slate-500">{{ formatTime(new Date(img.created * 1000).toISOString()) }}</span>
-              <span class="text-xs text-slate-300">|</span>
+            </div>
+            <!-- 大小 -->
+            <div class="flex items-center gap-2 mb-3">
               <span class="text-xs text-slate-400 flex-shrink-0">大小</span>
               <span class="text-xs text-slate-500">{{ formatFileSize(img.size) }}</span>
             </div>

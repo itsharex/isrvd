@@ -61,7 +61,7 @@ export default toNative(ContainerNav)
       <div class="flex items-center gap-3">
         <template v-if="container">
           <div :class="['w-9 h-9 rounded-lg flex items-center justify-center', container.state === 'running' ? 'bg-emerald-400' : 'bg-slate-400']">
-            <i class="fas fa-cube text-white"></i>
+            <i class="fas fa-cube text-white text-sm"></i>
           </div>
           <div class="min-w-0">
             <h1 class="text-lg font-semibold text-slate-800 truncate">{{ container.name || container.id }}</h1>
@@ -70,7 +70,7 @@ export default toNative(ContainerNav)
         </template>
         <template v-else>
           <div class="w-9 h-9 rounded-lg bg-slate-300 flex items-center justify-center animate-pulse">
-            <i class="fas fa-cube text-white"></i>
+            <i class="fas fa-cube text-white text-sm"></i>
           </div>
           <div><h1 class="text-lg font-semibold text-slate-800">加载中...</h1></div>
         </template>
@@ -95,7 +95,7 @@ export default toNative(ContainerNav)
         <div class="flex items-center gap-3 min-w-0 flex-1">
           <template v-if="container">
             <div :class="['w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0', container.state === 'running' ? 'bg-emerald-400' : 'bg-slate-400']">
-              <i class="fas fa-cube text-white"></i>
+              <i class="fas fa-cube text-white text-sm"></i>
             </div>
             <div class="min-w-0">
               <h1 class="text-lg font-semibold text-slate-800 truncate">{{ container.name || container.id }}</h1>
@@ -104,7 +104,7 @@ export default toNative(ContainerNav)
           </template>
           <template v-else>
             <div class="w-9 h-9 rounded-lg bg-slate-300 flex items-center justify-center animate-pulse flex-shrink-0">
-              <i class="fas fa-cube text-white"></i>
+              <i class="fas fa-cube text-white text-sm"></i>
             </div>
             <div><h1 class="text-lg font-semibold text-slate-800">加载中...</h1></div>
           </template>

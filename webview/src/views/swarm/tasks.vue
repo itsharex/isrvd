@@ -111,7 +111,7 @@ export default toNative(Tasks)
                 <p class="text-xs text-slate-500 truncate">查看 Swarm 集群任务状态</p>
               </div>
             </div>
-            <button class="w-9 h-9 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-600 transition-colors flex-shrink-0" @click="loadTasks()">
+            <button class="w-9 h-9 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-600 transition-colors flex-shrink-0" title="刷新" @click="loadTasks()">
               <i class="fas fa-rotate text-sm"></i>
             </button>
           </div>
@@ -137,8 +137,8 @@ export default toNative(Tasks)
                 <th class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">服务</th>
                 <th class="w-16 px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Slot</th>
                 <th class="w-28 px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">状态</th>
-                <th class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">节点</th>
                 <th class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">消息</th>
+                <th class="w-36 px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">节点</th>
                 <th class="w-40 px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">更新时间</th>
               </tr>
             </thead>
@@ -154,17 +154,17 @@ export default toNative(Tasks)
                 <td class="px-4 py-3">
                   <span :class="taskStateClass(t.state)" class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-medium capitalize">{{ t.state }}</span>
                 </td>
-                <td class="px-4 py-3">
+                <td class="px-4 py-3 text-xs text-slate-500">
+                  <span v-if="t.err" class="text-red-500">{{ t.err }}</span>
+                  <span v-else>{{ t.message || '-' }}</span>
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap">
                   <button v-if="t.nodeID" class="text-xs text-blue-600 hover:text-blue-700 hover:underline" @click="goNodeDetail(t.nodeID)">
                     {{ t.nodeName || t.nodeID.slice(0, 12) }}
                   </button>
                   <span v-else class="text-xs text-slate-400">-</span>
                 </td>
-                <td class="px-4 py-3 text-xs text-slate-500">
-                  <span v-if="t.err" class="text-red-500">{{ t.err }}</span>
-                  <span v-else>{{ t.message || '-' }}</span>
-                </td>
-                <td class="px-4 py-3 text-xs text-slate-400">{{ formatTime(t.updatedAt) }}</td>
+                <td class="px-4 py-3 text-sm text-slate-600">{{ formatTime(t.updatedAt) }}</td>
               </tr>
             </tbody>
           </table>
@@ -174,37 +174,44 @@ export default toNative(Tasks)
         <div class="md:hidden space-y-3 p-4">
           <div v-for="t in filteredTasks" :key="t.id" class="rounded-xl border border-slate-200 bg-white p-4 transition-all hover:shadow-sm">
             <!-- 顶部：图标 + ID -->
-            <div class="flex items-center gap-3 min-w-0 mb-3">
+            <div class="flex items-center gap-3 min-w-0 flex-1 mb-3">
               <div :class="['w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0', taskStateClass(t.state).includes('emerald') ? 'bg-emerald-400' : taskStateClass(t.state).includes('red') ? 'bg-red-400' : 'bg-slate-400']">
                 <i class="fas fa-list-check text-white text-base"></i>
               </div>
               <div class="min-w-0">
                 <code class="font-mono text-xs text-slate-500">{{ t.id.slice(0, 12) }}</code>
-                <div class="flex items-center gap-1.5 mt-0.5">
+                <div class="mt-0.5">
                   <span :class="taskStateClass(t.state)" class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-medium capitalize">{{ t.state }}</span>
-                  <span class="text-xs text-slate-400">Slot: {{ t.slot || '-' }}</span>
                 </div>
               </div>
             </div>
+            <!-- 服务 + Slot（关联：Slot 是服务副本编号） -->
             <div class="flex items-center gap-2 mb-3">
               <span class="text-xs text-slate-400 flex-shrink-0">服务</span>
               <button class="text-xs text-emerald-600 hover:text-emerald-700 hover:underline truncate" @click="goServiceDetail(t.serviceID)">
                 {{ t.serviceName || t.serviceID?.slice(0, 12) }}
               </button>
               <span class="text-xs text-slate-300">|</span>
+              <span class="text-xs text-slate-400 flex-shrink-0">Slot</span>
+              <span class="text-xs text-slate-500">{{ t.slot || '-' }}</span>
+            </div>
+            <!-- 节点（独立） -->
+            <div class="flex items-center gap-2 mb-3">
               <span class="text-xs text-slate-400 flex-shrink-0">节点</span>
               <button v-if="t.nodeID" class="text-xs text-blue-600 hover:text-blue-700 hover:underline" @click="goNodeDetail(t.nodeID)">
                 {{ t.nodeName || t.nodeID.slice(0, 12) }}
               </button>
               <span v-else class="text-xs text-slate-400">-</span>
             </div>
-            <div class="flex items-center gap-2 mb-3">
-              <span class="text-xs text-slate-400 flex-shrink-0">更新</span>
-              <span class="text-xs text-slate-400">{{ formatTime(t.updatedAt) }}</span>
-            </div>
-            <div v-if="t.err || t.message" class="flex items-start gap-2 pt-2 border-t border-slate-100">
-              <span class="text-xs text-slate-400 flex-shrink-0 mt-0.5">消息</span>
+            <!-- 消息（与状态关联，紧跟） -->
+            <div v-if="t.err || t.message" class="flex items-start gap-2 mb-3">
+              <span class="text-xs text-slate-400 flex-shrink-0">消息</span>
               <span class="text-xs break-words" :class="t.err ? 'text-red-500' : 'text-slate-500'">{{ t.err || t.message }}</span>
+            </div>
+            <!-- 更新时间（最后） -->
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-slate-400 flex-shrink-0">更新</span>
+              <span class="text-xs text-slate-500">{{ formatTime(t.updatedAt) }}</span>
             </div>
           </div>
         </div>
@@ -213,7 +220,8 @@ export default toNative(Tasks)
         <div class="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center mb-4">
           <i class="fas fa-list-check text-4xl text-slate-300"></i>
         </div>
-        <p class="text-slate-600 font-medium">暂无任务</p>
+        <p class="text-slate-600 font-medium mb-1">暂无任务</p>
+        <p class="text-sm text-slate-400">当前没有运行中的任务</p>
       </div>
     </div>
   </div>

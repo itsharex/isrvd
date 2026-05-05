@@ -125,7 +125,7 @@ export default toNative(Containers)
         <!-- 移动端 -->
         <div class="block md:hidden">
           <div class="flex items-center justify-between mb-3">
-            <div class="flex items-center gap-3 min-w-0">
+            <div class="flex items-center gap-3 min-w-0 flex-1">
               <div class="w-9 h-9 rounded-lg bg-emerald-500 flex items-center justify-center flex-shrink-0">
                 <i class="fab fa-docker text-white"></i>
               </div>
@@ -187,7 +187,7 @@ export default toNative(Containers)
                   </div>
                 </td>
                 <td class="px-4 py-3">
-                  <span :class="['inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium', ct.state === 'running' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600']" :title="ct.status">
+                  <span :class="['inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-medium', ct.state === 'running' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600']" :title="ct.status">
                     {{ ct.state }}
                   </span>
                 </td>
@@ -197,7 +197,7 @@ export default toNative(Containers)
                   </template>
                   <template v-else><span class="text-slate-400">-</span></template>
                 </td>
-                <td class="px-4 py-3 whitespace-nowrap text-sm text-slate-500">{{ formatTime(new Date(ct.created * 1000).toISOString()) }}</td>
+                <td class="px-4 py-3 whitespace-nowrap text-sm text-slate-600">{{ formatTime(new Date(ct.created * 1000).toISOString()) }}</td>
                 <td class="px-4 py-3">
                   <div class="flex justify-end items-center gap-1">
                     <button v-if="ct.state === 'running' && actions.hasPerm('GET /api/docker/container/:id/stats')" class="btn-icon text-indigo-600 hover:bg-indigo-50" title="统计" @click="$router.push({ path: '/docker/container/' + ct.id + '/stats' })">
@@ -239,7 +239,7 @@ export default toNative(Containers)
             class="rounded-xl border border-slate-200 bg-white p-4 transition-all hover:shadow-sm"
           >
             <!-- 顶部：名称和状态 -->
-            <div class="flex items-center gap-3 min-w-0 mb-3">
+            <div class="flex items-center gap-3 min-w-0 flex-1 mb-3">
               <div :class="['w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0', ct.state === 'running' ? 'bg-emerald-400' : 'bg-slate-400']">
                 <i class="fas fa-box text-white text-base"></i>
               </div>
@@ -249,22 +249,24 @@ export default toNative(Containers)
               </div>
             </div>
 
-            <!-- 状态 + 时间 -->
-            <div class="flex items-center gap-2 mb-3">
-              <span class="text-xs text-slate-400 flex-shrink-0">状态</span>
-              <span :class="['text-xs px-2 py-0.5 rounded-full', ct.state === 'running' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600']" :title="ct.status">{{ ct.state }}</span>
-              <span class="text-xs text-slate-300">|</span>
-              <span class="text-xs text-slate-400 flex-shrink-0">创建</span>
-              <span class="text-xs text-slate-500">{{ formatTime(new Date(ct.created * 1000).toISOString()) }}</span>
-            </div>
-
-            <!-- 端口信息 -->
-            <div v-if="ct.ports && ct.ports.length > 0" class="flex items-start gap-2 mb-3">
-              <span class="text-xs text-slate-400 flex-shrink-0 mt-0.5">端口</span>
-              <div class="flex flex-wrap gap-1">
-                <code v-for="port in ct.ports" :key="port" class="text-xs font-mono bg-slate-100 text-slate-600 px-2 py-0.5 rounded">{{ port }}</code>
+              <!-- 状态 -->
+              <div class="flex items-start gap-2 mb-3">
+                <span class="text-xs text-slate-400 flex-shrink-0 mt-0.5">状态</span>
+                <span :class="['text-xs px-2 py-0.5 rounded-lg', ct.state === 'running' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600']" :title="ct.status">{{ ct.state }}</span>
               </div>
-            </div>
+              <!-- 创建时间 -->
+              <div class="flex items-center gap-2 mb-3">
+                <span class="text-xs text-slate-400 flex-shrink-0">创建</span>
+                <span class="text-xs text-slate-500">{{ formatTime(new Date(ct.created * 1000).toISOString()) }}</span>
+              </div>
+
+              <!-- 端口信息 -->
+              <div v-if="ct.ports && ct.ports.length > 0" class="flex items-start gap-2 mb-3">
+                <span class="text-xs text-slate-400 flex-shrink-0 mt-0.5">端口</span>
+                <div class="flex flex-wrap gap-1">
+                  <code v-for="port in ct.ports" :key="port" class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-mono bg-slate-100 text-slate-600">{{ port }}</code>
+                </div>
+              </div>
 
             <!-- 底部：操作按钮 -->
             <div class="flex flex-wrap gap-1.5 pt-2 border-t border-slate-100">

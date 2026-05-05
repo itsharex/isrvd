@@ -199,23 +199,23 @@ export default toNative(Consumers)
                     </div>
                   </div>
                 </td>
-                <td class="px-4 py-3">
-                  <div v-if="Object.keys(consumer.plugins || {}).length > 0" class="flex flex-wrap gap-1">
-                    <span v-for="(_, name) in consumer.plugins" :key="name" class="inline-flex items-center px-1.5 py-0.5 bg-blue-50 text-blue-700 rounded text-xs">{{ name }}</span>
-                  </div>
-                  <span v-else class="text-xs text-slate-400">-</span>
-                </td>
-                <td class="px-4 py-3">
-                  <div v-if="getConsumerRoutes(consumer.username).length > 0" class="flex flex-wrap gap-1">
-                    <span v-for="name in getConsumerRoutes(consumer.username)" :key="name" class="inline-flex items-center px-1.5 py-0.5 bg-amber-50 text-amber-700 rounded text-xs">{{ name }}</span>
-                  </div>
-                  <span v-else class="text-xs text-slate-400">-</span>
-                </td>
+                  <td class="px-4 py-3">
+                    <div v-if="Object.keys(consumer.plugins || {}).length > 0" class="flex flex-wrap gap-1">
+                      <span v-for="(_, name) in consumer.plugins" :key="name" class="inline-flex items-center px-1.5 py-0.5 bg-blue-50 text-blue-700 rounded text-xs">{{ name }}</span>
+                    </div>
+                    <span v-else class="text-xs text-slate-400">-</span>
+                  </td>
+                  <td class="px-4 py-3">
+                    <div v-if="getConsumerRoutes(consumer.username).length > 0" class="flex flex-wrap gap-1">
+                      <span v-for="name in getConsumerRoutes(consumer.username)" :key="name" class="inline-flex items-center px-1.5 py-0.5 bg-amber-50 text-amber-700 rounded text-xs">{{ name }}</span>
+                    </div>
+                    <span v-else class="text-xs text-slate-400">-</span>
+                  </td>
                 <td class="px-4 py-3 whitespace-nowrap text-sm text-slate-600">
                   {{ formatTs(consumer.create_time) }}
                 </td>
                 <td class="px-4 py-3">
-                  <div class="flex justify-end items-center gap-0.5">
+                  <div class="flex justify-end items-center gap-1">
                     <button v-if="actions.hasPerm('PUT /api/apisix/consumer/:username')" class="btn-icon text-violet-600 hover:bg-violet-50" title="编辑" @click="openEditModal(consumer)">
                       <i class="fas fa-pen text-xs"></i>
                     </button>
@@ -243,9 +243,7 @@ export default toNative(Consumers)
                   <i class="fas fa-user text-white text-base"></i>
                 </div>
                 <div class="min-w-0">
-                  <div class="flex items-center gap-2">
-                    <span class="font-medium text-slate-800 text-sm truncate">{{ consumer.username }}</span>
-                  </div>
+                  <span class="font-medium text-slate-800 text-sm truncate block">{{ consumer.username }}</span>
                   <span v-if="consumer.desc" class="text-xs text-slate-400 truncate block mt-0.5">{{ consumer.desc }}</span>
                 </div>
               </div>
@@ -254,28 +252,28 @@ export default toNative(Consumers)
             <!-- 中间：API Key和创建时间 -->
             <div class="flex items-center gap-2 mb-3">
               <span class="text-xs text-slate-400 flex-shrink-0">创建</span>
-              <span class="text-xs text-slate-600">{{ formatTs(consumer.create_time) }}</span>
+              <span class="text-xs text-slate-500">{{ formatTs(consumer.create_time) }}</span>
             </div>
             
-            <div class="flex items-start gap-2 mb-3">
-              <span class="text-xs text-slate-400 flex-shrink-0 mt-0.5">插件</span>
-              <div v-if="Object.keys(consumer.plugins || {}).length > 0" class="flex flex-wrap gap-1">
-                <span v-for="(_, name) in consumer.plugins" :key="name" class="inline-flex items-center px-1.5 py-0.5 bg-blue-50 text-blue-700 rounded text-xs">{{ name }}</span>
+              <div class="flex items-start gap-2 mb-3">
+                <span class="text-xs text-slate-400 flex-shrink-0 mt-0.5">插件</span>
+                <div v-if="Object.keys(consumer.plugins || {}).length > 0" class="flex flex-wrap gap-1">
+                  <span v-for="(_, name) in consumer.plugins" :key="name" class="inline-flex items-center px-1.5 py-0.5 bg-blue-50 text-blue-700 rounded text-xs">{{ name }}</span>
+                </div>
+                <span v-else class="text-xs text-slate-400">-</span>
               </div>
-              <span v-else class="text-xs text-slate-400">-</span>
-            </div>
-            
-            <!-- 授权路由 -->
-            <div class="flex items-start gap-2 mb-3">
-              <span class="text-xs text-slate-400 flex-shrink-0 mt-0.5">路由</span>
-              <div v-if="getConsumerRoutes(consumer.username).length > 0" class="flex flex-wrap gap-1">
-                <span v-for="name in getConsumerRoutes(consumer.username)" :key="name" class="inline-flex items-center px-1.5 py-0.5 bg-amber-50 text-amber-700 rounded text-xs">{{ name }}</span>
+
+              <!-- 授权路由 -->
+              <div class="flex items-start gap-2 mb-3">
+                <span class="text-xs text-slate-400 flex-shrink-0 mt-0.5">路由</span>
+                <div v-if="getConsumerRoutes(consumer.username).length > 0" class="flex flex-wrap gap-1">
+                  <span v-for="name in getConsumerRoutes(consumer.username)" :key="name" class="inline-flex items-center px-1.5 py-0.5 bg-amber-50 text-amber-700 rounded text-xs">{{ name }}</span>
+                </div>
+                <span v-else class="text-xs text-slate-400">-</span>
               </div>
-              <span v-else class="text-xs text-slate-400">-</span>
-            </div>
             
             <!-- 底部：操作按钮 -->
-            <div class="flex flex-wrap gap-1 pt-2 border-t border-slate-100">
+            <div class="flex flex-wrap gap-1.5 pt-2 border-t border-slate-100">
               <button v-if="actions.hasPerm('PUT /api/apisix/consumer/:username')" class="btn-icon text-violet-600 hover:bg-violet-50" title="编辑" @click="openEditModal(consumer)">
                 <i class="fas fa-pen text-xs"></i><span class="text-xs ml-1">编辑</span>
               </button>

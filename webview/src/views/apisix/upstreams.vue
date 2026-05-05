@@ -210,13 +210,11 @@ export default toNative(Upstreams)
                   <span :class="['text-xs px-2 py-1 rounded', getUpstreamTypeClass(upstream.type)]">{{ upstream.type || '-' }}</span>
                   <span v-if="upstream.type === 'chash' && upstream.key" class="ml-2 text-xs text-slate-400">{{ upstream.hash_on }}: {{ upstream.key }}</span>
                 </td>
-                <td class="px-4 py-3">
-                  <span class="text-xs bg-slate-100 px-2 py-1 rounded text-slate-700 break-all">{{ getUpstreamNodes(upstream) }}</span>
-                </td>
+                  <td class="px-4 py-3 text-xs text-slate-600 break-all">{{ getUpstreamNodes(upstream) }}</td>
                 <td class="px-4 py-3 whitespace-nowrap text-sm text-slate-600">{{ formatTs(upstream.create_time) }}</td>
                 <td class="px-4 py-3">
-                  <div class="flex justify-end items-center gap-0.5">
-                    <button v-if="actions.hasPerm('PUT /api/apisix/upstream/:id')" class="btn-icon text-blue-600 hover:bg-blue-50" title="编辑" @click="openEditModal(upstream)">
+                  <div class="flex justify-end items-center gap-1">
+                    <button v-if="actions.hasPerm('PUT /api/apisix/upstream/:id')" class="btn-icon text-emerald-600 hover:bg-emerald-50" title="编辑" @click="openEditModal(upstream)">
                       <i class="fas fa-pen text-xs"></i>
                     </button>
                     <button v-if="actions.hasPerm('DELETE /api/apisix/upstream/:id')" class="btn-icon text-red-600 hover:bg-red-50" title="删除" @click="deleteUpstream(upstream)">
@@ -247,25 +245,25 @@ export default toNative(Upstreams)
               </div>
             </div>
 
-            <div class="flex items-center gap-2 mb-2">
-              <span class="text-xs text-slate-400 flex-shrink-0">策略</span>
-              <span :class="['text-xs px-2 py-1 rounded-full', getUpstreamTypeClass(upstream.type)]">{{ upstream.type || '-' }}</span>
-            </div>
-            <div v-if="upstream.type === 'chash' && upstream.key" class="flex items-center gap-2 mb-2">
+              <div class="flex items-center gap-2 mb-3">
+                <span class="text-xs text-slate-400 flex-shrink-0">策略</span>
+                <span class="text-xs text-slate-600">{{ upstream.type || '-' }}</span>
+              </div>
+            <div v-if="upstream.type === 'chash' && upstream.key" class="flex items-center gap-2 mb-3">
               <span class="text-xs text-slate-400 flex-shrink-0">哈希</span>
-              <span class="text-xs text-slate-600 break-all">{{ upstream.hash_on }}: {{ upstream.key }}</span>
+              <span class="text-xs text-slate-500 break-all">{{ upstream.hash_on }}: {{ upstream.key }}</span>
             </div>
-            <div class="flex items-center gap-2 mb-2">
-              <span class="text-xs text-slate-400 flex-shrink-0">节点</span>
-              <span class="text-xs bg-slate-100 px-2 py-1 rounded text-slate-700 break-all">{{ getUpstreamNodes(upstream) }}</span>
-            </div>
+              <div class="flex items-center gap-2 mb-3">
+                <span class="text-xs text-slate-400 flex-shrink-0">节点</span>
+                <span class="text-xs text-slate-600 break-all">{{ getUpstreamNodes(upstream) }}</span>
+              </div>
             <div class="flex items-center gap-2 mb-3">
               <span class="text-xs text-slate-400 flex-shrink-0">创建</span>
-              <span class="text-xs text-slate-600">{{ formatTs(upstream.create_time) }}</span>
+              <span class="text-xs text-slate-500">{{ formatTs(upstream.create_time) }}</span>
             </div>
 
-            <div class="flex flex-wrap gap-1 pt-2 border-t border-slate-100">
-              <button v-if="actions.hasPerm('PUT /api/apisix/upstream/:id')" class="btn-icon text-blue-600 hover:bg-blue-50" title="编辑" @click="openEditModal(upstream)">
+            <div class="flex flex-wrap gap-1.5 pt-2 border-t border-slate-100">
+              <button v-if="actions.hasPerm('PUT /api/apisix/upstream/:id')" class="btn-icon text-emerald-600 hover:bg-emerald-50" title="编辑" @click="openEditModal(upstream)">
                 <i class="fas fa-pen text-xs"></i><span class="text-xs ml-1">编辑</span>
               </button>
               <button v-if="actions.hasPerm('DELETE /api/apisix/upstream/:id')" class="btn-icon text-red-600 hover:bg-red-50" title="删除" @click="deleteUpstream(upstream)">

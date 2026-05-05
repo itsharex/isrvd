@@ -159,19 +159,13 @@ export default toNative(Members)
                 <td class="px-4 py-3">
                   <code class="text-xs text-slate-500 font-mono">{{ m.homeDirectory }}</code>
                 </td>
-                <td class="px-4 py-3">
-                  <div class="flex flex-wrap gap-1">
-                    <span v-if="m.founder" class="inline-flex items-center justify-center px-2 py-0.5 rounded text-xs font-medium bg-violet-50 text-violet-700">
-                      <i class="fas fa-crown mr-1"></i>创始人
-                    </span>
-                    <span v-else-if="m.permissions && m.permissions.length > 0" class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-600">
-                      <i class="fas fa-key mr-1 text-xs"></i>{{ m.permissions.length }} 条
-                    </span>
-                    <span v-else class="text-xs text-slate-400">-</span>
-                  </div>
+                <td class="px-4 py-3 text-sm text-slate-600">
+                  <template v-if="m.founder"><i class="fas fa-crown text-violet-400 mr-1"></i>创始人</template>
+                  <template v-else-if="m.permissions && m.permissions.length > 0"><i class="fas fa-key text-amber-400 mr-1"></i>{{ m.permissions.length }} 条</template>
+                  <span v-else class="text-slate-400">-</span>
                 </td>
                 <td class="px-4 py-3">
-                  <div class="flex justify-end items-center gap-0.5">
+                  <div class="flex justify-end items-center gap-1">
                     <button 
                       v-if="!m.founder && actions.hasPerm('PUT /api/account/member/:username')"
                       class="btn-icon text-blue-600 hover:bg-blue-50" 
@@ -206,32 +200,28 @@ export default toNative(Members)
                 </div>
                 <div class="min-w-0">
                   <span class="font-medium text-slate-800 text-sm truncate block">{{ m.username }}</span>
-                  <span v-if="m.description" class="text-xs text-slate-400 truncate block">{{ m.description }}</span>
+                  <span v-if="m.description" class="text-xs text-slate-400 truncate block mt-0.5">{{ m.description }}</span>
                 </div>
               </div>
             </div>
             <!-- 创始人标识 -->
             <div v-if="m.founder" class="flex items-center gap-2 mb-3">
               <span class="text-xs text-slate-400 flex-shrink-0">身份</span>
-              <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-violet-50 text-violet-700">
-                <i class="fas fa-crown mr-1 text-xs"></i>创始人
-              </span>
+              <span class="text-xs text-slate-500"><i class="fas fa-crown text-violet-400 mr-1"></i>创始人</span>
             </div>
             <!-- 家目录 -->
-            <div class="flex items-center gap-2 mb-3">
-              <span class="text-xs text-slate-400 flex-shrink-0">家目录</span>
+            <div class="flex items-start gap-2 mb-3">
+              <span class="text-xs text-slate-400 flex-shrink-0 mt-1">家目录</span>
               <code class="text-xs bg-slate-100 px-2 py-1 rounded break-all">{{ m.homeDirectory }}</code>
             </div>
             <!-- 路由权限 -->
             <div class="flex items-center gap-2 mb-3">
               <span class="text-xs text-slate-400 flex-shrink-0">权限</span>
-              <span v-if="m.permissions && m.permissions.length > 0" class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-600">
-                <i class="fas fa-key mr-1 text-xs"></i>{{ m.permissions.length }} 条
-              </span>
+              <span v-if="m.permissions && m.permissions.length > 0" class="text-xs text-slate-500"><i class="fas fa-key text-amber-400 mr-1"></i>{{ m.permissions.length }} 条</span>
               <span v-else class="text-xs text-slate-400">-</span>
             </div>
             <!-- 底部：操作按鈕 -->
-            <div class="flex flex-wrap gap-1 pt-2 border-t border-slate-100">
+            <div class="flex flex-wrap gap-1.5 pt-2 border-t border-slate-100">
               <button 
                 v-if="!m.founder && actions.hasPerm('PUT /api/account/member/:username')"
                 class="btn-icon text-blue-600 hover:bg-blue-50" 

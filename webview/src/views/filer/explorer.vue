@@ -121,7 +121,7 @@ export default toNative(FileExplorer)
             </ol>
           </nav>
 
-          <div class="flex items-center gap-1 flex-shrink-0">
+          <div class="flex items-center gap-2 flex-shrink-0">
             <button 
               v-if="appActions.hasPerm('POST /api/filer/list')"
               class="hidden md:flex px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium items-center gap-1.5 transition-colors"
@@ -168,19 +168,19 @@ export default toNative(FileExplorer)
       </div>
 
       <!-- Loading State -->
-      <div v-if="filerState.loading" class="flex flex-col items-center justify-center py-32">
-        <div class="w-16 h-16 spinner mb-4"></div>
-        <p class="text-slate-500 font-medium">加载中...</p>
+      <div v-if="filerState.loading" class="flex flex-col items-center justify-center py-20">
+        <div class="w-12 h-12 spinner mb-3"></div>
+        <p class="text-slate-500">加载中...</p>
       </div>
 
       <!-- File List -->
       <div v-else class="space-y-3">
         <!-- Empty State -->
-        <div v-if="files.length === 0" class="flex flex-col items-center justify-center py-32">
-          <div class="w-24 h-24 rounded-full bg-slate-100 flex items-center justify-center mb-6">
-            <i class="fas fa-folder-open text-5xl text-slate-300"></i>
+        <div v-if="files.length === 0" class="flex flex-col items-center justify-center py-20">
+          <div class="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center mb-4">
+            <i class="fas fa-folder-open text-4xl text-slate-300"></i>
           </div>
-          <p class="text-slate-600 font-medium text-lg mb-2">此目录为空</p>
+          <p class="text-slate-600 font-medium mb-1">此目录为空</p>
           <p class="text-sm text-slate-400">上传文件或创建新目录开始使用</p>
         </div>
         <!-- 桌面端表格视图 -->
@@ -198,16 +198,16 @@ export default toNative(FileExplorer)
             <tbody class="bg-white divide-y divide-slate-100">
               <tr v-for="file in files" :key="file.name" class="hover:bg-slate-50 transition-colors">
                 <td class="px-4 py-3 max-w-[280px]">
-                  <div class="flex items-center">
+                  <div class="flex items-center gap-2 min-w-0">
                     <div
                       :class="[
-                        'w-9 h-9 rounded-lg flex items-center justify-center mr-3',
+                        'w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0',
                         file.isDir 
                           ? 'bg-amber-400' 
                           : 'bg-blue-400'
                       ]"
                     >
-                      <i :class="getFileIcon(file)" class="text-white text-base"></i>
+                      <i :class="getFileIcon(file)" class="text-white text-sm"></i>
                     </div>
                     <div class="min-w-0">
                       <a 
@@ -237,18 +237,16 @@ export default toNative(FileExplorer)
                 </td>
                 
                 <td class="px-4 py-3">
-                  <span class="text-sm text-slate-500 whitespace-nowrap">
-                    {{ formatTime(file.modTime) }}
-                  </span>
+                  <span class="text-sm text-slate-600 whitespace-nowrap">{{ formatTime(file.modTime) }}</span>
                 </td>
                 
                 <td class="px-4 py-3">
-                  <div class="flex justify-end items-center gap-0.5">
+                  <div class="flex justify-end items-center gap-1">
                     <!-- Directory Actions -->
                     <template v-if="file.isDir">
                       <button 
                         v-if="appActions.hasPerm('POST /api/filer/list')"
-                        class="btn-icon text-primary-600 hover:bg-primary-50"
+                        class="btn-icon text-slate-600 hover:bg-slate-50"
                         title="进入目录" 
                         @click="navigateTo(file.path)"
                       >
@@ -272,7 +270,7 @@ export default toNative(FileExplorer)
                       </button>
                       <button 
                         v-if="appActions.hasPerm('POST /api/filer/rename')"
-                        class="btn-icon text-slate-600 hover:bg-slate-50"
+                        class="btn-icon text-blue-600 hover:bg-blue-50"
                         title="重命名" 
                         @click="renameModalRef.show(file)"
                       >
@@ -308,7 +306,7 @@ export default toNative(FileExplorer)
                       </button>
                       <button 
                         v-if="isEditableFile(file.name) && appActions.hasPerm('POST /api/filer/read') && appActions.hasPerm('POST /api/filer/modify')"
-                        class="btn-icon text-violet-600 hover:bg-violet-50"
+                        class="btn-icon text-blue-600 hover:bg-blue-50"
                         title="编辑" 
                         @click="modifyModalRef.show(file)"
                       >
@@ -324,7 +322,7 @@ export default toNative(FileExplorer)
                       </button>
                       <button 
                         v-if="appActions.hasPerm('POST /api/filer/rename')"
-                        class="btn-icon text-slate-600 hover:bg-slate-50"
+                        class="btn-icon text-blue-600 hover:bg-blue-50"
                         title="重命名" 
                         @click="renameModalRef.show(file)"
                       >
@@ -370,7 +368,7 @@ export default toNative(FileExplorer)
                   <a 
                     v-if="file.isDir" 
                     href="#" 
-                    class="font-medium text-slate-800 hover:text-primary-600 transition-colors text-sm truncate block leading-tight min-h-0" 
+                    class="font-medium text-slate-800 hover:text-primary-600 transition-colors text-sm truncate block" 
                     @click="navigateTo(file.path)"
                   >
                     {{ file.name }}
@@ -383,29 +381,28 @@ export default toNative(FileExplorer)
             </div>
 
             <!-- 时间 -->
-            <div class="flex items-center gap-2 mb-2">
-              <span class="text-xs text-slate-400 w-16 flex-shrink-0">修改时间</span>
-              <span class="text-xs text-slate-600">{{ formatTime(file.modTime) }}</span>
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-xs text-slate-400 flex-shrink-0">修改时间</span>
+              <span class="text-xs text-slate-500">{{ formatTime(file.modTime) }}</span>
             </div>
 
             <!-- 权限 -->
-            <div class="flex items-center gap-2 mb-0">
-              <span class="text-xs text-slate-400 w-16 flex-shrink-0">权限</span>
-              <code class="text-xs text-slate-600 font-mono">{{ file.mode }}</code>
+            <div class="flex items-start gap-2 mb-3">
+              <span class="text-xs text-slate-400 flex-shrink-0 mt-1">权限</span>
+              <code class="text-xs bg-slate-100 px-2 py-1 rounded font-mono text-slate-700">{{ file.mode }}</code>
             </div>
 
             <!-- 底部：操作按钮 -->
-            <div class="flex flex-wrap gap-1 pt-2 mt-2 border-t border-slate-100">
+            <div class="flex flex-wrap gap-1.5 pt-2 border-t border-slate-100">
               <!-- Directory Actions -->
               <template v-if="file.isDir">
                 <button 
                   v-if="appActions.hasPerm('POST /api/filer/list')"
-                  class="btn-icon text-primary-600 hover:bg-primary-50"
+                  class="btn-icon text-slate-600 hover:bg-slate-50"
                   title="进入目录" 
                   @click="navigateTo(file.path)"
                 >
-                  <i class="fas fa-folder-open text-xs"></i>
-                  <span class="text-xs ml-1 hidden xs:inline">进入</span>
+                  <i class="fas fa-folder-open text-xs"></i><span class="text-xs ml-1">进入</span>
                 </button>
                 <button 
                   v-if="appActions.hasPerm('POST /api/filer/zip')"
@@ -413,8 +410,7 @@ export default toNative(FileExplorer)
                   title="压缩" 
                   @click="zipModalRef.show(file)"
                 >
-                  <i class="fas fa-file-zipper text-xs"></i>
-                  <span class="text-xs ml-1 hidden xs:inline">压缩</span>
+                  <i class="fas fa-file-zipper text-xs"></i><span class="text-xs ml-1">压缩</span>
                 </button>
                 <button 
                   v-if="appActions.hasPerm('POST /api/filer/chmod')"
@@ -422,17 +418,15 @@ export default toNative(FileExplorer)
                   title="权限" 
                   @click="chmodModalRef.show(file)"
                 >
-                  <i class="fas fa-lock text-xs"></i>
-                  <span class="text-xs ml-1 hidden xs:inline">权限</span>
+                  <i class="fas fa-lock text-xs"></i><span class="text-xs ml-1">权限</span>
                 </button>
                 <button 
                   v-if="appActions.hasPerm('POST /api/filer/rename')"
-                  class="btn-icon text-slate-600 hover:bg-slate-50"
+                  class="btn-icon text-blue-600 hover:bg-blue-50"
                   title="重命名" 
                   @click="renameModalRef.show(file)"
                 >
-                  <i class="fas fa-pen text-xs"></i>
-                  <span class="text-xs ml-1 hidden xs:inline">重命名</span>
+                  <i class="fas fa-pen text-xs"></i><span class="text-xs ml-1">重命名</span>
                 </button>
                 <button 
                   v-if="appActions.hasPerm('POST /api/filer/delete')"
@@ -440,8 +434,7 @@ export default toNative(FileExplorer)
                   title="删除" 
                   @click="deleteModalRef.show(file)"
                 >
-                  <i class="fas fa-trash text-xs"></i>
-                  <span class="text-xs ml-1 hidden xs:inline">删除</span>
+                  <i class="fas fa-trash text-xs"></i><span class="text-xs ml-1">删除</span>
                 </button>
               </template>
 
@@ -453,8 +446,7 @@ export default toNative(FileExplorer)
                   title="下载" 
                   @click="download(file)"
                 >
-                  <i class="fas fa-download text-xs"></i>
-                  <span class="text-xs ml-1 hidden xs:inline">下载</span>
+                  <i class="fas fa-download text-xs"></i><span class="text-xs ml-1">下载</span>
                 </button>
                 <button 
                   v-if="file.name.endsWith('.zip') && appActions.hasPerm('POST /api/filer/unzip')"
@@ -462,17 +454,15 @@ export default toNative(FileExplorer)
                   title="解压" 
                   @click="unzipModalRef.show(file)"
                 >
-                  <i class="fas fa-file-zipper text-xs"></i>
-                  <span class="text-xs ml-1 hidden xs:inline">解压</span>
+                  <i class="fas fa-file-zipper text-xs"></i><span class="text-xs ml-1">解压</span>
                 </button>
                 <button 
                   v-if="isEditableFile(file.name) && appActions.hasPerm('POST /api/filer/read') && appActions.hasPerm('POST /api/filer/modify')"
-                  class="btn-icon text-violet-600 hover:bg-violet-50"
+                  class="btn-icon text-blue-600 hover:bg-blue-50"
                   title="编辑" 
                   @click="modifyModalRef.show(file)"
                 >
-                  <i class="fas fa-file-pen text-xs"></i>
-                  <span class="text-xs ml-1 hidden xs:inline">编辑</span>
+                  <i class="fas fa-file-pen text-xs"></i><span class="text-xs ml-1">编辑</span>
                 </button>
                 <button 
                   v-if="appActions.hasPerm('POST /api/filer/chmod')"
@@ -480,17 +470,15 @@ export default toNative(FileExplorer)
                   title="权限" 
                   @click="chmodModalRef.show(file)"
                 >
-                  <i class="fas fa-lock text-xs"></i>
-                  <span class="text-xs ml-1 hidden xs:inline">权限</span>
+                  <i class="fas fa-lock text-xs"></i><span class="text-xs ml-1">权限</span>
                 </button>
                 <button 
                   v-if="appActions.hasPerm('POST /api/filer/rename')"
-                  class="btn-icon text-slate-600 hover:bg-slate-50"
+                  class="btn-icon text-blue-600 hover:bg-blue-50"
                   title="重命名" 
                   @click="renameModalRef.show(file)"
                 >
-                  <i class="fas fa-pen text-xs"></i>
-                  <span class="text-xs ml-1 hidden xs:inline">重命名</span>
+                  <i class="fas fa-pen text-xs"></i><span class="text-xs ml-1">重命名</span>
                 </button>
                 <button 
                   v-if="appActions.hasPerm('POST /api/filer/delete')"
@@ -498,8 +486,7 @@ export default toNative(FileExplorer)
                   title="删除" 
                   @click="deleteModalRef.show(file)"
                 >
-                  <i class="fas fa-trash text-xs"></i>
-                  <span class="text-xs ml-1 hidden xs:inline">删除</span>
+                  <i class="fas fa-trash text-xs"></i><span class="text-xs ml-1">删除</span>
                 </button>
               </template>
             </div>

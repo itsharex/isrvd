@@ -69,9 +69,9 @@ export default toNative(ContainerLogs)
             <i class="fas fa-rotate"></i>刷新
           </button>
         </div>
-        <div v-if="logLoading" class="flex flex-col items-center justify-center py-12 gap-3 text-slate-400 text-sm">
-          <div class="w-8 h-8 spinner"></div>
-          <span>加载日志中...</span>
+        <div v-if="logLoading" class="flex flex-col items-center justify-center py-20">
+          <div class="w-12 h-12 spinner mb-3"></div>
+          <p class="text-slate-500">加载中...</p>
         </div>
         <pre v-else-if="logContent" class="bg-slate-900 text-slate-100 rounded-xl p-3 md:p-4 text-xs font-mono overflow-auto max-h-[600px] whitespace-pre-wrap break-all">{{ logContent }}</pre>
         <div v-else class="flex flex-col items-center justify-center py-16">
