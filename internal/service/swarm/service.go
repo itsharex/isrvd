@@ -33,9 +33,9 @@ func (s *Service) Info(ctx context.Context) (any, error) {
 	return s.svc.Info(ctx)
 }
 
-// JoinTokenList 获取加入集群的 token
-func (s *Service) JoinTokenList(ctx context.Context) (any, error) {
-	return s.svc.JoinTokenList(ctx)
+// JoinToken 获取加入集群的 token
+func (s *Service) JoinToken(ctx context.Context) (any, error) {
+	return s.svc.JoinToken(ctx)
 }
 
 // NodeList 获取节点列表

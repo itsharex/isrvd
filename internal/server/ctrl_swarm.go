@@ -18,7 +18,7 @@ func (app *App) defineSwarmRoutes() []Route {
 		{Method: "GET", Path: "/swarm/nodes", Handler: app.swarmNodeList, Module: "swarm", Label: "列出 Swarm 节点"},
 		{Method: "GET", Path: "/swarm/node/:id", Handler: app.swarmNodeInspect, Module: "swarm", Label: "查看 Swarm 节点"},
 		{Method: "POST", Path: "/swarm/node/:id/action", Handler: app.swarmNodeAction, Module: "swarm", Label: "操作 Swarm 节点"},
-		{Method: "GET", Path: "/swarm/tokens", Handler: app.swarmJoinTokens, Module: "swarm", Label: "获取 Swarm 加入令牌"},
+		{Method: "GET", Path: "/swarm/token", Handler: app.swarmJoinToken, Module: "swarm", Label: "获取 Swarm 加入令牌"},
 		// 服务管理
 		{Method: "GET", Path: "/swarm/services", Handler: app.swarmServiceList, Module: "swarm", Label: "列出 Swarm 服务"},
 		{Method: "GET", Path: "/swarm/service/:id", Handler: app.swarmServiceInspect, Module: "swarm", Label: "查看 Swarm 服务"},
@@ -152,8 +152,8 @@ func (app *App) swarmTaskList(c *gin.Context) {
 	helper.RespondSuccess(c, "Tasks listed", result)
 }
 
-func (app *App) swarmJoinTokens(c *gin.Context) {
-	result, err := app.swarmSvc.JoinTokenList(c.Request.Context())
+func (app *App) swarmJoinToken(c *gin.Context) {
+	result, err := app.swarmSvc.JoinToken(c.Request.Context())
 	if err != nil {
 		helper.RespondError(c, http.StatusInternalServerError, err.Error())
 		return

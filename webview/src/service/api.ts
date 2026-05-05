@@ -432,8 +432,8 @@ class ApiService {
         return http.get<SwarmNodeInfo[]>('/api/swarm/nodes')
     }
 
-    swarmTokens() {
-        return http.get<{ worker: string; manager: string }>('/api/swarm/tokens')
+    swarmJoinToken() {
+        return http.get<{ worker: string; manager: string }>('/api/swarm/token')
     }
 
     swarmNode(id: string) {

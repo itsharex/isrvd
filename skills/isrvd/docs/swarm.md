@@ -45,7 +45,7 @@ GET /api/swarm/node/:id
 ### §2.3 获取加入令牌
 
 ```
-GET /api/swarm/tokens
+GET /api/swarm/token
 ```
 
 返回 manager 和 worker 的加入令牌。
