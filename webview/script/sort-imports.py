@@ -179,7 +179,7 @@ def process_vue_file(path: Path, dry_run: bool = False) -> bool:
     return True
 
 def main():
-    src_dir = Path(__file__).parent / 'src'
+    src_dir = Path(__file__).parent.parent / 'src'
     dry_run = '--dry-run' in sys.argv
 
     vue_files = sorted(src_dir.rglob('*.vue'))
