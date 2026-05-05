@@ -34,7 +34,7 @@ class SwarmOverview extends Vue {
         try {
             const res = await api.swarmInfo()
             this.swarmInfo = res.payload ?? null
-        } catch (e) {
+        } catch {
             this.actions.showNotification('error', '获取 Swarm 信息失败，请确认集群已初始化')
             this.swarmInfo = null
         }

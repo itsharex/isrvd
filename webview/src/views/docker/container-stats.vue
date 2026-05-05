@@ -101,7 +101,7 @@ class ContainerStats extends Vue {
                 this.initCharts()
             }
             this.renderCharts()
-        } catch (e) {
+        } catch {
             // 静默失败
         }
     }

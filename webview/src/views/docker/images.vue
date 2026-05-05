@@ -40,17 +40,16 @@ class Images extends Vue {
         try {
             const res = await api.dockerImageList(this.showAllImages)
             this.images = res.payload || []
-        } catch (e) {
+        } catch {
             this.actions.showNotification('error', '加载镜像列表失败')
-        }
-        this.loading = false
+        }        this.loading = false
     }
 
     async loadRegistries() {
         try {
             const res = await api.dockerRegistryList()
             this.registries = res.payload || []
-        } catch (e) {}
+        } catch {}
     }
 
     openPush(image: DockerImageInfo) {

@@ -25,7 +25,7 @@ detailData: DockerNetworkInspect | null = null
         try {
             const res = await api.dockerNetwork(this.networkId)
             this.detailData = res.payload ?? null
-        } catch (e) {
+        } catch {
             this.actions.showNotification('error', '获取网络详情失败')
         }
         this.loading = false

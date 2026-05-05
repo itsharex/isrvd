@@ -35,7 +35,7 @@ class NetworkCreateModal extends Vue {
             this.actions.showNotification('success', '网络创建成功')
             this.isOpen = false
             this.$emit('success')
-        } catch (e) {}
+        } catch {}
         this.modalLoading = false
     }}
 

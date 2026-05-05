@@ -34,7 +34,7 @@ export default tseslint.config(
     },
     rules: {
       // TS：与 tsconfig strict 保持一致，关闭重复检查
-      '@typescript-eslint/no-unused-vars': 'off',
+      '@typescript-eslint/no-unused-vars': 'warn',
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/no-non-null-assertion': 'warn',
       '@typescript-eslint/no-unused-expressions': ['error', {
@@ -51,17 +51,17 @@ export default tseslint.config(
       'vue/no-v-html': 'off',
       // 关闭与 Prettier 冲突的 HTML 格式规则
       'vue/html-self-closing': 'off',
-      'vue/max-attributes-per-line': 'off',
-      'vue/attributes-order': 'off',
+      'vue/html-indent': 'off',
+      'vue/html-closing-bracket-newline': 'off',
       'vue/multiline-html-element-content-newline': 'off',
       'vue/singleline-html-element-content-newline': 'off',
-      'vue/html-closing-bracket-newline': 'off',
-      'vue/html-indent': 'off',
+      'vue/max-attributes-per-line': 'off',
+      'vue/attributes-order': 'off',
 
       // 通用
       'no-empty': 'off',
-      'eqeqeq': ['error', 'always'],
       'no-console': 'off',
+      'eqeqeq': ['error', 'always'],
     },
   },
 );

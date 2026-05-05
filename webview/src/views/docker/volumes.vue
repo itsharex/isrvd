@@ -32,7 +32,7 @@ class Volumes extends Vue {
         try {
             const res = await api.dockerVolumeList()
             this.volumes = res.payload || []
-        } catch (e) {
+        } catch {
             this.actions.showNotification('error', '加载数据卷列表失败')
         }
         this.loading = false

@@ -34,7 +34,7 @@ class ServiceLogs extends Vue {
         try {
             const res = await api.swarmServiceLogs(this.serviceId, this.logsTail)
             this.logsContent = res.payload?.logs || []
-        } catch (e) {
+        } catch {
             this.logsContent = []
             this.actions.showNotification('error', '获取日志失败')
         }
@@ -45,7 +45,7 @@ class ServiceLogs extends Vue {
         try {
             const res = await api.swarmService(this.serviceId)
             this.serviceName = res.payload?.name || ''
-        } catch (e) { /* 忽略，名称仅用于展示 */ }
+        } catch { /* 忽略，名称仅用于展示 */ }
     }
 
     // ─── 生命周期 ───

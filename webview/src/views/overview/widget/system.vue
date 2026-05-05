@@ -49,7 +49,7 @@ class SystemOverview extends Vue {
                 this.ready = true
                 this.dispatchData(res.payload)
             }
-        } catch (e) { /* ignore */ }
+        } catch { /* ignore */ }
         this.loading = false
     }
 
@@ -63,7 +63,7 @@ class SystemOverview extends Vue {
             if (res.payload) {
                 this.dispatchData(res.payload)
             }
-        } catch (e) { /* ignore */ }
+        } catch { /* ignore */ }
     }
 
     startPoll() {

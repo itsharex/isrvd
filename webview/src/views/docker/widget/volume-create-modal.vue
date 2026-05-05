@@ -35,7 +35,7 @@ class VolumeCreateModal extends Vue {
             this.actions.showNotification('success', '数据卷创建成功')
             this.isOpen = false
             this.$emit('success')
-        } catch (e) {}
+        } catch {}
         this.modalLoading = false
     }
 }

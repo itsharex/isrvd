@@ -34,7 +34,7 @@ class ContainerEditModal extends Vue {
         try {
             const res = await api.dockerContainerCompose(container.name)
             this.composeContent = res.payload?.content || ''
-        } catch (e) {
+        } catch {
             this.isOpen = false
         } finally {
             this.modalLoading = false
@@ -49,7 +49,7 @@ class ContainerEditModal extends Vue {
             this.actions.showNotification('success', '容器配置更新成功，已重建容器')
             this.isOpen = false
             this.$emit('success')
-        } catch (e) {}
+        } catch {}
         this.modalLoading = false
     }
 }

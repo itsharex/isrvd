@@ -44,7 +44,7 @@ class Services extends Vue {
         try {
             const res = await api.swarmServiceList()
             this.services = res.payload || []
-        } catch (e) {
+        } catch {
             this.actions.showNotification('error', '获取服务列表失败')
         }
         this.servicesLoading = false

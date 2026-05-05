@@ -43,7 +43,7 @@ class ApisixOverview extends Vue {
                 consumers: consumers.length,
                 whitelist: whitelist.length,
             }
-        } catch (e) {
+        } catch {
             this.actions.showNotification('error', '获取 APISIX 信息失败')
             this.info = null
         }

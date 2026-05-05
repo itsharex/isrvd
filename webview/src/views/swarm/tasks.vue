@@ -39,7 +39,7 @@ class Tasks extends Vue {
         try {
             const res = await api.swarmServiceList()
             this.services = res.payload || []
-        } catch (e) {
+        } catch {
             this.actions.showNotification('error', '获取服务列表失败')
         }
     }
@@ -49,7 +49,7 @@ class Tasks extends Vue {
         try {
             const res = await api.swarmTaskList()
             this.tasks = res.payload || []
-        } catch (e) {
+        } catch {
             this.actions.showNotification('error', '获取任务列表失败')
         }
         this.tasksLoading = false

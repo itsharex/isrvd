@@ -34,7 +34,7 @@ class ServiceEditModal extends Vue {
         try {
             const res = await api.swarmServiceCompose(svc.name)
             this.composeContent = res.payload?.content || ''
-        } catch (e) {
+        } catch {
             this.isOpen = false
         } finally {
             this.modalLoading = false
@@ -49,7 +49,7 @@ class ServiceEditModal extends Vue {
             this.actions.showNotification('success', 'Swarm 服务配置更新成功，已重建服务')
             this.isOpen = false
             this.$emit('success')
-        } catch (e) {}
+        } catch {}
         this.modalLoading = false
     }
 }

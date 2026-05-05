@@ -49,7 +49,7 @@ class RegistryPushModal extends Vue {
         try {
             const res = await api.dockerImageList(false)
             this.localImages = (res.payload || []).filter((img: DockerImageInfo) => img.repoTags && img.repoTags.length > 0)
-        } catch (e) {}
+        } catch {}
     }
 
     show(allRegistries: DockerRegistryInfo[], registry: DockerRegistryInfo | null = null, prefillImage = '') {
@@ -71,7 +71,7 @@ class RegistryPushModal extends Vue {
             this.actions.showNotification('success', '镜像推送成功')
             this.isOpen = false
             this.$emit('success')
-        } catch (e) {}
+        } catch {}
         this.modalLoading = false
     }
 }

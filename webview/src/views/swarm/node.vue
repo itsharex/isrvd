@@ -42,7 +42,7 @@ nodeData: SwarmNodeInspect | null = null
         try {
             const res = await api.swarmNode(this.nodeId)
             this.nodeData = res.payload ?? null
-        } catch (e) {
+        } catch {
             this.actions.showNotification('error', '获取节点详情失败')
         }
         this.loading = false

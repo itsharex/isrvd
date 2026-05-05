@@ -32,7 +32,7 @@ class ServiceScaleModal extends Vue {
             await api.swarmServiceAction(this.service.id, 'scale', this.replicas)
             this.isOpen = false
             this.$emit('success')
-        } catch (e) {}
+        } catch {}
         this.loading = false
     }
 }

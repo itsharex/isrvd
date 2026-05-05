@@ -29,7 +29,7 @@ inspectData: DockerImageInspect | null = null
         try {
             const res = await api.dockerImage(this.imageId)
             this.inspectData = res.payload ?? null
-        } catch (e) {
+        } catch {
             this.actions.showNotification('error', '获取镜像详情失败')
         }
         this.loading = false

@@ -45,7 +45,7 @@ class Containers extends Vue {
         try {
             const res = await api.dockerContainerList(this.showAll)
             this.containers = res.payload || []
-        } catch (e) {
+        } catch {
             this.actions.showNotification('error', '加载容器列表失败')
         }
         this.loading = false

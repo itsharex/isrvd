@@ -40,7 +40,7 @@ class Config extends Vue {
       if (reload) {
         this.actions.showNotification('success', '配置已从文件重新加载')
       }
-    } catch (e) {
+    } catch {
       this.actions.showNotification('error', reload ? '重载配置失败' : '加载配置失败')
     }
     this.loading = false
@@ -59,7 +59,7 @@ class Config extends Vue {
       })
       this.actions.showNotification('success', '全部配置已保存，部分项需重启生效')
       this.loadConfig()
-    } catch (e) { }
+    } catch { }
     this.saving = false
   }
 

@@ -30,7 +30,7 @@ class ServiceCreateModal extends Vue {
             this.networks = (netRes.payload || []).filter((n: DockerNetworkInfo) =>
                 n.driver === 'overlay' || n.driver === 'host' || n.driver === 'bridge'
             )
-        } catch (e) {}
+        } catch {}
     }
 
     show() {
@@ -69,7 +69,7 @@ class ServiceCreateModal extends Vue {
             })
             this.isOpen = false
             this.$emit('success')
-        } catch (e) {}
+        } catch {}
         this.loading = false
     }
 }

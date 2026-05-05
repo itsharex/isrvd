@@ -56,7 +56,7 @@ serviceData: SwarmServiceInspect | null = null
             ])
             this.serviceData = detailRes.payload ?? null
             this.tasks = tasksRes.payload ?? []
-        } catch (e) {
+        } catch {
             this.actions.showNotification('error', '获取服务详情失败')
         }
         this.loading = false

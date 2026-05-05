@@ -35,7 +35,7 @@ class DockerOverview extends Vue {
         try {
             const res = await api.dockerInfo()
             this.info = res.payload ?? null
-        } catch (e) {
+        } catch {
             this.actions.showNotification('error', '加载 Docker 信息失败')
             this.info = null
         }

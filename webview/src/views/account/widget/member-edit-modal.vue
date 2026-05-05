@@ -118,7 +118,7 @@ class MemberEditModal extends Vue {
                 ordered.push({ module: mod, label: meta.label, icon: meta.icon, routes })
             }
             this.routeGroups = ordered
-        } catch (e) {
+        } catch {
             this.actions.showNotification('error', '加载路由列表失败')
         }
         this.routesLoading = false
@@ -250,7 +250,7 @@ class MemberEditModal extends Vue {
             }
             this.isOpen = false
             this.$emit('success')
-        } catch (e) {}
+        } catch {}
         this.modalLoading = false
     }
 }

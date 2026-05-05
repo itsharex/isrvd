@@ -27,7 +27,7 @@ class Members extends Vue {
         try {
             const res = await api.accountMemberList()
             this.members = res.payload || []
-        } catch (e) {
+        } catch {
             this.actions.showNotification('error', '加载成员列表失败')
         }
         this.membersLoading = false
@@ -54,7 +54,7 @@ class Members extends Vue {
                     await api.accountMemberDelete(m.username)
                     this.actions.showNotification('success', '成员删除成功')
                     this.loadMembers()
-                } catch (e) {}
+                } catch {}
             }
         })
     }

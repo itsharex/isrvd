@@ -29,7 +29,7 @@ class Networks extends Vue {
         try {
             const res = await api.dockerNetworkList()
             this.networks = res.payload || []
-        } catch (e) {
+        } catch {
             this.actions.showNotification('error', '加载网络列表失败')
         }
         this.loading = false

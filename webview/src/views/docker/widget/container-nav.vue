@@ -40,7 +40,7 @@ class ContainerNav extends Vue {
                 return
             }
             this.$emit('loaded', this.container)
-        } catch (e) {
+        } catch {
             this.actions.showNotification('error', '加载容器信息失败')
             this.$router.push('/docker/containers')
         }

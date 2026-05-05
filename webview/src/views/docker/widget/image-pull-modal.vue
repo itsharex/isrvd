@@ -47,14 +47,14 @@ class ImagePullModal extends Vue {
             const info = res.payload
             this.daemonMirrors = info?.registryMirrors || []
             this.indexServerAddress = info?.indexServerAddress || ''
-        } catch (e) {}
+        } catch {}
     }
 
     async loadRegistries() {
         try {
             const res = await api.dockerRegistryList()
             this.registries = res.payload || []
-        } catch (e) {}
+        } catch {}
     }
 
     show(source = '') {
@@ -75,7 +75,7 @@ class ImagePullModal extends Vue {
             this.actions.showNotification('success', '镜像拉取成功')
             this.isOpen = false
             this.$emit('success')
-        } catch (e) {
+        } catch {
         } finally {
             this.modalLoading = false
         }
@@ -91,7 +91,7 @@ class ImagePullModal extends Vue {
         try {
             const res = await api.dockerImageSearch(keyword)
             this.searchResults = res.payload || []
-        } catch (e) {
+        } catch {
             this.actions.showNotification('error', '搜索镜像失败')
         } finally {
             this.searchLoading = false

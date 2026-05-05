@@ -58,14 +58,14 @@ class ContainerCreateModal extends Vue {
         try {
             const res = await api.dockerImageList(false)
             this.images = res.payload || []
-        } catch (e) {}
+        } catch {}
     }
 
     async loadNetworks() {
         try {
             const res = await api.dockerNetworkList()
             this.networks = res.payload || []
-        } catch (e) {}
+        } catch {}
     }
 
     show() {
@@ -154,7 +154,7 @@ class ContainerCreateModal extends Vue {
             this.actions.showNotification('success', '容器创建成功')
             this.isOpen = false
             this.$emit('success')
-        } catch (e) {}
+        } catch {}
         this.modalLoading = false
     }
 }

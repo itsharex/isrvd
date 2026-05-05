@@ -37,7 +37,7 @@ class ImageBuildModal extends Vue {
             this.actions.showNotification('success', '镜像构建成功')
             this.isOpen = false
             this.$emit('success')
-        } catch (e) {}
+        } catch {}
         this.modalLoading = false
     }
 }

@@ -30,7 +30,7 @@ class Registries extends Vue {
             const info = res.payload
             this.daemonMirrors = info?.registryMirrors || []
             this.indexServerAddress = info?.indexServerAddress || ''
-        } catch (e) {}
+        } catch {}
     }
 
     async loadRegistries() {
@@ -38,7 +38,7 @@ class Registries extends Vue {
         try {
             const res = await api.dockerRegistryList()
             this.registries = res.payload || []
-        } catch (e) {
+        } catch {
             this.actions.showNotification('error', '加载仓库列表失败')
         }
         this.loading = false
@@ -65,7 +65,7 @@ class Registries extends Vue {
                     await api.dockerRegistryDelete(reg.url)
                     this.actions.showNotification('success', '仓库删除成功')
                     this.loadRegistries()
-                } catch (e) {}
+                } catch {}
             }
         })
     }

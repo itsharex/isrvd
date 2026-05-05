@@ -38,7 +38,7 @@ class ImageTagModal extends Vue {
             this.actions.showNotification('success', '镜像标签添加成功')
             this.isOpen = false
             this.$emit('success')
-        } catch (e) {}
+        } catch {}
         this.modalLoading = false
     }
 }

@@ -29,7 +29,7 @@ detailData: DockerVolumeInspect | null = null
         try {
             const res = await api.dockerVolume(this.volumeName)
             this.detailData = res.payload ?? null
-        } catch (e) {
+        } catch {
             this.actions.showNotification('error', '获取数据卷详情失败')
         }
         this.loading = false

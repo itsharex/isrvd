@@ -64,7 +64,7 @@ class RegistryEditModal extends Vue {
             }
             this.isOpen = false
             this.$emit('success')
-        } catch (e) {}
+        } catch {}
         this.modalLoading = false
     }
 }
