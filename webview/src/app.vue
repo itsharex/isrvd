@@ -1,12 +1,9 @@
 <script lang="ts">
-import { Component, Provide, Ref, Vue, Watch, toNative } from 'vue-facing-decorator'
+import { Component, Provide, Ref, Vue, toNative } from 'vue-facing-decorator'
 
 import { APP_ACTIONS_KEY, APP_STATE_KEY, initProvider } from '@/store/state'
 
 import { setRouterGuard } from '@/router'
-
-import api from '@/service/api'
-import type { LinkConfig } from '@/service/types'
 
 import ConfirmModal from '@/component/confirm.vue'
 import NavigationBar from '@/component/navigation.vue'
@@ -23,86 +20,18 @@ setRouterGuard(actions.hasPerm, () => state.permissionsLoaded, actions.isAuthent
     components: { ConfirmModal, NavigationBar, NotificationManager, PageAgent, UserMenu, AuthLogin }
 })
 class App extends Vue {
-    // ─── 数据属性 ───
     @Provide(APP_STATE_KEY) state = state
     @Provide(APP_ACTIONS_KEY) actions = actions
     sidebarCollapsed = false
-    toolbarLinks: LinkConfig[] = []
 
-    // ─── Refs ───
     @Ref readonly navigationRef!: InstanceType<typeof NavigationBar>
 
     toggleMobileMenu() {
-        if (this.navigationRef) {
-            this.navigationRef.toggleMobileSidebar()
-        }
+        this.navigationRef?.toggleMobileSidebar()
     }
 
-    async loadServiceAvailability() {
-        try {
-            const res = await api.overviewProbe()
-            this.actions.updateServiceAvailability(res?.payload || {})
-        } catch (e) {
-            console.warn('Failed to load service probe:', e)
-        }
-    }
-
-    async loadLinks() {
-        try {
-            const res = await api.systemConfig()
-            this.toolbarLinks = res?.payload?.links || []
-        } catch (e) {
-            console.warn('Failed to load toolbar links:', e)
-        }
-    }
-
-    async loadMe() {
-        try {
-            const res = await api.accountInfo()
-            const member = res?.payload?.member
-            if (member) {
-                this.actions.setPermissions({
-                    founder: member.founder || false,
-                    permissions: member.permissions || {}
-                })
-            }
-        } catch (e) {
-            console.warn('Failed to load user permissions:', e)
-        }
-    }
-
-    // ─── 侦听器 ───
-    @Watch('state.username')
-    onUsernameChange(username: string, oldUsername: string) {
-        if (username && !oldUsername) {
-            this.loadServiceAvailability()
-            this.loadMe()
-            this.loadLinks()
-        }
-    }
-
-    // ─── 生命周期 ───
     async mounted() {
-        try {
-            const res = await api.accountInfo()
-            const mode = res?.payload?.mode
-            if (mode === 'header') {
-                // header 认证模式：直接使用代理注入的用户名，无需登录
-                const username = res.payload?.username || ''
-                if (username) {
-                    this.actions.setAuth({ authMode: 'header', token: '', username })
-                }
-            } else {
-                // jwt 认证模式：从 localStorage 恢复登录状态
-                const token = localStorage.getItem('app-token')
-                const username = localStorage.getItem('app-username')
-                if (token && username) {
-                    this.actions.setAuth({ authMode: 'jwt', token, username })
-                }
-            }
-        } catch (e) {
-            console.warn('Failed to load auth info:', e)
-        }
+        await this.actions.initialize()
     }
 }
 
@@ -111,9 +40,18 @@ export default toNative(App)
 
 <template>
   <div class="min-h-screen bg-slate-50">
-    <template v-if="state.username">
+    <!-- 初始化加载状态 -->
+    <div v-if="!state.initialized" class="flex items-center justify-center min-h-screen">
+      <div class="flex flex-col items-center gap-4">
+        <div class="w-12 h-12 border-4 border-slate-200 border-t-blue-500 rounded-full animate-spin"></div>
+        <span class="text-slate-500 text-sm">正在初始化...</span>
+      </div>
+    </div>
+
+    <!-- 主内容 -->
+    <template v-else-if="state.username">
       <!-- 移动端顶部菜单栏 -->
-      <header 
+      <header
         class="fixed top-0 left-0 right-0 h-16 bg-white/80 backdrop-blur-xl border-b border-slate-200/50 z-40 flex items-center justify-between px-4 transition-all duration-300"
         :class="sidebarCollapsed ? 'lg:left-16' : 'lg:left-64'"
       >
@@ -124,11 +62,11 @@ export default toNative(App)
         >
           <i class="fas fa-bars text-slate-600"></i>
         </button>
-        
+
         <!-- 工具栏按钮区域 -->
         <div class="flex items-center gap-2 overflow-x-auto ml-auto">
           <a
-            v-for="link in toolbarLinks"
+            v-for="link in state.toolbarLinks"
             :key="link.url"
             :href="link.url"
             target="_blank"
@@ -139,7 +77,7 @@ export default toNative(App)
             <span>{{ link.label }}</span>
           </a>
         </div>
-        
+
         <!-- 用户信息 -->
         <div class="flex items-center gap-1">
           <PageAgent v-if="actions.hasPerm('agent')" />
@@ -154,6 +92,7 @@ export default toNative(App)
       </main>
     </template>
 
+    <!-- 登录页面 -->
     <AuthLogin v-else />
 
     <NotificationManager />

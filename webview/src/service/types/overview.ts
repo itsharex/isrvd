@@ -1,9 +1,11 @@
 // ─── 系统探测 ───
 
 export interface SystemProbe {
+    agent: { available: boolean }
     apisix: { available: boolean }
     docker: { available: boolean }
     swarm: { available: boolean }
+    compose: { available: boolean }
 }
 
 // ─── 系统统计 ───

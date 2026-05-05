@@ -1,9 +1,9 @@
 import { reactive } from 'vue'
 
 import { interceptors } from '@/service/axios'
-import type { FilerFileInfo } from '@/service/types'
+import api from '@/service/api'
+import type { FilerFileInfo, LinkConfig } from '@/service/types'
 
-// Provide/Inject keys
 export const APP_STATE_KEY = 'app.state'
 export const APP_ACTIONS_KEY = 'app.actions'
 
@@ -16,7 +16,7 @@ interface Notification {
     timer: ReturnType<typeof setTimeout>
 }
 
-interface ConfirmOptions {
+export interface ConfirmOptions {
     title?: string
     message?: string
     icon?: string
@@ -24,18 +24,6 @@ interface ConfirmOptions {
     confirmText?: string
     danger?: boolean
     onConfirm?: (() => void | Promise<void>) | null
-}
-
-interface ConfirmState {
-    show: boolean
-    title: string
-    message: string
-    icon: string
-    iconColor: string
-    confirmText: string
-    danger: boolean
-    loading: boolean
-    onConfirm: (() => void | Promise<void>) | null
 }
 
 interface ServiceAvailability {
@@ -47,21 +35,36 @@ interface ServiceAvailability {
 }
 
 export interface AppState {
+    initialized: boolean
+    initError: string | null
     authMode: 'jwt' | 'header' | null
     token: string | null
     username: string | null
+    permissionsLoaded: boolean
+    founder: boolean
+    permissions: string[]
+    serviceAvailability: ServiceAvailability
+    toolbarLinks: LinkConfig[]
     loading: boolean
     currentPath: string
     files: FilerFileInfo[]
     notifications: Notification[]
-    confirm: ConfirmState
-    serviceAvailability: ServiceAvailability
-    permissionsLoaded: boolean
-    founder: boolean
-    permissions: string[]
+    confirm: {
+        show: boolean
+        title: string
+        message: string
+        icon: string
+        iconColor: string
+        confirmText: string
+        danger: boolean
+        loading: boolean
+        onConfirm: (() => void | Promise<void>) | null
+    }
 }
 
 export interface AppActions {
+    initialize(): Promise<void>
+    loadAppData(): Promise<void>
     setAuth(data: { authMode: 'jwt' | 'header'; token: string; username: string }): void
     clearAuth(): void
     isAuthenticated(): boolean
@@ -74,67 +77,103 @@ export interface AppActions {
     confirmLoading(loading: boolean): void
     closeConfirm(): void
     handleConfirm(): Promise<void>
-    updateServiceAvailability(availability: {
-        agent?: { available?: boolean };
-        apisix?: { available?: boolean };
-        docker?: { available?: boolean };
-        swarm?: { available?: boolean };
-        compose?: { available?: boolean }
-    }): void
 }
 
+// ─── 初始状态 ───
+
+const createInitialState = (): AppState => ({
+    initialized: false,
+    initError: null,
+    authMode: null,
+    token: null,
+    username: null,
+    permissionsLoaded: false,
+    founder: false,
+    permissions: [],
+    serviceAvailability: { agent: false, apisix: false, docker: false, swarm: false, compose: false },
+    toolbarLinks: [],
+    loading: false,
+    currentPath: '/',
+    files: [],
+    notifications: [],
+    confirm: { show: false, title: '', message: '', icon: '', iconColor: 'blue', confirmText: '确认', danger: false, loading: false, onConfirm: null }
+})
+
+// ─── Provider ───
+
 export const initProvider = () => {
-    const state = reactive<AppState>({
-        // 用户认证状态
-        authMode: null,
-        token: null,
-        username: null,
-
-        // 网络请求状态
-        loading: false,
-
-        // 权限状态
-        permissionsLoaded: false,
-        founder: false,
-        permissions: [],
-
-        // 文件管理状态
-        currentPath: '/',
-        files: [],
-
-        // 通知状态
-        notifications: [],
-
-        // 确认模态框状态
-        confirm: {
-            show: false,
-            title: '',
-            message: '',
-            icon: '',
-            iconColor: 'blue',
-            confirmText: '确认',
-            danger: false,
-            loading: false,
-            onConfirm: null
-        },
-
-        // 服务可用性状态
-        serviceAvailability: {
-            agent: false,
-            apisix: false,
-            docker: false,
-            swarm: false,
-            compose: false
-        }
-    })
+    const state = reactive<AppState>(createInitialState())
 
     const actions: AppActions = {
-        // 认证操作
-        setAuth(data: { authMode: 'jwt' | 'header'; token: string; username: string }) {
+        async initialize() {
+            state.initialized = false
+            state.initError = null
+
+            try {
+                // 恢复 token
+                const token = localStorage.getItem('app-token')
+                const username = localStorage.getItem('app-username')
+                if (token && username) {
+                    state.token = token
+                    state.username = username
+                    state.authMode = 'jwt'
+                }
+
+                // 验证认证
+                const authRes = await api.accountInfo()
+                const payload = authRes?.payload
+
+                if (payload?.mode === 'header' && payload.username) {
+                    this.setAuth({ authMode: 'header', token: '', username: payload.username })
+                } else if (payload?.username && payload.member) {
+                    this.setPermissions({ founder: payload.member.founder, permissions: payload.member.permissions || [] })
+                } else {
+                    this.clearAuth()
+                }
+
+                if (state.username) await this.loadAppData()
+            } catch (e) {
+                console.error('Initialize failed:', e)
+                state.initError = e instanceof Error ? e.message : '初始化失败'
+            } finally {
+                state.initialized = true
+            }
+        },
+
+        async loadAppData() {
+            try {
+                const [authRes, probeRes, configRes] = await Promise.all([
+                    api.accountInfo(),
+                    api.overviewProbe(),
+                    api.systemConfig(),
+                ])
+
+                const probe = probeRes?.payload
+                if (probe) {
+                    state.serviceAvailability = {
+                        agent: probe.agent?.available || false,
+                        apisix: probe.apisix?.available || false,
+                        docker: probe.docker?.available || false,
+                        swarm: probe.swarm?.available || false,
+                        compose: probe.compose?.available || false
+                    }
+                }
+
+                state.toolbarLinks = configRes?.payload?.links || []
+
+                const member = authRes?.payload?.member
+                if (member) {
+                    this.setPermissions({ founder: member.founder, permissions: member.permissions || [] })
+                }
+            } catch (e) {
+                console.error('Load app data failed:', e)
+            }
+        },
+
+        setAuth(data) {
             state.authMode = data.authMode
             state.token = data.token
             state.username = data.username
-            // header 模式无需持久化 token，刷新后重新从代理 Header 获取
             if (data.authMode === 'jwt') {
                 localStorage.setItem('app-token', data.token)
                 localStorage.setItem('app-username', data.username)
@@ -152,62 +191,57 @@ export const initProvider = () => {
             localStorage.removeItem('app-username')
         },
 
-        isAuthenticated(): boolean {
-            return !!state.token
-        },
+        isAuthenticated: () => !!state.token,
 
-        setPermissions(data: { founder?: boolean; permissions: string[] }) {
+        setPermissions(data) {
             state.permissionsLoaded = true
             state.founder = data.founder || false
             state.permissions = data.permissions || []
         },
 
-        hasPerm(module: string): boolean {
-            if (state.founder) return true
-            // 精确路由 key 匹配（如 'POST /api/docker/container/:id/action'）
-            if (module.includes(' ')) {
-                // 从路由中提取模块名（/api/<module>/...），检查服务可用性
-                const path = module.split(' ')[1]
-                const seg = path?.match(/^\/api\/([^/]+)/)?.[1] as keyof ServiceAvailability | undefined
-                if (seg && seg in state.serviceAvailability && !state.serviceAvailability[seg]) return false
-                return state.permissions.includes(module)
+        hasPerm(module) {
+            const checkAvailability = (seg: string): boolean => {
+                const key = seg as keyof ServiceAvailability
+                return !(key in state.serviceAvailability && !state.serviceAvailability[key])
             }
-            // 模块级别匹配：先检查服务可用性，再检查 permissions
-            const seg = module as keyof ServiceAvailability
-            if (seg in state.serviceAvailability && !state.serviceAvailability[seg]) return false
+
+            // 精确路由匹配
+            if (module.includes(' ')) {
+                const path = module.split(' ')[1]
+                const seg = path?.match(/^\/api\/([^/]+)/)?.[1]
+                if (seg && !checkAvailability(seg)) return false
+                return state.founder || state.permissions.includes(module)
+            }
+
+            // 模块匹配
+            if (!checkAvailability(module)) return false
+            if (state.founder) return true
             return state.permissions.some(key => {
                 const path = key.split(' ')[1]
-                if (!path) return false
-                return path.startsWith(`/api/${module}/`) || path === `/api/${module}`
+                return path && (path.startsWith(`/api/${module}/`) || path === `/api/${module}`)
             })
         },
 
-        // 文件操作
-        async loadFiles(path: string = state.currentPath) {
-            console.log('wait for loadFiles:', path)
+        async loadFiles(path = state.currentPath) {
+            console.log('loadFiles:', path)
         },
 
-        // 通知操作
-        showNotification(type: string, message: string) {
+        showNotification(type, message) {
             if (!message) return
             const id = Date.now() + Math.random()
             const timer = setTimeout(() => this.clearNotification(id), 5000)
             state.notifications.push({ id, type, message, timer })
         },
 
-        clearNotification(id: number) {
+        clearNotification(id) {
             const idx = state.notifications.findIndex(n => n.id === id)
             if (idx !== -1) {
-                const item = state.notifications[idx]
+                clearTimeout(state.notifications[idx].timer)
                 state.notifications.splice(idx, 1)
-                if (item && item.timer) {
-                    clearTimeout(item.timer)
-                }
             }
         },
 
-        // 确认模态框操作
-        showConfirm(options: ConfirmOptions) {
+        showConfirm(options) {
             state.confirm = {
                 show: true,
                 title: options.title || '确认操作',
@@ -221,7 +255,7 @@ export const initProvider = () => {
             }
         },
 
-        confirmLoading(loading: boolean) {
+        confirmLoading(loading) {
             state.confirm.loading = loading
         },
 
@@ -232,30 +266,17 @@ export const initProvider = () => {
         },
 
         async handleConfirm() {
-            if (state.confirm.onConfirm) {
-                state.confirm.loading = true
-                try {
-                    await state.confirm.onConfirm()
-                } finally {
-                    state.confirm.loading = false
-                }
+            if (!state.confirm.onConfirm) return this.closeConfirm()
+            state.confirm.loading = true
+            try {
+                await state.confirm.onConfirm()
+            } finally {
+                state.confirm.loading = false
             }
             this.closeConfirm()
-        },
-
-        // 服务可用性操作
-        updateServiceAvailability(availability: { agent?: { available?: boolean }; docker?: { available?: boolean }; swarm?: { available?: boolean }; compose?: { available?: boolean }; apisix?: { available?: boolean } }) {
-            state.serviceAvailability = {
-                agent: availability.agent?.available || false,
-                apisix: availability.apisix?.available || false,
-                docker: availability.docker?.available || false,
-                swarm: availability.swarm?.available || false,
-                compose: availability.compose?.available || false
-            }
         }
     }
 
     interceptors(state, actions)
-
     return { state, actions }
 }
