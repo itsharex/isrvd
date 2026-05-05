@@ -110,10 +110,11 @@ func (s *Service) Login(req LoginRequest) (*LoginResponse, error) {
 		return nil, fmt.Errorf("invalid credentials")
 	}
 
-	// 密码 hash 前 8 位作为校验，修改密码后 token 自动失效
+	// 密码 hash 后 8 位作为校验，修改密码后 token 自动失效
+	// 注意：bcrypt hash 前 7 位是固定格式（如 $2a$10$），后 8 位会随每次密码重置而变化
 	pwd := ""
 	if len(member.Password) >= 8 {
-		pwd = member.Password[:8]
+		pwd = member.Password[len(member.Password)-8:]
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
@@ -150,10 +151,11 @@ func (s *Service) CreateApiToken(username string, req CreateApiTokenRequest) (*C
 		return nil, fmt.Errorf("用户不存在")
 	}
 
-	// 密码 hash 前 8 位作为校验，修改密码后 token 自动失效
+	// 密码 hash 后 8 位作为校验，修改密码后 token 自动失效
+	// 注意：bcrypt hash 前 7 位是固定格式（如 $2a$10$），后 8 位会随每次密码重置而变化
 	pwd := ""
 	if len(member.Password) >= 8 {
-		pwd = member.Password[:8]
+		pwd = member.Password[len(member.Password)-8:]
 	}
 
 	claims := jwt.MapClaims{
@@ -209,10 +211,10 @@ func (s *Service) ExtractJwtUsername(c *gin.Context) string {
 		return ""
 	}
 
-	// 校验密码 hash（修改密码后自动失效）
+	// 校验密码 hash 后 8 位（修改密码后自动失效）
 	pwd, _ := claims["pwd"].(string)
 	if pwd != "" && len(member.Password) >= 8 {
-		if pwd != member.Password[:8] {
+		if pwd != member.Password[len(member.Password)-8:] {
 			return ""
 		}
 	}
