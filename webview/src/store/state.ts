@@ -119,6 +119,9 @@ export const initProvider = () => {
 
                 if (payload?.mode === 'header' && payload.username) {
                     this.setAuth({ authMode: 'header', token: '', username: payload.username })
+                    state.permissionsLoaded = true
+                    state.founder = payload.member?.founder || false
+                    state.permissions = payload.member?.permissions || []
                 } else if (payload?.username && payload.member) {
                     state.permissionsLoaded = true
                     state.founder = payload.member.founder || false
