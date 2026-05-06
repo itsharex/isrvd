@@ -17,6 +17,11 @@ func (s *Service) deploySwarm(ctx context.Context, req DeployRequest) (*DeployRe
 		return nil, fmt.Errorf("swarm 服务未初始化")
 	}
 
+	// 检查服务是否已存在
+	if _, err := s.swarm.ServiceInspect(ctx, req.ProjectName); err == nil {
+		return nil, fmt.Errorf("实例 %s 已存在，请使用重建功能", req.ProjectName)
+	}
+
 	project, err := compose.LoadProjectFromContent(ctx, req.Content, req.ProjectName)
 	if err != nil {
 		return nil, err
@@ -61,17 +66,15 @@ func (s *Service) redeploySwarm(ctx context.Context, name, content string) (*Dep
 		return nil, fmt.Errorf("swarm 服务未初始化")
 	}
 
+	// 删除所有旧服务
+	s.removeSwarmServices(ctx, name)
+
 	project, err := compose.LoadProjectFromContent(ctx, content, name)
 	if err != nil {
 		return nil, err
 	}
 	if len(project.Services) == 0 {
 		return nil, fmt.Errorf("compose 文件中没有定义服务")
-	}
-
-	// 删除旧服务
-	for _, svc := range project.Services {
-		_ = s.swarm.ServiceAction(ctx, svc.Name, "remove", nil)
 	}
 
 	items, err := s.deploySwarmProject(ctx, project)
@@ -81,6 +84,24 @@ func (s *Service) redeploySwarm(ctx context.Context, name, content string) (*Dep
 
 	logman.Info("Swarm compose redeployed", "name", name)
 	return &DeployResult{Target: TargetSwarm, Items: items}, nil
+}
+
+// removeSwarmServices 删除指定实例的所有服务
+func (s *Service) removeSwarmServices(ctx context.Context, name string) {
+	if s.swarm == nil {
+		return
+	}
+	oldContent, err := s.getSwarmContent(ctx, name)
+	if err != nil {
+		return
+	}
+	oldProject, err := compose.LoadProjectFromContent(ctx, oldContent, name)
+	if err != nil {
+		return
+	}
+	for _, svc := range oldProject.Services {
+		_ = s.swarm.ServiceAction(ctx, svc.Name, "remove", nil)
+	}
 }
 
 // ==================== Swarm 辅助 ====================

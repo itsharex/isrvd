@@ -22,18 +22,29 @@ func (s *Service) deployDocker(ctx context.Context, req DeployRequest) (*DeployR
 		return nil, fmt.Errorf("未配置容器数据根目录")
 	}
 
-	installDir := filepath.Join(root, req.ProjectName)
-	if _, err := os.Stat(installDir); err == nil {
-		return nil, fmt.Errorf("目录已存在：%s，请先移除或使用其它实例名", installDir)
+	// 检查容器是否已存在
+	if _, err := s.docker.ContainerInspect(ctx, req.ProjectName); err == nil {
+		return nil, fmt.Errorf("实例 %s 已存在，请使用重建功能", req.ProjectName)
 	}
+
+	// 目录已存在且有 compose 文件，拒绝部署
+	installDir := filepath.Join(root, req.ProjectName)
+	composeFile := filepath.Join(installDir, "compose.yml")
+	if _, err := os.Stat(composeFile); err == nil {
+		return nil, fmt.Errorf("目录 %s 已包含 compose 配置，请先移除或使用其它实例名", installDir)
+	}
+
+	// 判断目录是否已存在（用于异常清理）
+	_, err := os.Stat(installDir)
+	installDirExists := err == nil
 	if err := os.MkdirAll(installDir, 0755); err != nil {
 		return nil, fmt.Errorf("创建安装目录失败: %w", err)
 	}
 
-	// 异常清理
+	// 异常清理：仅清理本次新创建的目录
 	ok := false
 	defer func() {
-		if !ok {
+		if !ok && !installDirExists {
 			_ = os.RemoveAll(installDir)
 		}
 	}()
@@ -44,12 +55,11 @@ func (s *Service) deployDocker(ctx context.Context, req DeployRequest) (*DeployR
 	}
 
 	// 写入 compose 文件
-	composeFile := filepath.Join(installDir, "compose.yml")
 	if err := os.WriteFile(composeFile, []byte(req.Content), 0644); err != nil {
 		return nil, fmt.Errorf("写入 compose 文件失败: %w", err)
 	}
 
-	// 加载并部署
+	// 加载 compose 项目
 	project, err := compose.LoadProject(ctx, compose.LoadOptions{
 		WorkingDir:  installDir,
 		ProjectName: req.ProjectName,
@@ -58,6 +68,7 @@ func (s *Service) deployDocker(ctx context.Context, req DeployRequest) (*DeployR
 		return nil, err
 	}
 
+	// 部署
 	items, err := s.compose.DeployProject(ctx, project)
 	if err != nil {
 		return nil, err
@@ -141,9 +152,8 @@ func (s *Service) redeployDocker(ctx context.Context, name, content string) (*De
 		installDir = filepath.Join(root, name)
 	}
 
-	// 停止并删除旧容器
-	_ = s.docker.ContainerAction(ctx, name, "stop")
-	_ = s.docker.ContainerAction(ctx, name, "remove")
+	// 删除所有旧容器
+	s.removeDockerContainers(ctx, name)
 
 	// 更新 compose 文件
 	if installDir != "" {
@@ -169,6 +179,27 @@ func (s *Service) redeployDocker(ctx context.Context, name, content string) (*De
 
 	logman.Info("Compose redeployed", "name", name)
 	return &DeployResult{Target: TargetDocker, Items: items, InstallDir: installDir}, nil
+}
+
+// removeDockerContainers 删除指定实例的所有容器
+func (s *Service) removeDockerContainers(ctx context.Context, name string) {
+	oldContent, err := s.getDockerContent(ctx, name)
+	if err != nil {
+		return
+	}
+	oldProject, err := compose.LoadProjectFromContent(ctx, oldContent, name)
+	if err != nil {
+		return
+	}
+	for _, svc := range oldProject.Services {
+		// 容器名：优先 ContainerName，否则用服务名
+		containerName := svc.Name
+		if svc.ContainerName != "" {
+			containerName = svc.ContainerName
+		}
+		_ = s.docker.ContainerAction(ctx, containerName, "stop")
+		_ = s.docker.ContainerAction(ctx, containerName, "remove")
+	}
 }
 
 // ==================== 工具函数 ====================
