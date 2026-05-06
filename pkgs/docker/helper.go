@@ -104,3 +104,11 @@ func registryHost(registryURL string) string {
 	}
 	return host
 }
+
+// ShortID 返回 ID 的前 12 字符，不足 12 则返回原值
+func ShortID(id string) string {
+	if len(id) > 12 {
+		return id[:12]
+	}
+	return id
+}

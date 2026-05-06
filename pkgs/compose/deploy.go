@@ -6,6 +6,8 @@ import (
 
 	"github.com/compose-spec/compose-go/v2/types"
 	"github.com/rehiy/pango/logman"
+
+	pkgdocker "isrvd/pkgs/docker"
 )
 
 // DeployContent 通过 compose yaml 文本部署容器
@@ -52,17 +54,13 @@ func (s *ComposeService) DeployProject(ctx context.Context, project *types.Proje
 			return containers, fmt.Errorf("创建容器 %s 失败: %w", req.Name, err)
 		}
 
-		shortID := id
-		if len(shortID) > 12 {
-			shortID = shortID[:12]
-		}
-		containers = append(containers, fmt.Sprintf("%s (%s)", req.Name, shortID))
+		containers = append(containers, fmt.Sprintf("%s (%s)", req.Name, pkgdocker.ShortID(id)))
 
 		logman.Info("Compose container deployed",
 			"project", project.Name,
 			"service", svc.Name,
 			"container", req.Name,
-			"id", shortID,
+			"id", pkgdocker.ShortID(id),
 		)
 	}
 

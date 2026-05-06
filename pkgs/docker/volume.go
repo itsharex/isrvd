@@ -122,7 +122,7 @@ func (s *DockerService) VolumeInspect(ctx context.Context, name string) (*Volume
 						ctName = strings.TrimPrefix(ct.Names[0], "/")
 					}
 					usedBy = append(usedBy, &VolumeUsedByContainer{
-						ID:        ct.ID[:12],
+						ID:        ShortID(ct.ID),
 						Name:      ctName,
 						MountPath: mount.Destination,
 						ReadOnly:  !mount.RW,

@@ -55,7 +55,7 @@ func (s *DockerService) ContainerList(ctx context.Context, all bool) ([]*Contain
 			}
 		}
 		result = append(result, &ContainerInfo{
-			ID:       ct.ID[:12],
+			ID:       ShortID(ct.ID),
 			Name:     name,
 			Image:    ct.Image,
 			State:    ct.State,
@@ -264,15 +264,11 @@ func (s *DockerService) ContainerCreate(ctx context.Context, req ContainerCreate
 
 	// 启动容器
 	if err := s.client.ContainerStart(ctx, resp.ID, container.StartOptions{}); err != nil {
-		logman.Error("Start container failed", "id", resp.ID[:12], "name", req.Name, "error", err)
+		logman.Error("Start container failed", "id", ShortID(resp.ID), "name", req.Name, "error", err)
 		return "", fmt.Errorf("启动容器失败: %w", err)
 	}
 
-	shortID := resp.ID
-	if len(shortID) > 12 {
-		shortID = shortID[:12]
-	}
-	logman.Info("Container created", "id", shortID, "name", req.Name)
+	logman.Info("Container created", "id", ShortID(resp.ID), "name", req.Name)
 
 	return resp.ID, nil
 }

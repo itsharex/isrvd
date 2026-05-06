@@ -40,11 +40,10 @@ func (s *DockerService) ImageList(ctx context.Context, all bool) ([]*ImageInfo, 
 
 		id := img.ID
 		shortID := id
-		if len(id) > 7 && strings.HasPrefix(id, "sha256:") {
-			shortID = id[7:min(19, len(id))]
-		} else if len(id) > 12 {
-			shortID = id[:12]
+		if strings.HasPrefix(id, "sha256:") {
+			shortID = id[7:]
 		}
+		shortID = ShortID(shortID)
 		result = append(result, &ImageInfo{
 			ID:          id,
 			ShortID:     shortID,
@@ -273,9 +272,10 @@ func (s *DockerService) ImageInspect(ctx context.Context, id string) (*ImageInsp
 	}
 
 	shortID := img.ID
-	if strings.HasPrefix(shortID, "sha256:") && len(shortID) > 19 {
-		shortID = shortID[7:19]
+	if strings.HasPrefix(shortID, "sha256:") {
+		shortID = shortID[7:]
 	}
+	shortID = ShortID(shortID)
 
 	// 提取暴露端口列表
 	var exposedPorts []string

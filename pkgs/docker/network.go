@@ -33,12 +33,8 @@ func (s *DockerService) NetworkList(ctx context.Context) ([]*NetworkInfo, error)
 		if len(net.IPAM.Config) > 0 && net.IPAM.Config[0].Subnet != "" {
 			subnet = net.IPAM.Config[0].Subnet
 		}
-		id := net.ID
-		if len(id) > 12 {
-			id = id[:12]
-		}
 		result = append(result, &NetworkInfo{
-			ID: id, Name: net.Name, Driver: net.Driver, Subnet: subnet, Scope: net.Scope,
+			ID: ShortID(net.ID), Name: net.Name, Driver: net.Driver, Subnet: subnet, Scope: net.Scope,
 		})
 	}
 
@@ -86,13 +82,8 @@ func (s *DockerService) NetworkCreate(ctx context.Context, name, driver string) 
 		return "", err
 	}
 
-	id := resp.ID
-	if len(id) > 12 {
-		id = id[:12]
-	}
-
-	logman.Info("Network created", "name", name, "id", id)
-	return id, nil
+	logman.Info("Network created", "name", name, "id", ShortID(resp.ID))
+	return ShortID(resp.ID), nil
 }
 
 // NetworkContainerInfo 网络中的容器信息
@@ -130,14 +121,14 @@ func (s *DockerService) NetworkInspect(ctx context.Context, id string) (*Network
 	for endpointID, ep := range networkInfo.Containers {
 		name := ep.Name
 		if name == "" {
-			name = endpointID[:12]
+			name = ShortID(endpointID)
 		}
 		containerJSON, err := s.client.ContainerInspect(ctx, ep.Name)
 		if err == nil && len(containerJSON.Name) > 0 {
 			name = strings.TrimPrefix(containerJSON.Name, "/")
 		}
 		containers = append(containers, &NetworkContainerInfo{
-			ID:         endpointID[:12],
+			ID:         ShortID(endpointID),
 			Name:       name,
 			IPv4:       ep.IPv4Address,
 			IPv6:       ep.IPv6Address,
