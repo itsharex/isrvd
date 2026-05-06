@@ -29,7 +29,7 @@ type App struct {
 	apisixSvc   *svcApisix.Service
 	dockerSvc   *svcDocker.Service
 	swarmSvc    *svcSwarm.Service
-	composeSvc  *svcCompose.DeployService
+	composeSvc  *svcCompose.Service
 	routePerms  map[string]svcAccount.RouteInfo // METHOD+完整路径 → 路由权限索引
 }
 
