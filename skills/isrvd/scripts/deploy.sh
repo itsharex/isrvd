@@ -62,7 +62,7 @@ deploy_container() {
     '. + {name: $name, image: $image}')
 
   local result
-  result=$(isrvd_post "/docker/container/create" "$body")
+  result=$(isrvd_post "/docker/container" "$body")
 
   if echo "$result" | jq -e '.success == true' >/dev/null 2>&1; then
     _green "✓ 容器创建成功"
@@ -167,7 +167,7 @@ deploy_service() {
     '. + {name: $name, image: $image}')
 
   local result
-  result=$(isrvd_post "/swarm/service/create" "$body")
+  result=$(isrvd_post "/swarm/service" "$body")
 
   if echo "$result" | jq -e '.success == true' >/dev/null 2>&1; then
     _green "✓ Swarm 服务创建成功"

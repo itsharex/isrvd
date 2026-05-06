@@ -1,7 +1,6 @@
 # Swarm 集群管理 API
 
-> 所有接口前缀: `/api/swarm`  
-> 只读操作需要 `swarm:r` 权限，写操作需要 `swarm:rw` 权限  
+> 所有接口前缀: `/api/swarm`
 > Swarm 功能依赖 Docker 引擎可用
 
 ---
@@ -188,7 +187,7 @@ POST /api/swarm/service/:id/action
 POST /api/swarm/service/:id/force-update
 ```
 
-强制更新服务（拉取最新镜像并重新调度所有任务）。无需请求体。
+强制更新服务（递增 ForceUpdate 计数器，触发滚动更新）。无需请求体。
 
 ### §4.3 查看服务日志
 
@@ -233,7 +232,7 @@ isrvd_get "/swarm/services"
 isrvd_post "/swarm/service/SERVICE_ID/action" '{"action":"scale","replicas":5}'
 ```
 
-### 滚动更新服务
+### 强制更新服务（拉取最新镜像）
 
 ```bash
 # 强制重新部署（拉取最新镜像）

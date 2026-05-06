@@ -1,7 +1,7 @@
 # Docker 管理 API
 
-> 所有接口前缀: `/api/docker`  
-> 只读操作需要 `docker:r` 权限，写操作需要 `docker:rw` 权限
+> 所有接口前缀: `/api/docker`
+> 权限：依赖路由级细粒度控制，需对应路由权限
 
 ---
 
@@ -116,7 +116,7 @@ GET /api/docker/container/:id/logs?tail=100&follow=false
 | 参数 | 说明 |
 |------|------|
 | tail | 返回最后 N 行（默认 100） |
-| follow | 是否持续跟踪（SSE 流） |
+| follow | 是否持续跟踪 |
 
 ### §2.5 容器资源统计
 
@@ -129,8 +129,10 @@ GET /api/docker/container/:id/stats
 ### §2.6 容器终端（WebSocket）
 
 ```
-WS /ws/docker/exec?id=<容器ID>&shell=/bin/sh&token=<jwt-token>
+GET /api/docker/container/:id/exec?shell=/bin/sh
 ```
+
+WebSocket 连接，需在查询参数中指定 shell（默认 `/bin/sh`）。
 
 ---
 
@@ -172,7 +174,7 @@ POST /api/docker/image/:id/tag
 Body: { "repoTag": "newrepo:newtag" }
 ```
 
-### §3.6 删除镜像
+### §3.6 镜像操作（删除）
 
 ```
 POST /api/docker/image/:id/action
@@ -182,21 +184,21 @@ Body: { "action": "remove" }
 ### §3.7 拉取镜像
 
 ```
-POST /api/docker/registry/pull
+POST /api/docker/image/pull
 Body: {
   "image": "nginx:latest",
-  "registryUrl": "https://registry.example.com",  // 可选，空则 Docker Hub
-  "namespace": "myns"                               // 可选
+  "registry": "https://registry.example.com",  // 可选，空则 Docker Hub
+  "namespace": "myns"                        // 可选
 }
 ```
 
 ### §3.8 推送镜像
 
 ```
-POST /api/docker/registry/push
+POST /api/docker/image/push
 Body: {
   "image": "本地镜像名:tag",
-  "registryUrl": "https://registry.example.com",
+  "registry": "https://registry.example.com",
   "namespace": "myns"  // 可选
 }
 ```
@@ -262,7 +264,7 @@ POST /api/docker/network
 Body: { "name": "网络名", "driver": "bridge", "subnet": "172.20.0.0/16" }
 ```
 
-### §5.4 删除网络
+### §5.4 网络操作（删除）
 
 ```
 POST /api/docker/network/:id/action
@@ -292,7 +294,7 @@ POST /api/docker/volume
 Body: { "name": "卷名", "driver": "local" }
 ```
 
-### §6.4 删除数据卷
+### §6.4 数据卷操作（删除）
 
 ```
 POST /api/docker/volume/:name/action
@@ -307,7 +309,7 @@ Body: { "action": "remove" }
 
 ```bash
 # 1. 拉取镜像
-isrvd_post "/docker/registry/pull" '{"image":"nginx:latest"}'
+isrvd_post "/docker/image/pull" '{"image":"nginx:latest"}'
 
 # 2. 创建容器
 isrvd_post "/docker/container" '{
@@ -325,7 +327,7 @@ isrvd_get "/docker/containers?all=false"
 
 ```bash
 # 1. 拉取新版本
-isrvd_post "/docker/registry/pull" '{"image":"nginx:1.25"}'
+isrvd_post "/docker/image/pull" '{"image":"nginx:1.25"}'
 
 # 2. 停止并删除旧容器
 isrvd_post "/docker/container/OLD_ID/action" '{"action":"stop"}'

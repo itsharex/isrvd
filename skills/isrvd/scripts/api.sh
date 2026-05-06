@@ -36,7 +36,7 @@ isrvd_init() {
 
   # 登录获取 token
   local resp
-  resp=$(curl -sf -X POST "$ISRVD_BASE_URL/api/auth/login" \
+  resp=$(curl -sf -X POST "$ISRVD_BASE_URL/api/account/login" \
     -H "Content-Type: application/json" \
     -d "{\"username\":\"$username\",\"password\":\"$password\"}" 2>&1) || {
     _red "✗ 登录失败: $resp"
@@ -154,7 +154,7 @@ isrvd_upload() {
 isrvd_probe() {
   _isrvd_check || return 1
   _blue "→ 探测服务可用性..."
-  isrvd_get "/system/probe"
+  isrvd_get "/overview/probe"
 }
 
 # ---------------------------------------------------------------------------
@@ -163,7 +163,7 @@ isrvd_probe() {
 isrvd_stats() {
   _isrvd_check || return 1
   _blue "→ 获取系统资源统计..."
-  isrvd_get "/system/stats"
+  isrvd_get "/overview/status"
 }
 
 # ---------------------------------------------------------------------------
@@ -172,7 +172,7 @@ isrvd_stats() {
 isrvd_whoami() {
   _isrvd_check || return 1
   _blue "→ 当前用户: $ISRVD_USERNAME"
-  isrvd_get "/auth/info"
+  isrvd_get "/account/info"
 }
 
 # ---------------------------------------------------------------------------
@@ -203,7 +203,7 @@ isrvd API Harness — 可用函数:
     source scripts/api.sh
     isrvd_init "http://localhost:8080" "admin" "mypassword"
     isrvd_get "/docker/containers?all=true"
-    isrvd_post "/docker/container/create" '{"image":"nginx:latest","name":"web"}'
+    isrvd_post "/docker/container" '{"image":"nginx:latest","name":"web"}'
     isrvd_post "/docker/container/abc123/action" '{"action":"start"}'
     isrvd_get "/swarm/services"
     isrvd_get "/apisix/routes"

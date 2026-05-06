@@ -1,7 +1,6 @@
 # Compose 部署 API
 
-> 所有接口前缀: `/api/compose`  
-> 只读操作需要 `compose:r` 权限，写操作需要 `compose:rw` 权限  
+> 所有接口前缀: `/api/compose`
 > Compose 功能依赖 Docker 引擎可用
 
 ---
@@ -45,7 +44,7 @@ GET /api/compose/docker/:name
 ### §1.3 重建部署
 
 ```
-PUT /api/compose/docker/:name
+POST /api/compose/docker/:name/redeploy
 Body: { "content": "新的 docker-compose.yml 文本" }
 ```
 
@@ -75,7 +74,7 @@ GET /api/compose/swarm/:name
 ### §2.3 重建部署
 
 ```
-PUT /api/compose/swarm/:name
+POST /api/compose/swarm/:name/redeploy
 Body: { "content": "新的 docker-compose.yml 文本" }
 ```
 
@@ -100,19 +99,17 @@ isrvd_get "/compose/docker/my-app"
 # 2. 修改 compose 中的镜像版本（在本地编辑）
 
 # 3. 重建部署
-isrvd_put "/compose/docker/my-app" '{"content":"修改后的 compose 内容"}'
+isrvd_post "/compose/docker/my-app/redeploy" '{"content":"修改后的 compose 内容"}'
 ```
 
 ### Swarm Stack 方式
 
 ```bash
-# 方式一：直接重新部署（拉取最新镜像）
-isrvd_post "/swarm/service/SERVICE_ID/redeploy"
-
-# 方式二：修改 compose 并重建
+# 获取当前 compose 内容
 isrvd_get "/compose/swarm/my-stack"
+
 # 修改镜像版本后...
-isrvd_put "/compose/swarm/my-stack" '{"content":"修改后的 compose 内容"}'
+isrvd_post "/compose/swarm/my-stack/redeploy" '{"content":"修改后的 compose 内容"}'
 ```
 
 ---
@@ -123,11 +120,6 @@ isrvd_put "/compose/swarm/my-stack" '{"content":"修改后的 compose 内容"}'
 
 ```bash
 # Docker Compose（单机）
-isrvd_upload "/compose/docker/deploy" "initFile" "./init-files.zip" \
-  "content=@docker-compose.yml" \
-  "projectName=my-app"
-
-# 或者不带附加文件
 isrvd_upload "/compose/docker/deploy" "content" "" \
   "content=version: '3.8'
 services:
@@ -139,6 +131,11 @@ services:
     image: mysql:8
     environment:
       MYSQL_ROOT_PASSWORD: secret" \
+  "projectName=my-app"
+
+# 或者带附加文件
+isrvd_upload "/compose/docker/deploy" "initFile" "./init-files.zip" \
+  "content=@docker-compose.yml" \
   "projectName=my-app"
 ```
 

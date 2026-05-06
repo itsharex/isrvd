@@ -26,7 +26,7 @@ _separator() {
 check_probe() {
   _blue "▶ 服务可用性探测"
   local probe
-  probe=$(isrvd_get "/system/probe" 2>/dev/null) || {
+  probe=$(isrvd_get "/overview/probe" 2>/dev/null) || {
     _red "✗ 无法连接到 isrvd 服务"
     return 1
   }
@@ -52,7 +52,7 @@ check_probe() {
 check_stats() {
   _blue "▶ 系统资源统计"
   local stats
-  stats=$(isrvd_get "/system/stats" 2>/dev/null) || {
+  stats=$(isrvd_get "/overview/status" 2>/dev/null) || {
     _red "✗ 无法获取系统统计"
     return 1
   }

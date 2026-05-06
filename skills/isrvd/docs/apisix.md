@@ -1,11 +1,11 @@
-# APISIX 路由管理 API
+# APISIX 管理 API
 
-> 所有接口前缀: `/api/apisix`  
-> 只读操作需要 `apisix:r` 权限，写操作需要 `apisix:rw` 权限
+> 所有接口前缀: `/api/apisix`
+> 权限：依赖路由级细粒度控制，需对应路由权限
 
 ---
 
-## §1 路由查询
+## §1 路由管理
 
 ### §1.1 列出路由
 
@@ -38,33 +38,7 @@ GET /api/apisix/routes
 GET /api/apisix/route/:id
 ```
 
----
-
-## §2 上游配置
-
-`upstream` 和 `upstream_id` 二选一：
-
-- **内联 upstream**：适合简单场景，直接在路由中定义
-- **upstream_id**：引用已有上游，适合多路由共享
-
-内联 upstream 结构：
-
-```json
-{
-  "type": "roundrobin",
-  "nodes": {
-    "127.0.0.1:8080": 1,
-    "127.0.0.1:8081": 2
-  }
-}
-```
-
-> `type` 可选: `roundrobin`（加权轮询）、`chash`（一致性哈希）、`ewma`（最小延迟）  
-> `nodes` 的值为权重
-
----
-
-## §3 创建路由
+### §1.3 创建路由
 
 ```
 POST /api/apisix/route
@@ -113,27 +87,21 @@ POST /api/apisix/route
 }
 ```
 
----
-
-## §4 更新路由
+### §1.4 更新路由
 
 ```
 PUT /api/apisix/route/:id
 Body: <同创建路由的 Route 结构>
 ```
 
----
-
-## §5 启用/禁用路由
+### §1.5 启用/禁用路由
 
 ```
 PATCH /api/apisix/route/:id/status
 Body: { "status": 1 }   // 1=启用, 0=禁用
 ```
 
----
-
-## §6 删除路由
+### §1.6 删除路由
 
 ```
 DELETE /api/apisix/route/:id
@@ -141,29 +109,127 @@ DELETE /api/apisix/route/:id
 
 ---
 
-## §7 消费者管理
+## §2 上游（Upstream）管理
 
-### §7.1 列出消费者
+`upstream` 和 `upstream_id` 二选一：
+
+- **内联 upstream**：适合简单场景，直接在路由中定义
+- **upstream_id**：引用已有上游，适合多路由共享
+
+内联 upstream 结构：
+
+```json
+{
+  "type": "roundrobin",
+  "nodes": {
+    "127.0.0.1:8080": 1,
+    "127.0.0.1:8081": 2
+  }
+}
+```
+
+> `type` 可选: `roundrobin`（加权轮询）、`chash`（一致性哈希）、`ewma`（最小延迟）
+> `nodes` 的值为权重
+
+### §2.1 列出上游
+
+```
+GET /api/apisix/upstreams
+```
+
+### §2.2 查看上游详情
+
+```
+GET /api/apisix/upstream/:id
+```
+
+### §2.3 创建上游
+
+```
+POST /api/apisix/upstream
+```
+
+### §2.4 更新上游
+
+```
+PUT /api/apisix/upstream/:id
+```
+
+### §2.5 删除上游
+
+```
+DELETE /api/apisix/upstream/:id
+```
+
+---
+
+## §3 SSL 证书管理
+
+### §3.1 列出证书
+
+```
+GET /api/apisix/ssls
+```
+
+### §3.2 查看证书详情
+
+```
+GET /api/apisix/ssl/:id
+```
+
+### §3.3 创建证书
+
+```
+POST /api/apisix/ssl
+```
+
+请求体 `SSL`：
+
+```json
+{
+  "cert": "-----BEGIN CERTIFICATE-----\n...",
+  "key": "-----BEGIN PRIVATE KEY-----\n...",
+  "snis": ["example.com", "www.example.com"]
+}
+```
+
+### §3.4 更新证书
+
+```
+PUT /api/apisix/ssl/:id
+```
+
+### §3.5 删除证书
+
+```
+DELETE /api/apisix/ssl/:id
+```
+
+---
+
+## §4 Consumer 管理
+
+### §4.1 列出消费者
 
 ```
 GET /api/apisix/consumers
 ```
 
-### §7.2 创建消费者
+### §4.2 创建消费者
 
 ```
 POST /api/apisix/consumer
-Body: { "username": "consumer1", "desc": "描述" }
+Body: { "username": "consumer1", "desc": "描述", "plugins": {...} }
 ```
 
-### §7.3 更新消费者
+### §4.3 更新消费者
 
 ```
 PUT /api/apisix/consumer/:username
-Body: { "desc": "新描述" }
+Body: { "desc": "新描述", "plugins": {...} }
 ```
 
-### §7.4 删除消费者
+### §4.4 删除消费者
 
 ```
 DELETE /api/apisix/consumer/:username
@@ -171,30 +237,84 @@ DELETE /api/apisix/consumer/:username
 
 ---
 
-## §8 白名单管理
+## §5 白名单管理
 
-### §8.1 获取白名单
+### §5.1 获取白名单
 
 ```
 GET /api/apisix/whitelist
 ```
 
-### §8.2 撤销白名单
+返回路由的消费者白名单配置。
+
+### §5.2 撤销白名单
 
 ```
-PUT /api/apisix/whitelist/revoke
-Body: { "route_id": "路由ID", "consumer_name": "名称" }
+POST /api/apisix/whitelist/revoke
+Body: { "route_id": "路由ID", "consumer_name": "消费者名" }
 ```
 
 ---
 
-## §9 其他查询
+## §6 PluginConfig 管理
+
+### §6.1 列出插件配置
 
 ```
-GET /api/apisix/plugin-configs    # 列出插件配置
-GET /api/apisix/plugins           # 列出所有可用插件
-GET /api/apisix/upstreams         # 列出已定义的上游
+GET /api/apisix/plugin-configs
 ```
+
+### §6.2 查看插件配置详情
+
+```
+GET /api/apisix/plugin-config/:id
+```
+
+### §6.3 创建插件配置
+
+```
+POST /api/apisix/plugin-config
+```
+
+请求体 `PluginConfig`：
+
+```json
+{
+  "id": "my-plugin-config",
+  "plugins": {
+    "limit-req": {
+      "rate": 100,
+      "burst": 50,
+      "key": "remote_addr",
+      "rejected_code": 429
+    }
+  }
+}
+```
+
+### §6.4 更新插件配置
+
+```
+PUT /api/apisix/plugin-config/:id
+```
+
+### §6.5 删除插件配置
+
+```
+DELETE /api/apisix/plugin-config/:id
+```
+
+---
+
+## §7 插件列表
+
+### §7.1 列出所有可用插件
+
+```
+GET /api/apisix/plugins
+```
+
+返回 APISIX 已加载的插件列表及其配置 schema。
 
 ---
 
