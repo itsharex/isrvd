@@ -21,6 +21,16 @@ import (
 
 const maxAuditBufferSize = 100 // 内存缓冲最大条数
 
+// sensitiveFields 需要脱敏的请求体字段名
+var sensitiveFields = []string{
+	// 系统配置
+	"jwtSecret", "apiKey", "adminKey",
+	// 账户模块
+	"password", "oldPassword", "newPassword", "token",
+	// APISIX 插件 + SSL 证书私钥
+	"key", "secret", "public_key", "key_id", "secret_key",
+}
+
 // AuditLog 操作审计日志条目。
 type AuditLog struct {
 	Timestamp  time.Time `json:"timestamp"`  // 操作时间
@@ -139,8 +149,8 @@ func (s *AuditService) RecordRequest(c *gin.Context, startTime time.Time, body s
 
 // ReadRequestBody 读取请求体，按 Content-Type 差异化处理：
 //   - application/octet-stream：返回占位符
-//   - multipart/form-data：保留文本字段，文件字段替换为占位符
-//   - 其他：读取全部内容并回填 Body
+//   - multipart/form-data：保留文本字段，文件字段替换为占位符，敏感字段脱敏
+//   - 其他：读取全部内容并回填 Body，敏感字段脱敏
 func (s *AuditService) ReadRequestBody(c *gin.Context) string {
 	switch {
 	case strings.HasPrefix(c.ContentType(), "application/octet-stream"):
@@ -154,9 +164,13 @@ func (s *AuditService) ReadRequestBody(c *gin.Context) string {
 		fields := make(map[string]any)
 		for k, vs := range form.Value {
 			if len(vs) == 1 {
-				fields[k] = vs[0]
+				fields[k] = maskSensitiveValue(k, vs[0])
 			} else {
-				fields[k] = vs
+				masked := make([]string, len(vs))
+				for i, v := range vs {
+					masked[i] = maskSensitiveValue(k, v)
+				}
+				fields[k] = masked
 			}
 		}
 		for k := range form.File {
@@ -169,7 +183,7 @@ func (s *AuditService) ReadRequestBody(c *gin.Context) string {
 		// 读取并回填 body，确保后续 handler 可正常读取
 		raw, _ := io.ReadAll(c.Request.Body)
 		c.Request.Body = io.NopCloser(bytes.NewReader(raw))
-		return string(raw)
+		return maskSensitiveJSON(string(raw))
 	}
 }
 
@@ -243,4 +257,52 @@ func (s *AuditService) openFile(date string) {
 // auditFilePath 返回指定日期的日志文件绝对路径。
 func auditFilePath(date string) string {
 	return filepath.Join(config.RootDirectory, "audit", date+".log")
+}
+
+// maskSensitiveValue 对敏感字段的值进行脱敏
+// - 长度 > 10：保留前 5 位 + ****** + 后 3 位
+// - 长度 <= 10：保留首尾各 1 位，中间替换为 ******
+func maskSensitiveValue(key, value string) string {
+	for _, field := range sensitiveFields {
+		if strings.EqualFold(key, field) {
+			n := len(value)
+			if n > 10 {
+				return value[:5] + "******" + value[n-3:]
+			} else if n > 2 {
+				return value[:1] + "******" + value[n-1:]
+			}
+			return "******"
+		}
+	}
+	return value
+}
+
+// maskSensitiveJSON 对 JSON 字符串中的敏感字段进行脱敏
+func maskSensitiveJSON(jsonStr string) string {
+	var data map[string]any
+	if json.Unmarshal([]byte(jsonStr), &data) != nil {
+		return jsonStr
+	}
+	maskMap(data)
+	result, _ := json.Marshal(data)
+	return string(result)
+}
+
+// maskMap 递归脱敏 map 中的敏感字段
+func maskMap(m map[string]any) {
+	for key, val := range m {
+		switch v := val.(type) {
+		case string:
+			m[key] = maskSensitiveValue(key, v)
+		case map[string]any:
+			maskMap(v)
+		case []any:
+			for i, item := range v {
+				if itemMap, ok := item.(map[string]any); ok {
+					maskMap(itemMap)
+					v[i] = itemMap
+				}
+			}
+		}
+	}
 }
