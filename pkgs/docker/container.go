@@ -233,8 +233,13 @@ func (s *DockerService) ContainerCreate(ctx context.Context, req ContainerCreate
 			hostPath := vol.HostPath
 			if s.config.ContainerRoot != "" && !filepath.IsAbs(hostPath) {
 				hostPath = filepath.Join(s.config.ContainerRoot, req.Name, hostPath)
-				if err := os.MkdirAll(hostPath, 0755); err != nil {
-					return "", fmt.Errorf("创建卷目录失败: %w", err)
+				if _, err := os.Stat(hostPath); err != nil {
+					if !os.IsNotExist(err) {
+						return "", fmt.Errorf("检查卷路径失败: %w", err)
+					}
+					if err := os.MkdirAll(filepath.Dir(hostPath), 0755); err != nil {
+						return "", fmt.Errorf("创建卷父目录失败: %w", err)
+					}
 				}
 			}
 			bind := hostPath + ":" + vol.ContainerPath
