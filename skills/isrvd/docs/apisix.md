@@ -31,6 +31,16 @@ GET /api/apisix/routes
 | upstream_id | string | 引用的上游 ID |
 | upstream | object | 内联上游配置 |
 | plugins | object | 插件配置 |
+| consumers | string[] | 白名单消费者列表（只读） |
+| timeout | RouteTimeout | 超时配置（connect/send/read，秒） |
+| create_time | number | 创建时间（Unix 时间戳，只读） |
+| update_time | number | 更新时间（Unix 时间戳，只读） |
+
+`RouteTimeout`：
+
+```json
+{ "connect": 5, "send": 10, "read": 10 }
+```
 
 ### §1.2 查看路由详情
 
@@ -131,6 +141,26 @@ DELETE /api/apisix/route/:id
 > `type` 可选: `roundrobin`（加权轮询）、`chash`（一致性哈希）、`ewma`（最小延迟）
 > `nodes` 的值为权重
 
+**Upstream 完整字段**：
+
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| name | string | ✅ | 上游名称 |
+| type | string | ✅ | 负载算法: `roundrobin` / `chash` / `ewma` |
+| nodes | object | ✅ | 节点地址与权重映射 |
+| desc | string | | 描述 |
+| hash_on | string | | 一致性哈希依据（chash 模式，如 `consumer` / `ip` / `header` / `cookie` / `vars`） |
+| key | string | | hash_on 对应的 key（如 `$http_x_api_key`） |
+| scheme | string | | 协议: `http`(默认) / `https` / `grpc` / `grpcs` |
+| pass_host | string | | 传递主机头: `pass`(默认) / `node` / `rewrite` |
+| upstream_host | string | | pass_host=rewrite 时使用的主机名 |
+| retries | number | | 重试次数 |
+| retry_timeout | number | | 重试超时（秒） |
+| timeout | object | | 超时配置 `{ "connect": 5, "send": 10, "read": 10 }` |
+| id | string | | 上游 ID（只读） |
+| create_time | number | | 创建时间（Unix 时间戳，只读） |
+| update_time | number | | 更新时间（Unix 时间戳，只读） |
+
 ### §2.1 列出上游
 
 ```
@@ -192,6 +222,12 @@ POST /api/apisix/ssl
   "snis": ["example.com", "www.example.com"]
 }
 ```
+
+> 响应中还包含以下只读字段：
+> - `id` — 证书 ID
+> - `status` — 证书状态（`1`=启用, `0`=禁用）
+> - `create_time` — 创建时间（Unix 时间戳）
+> - `update_time` — 更新时间（Unix 时间戳）
 
 ### §3.4 更新证书
 

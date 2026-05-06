@@ -37,25 +37,26 @@ isrvd_init "http://localhost:8080" "admin" "password"
 ```
 用户需求
 ├── 部署/创建
-│   ├── 单个容器 → 读 docs/docker.md §2 → 用 POST /api/docker/container
-│   ├── 多容器应用(单机) → 读 docs/compose.md §1 → 用 POST /api/compose/docker/deploy
-│   ├── 集群服务 → 读 docs/swarm.md §3 或 docs/compose.md §2
-│   └── 配置路由 → 读 docs/apisix.md §1-§3
+│   ├── 单个容器        → ./scripts/deploy.sh container <name> <image> [json]
+│   ├── 多容器应用(单机) → ./scripts/deploy.sh compose <name> <file> [--init-url=]
+│   ├── 集群服务(Swarm)  → ./scripts/deploy.sh swarm <name> <file>
+│   ├── 集群服务(单服务) → ./scripts/deploy.sh service <name> <image> [json]
+│   └── 配置路由         → 读 docs/apisix.md §1-§3
 │
 ├── 更新/变更
-│   ├── 更新容器镜像 → docs/docker.md §3.7 拉取 + 重建
+│   ├── 更新容器镜像 → docs/docker.md §3.7 拉取 + 重建（或读 §2.3 操作容器）
 │   ├── 扩缩容 Swarm 服务 → docs/swarm.md §4.1 (action=scale)
 │   ├── 重新部署 Swarm 服务 → docs/swarm.md §4.2 (action=redeploy)
 │   ├── 修改路由规则 → docs/apisix.md §4
 │   └── 修改系统配置 → docs/system.md §2 (PUT /api/system/config)
 │
 ├── 查询/监控
-│   ├── 查看容器/镜像/网络/卷 → docs/docker.md §1-§6
+│   ├── 查看容器/镜像/网络/卷 → docs/docker.md §1-§6（或用 scripts/api.sh）
 │   ├── 查看集群/服务/任务 → docs/swarm.md §1-§2
 │   ├── 查看路由/上游/插件 → docs/apisix.md §1
-│   ├── 系统状态/健康检查 → docs/system.md §1 → 用 scripts/health-check.sh
+│   ├── 系统状态/健康检查 → ./scripts/health-check.sh
 │   ├── 查看日志 → docs/docker.md §2.4 或 docs/swarm.md §4.3
-│   └── 文件管理 → docs/system.md §4
+│   └── 文件管理 → docs/system.md §5
 │
 ├── 删除/清理
 │   ├── 删除容器/镜像/网络/卷 → docs/docker.md 各模块 action=remove
@@ -64,8 +65,8 @@ isrvd_init "http://localhost:8080" "admin" "password"
 │
 └── 管理
     ├── 镜像仓库管理 → docs/docker.md §7
-    ├── 成员/权限管理 → docs/system.md §3
-    ├── 文件管理 → docs/system.md §4
+    ├── 成员/权限管理 → docs/system.md §4
+    ├── 文件管理 → docs/system.md §5
     └── Web 终端 → GET /api/shell (WebSocket)
 ```
 

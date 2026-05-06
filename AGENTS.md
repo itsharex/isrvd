@@ -16,6 +16,7 @@
 - **先理解再改动**：定位模块、调用链、类型与边界，不基于猜测修改
 - **小步提交**：最小可行改动，每步可解释"为什么改、改了什么、如何验证"
 - **变更后验证**：执行相关静态检查；无法完整验证时说明风险
+- **同步更新文档与 Skills**：修改代码时，必须同步更新所有相关的说明文档和 skills 文件，确保文档与代码始终一致
 
 ---
 
@@ -42,7 +43,49 @@
 
 ---
 
-## 4) 后端编码规范（Go）
+## 4) 代码变更同步文档规范
+
+修改代码时，必须同步更新所有相关的说明文档和 skills 文件，确保文档与代码始终一致。
+
+### 适用范围
+
+所有涉及以下变更的场景：
+
+- 新增/修改/删除 API 路由或参数
+- 新增/修改/删除 数据结构（Request/Response 字段）
+- 新增/修改/删除 业务逻辑或工作流
+- 新增/修改/删除 配置项或环境变量
+- 新增/修改/删除 Shell 脚本中的命令或参数
+
+### 需要同步更新的文件
+
+| 代码变更位置 | 需同步更新的文档 |
+|---|---|
+| `internal/server/ctrl_*.go`（路由/参数） | `skills/isrvd/docs/*.md` 对应章节 |
+| `pkgs/*/`（数据结构） | `skills/isrvd/docs/*.md` 中的字段表 |
+| `internal/server/route.go`（路由注册） | `skills/isrvd/SKILL.md` API 速查表 |
+| 部署/运维相关变更 | `skills/isrvd/scripts/*.sh` |
+| 新功能/新模块 | `skills/isrvd/SKILL.md` 决策树 |
+
+### 执行步骤
+
+1. **识别影响范围**：修改代码后，明确哪些文档和 skills 文件会受影响
+2. **同步更新文档**：
+   - API 变更 → 更新 `docs/*.md` 中对应的路由、请求体、响应字段
+   - 数据结构变更 → 更新 `docs/*.md` 中的字段表，确保与 Go struct 定义一致
+   - 新增路由 → 在 `SKILL.md` API 速查表中添加条目
+   - 脚本相关变更 → 更新 `scripts/*.sh` 中的对应命令
+3. **验证一致性**：确认文档中的字段名、类型、路径与代码完全匹配
+
+### 注意事项
+
+- 文档中标注"只读"的字段（如 `create_time`、`update_time`、`id`）也必须列出
+- 请求体和响应体中的字段必须与 Go struct 的 json tag 完全一致
+- 路由路径必须与 `ctrl_*.go` 中的注册路径完全一致
+
+---
+
+## 5) 后端编码规范（Go）
 
 ### HTTP 与响应
 
@@ -100,26 +143,26 @@
 
 ---
 
-## 5) 前端编码规范（Vue/Tailwind）
+## 6) 前端编码规范（Vue/Tailwind）
 
 适用目录：`webview/src`
 
-### 5.1 组件装饰器
+### 6.1 组件装饰器
 
 使用 `vue-facing-decorator`（`@Component`、`@Inject`、`@Prop`、`@Ref`、`@Watch`、`@Provide`），类必须 `toNative()` 包装后导出。`@Inject` 从 `APP_STATE_KEY`/`APP_ACTIONS_KEY` 注入
 
-### 5.2 状态管理
+### 6.2 状态管理
 
 - 全局状态 `store/state.ts` 使用 `reactive` + Provide/Inject
 - 键：`APP_STATE_KEY`（`app.state`）、`APP_ACTIONS_KEY`（`app.actions`）
 - 权限：`permissionsLoaded`（布尔）、`permissions`（`string[]`，格式为 `"METHOD /api/path"`），通过 `hasPerm(module)` 检查
 - 初始化 `initProvider()` 返回 `{ state, actions }`
 
-### 5.3 API 服务层
+### 6.3 API 服务层
 
 `service/api.ts` 单例 `class ApiService`，`export default new ApiService()`。请求统一通过 `http`/`httpBlob`（`service/axios.ts`），前者类型安全已解包为 `APIResponse`，后者 Blob 下载专用
 
-### 5.4 类型定义与命名（强制）
+### 6.4 类型定义与命名（强制）
 
 `service/types/` 按域拆分（`docker`、`swarm`、`apisix`、`compose`、`system`、`account`、`overview`、`filer`），`service/types.ts` 统一 `export *` 导出
 
@@ -135,7 +178,7 @@
 
 禁止：`VO`/`BO`/`DTO` 等后缀
 
-### 5.5 方法命名规范（强制）
+### 6.5 方法命名规范（强制）
 
 `ApiService` 方法命名：`domainResourceAction` 驼峰格式
 
@@ -152,7 +195,7 @@
 - **资源名**：单数形式
 - **分组注释**：`// ==================== XXXX 相关 ====================`
 
-### 5.6 卡片与标题栏
+### 6.6 卡片与标题栏
 
 - 列表/详情页统一 `.card mb-4`
 - 标题栏：`bg-slate-50 border-b border-slate-200 rounded-t-2xl px-4 md:px-6 py-3`，容器不写 `flex/justify-between`
@@ -170,7 +213,7 @@
 - 列表页空状态必须有两行文字：`<p class="text-slate-600 font-medium mb-1">暂无 xxx</p>` + `<p class="text-sm text-slate-400">引导操作文字</p>`
 - 详情页「未找到」状态只需一行文字
 
-### 5.7 列表双视图（强制）
+### 6.7 列表双视图（强制）
 
 - 桌面：`hidden md:block overflow-x-auto` + `<table>`
 - 移动：`md:hidden space-y-3 p-4` + 卡片列表（**`p-4` 不得省略**，卡片 `rounded-xl border border-slate-200 bg-white p-4 transition-all hover:shadow-sm`）
@@ -207,7 +250,7 @@
 - 副信息：`text-xs text-slate-400 truncate block mt-0.5`（**`mt-0.5` 不得省略**，不得用 `font-normal`）
 - 无右侧内容时顶部容器用 `flex items-center gap-3 min-w-0 flex-1 mb-3`（**必须有 `flex-1`**）
 
-### 5.8 移动端卡片属性行对齐（强制）
+### 6.8 移动端卡片属性行对齐（强制）
 
 卡片内每条属性行由 `<标签 span>` + `<值>` 组成，对齐方式取决于值的类型，**行间距统一 `mb-3`**（不得用 `mb-2`）：
 
@@ -249,7 +292,7 @@
 </div>
 ```
 
-### 5.9 表格第一列布局（强制）
+### 6.9 表格第一列布局（强制）
 
 - `<td>` 设 `max-w-[280px]`（纯短 ID 列除外）
 - 副信息（描述/host/ID）显示在主名称下方，不占独立列
@@ -279,7 +322,7 @@
 
 图标配色（色阶 `400`）：容器 `emerald`/`slate`（按状态）、镜像 `blue`、网络 `purple`、数据卷 `amber`、仓库 `blue-500`、Swarm 服务 `emerald`、节点 `blue`、路由 `indigo`、白名单 `amber`、消费者 `violet`、用户 `blue-500`。新模块选未用色（`rose`/`cyan`/`lime` 等）
 
-### 5.9.1 状态文字颜色（强制）
+### 6.9.1 状态文字颜色（强制）
 
 **状态值优先用文字颜色区分，不用 badge**；仅枚举型分类字段（驱动、类型等）才用 badge。
 
@@ -294,7 +337,7 @@
 - 有意义的 host/域名用 `text-teal-600 font-medium`
 - 数值型强调（如运行中任务数）用 `text-emerald-600 font-medium`
 
-### 5.9.2 枚举 badge 配色
+### 6.9.2 枚举 badge 配色
 
 枚举型分类字段（驱动、协议、类型等）使用 badge，颜色跟随模块主色：
 
@@ -304,14 +347,14 @@
 | 路由上游（apisix upstream） | `bg-indigo-50 text-indigo-700` |
 | 其他枚举 | 跟随模块主色，`bg-{color}-50 text-{color}-700` |
 
-### 5.9.3 权限/角色图标颜色
+### 6.9.3 权限/角色图标颜色
 
 | 角色/权限 | 图标 | 颜色 |
 |---|---|---|
 | 创始人/超级管理员 | `fa-crown` | `text-violet-400` |
 | 有自定义权限 | `fa-key` | `text-amber-400` |
 
-### 5.10 操作按钮语义色
+### 6.10 操作按钮语义色
 
 统一格式：`btn-icon text-{color}-600 hover:bg-{color}-50`
 
@@ -331,30 +374,30 @@
 **移动端操作按钮区（强制）**：
 - 容器：`flex flex-wrap gap-1.5 pt-2 border-t border-slate-100`（**`gap-1.5` 不得用 `gap-1`**）
 
-### 5.11 表单与敏感字段
+### 6.11 表单与敏感字段
 
 - 表单容器 `max-w-3xl space-y-4`
 - label：`block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1`，input 通用 `.input`，help `text-xs text-slate-400 mt-1`
 - 密钥/密码：后端敏感字段 `json:"-"`，前端 `type="password" autocomplete="new-password"`，留空保存=不修改，placeholder："留空保持不变"
 
-### 5.12 统一工具与轮询
+### 6.12 统一工具与轮询
 
 通用函数复用 `webview/src/helper/utils.ts`；轮询间隔用 `POLL_INTERVAL`，禁止硬编码
 
-### 5.13 import 分组排序
+### 6.13 import 分组排序
 
 `<script>` 内 import 按以下顺序，组间空一行，组内字母升序：
 1. 第三方库  2. `@/store/...`  3. `@/router`  4. `@/service/...`  5. `@/helper/...`  6. `@/component/...`  7. `@/views/...`  8. 其余 `@/`
 
 同模块普通导入在前、`type` 导入在后紧邻。批量整理：`cd webview && python3 sort-imports.py src`（支持 `--dry-run`）
 
-### 5.14 终端能力
+### 6.14 终端能力
 
 系统终端走 `helper/shell.ts`，容器终端走 `helper/container-exec.ts`，禁止页面直接创建 Terminal/WebSocket 实例
 
 ---
 
-## 6) 路由与导航
+## 7) 路由与导航
 
 - `/overview` 概览；`docker/overview`/`swarm/overview` 仅作组件不作独立菜单路由
 - 系统模块：`/system/config`、`/system/audit`；用户管理：`/account/members`
@@ -364,7 +407,7 @@
 
 ---
 
-## 7) 注册中心与服务初始化
+## 8) 注册中心与服务初始化
 
 启动顺序：`main → config.Load → registry.Init → server.NewApp`
 
@@ -374,7 +417,7 @@
 
 ---
 
-## 8) 安全基线（必须遵守）
+## 9) 安全基线（必须遵守）
 
 1. 禁止硬编码密钥/密码/令牌
 2. 敏感配置仅返回 `xxxSet` 布尔值
@@ -384,7 +427,7 @@
 
 ---
 
-## 9) 质量门禁（提交前自检）
+## 10) 质量门禁（提交前自检）
 
 ```bash
 go test ./...                                          # 后端编译/测试
@@ -393,11 +436,11 @@ cd webview && npm run format                           # import 排序检查
 cd webview && python3 script/review-style.py           # 前端样式一致性检查
 ```
 
-- [ ] 编译通过；[ ] 无新增 lint 警告；[ ] 关键路径手动验证；[ ] 错误处理与日志符合规范；[ ] 未引入明文敏感信息
+- [ ] 编译通过；[ ] 无新增 lint 警告；[ ] 关键路径手动验证；[ ] 错误处理与日志符合规范；[ ] 未引入明文敏感信息；[ ] 相关文档与 skills 已同步更新
 
 ---
 
-## 10) Git 约定
+## 11) Git 约定
 
 提交格式：`<type>: <subject>`（`feat`/`fix`/`refactor`/`style`/`docs`/`chore`）
 

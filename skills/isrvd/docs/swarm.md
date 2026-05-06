@@ -81,7 +81,13 @@ GET /api/swarm/services
 | mode | string | `replicated` 或 `global` |
 | replicas | number | 期望副本数 |
 | runningTasks | number | 运行中的任务数 |
+| env | string[] | 环境变量 |
+| args | string[] | 启动参数 |
+| networks | string[] | 网络名列表 |
 | ports | ServicePort[] | 端口映射 |
+| mounts | ServiceMount[] | 挂载配置 |
+| labels | object | 标签键值对 |
+| constraints | string[] | 调度约束 |
 | createdAt | string | 创建时间 |
 | updatedAt | string | 更新时间 |
 
