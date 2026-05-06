@@ -221,12 +221,14 @@ func (s *DockerService) ImageEnsure(ctx context.Context, ref string) error {
 	if err == nil {
 		return nil // 已存在，无需拉取
 	}
+
 	logman.Info("Image not found locally, pulling", "image", imageRef)
 	reader, err := s.client.ImagePull(ctx, imageRef, dockerimage.PullOptions{})
 	if err != nil {
 		return fmt.Errorf("拉取镜像 %s 失败: %w", imageRef, err)
 	}
 	defer reader.Close()
+
 	// 消费响应流，等待拉取完成
 	decoder := json.NewDecoder(reader)
 	for {
@@ -241,6 +243,7 @@ func (s *DockerService) ImageEnsure(ctx context.Context, ref string) error {
 			return fmt.Errorf("拉取镜像 %s 失败: %s", imageRef, msg.Error)
 		}
 	}
+
 	logman.Info("Image pulled successfully", "image", imageRef)
 	return nil
 }

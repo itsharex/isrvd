@@ -64,6 +64,11 @@ func (s *DockerService) ContainerRoot() string {
 	return s.config.ContainerRoot
 }
 
+// Registries 返回全量仓库配置（包含密码），仅供上层持久化使用
+func (s *DockerService) Registries() []*RegistryConfig {
+	return s.config.Registries
+}
+
 // DockerInfo Docker 信息概览
 type DockerInfo struct {
 	ContainersRunning  int64    `json:"containersRunning"`

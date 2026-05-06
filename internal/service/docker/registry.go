@@ -24,7 +24,7 @@ func (s *Service) RegistryList() any {
 
 // syncRegistriesToConfig 将当前 DockerService 的仓库同步到全局 config 并落盘
 func (s *Service) syncRegistriesToConfig() error {
-	regs := s.docker.GetRegistryConfigs()
+	regs := s.docker.Registries()
 	cfgRegs := make([]*config.DockerRegistry, 0, len(regs))
 	for _, r := range regs {
 		cfgRegs = append(cfgRegs, &config.DockerRegistry{

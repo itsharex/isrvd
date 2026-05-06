@@ -22,7 +22,6 @@ func ServiceToCreateRequest(project *types.Project, svc types.ServiceConfig) (do
 	}
 
 	name := defaultString(svc.ContainerName, svc.Name)
-
 	req := docker.ContainerCreateRequest{
 		Image:      svc.Image,
 		Name:       name,
@@ -102,7 +101,6 @@ func ServiceToSwarmRequest(project *types.Project, svc types.ServiceConfig) (swa
 	}
 
 	name := defaultString(svc.Name, svc.ContainerName)
-
 	replicas := uint64(1)
 	mode := "replicated"
 

@@ -19,7 +19,7 @@ func (s *ComposeService) DeployContent(ctx context.Context, content string) ([]s
 	return s.DeployProject(ctx, project)
 }
 
-// DeployProject 部署一个已加载的 compose Project
+// DeployProject 部署一个已加载的 compose project
 // 在创建容器前会先确保用到的非内置网络存在
 // 返回已创建的容器描述列表，格式 "name (shortId)"
 func (s *ComposeService) DeployProject(ctx context.Context, project *types.Project) ([]string, error) {
@@ -30,7 +30,7 @@ func (s *ComposeService) DeployProject(ctx context.Context, project *types.Proje
 	// 先确保所有用到的外部网络存在
 	for _, name := range collectNetworks(project) {
 		if err := s.ensureNetwork(ctx, name); err != nil {
-			return nil, fmt.Errorf("确保网络 %s 存在失败: %w", name, err)
+			return nil, fmt.Errorf("网络 %s 不存在，创建失败: %w", name, err)
 		}
 	}
 
@@ -43,9 +43,10 @@ func (s *ComposeService) DeployProject(ctx context.Context, project *types.Proje
 
 		// 镜像不存在时自动拉取
 		if err := s.docker.ImageEnsure(ctx, svc.Image); err != nil {
-			return containers, fmt.Errorf("确保镜像 %s 存在失败: %w", svc.Image, err)
+			return containers, fmt.Errorf("镜像 %s 不存在，拉取失败: %w", svc.Image, err)
 		}
 
+		// 创建容器
 		id, err := s.docker.ContainerCreate(ctx, req)
 		if err != nil {
 			return containers, fmt.Errorf("创建容器 %s 失败: %w", req.Name, err)

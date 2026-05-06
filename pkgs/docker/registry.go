@@ -35,21 +35,6 @@ func (s *DockerService) RegistryList() []*RegistryInfo {
 	return registries
 }
 
-// findRegistryIndex 查找仓库索引
-func (s *DockerService) findRegistryIndex(url string) int {
-	for i, r := range s.config.Registries {
-		if r.URL == url {
-			return i
-		}
-	}
-	return -1
-}
-
-// GetRegistryConfigs 返回全量仓库配置（包含密码），仅供上层持久化使用
-func (s *DockerService) GetRegistryConfigs() []*RegistryConfig {
-	return s.config.Registries
-}
-
 // RegistryCreate 添加仓库
 func (s *DockerService) RegistryCreate(reg *RegistryConfig) error {
 	if reg == nil {
@@ -99,25 +84,6 @@ func (s *DockerService) RegistryDelete(url string) error {
 	}
 	s.config.Registries = append(s.config.Registries[:idx], s.config.Registries[idx+1:]...)
 	return nil
-}
-
-// getRegistryAuth 获取仓库认证信息
-func (s *DockerService) getRegistryAuth(registryURL string) string {
-	for _, r := range s.config.Registries {
-		if r.URL == registryURL {
-			if r.Username != "" && r.Password != "" {
-				authConfig := registry.AuthConfig{
-					Username:      r.Username,
-					Password:      r.Password,
-					ServerAddress: r.URL,
-				}
-				authJSON, _ := json.Marshal(authConfig)
-				return base64.URLEncoding.EncodeToString(authJSON)
-			}
-			break
-		}
-	}
-	return ""
 }
 
 // ImagePushRequest 镜像推送请求
@@ -254,4 +220,33 @@ func (s *DockerService) ImagePull(ctx context.Context, req ImagePullRequest) (st
 
 	logman.Info("Image pulled from registry", "image", imageRef, "registry", req.RegistryURL)
 	return lastMessage, imageRef, nil
+}
+
+// getRegistryAuth 获取仓库认证信息
+func (s *DockerService) getRegistryAuth(registryURL string) string {
+	for _, r := range s.config.Registries {
+		if r.URL == registryURL {
+			if r.Username != "" && r.Password != "" {
+				authConfig := registry.AuthConfig{
+					Username:      r.Username,
+					Password:      r.Password,
+					ServerAddress: r.URL,
+				}
+				authJSON, _ := json.Marshal(authConfig)
+				return base64.URLEncoding.EncodeToString(authJSON)
+			}
+			break
+		}
+	}
+	return ""
+}
+
+// findRegistryIndex 查找仓库索引
+func (s *DockerService) findRegistryIndex(url string) int {
+	for i, r := range s.config.Registries {
+		if r.URL == url {
+			return i
+		}
+	}
+	return -1
 }

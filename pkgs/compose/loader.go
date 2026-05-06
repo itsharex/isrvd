@@ -3,6 +3,7 @@ package compose
 import (
 	"context"
 	"fmt"
+	"maps"
 	"os"
 	"path/filepath"
 
@@ -60,9 +61,7 @@ func LoadProject(ctx context.Context, opts LoadOptions) (*types.Project, error) 
 
 	// 合并 host 环境变量 + 用户自定义（用户优先）
 	env := loadHostEnv()
-	for k, v := range opts.Environment {
-		env[k] = v
-	}
+	maps.Copy(env, opts.Environment)
 
 	details := types.ConfigDetails{
 		WorkingDir:  opts.WorkingDir,
@@ -125,20 +124,6 @@ func LoadProjectFromContent(ctx context.Context, content string, projectName str
 	return project, nil
 }
 
-// loadHostEnv 将当前进程的环境变量加载为 map，用于 compose 变量插值
-func loadHostEnv() map[string]string {
-	env := make(map[string]string)
-	for _, e := range os.Environ() {
-		for i := 0; i < len(e); i++ {
-			if e[i] == '=' {
-				env[e[:i]] = e[i+1:]
-				break
-			}
-		}
-	}
-	return env
-}
-
 // LocateComposeFile 在指定目录下查找 compose 文件
 // 查找顺序：根目录 → 一级子目录（处理 zip 解压后外层多一层目录的情况）
 func LocateComposeFile(dir string) (string, error) {
@@ -165,4 +150,18 @@ func LocateComposeFile(dir string) (string, error) {
 		}
 	}
 	return "", fmt.Errorf("目录中未找到 compose 文件")
+}
+
+// loadHostEnv 将当前进程的环境变量加载为 map，用于 compose 变量插值
+func loadHostEnv() map[string]string {
+	env := make(map[string]string)
+	for _, e := range os.Environ() {
+		for i := 0; i < len(e); i++ {
+			if e[i] == '=' {
+				env[e[:i]] = e[i+1:]
+				break
+			}
+		}
+	}
+	return env
 }

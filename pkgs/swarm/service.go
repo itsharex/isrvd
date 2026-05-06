@@ -199,7 +199,7 @@ func (m *SwarmService) ServiceCreate(ctx context.Context, req ServiceSpec) (stri
 
 	// 网络
 	for _, n := range req.Networks {
-		spec.Networks = append(spec.Networks, swarm.NetworkAttachmentConfig{Target: n})
+		spec.TaskTemplate.Networks = append(spec.TaskTemplate.Networks, swarm.NetworkAttachmentConfig{Target: n})
 	}
 
 	// 标签
@@ -324,7 +324,7 @@ func (m *SwarmService) ServiceInspect(ctx context.Context, id string) (*ServiceI
 	}
 
 	// 网络
-	for _, n := range svc.Spec.Networks {
+	for _, n := range svc.Spec.TaskTemplate.Networks {
 		result.Networks = append(result.Networks, n.Target)
 	}
 
