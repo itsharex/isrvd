@@ -2,7 +2,7 @@ import { reactive } from 'vue'
 
 import api from '@/service/api'
 import { interceptors } from '@/service/axios'
-import type { LinkConfig } from '@/service/types'
+import type { AuthInfo, LinkConfig } from '@/service/types'
 
 export const APP_STATE_KEY = 'app.state'
 export const APP_ACTIONS_KEY = 'app.actions'
@@ -115,22 +115,20 @@ export const initProvider = () => {
 
                 // 验证认证
                 const authRes = await api.accountInfo()
-                const payload = authRes?.payload
-                const { mode, username: accountUsername, member } = payload || {}
+                const payload = authRes?.payload || {} as AuthInfo
 
                 // 核心原则：无 username 或无 member = 无权限，直接清理
-                if (!accountUsername || !member) {
+                if (!payload?.username || !payload?.member) {
                     this.clearAuth()
                 } else {
                     // 认证模式处理
-                    if (mode === 'header') {
-                        this.setAuth({ authMode: 'header', token: '', username: accountUsername })
+                    if (payload.mode === 'header') {
+                        this.setAuth({ authMode: 'header', token: '', username: payload.username })
                     }
-
                     // 权限赋值内聚在一处，确保有 member 才写入
                     state.permissionsLoaded = true
-                    state.founder = member.founder || false
-                    state.permissions = member.permissions || []
+                    state.founder = payload.member.founder || false
+                    state.permissions = payload.member.permissions || []
                 }
 
                 if (state.username) await this.loadAppData()
