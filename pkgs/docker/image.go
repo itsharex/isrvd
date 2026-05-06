@@ -16,11 +16,12 @@ import (
 
 // ImageInfo Docker 镜像信息
 type ImageInfo struct {
-	ID       string   `json:"id"`
-	ShortID  string   `json:"shortId"`
-	RepoTags []string `json:"repoTags"`
-	Size     int64    `json:"size"`
-	Created  int64    `json:"created"`
+	ID          string   `json:"id"`
+	ShortID     string   `json:"shortId"`
+	RepoTags    []string `json:"repoTags"`
+	RepoDigests []string `json:"repoDigests"`
+	Size        int64    `json:"size"`
+	Created     int64    `json:"created"`
 }
 
 // ImageList 列出镜像
@@ -45,8 +46,12 @@ func (s *DockerService) ImageList(ctx context.Context, all bool) ([]*ImageInfo, 
 			shortID = id[:12]
 		}
 		result = append(result, &ImageInfo{
-			ID: id, ShortID: shortID, RepoTags: img.RepoTags,
-			Size: img.Size, Created: img.Created,
+			ID:          id,
+			ShortID:     shortID,
+			RepoTags:    img.RepoTags,
+			RepoDigests: img.RepoDigests,
+			Size:        img.Size,
+			Created:     img.Created,
 		})
 	}
 

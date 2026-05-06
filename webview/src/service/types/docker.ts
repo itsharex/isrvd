@@ -114,6 +114,7 @@ export interface DockerImageInfo {
     id: string
     shortId: string
     repoTags: string[]
+    repoDigests: string[]
     size: number
     created: number
 }

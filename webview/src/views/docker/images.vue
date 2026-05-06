@@ -58,26 +58,62 @@ class Images extends Vue {
         this.registryPushModalRef?.show(this.registries, null, tag)
     }
 
-    parseImageRef(tag: string) {
-        if (!tag || tag === '<none>:<none>') return { host: '', name: tag || '<none>' }
-        const firstSlash = tag.indexOf('/')
-        if (firstSlash === -1) return { host: '', name: tag }
-        const firstPart = tag.substring(0, firstSlash)
-        if (firstPart.includes('.') || firstPart.includes(':')) {
-            return { host: firstPart, name: tag.substring(firstSlash + 1) }
+    // 提取镜像名称（去掉 registry host 和 tag）
+    // 例: "registry.com/nginx:latest" → "nginx", "localhost:5000/nginx:v1.0" → "nginx"
+    extractImageName(ref: string): string {
+        if (!ref || ref === '<none>:<none>') return ''
+        // 去掉 digest 或 tag（: 后是 tag，@ 后是 digest；端口号的 : 通过检查 / 来区分）
+        let repo = ref
+        const atIdx = ref.indexOf('@')
+        if (atIdx > 0) {
+            repo = ref.substring(0, atIdx)
+        } else {
+            const colonIdx = ref.lastIndexOf(':')
+            if (colonIdx > 0 && !ref.substring(colonIdx).includes('/')) {
+                repo = ref.substring(0, colonIdx)
+            }
         }
-        return { host: '', name: tag }
+        // 去掉 registry host（第一段含 . 或 : 即为 host）
+        const slashIdx = repo.indexOf('/')
+        if (slashIdx === -1) return repo
+        const first = repo.substring(0, slashIdx)
+        return (first.includes('.') || first.includes(':')) ? repo.substring(slashIdx + 1) : repo
+    }
+
+    // 获取镜像显示名称：优先用 repoTags，无标签时从 repoDigests 提取
+    getImageName(img: DockerImageInfo): string {
+        if (img.repoTags && img.repoTags.length > 0) {
+            const tag = img.repoTags.find(t => t && t !== '<none>:<none>')
+            if (tag) return this.extractImageName(tag)
+        }
+        if (img.repoDigests && img.repoDigests.length > 0) {
+            const digest = img.repoDigests[0]
+            const atIndex = digest.indexOf('@')
+            if (atIndex > 0) {
+                return this.extractImageName(digest.substring(0, atIndex))
+            }
+        }
+        return '<none>'
     }
 
     async pullImage(image: DockerImageInfo) {
         const tag = image.repoTags.find(t => t && t !== '<none>:<none>')
-        if (!tag || tag === '<none>:<none>') {
-            this.actions.showNotification('error', '该镜像没有有效的 Tag，无法拉取')
+        if (!tag) {
+            this.actions.showNotification('error', '镜像无标签，无法拉取')
             return
         }
 
-        // 匹配私有仓库以携带认证信息
-        const { host: tagHost, name: imageName } = this.parseImageRef(tag)
+        // 解析 registry host（用于匹配私有仓库携带认证信息）
+        let tagHost = ''
+        let imageName = tag
+        const firstSlash = tag.indexOf('/')
+        if (firstSlash > 0) {
+            const firstPart = tag.substring(0, firstSlash)
+            if (firstPart.includes('.') || firstPart.includes(':')) {
+                tagHost = firstPart
+                imageName = tag.substring(firstSlash + 1)
+            }
+        }
         const matchedRegistry = this.registries.find(r =>
             r.url === tagHost || r.url.replace(/^https?:\/\//, '') === tagHost
         )
@@ -229,17 +265,17 @@ export default toNative(Images)
                       <i class="fas fa-compact-disc text-white text-sm"></i>
                     </div>
                     <div class="min-w-0">
-                      <span class="font-medium text-slate-800 truncate block">{{ parseImageRef(img.repoTags[0]).name.replace(/:[^:]+$/, '') }}</span>
+                      <span class="font-medium text-slate-800 truncate block">{{ getImageName(img) }}</span>
                       <code class="text-xs text-slate-400 font-mono truncate block mt-0.5">{{ img.shortId }}</code>
                     </div>
                   </div>
                 </td>
-                  <td class="px-4 py-3">
-                    <div v-if="img.repoTags && img.repoTags.length > 0" class="flex flex-wrap gap-1">
-                      <span v-for="(tag, idx) in img.repoTags" :key="idx" class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-mono bg-blue-50 text-blue-600">{{ tag }}</span>
-                    </div>
-                    <span v-else class="text-sm text-slate-400">-</span>
-                  </td>
+                <td class="px-4 py-3">
+                  <div v-if="img.repoTags && img.repoTags.length > 0" class="flex flex-wrap gap-1">
+                    <span v-for="(tag, idx) in img.repoTags" :key="idx" class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-mono bg-blue-50 text-blue-600">{{ tag }}</span>
+                  </div>
+                  <span v-else class="text-sm text-slate-400">-</span>
+                </td>
                 <td class="px-4 py-3 text-sm text-slate-600">{{ formatFileSize(img.size) }}</td>
                 <td class="px-4 py-3 whitespace-nowrap text-sm text-slate-600">{{ formatTime(new Date(img.created * 1000).toISOString()) }}</td>
                 <td class="px-4 py-3">
@@ -279,18 +315,18 @@ export default toNative(Images)
                 <i class="fas fa-compact-disc text-white text-base"></i>
               </div>
               <div class="min-w-0">
-                <span class="font-medium text-slate-800 text-sm truncate block">{{ parseImageRef(img.repoTags[0]).name.replace(/:[^:]+$/, '') }}</span>
+                <span class="font-medium text-slate-800 text-sm truncate block">{{ getImageName(img) }}</span>
                 <code class="text-xs text-slate-400 font-mono truncate block mt-0.5">{{ img.shortId }}</code>
               </div>
             </div>
 
-              <!-- 标签 -->
-              <div v-if="img.repoTags && img.repoTags.length > 0" class="flex items-start gap-2 mb-3">
-                <span class="text-xs text-slate-400 flex-shrink-0 mt-0.5">标签</span>
-                <div class="flex flex-wrap gap-1">
-                  <span v-for="(tag, idx) in img.repoTags" :key="idx" class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-mono bg-blue-50 text-blue-600">{{ tag }}</span>
-                </div>
+            <!-- 标签 -->
+            <div v-if="img.repoTags && img.repoTags.length > 0" class="flex items-start gap-2 mb-3">
+              <span class="text-xs text-slate-400 flex-shrink-0 mt-0.5">标签</span>
+              <div class="flex flex-wrap gap-1">
+                <span v-for="(tag, idx) in img.repoTags" :key="idx" class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-mono bg-blue-50 text-blue-600">{{ tag }}</span>
               </div>
+            </div>
 
             <!-- 创建时间 -->
             <div class="flex items-center gap-2 mb-3">
