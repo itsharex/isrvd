@@ -1,11 +1,10 @@
 <script lang="ts">
 import { Component, Inject, Ref, Vue, toNative } from 'vue-facing-decorator'
 
-import { APP_STATE_KEY } from '@/store/state'
-import type { AppState } from '@/store/state'
-
 import { FILER_STATE_KEY, FILER_ACTIONS_KEY } from '@/store/filer'
 import type { FilerActions, FilerState } from '@/store/filer'
+import { APP_STATE_KEY } from '@/store/state'
+import type { AppState } from '@/store/state'
 
 import api from '@/service/api'
 

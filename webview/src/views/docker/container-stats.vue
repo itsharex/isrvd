@@ -1,8 +1,8 @@
 <script lang="ts">
 import { Chart, registerables } from 'chart.js'
+import type { ChartOptions, TooltipItem } from 'chart.js'
 import { markRaw, nextTick } from 'vue'
 import { Component, Inject, Ref, Vue, toNative } from 'vue-facing-decorator'
-import type { ChartOptions, TooltipItem } from 'chart.js'
 
 import { APP_ACTIONS_KEY } from '@/store/state'
 import type { AppActions } from '@/store/state'

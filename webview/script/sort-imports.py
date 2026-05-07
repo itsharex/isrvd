@@ -47,12 +47,12 @@ def get_group(import_line: str) -> int:
     return 99
 
 def sort_key(import_line: str) -> tuple:
-    """排序键：(分组, 是否 type import, 模块路径, 导入内容)"""
+    """排序键：(分组, 模块路径, 是否 type import, 导入内容)"""
     group = get_group(import_line)
     is_type = 1 if re.match(r"import\s+type\s+", import_line) else 0
     m = re.search(r"from\s+('[^']+')$", import_line.rstrip())
     path = m.group(1) if m else ''
-    return (group, is_type, path, import_line)
+    return (group, path, is_type, import_line)
 
 def collect_full_import(lines: list[str], start_idx: int) -> tuple[str, int]:
     """

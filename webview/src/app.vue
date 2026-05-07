@@ -1,8 +1,8 @@
 <script lang="ts">
 import { Component, Provide, Ref, Vue, toNative } from 'vue-facing-decorator'
 
-import { APP_ACTIONS_KEY, APP_STATE_KEY, initProvider } from '@/store/state'
 import { FILER_ACTIONS_KEY, FILER_STATE_KEY, initFilerProvider } from '@/store/filer'
+import { APP_ACTIONS_KEY, APP_STATE_KEY, initProvider } from '@/store/state'
 
 import { setRouterGuard } from '@/router'
 
