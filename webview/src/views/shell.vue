@@ -41,7 +41,7 @@ export default toNative(Shell)
 
 <template>
   <div class="h-[calc(100vh-100px)]">
-    <div class="h-full bg-white rounded-2xl shadow-lg border border-slate-200/60 flex flex-col overflow-hidden">
+    <div class="h-full card flex flex-col overflow-hidden">
       <!-- Toolbar Bar -->
       <div class="bg-slate-50 border-b border-slate-200 px-4 md:px-6 py-3">
         <!-- 桌面端工具栏 -->
