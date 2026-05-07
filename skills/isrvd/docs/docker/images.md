@@ -4,7 +4,6 @@
 
 ```bash
 isrvd_get "/docker/images"
-isrvd_get "/docker/images" '.[].{tags: .repoTags, size}'
 ```
 
 | 字段 | 类型 | 说明 |
@@ -20,7 +19,6 @@ isrvd_get "/docker/images" '.[].{tags: .repoTags, size}'
 
 ```bash
 isrvd_get "/docker/image/<IMAGE_ID>"
-isrvd_get "/docker/image/<IMAGE_ID>" '{tags: .repoTags, arch: .architecture, cmd, env}'
 ```
 
 | 字段 | 类型 | 说明 |

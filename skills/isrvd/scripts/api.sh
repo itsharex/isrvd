@@ -339,12 +339,12 @@ isrvd API Harness
     isrvd_status                         查看当前配置
     isrvd_whoami                         当前用户信息
 
-  API 调用（默认紧凑 JSON，自动提取 .payload）:
-    isrvd_get    <path> [jq_filter]              GET
-    isrvd_post   <path> [body] [jq_filter]       POST
-    isrvd_put    <path> [body] [jq_filter]        PUT
-    isrvd_patch  <path> [body] [jq_filter]       PATCH
-    isrvd_delete <path> [jq_filter]              DELETE
+  API 调用（自动提取 .payload，数组对象转紧凑表格）:
+    isrvd_get    <path>                          GET
+    isrvd_post   <path> [body]                   POST
+    isrvd_put    <path> [body]                    PUT
+    isrvd_patch  <path> [body]                   PATCH
+    isrvd_delete <path>                          DELETE
     isrvd_upload <path> <field> <file> [k=v...]  文件上传
 
   认证优先级: 环境变量 > 配置文件
@@ -352,9 +352,8 @@ isrvd API Harness
   示例:
     isrvd_token "$ISRVD_APIURL" "$ISRVD_APITOKEN"
     isrvd_get "/docker/containers"
-    isrvd_get "/docker/containers" '.[].{name,state}'
     isrvd_post "/docker/container" '{"image":"...","name":"..."}'
-    isrvd_get "/swarm/services" '.[] | {name, replicas, image}'
+    isrvd_get "/swarm/services"
 EOF
 }
 

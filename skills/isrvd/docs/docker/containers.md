@@ -3,8 +3,8 @@
 ## 列出容器
 
 ```bash
+isrvd_get "/docker/containers"
 isrvd_get "/docker/containers?all=true"
-isrvd_get "/docker/containers" '.[].{name,state,image}'
 ```
 
 返回 `ContainerInfo[]`：
@@ -72,7 +72,6 @@ isrvd_post "/docker/container/<CONTAINER_ID>/action" '{"action":"unpause"}'
 
 ```bash
 isrvd_get "/docker/container/<CONTAINER_ID>/logs?tail=100"
-isrvd_get "/docker/container/<CONTAINER_ID>/logs?tail=50" '.logs[-10:]'
 ```
 
 返回：`{id, logs: string[]}`
@@ -81,7 +80,6 @@ isrvd_get "/docker/container/<CONTAINER_ID>/logs?tail=50" '.logs[-10:]'
 
 ```bash
 isrvd_get "/docker/container/<CONTAINER_ID>/stats"
-isrvd_get "/docker/container/<CONTAINER_ID>/stats" '{cpu: .cpuPercent, mem: .memoryPercent}'
 ```
 
 | 字段 | 类型 | 说明 |

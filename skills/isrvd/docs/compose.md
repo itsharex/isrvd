@@ -25,7 +25,6 @@ isrvd_upload "/compose/docker/deploy" "initFile" "./<INIT_FILE>" "projectName=<P
 
 ```bash
 isrvd_get "/compose/docker/<PROJECT>"
-isrvd_get "/compose/docker/<PROJECT>" '.content'
 ```
 
 ### 重新部署
@@ -48,7 +47,6 @@ isrvd_post "/compose/swarm/deploy" "{\"projectName\":\"<STACK>\",\"content\":$(c
 
 ```bash
 isrvd_get "/compose/swarm/<STACK>"
-isrvd_get "/compose/swarm/<STACK>" '.content'
 ```
 
 ### 重新部署

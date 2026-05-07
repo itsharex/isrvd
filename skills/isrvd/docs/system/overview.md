@@ -18,8 +18,6 @@ isrvd_get "/overview/probe"
 
 ```bash
 isrvd_get "/overview/status"
-isrvd_get "/overview/status" '{cpu: .system.cpuPercent, mem: .system.memPercent}'
-isrvd_get "/overview/status" '.gpu'
 ```
 
 | 字段 | 类型 | 说明 |

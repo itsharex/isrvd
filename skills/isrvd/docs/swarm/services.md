@@ -4,7 +4,6 @@
 
 ```bash
 isrvd_get "/swarm/services"
-isrvd_get "/swarm/services" '.[] | {name, image, replicas, runningTasks}'
 ```
 
 | 字段 | 类型 | 说明 |
@@ -29,7 +28,6 @@ isrvd_get "/swarm/services" '.[] | {name, image, replicas, runningTasks}'
 
 ```bash
 isrvd_get "/swarm/service/<SVC_ID>"
-isrvd_get "/swarm/service/<SVC_ID>" '{name, image, replicas, runningTasks, ports, env}'
 ```
 
 ## 创建服务
@@ -80,7 +78,6 @@ isrvd_post "/swarm/service/<SVC_ID>/force-update"
 
 ```bash
 isrvd_get "/swarm/service/<SVC_ID>/logs?tail=100"
-isrvd_get "/swarm/service/<SVC_ID>/logs?tail=20" '.logs'
 ```
 
 返回：`{"logs": ["timestamped log line", ...]}`

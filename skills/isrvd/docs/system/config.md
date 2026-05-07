@@ -4,7 +4,6 @@
 
 ```bash
 isrvd_get "/system/config"
-isrvd_get "/system/config" '{server, agent, apisix}'
 ```
 
 | 字段 | 类型 | 说明 |
@@ -30,7 +29,6 @@ isrvd_put "/system/config" '<CURRENT_CONFIG_WITH_CHANGES>'
 
 ```bash
 isrvd_get "/system/audit/logs?limit=20"
-isrvd_get "/system/audit/logs?username=<USER>&limit=10" '.[] | {timestamp, method, uri, success}'
 ```
 
 | 字段 | 类型 | 说明 |
