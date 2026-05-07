@@ -1,319 +1,41 @@
-/* 暗黑模式样式 - 使用 CSS 变量简化 */
+/* 暗黑模式样式 */
 
 .dark {
-  /* ========================================
-   * 一、基础色系（Slate 灰色系）
-   * ======================================== */
+  /* slate 灰色系：让 bg-slate/text-slate/border-slate 自动响应暗色 */
+  --color-slate-50:  oklch(13% 0.02 264);
+  --color-slate-100: oklch(20% 0.03 264);
+  --color-slate-200: oklch(27% 0.04 264);
+  --color-slate-300: oklch(37% 0.04 264);
+  --color-slate-400: oklch(50% 0.04 264);
+  --color-slate-500: oklch(60% 0.04 264);
+  --color-slate-600: oklch(72% 0.03 264);
+  --color-slate-700: oklch(82% 0.02 264);
+  --color-slate-800: oklch(90% 0.01 264);
+  --color-slate-900: oklch(96% 0.005 264);
+  --color-slate-950: oklch(98% 0.003 264);
 
-  /* 背景色（从深到浅） */
-  --dark-bg-base: #0f172a;        /* 最深背景 - 页面底色 */
-  --dark-bg-card: #1e293b;        /* 卡片背景 */
-  --dark-bg-elevated: #334155;    /* 提升层背景 - hover/active */
-  --dark-bg-hover: #475569;       /* 悬停背景 */
+  /* white → 卡片色 */
+  --color-white: oklch(20% 0.03 264);
 
-  /* 文字色（从浅到深） */
-  --dark-text-inverse: #f8fafc;   /* 反色文字 - 最亮 */
-  --dark-text-heading: #f1f5f9;   /* 标题文字 */
-  --dark-text-emphasis: #e2e8f0;  /* 强调文字 */
-  --dark-text-primary: #cbd5e1;   /* 主要文字 */
-  --dark-text-secondary: #94a3b8; /* 次要文字 */
-  --dark-text-muted: #64748b;     /* 弱化文字 */
-
-  /* 边框色（从浅到深） */
-  --dark-border-subtle: rgba(51, 65, 85, 0.5); /* 微弱边框 */
-  --dark-border-default: #334155;               /* 默认边框 */
-  --dark-border-strong: #475569;                /* 强边框 */
-
-  /* ========================================
-   * 二、强调色系（按颜色分组）
-   * ======================================== */
-
-  /* 蓝色系 */
-  --dark-accent-blue: #60a5fa;
-  --dark-bg-blue-20: rgba(30, 58, 138, 0.2);
-  --dark-bg-blue-30: rgba(30, 58, 138, 0.3);
-  --dark-border-blue-50: rgba(37, 99, 235, 0.5);
-
-  /* 绿色系 */
-  --dark-accent-green: #34d399;
-  --dark-bg-green-20: rgba(6, 78, 59, 0.2);
-  --dark-bg-green-30: rgba(6, 78, 59, 0.3);
-  --dark-border-green-50: rgba(4, 120, 87, 0.5);
-
-  /* 琥珀色系 */
-  --dark-accent-amber: #fbbf24;
-  --dark-bg-amber-20: rgba(120, 53, 15, 0.2);
-  --dark-bg-amber-30: rgba(120, 53, 15, 0.3);
-  --dark-border-amber-50: rgba(180, 83, 9, 0.5);
-
-  /* 红色系 */
-  --dark-accent-red: #f87171;
-  --dark-bg-red-20: rgba(127, 29, 29, 0.2);
-  --dark-bg-red-30: rgba(127, 29, 29, 0.3);
-  --dark-border-red-50: rgba(185, 28, 28, 0.5);
-
-  /* 靛蓝色系 */
-  --dark-accent-violet: #a78bfa;
-  --dark-bg-indigo-20: rgba(55, 48, 163, 0.2);
-  --dark-bg-indigo-30: rgba(55, 48, 163, 0.3);
-  --dark-border-indigo-50: rgba(55, 48, 163, 0.5);
-
-  /* 紫罗兰色系 */
-  --dark-bg-violet-20: rgba(91, 33, 182, 0.2);
-  --dark-bg-violet-30: rgba(91, 33, 182, 0.3);
-
-  /* 青色系 */
-  --dark-accent-cyan: #22d3ee;
-  --dark-bg-teal-20: rgba(13, 148, 136, 0.2);
-  --dark-bg-teal-30: rgba(13, 148, 136, 0.3);
-  --dark-bg-cyan-20: rgba(8, 145, 178, 0.2);
-  --dark-bg-cyan-30: rgba(8, 145, 178, 0.3);
-
-  /* 玫瑰色系 */
-  --dark-accent-rose: #fb7185;
-  --dark-bg-rose-20: rgba(159, 18, 57, 0.2);
-  --dark-bg-rose-30: rgba(159, 18, 57, 0.3);
-
-  /* 橙色系 */
-  --dark-accent-orange: #fb923c;
-  --dark-bg-orange-20: rgba(88, 28, 5, 0.2);
-  --dark-bg-orange-30: rgba(88, 28, 5, 0.3);
-  --dark-bg-orange-500: #f97316;
-
-  /* 天蓝色系 */
-  --dark-accent-sky: #38bdf8;
-  --dark-accent-sky-light: #7dd3fc;
-  --dark-bg-sky-20: rgba(7, 89, 133, 0.2);
-
-  /* ========================================
-   * 三、组件专用色
-   * ======================================== */
-
-  /* CodeMirror 编辑器 */
-  --dark-cm-header: #93c5fd;
-  --dark-cm-keyword: #f472b6;
-  --dark-cm-comment: #9ca3af;
-  --dark-cm-property: #c4b5fd;
-  --dark-cm-selection: rgba(59, 130, 246, 0.4);
-  --dark-cm-active-line: rgba(51, 65, 85, 0.3);
-
-  /* ========================================
-   * 四、特殊用途
-   * ======================================== */
-
-  --dark-overlay-black: rgba(0, 0, 0, 0.5); /* 黑色遮罩层 */
+  color-scheme: dark;
 }
 
-/* === 基础背景 === */
-.dark body,
-.dark .bg-slate-50 { background-color: var(--dark-bg-base) !important; }
-.dark .bg-white { background-color: var(--dark-bg-card) !important; }
-.dark .bg-slate-100 { background-color: var(--dark-bg-elevated) !important; }
-.dark .bg-slate-200 { background-color: var(--dark-bg-hover) !important; }
-.dark .bg-slate-700 { background-color: var(--dark-bg-elevated) !important; }
-.dark .bg-slate-800 { background-color: var(--dark-bg-card) !important; }
-.dark .hover\:bg-slate-800:hover { background-color: var(--dark-bg-card) !important; }
+/* === 终端/日志区域：bg-slate-900 保持深色，text-slate-100 保持浅色 === */
+.dark .bg-slate-900 { background-color: #0f172a !important; }
+.dark .bg-slate-900 .text-slate-100,
+.dark pre.bg-slate-900 { color: #f1f5f9 !important; }
 
-/* 半透明背景 */
-.dark .bg-white\/80,
-.dark .lg\:bg-white\/80 { background-color: rgba(30, 41, 59, 0.8) !important; }
-.dark .bg-white\/95 { background-color: rgba(30, 41, 59, 0.95) !important; }
-.dark .bg-slate-50\/50 { background-color: rgba(15, 23, 42, 0.5) !important; }
-.dark .bg-slate-900\/60 { background-color: rgba(0, 0, 0, 0.6) !important; }
-
-/* 终端/日志区域保持深色 */
-.dark .bg-slate-900 { background-color: var(--dark-bg-base) !important; }
-
-/* === 文字颜色 === */
-.dark .text-slate-200 { color: var(--dark-text-secondary) !important; }
-.dark .text-slate-300 { color: var(--dark-text-muted) !important; }
-.dark .text-slate-400 { color: var(--dark-text-muted) !important; }
-.dark .text-slate-500 { color: var(--dark-text-secondary) !important; }
-.dark .text-slate-600 { color: var(--dark-text-primary) !important; }
-.dark .text-slate-700 { color: var(--dark-text-emphasis) !important; }
-.dark .text-slate-800 { color: var(--dark-text-heading) !important; }
-.dark .text-slate-900 { color: var(--dark-text-inverse) !important; }
-.dark .text-slate-100 { color: var(--dark-text-heading) !important; }
-
-/* === 边框颜色 === */
-.dark .border-slate-100,
-.dark .border-slate-200 { border-color: var(--dark-border-default) !important; }
-.dark .border-slate-300,
-.dark .border-slate-400 { border-color: var(--dark-border-strong) !important; }
-.dark .border-slate-200\/50,
-.dark .border-slate-200\/60 { border-color: var(--dark-border-subtle) !important; }
-
-/* === 悬停效果 === */
-.dark .hover\:bg-slate-50:hover,
-.dark .hover\:bg-slate-100:hover { background-color: var(--dark-bg-elevated) !important; }
-.dark .hover\:bg-slate-200:hover { background-color: var(--dark-bg-hover) !important; }
-.dark .hover\:bg-white:hover { background-color: var(--dark-bg-elevated) !important; }
-.dark .hover\:bg-white\/20:hover { background-color: rgba(51, 65, 85, 0.2) !important; }
-.dark .hover\:text-slate-600:hover { color: var(--dark-text-emphasis) !important; }
-.dark .hover\:text-slate-700:hover,
-.dark .hover\:text-slate-900:hover { color: var(--dark-text-inverse) !important; }
-.dark .hover\:text-primary-600:hover { color: var(--dark-accent-blue) !important; }
-.dark .hover\:border-slate-300:hover { border-color: var(--dark-border-strong) !important; }
-.dark .hover\:border-slate-400:hover { border-color: var(--dark-text-muted) !important; }
-
-/* === 组悬停效果 === */
-.dark .group:hover .group-hover\:text-primary-600 { color: var(--dark-accent-blue) !important; }
-.dark .group:hover .group-hover\:border-slate-400 { border-color: var(--dark-text-muted) !important; }
-
-/* === 组件样式 === */
-.dark .card { background-color: var(--dark-bg-card) !important; border-color: var(--dark-border-default) !important; }
-.dark .input { background-color: var(--dark-bg-card) !important; border-color: var(--dark-border-strong) !important; color: var(--dark-text-emphasis) !important; }
-.dark .modal-card { background-color: var(--dark-bg-card) !important; border-color: var(--dark-border-default) !important; }
-
-/* 通用输入框样式（未使用 .input 类的内联样式输入框） */
-.dark input[type="text"],
-.dark input[type="password"],
-.dark input[type="email"],
-.dark input[type="number"],
-.dark input[type="search"],
-.dark input[type="tel"],
-.dark input[type="url"],
-.dark textarea,
-.dark select {
-  background-color: var(--dark-bg-card) !important;
-  border-color: var(--dark-border-strong) !important;
-  color: var(--dark-text-emphasis) !important;
-}
-.dark input::placeholder,
-.dark textarea::placeholder {
-  color: var(--dark-text-muted) !important;
-}
-
-/* === 强调色背景 === */
-/* 蓝色 */
-.dark .bg-blue-50 { background-color: var(--dark-bg-blue-20) !important; }
-.dark .text-blue-600,
-.dark .text-blue-700 { color: var(--dark-accent-blue) !important; }
-.dark .border-blue-300 { border-color: var(--dark-border-blue-50) !important; }
-.dark .hover\:bg-blue-50:hover,
-.dark .hover\:bg-blue-100:hover { background-color: var(--dark-bg-blue-30) !important; }
-.dark .hover\:text-blue-600:hover { color: var(--dark-accent-blue) !important; }
-
-/* 主色调 */
-.dark .bg-primary-50 { background-color: var(--dark-bg-blue-20) !important; }
-.dark .text-primary-600 { color: var(--dark-accent-blue) !important; }
-.dark .hover\:bg-primary-50:hover,
-.dark .hover\:bg-primary-100:hover { background-color: var(--dark-bg-blue-30) !important; }
-.dark .hover\:text-primary-600:hover { color: var(--dark-accent-blue) !important; }
-
-/* 绿色 */
-.dark .bg-emerald-50 { background-color: var(--dark-bg-green-20) !important; }
-.dark .text-emerald-400,
-.dark .text-emerald-600,
-.dark .text-emerald-700 { color: var(--dark-accent-green) !important; }
-.dark .border-emerald-100,
-.dark .border-emerald-200,
-.dark .border-emerald-300 { border-color: var(--dark-border-green-50) !important; }
-.dark .hover\:bg-emerald-50:hover { background-color: var(--dark-bg-green-30) !important; }
-.dark .hover\:text-emerald-600:hover { color: var(--dark-accent-green) !important; }
-
-/* 琥珀色 */
-.dark .bg-amber-50,
-.dark .bg-amber-50\/40 { background-color: var(--dark-bg-amber-20) !important; }
-.dark .text-amber-700,
-.dark .text-amber-800 { color: var(--dark-accent-amber) !important; }
-.dark .border-amber-200 { border-color: var(--dark-border-amber-50) !important; }
-.dark .hover\:bg-amber-50:hover { background-color: var(--dark-bg-amber-30) !important; }
-.dark .hover\:text-amber-600:hover { color: var(--dark-accent-amber) !important; }
-
-/* 红色 */
-.dark .bg-red-50 { background-color: var(--dark-bg-red-20) !important; }
-.dark .text-red-600,
-.dark .text-red-700 { color: var(--dark-accent-red) !important; }
-.dark .border-red-200,
-.dark .border-red-300 { border-color: var(--dark-border-red-50) !important; }
-.dark .hover\:bg-red-50:hover { background-color: var(--dark-bg-red-30) !important; }
-.dark .hover\:text-red-600:hover { color: var(--dark-accent-red) !important; }
-
-/* 靛蓝色 */
-.dark .bg-indigo-50 { background-color: var(--dark-bg-indigo-20) !important; }
-.dark .text-indigo-500,
-.dark .text-indigo-600,
-.dark .text-indigo-700 { color: var(--dark-accent-violet) !important; }
-.dark .border-indigo-100,
-.dark .border-indigo-300,
-.dark .border-indigo-400 { border-color: var(--dark-border-indigo-50) !important; }
-.dark .hover\:bg-indigo-50:hover { background-color: var(--dark-bg-indigo-30) !important; }
-.dark .hover\:text-indigo-600:hover { color: var(--dark-accent-violet) !important; }
-
-/* 紫罗兰色 */
-.dark .bg-violet-50 { background-color: var(--dark-bg-violet-20) !important; }
-.dark .text-violet-600 { color: var(--dark-accent-violet) !important; }
-.dark .hover\:bg-violet-50:hover { background-color: var(--dark-bg-violet-30) !important; }
-.dark .hover\:text-violet-600:hover { color: var(--dark-accent-violet) !important; }
-
-/* 青色 */
-.dark .bg-teal-50 { background-color: var(--dark-bg-teal-20) !important; }
-.dark .text-teal-600 { color: var(--dark-accent-cyan) !important; }
-.dark .hover\:bg-teal-50:hover { background-color: var(--dark-bg-teal-30) !important; }
-.dark .hover\:text-teal-600:hover { color: var(--dark-accent-cyan) !important; }
-
-.dark .bg-cyan-50 { background-color: var(--dark-bg-cyan-20) !important; }
-.dark .text-cyan-600 { color: var(--dark-accent-cyan) !important; }
-.dark .hover\:bg-cyan-50:hover { background-color: var(--dark-bg-cyan-30) !important; }
-.dark .hover\:text-cyan-600:hover { color: var(--dark-accent-cyan) !important; }
-
-/* 玫瑰色 */
-.dark .bg-rose-50 { background-color: var(--dark-bg-rose-20) !important; }
-.dark .text-rose-600 { color: var(--dark-accent-rose) !important; }
-.dark .hover\:bg-rose-50:hover { background-color: var(--dark-bg-rose-30) !important; }
-.dark .hover\:text-rose-600:hover { color: var(--dark-accent-rose) !important; }
-
-/* 橙色 */
-.dark .bg-orange-50 { background-color: var(--dark-bg-orange-20) !important; }
-.dark .bg-orange-500 { background-color: var(--dark-bg-orange-500) !important; }
-.dark .text-orange-500,
-.dark .text-orange-600,
-.dark .text-orange-700 { color: var(--dark-accent-orange) !important; }
-.dark .hover\:bg-orange-50:hover { background-color: var(--dark-bg-orange-30) !important; }
-
-/* 天蓝色 */
-.dark .bg-sky-50 { background-color: var(--dark-bg-sky-20) !important; }
-.dark .text-sky-400 { color: var(--dark-accent-sky) !important; }
-.dark .text-sky-700 { color: var(--dark-accent-sky-light) !important; }
-
-/* === 分割线 === */
-.dark .border-slate-100 { border-color: var(--dark-border-default) !important; }
-.dark .divide-slate-100 > * + * { border-color: var(--dark-border-default) !important; }
-
-/* === 表格样式 === */
-.dark tbody { background-color: var(--dark-bg-card) !important; }
-.dark tbody tr { border-bottom-color: var(--dark-border-default) !important; }
-
-/* === 滚动条 === */
-.dark ::-webkit-scrollbar-thumb { background-color: var(--dark-border-strong) !important; }
-.dark ::-webkit-scrollbar-thumb:hover { background-color: var(--dark-text-muted) !important; }
-
-/* === 遮罩层 === */
-.dark .bg-black\/30 { background-color: var(--dark-overlay-black) !important; }
+/* === 侧边栏菜单高亮 === */
+.dark .bg-blue-50 { background-color: rgba(37, 99, 235, 0.2) !important; }
+.dark .text-blue-700 { color: #93c5fd !important; }
+.dark .hover\:bg-blue-100:hover { background-color: rgba(37, 99, 235, 0.3) !important; }
 
 /* === CodeMirror 编辑器 === */
-.dark .cm-editor { background-color: var(--dark-bg-card) !important; }
-.dark .cm-editor .cm-gutters { background-color: var(--dark-bg-base) !important; border-color: var(--dark-border-default) !important; }
-.dark .cm-editor .cm-gutterElement { color: var(--dark-text-secondary) !important; }
-.dark .cm-editor .cm-content { color: var(--dark-text-heading) !important; }
-.dark .cm-editor .cm-cursor { border-color: var(--dark-text-heading) !important; }
-.dark .cm-editor .cm-selectionBackground { background-color: var(--dark-cm-selection) !important; }
+.dark .cm-editor                         { background-color: oklch(20% 0.03 264) !important; }
+.dark .cm-editor .cm-gutters             { background-color: oklch(23.065% 0.06007 266.601) !important; border-color: oklch(27% 0.04 264) !important; }
+.dark .cm-editor .cm-gutterElement       { color: oklch(60% 0.04 264) !important; }
+.dark .cm-editor .cm-content             { color: oklch(90% 0.01 264) !important; }
+.dark .cm-editor .cm-cursor              { border-color: oklch(90% 0.01 264) !important; }
+.dark .cm-editor .cm-selectionBackground { background-color: rgba(59, 130, 246, 0.4) !important; }
 .dark .cm-editor .cm-activeLine,
-.dark .cm-editor .cm-activeLineGutter { background-color: var(--dark-cm-active-line) !important; }
-
-/* CodeMirror 语法高亮 */
-.dark .cm-editor .cm-header,
-.dark .cm-editor .cm-variableName,
-.dark .cm-editor .cm-atom,
-.dark .cm-editor .cm-meta { color: var(--dark-cm-header) !important; }
-.dark .cm-editor .cm-keyword,
-.dark .cm-editor .cm-tagName { color: var(--dark-cm-keyword) !important; }
-.dark .cm-editor .cm-string,
-.dark .cm-editor .cm-attributeValue { color: var(--dark-accent-green) !important; }
-.dark .cm-editor .cm-number,
-.dark .cm-editor .cm-bracket { color: var(--dark-accent-amber) !important; }
-.dark .cm-editor .cm-comment { color: var(--dark-cm-comment) !important; }
-.dark .cm-editor .cm-propertyName { color: var(--dark-cm-property) !important; }
-.dark .cm-editor .cm-operator { color: var(--dark-text-heading) !important; }
-.dark .cm-editor .cm-punctuation { color: var(--dark-text-secondary) !important; }
+.dark .cm-editor .cm-activeLineGutter    { background-color: rgba(51, 65, 85, 0.3) !important; }

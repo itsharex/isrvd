@@ -10,7 +10,7 @@ export function create(el: HTMLElement, token: string, containerId: string, shel
     if (!el) return
     destroy()
 
-    term = new Terminal({ theme: { background: '#222' }, fontSize: 15, cursorBlink: true })
+    term = new Terminal({ theme: { background: '#0f172a' }, fontSize: 15, cursorBlink: true })
     fitAddon = new FitAddon()
     term.loadAddon(fitAddon)
     term.open(el)
