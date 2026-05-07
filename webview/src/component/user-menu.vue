@@ -17,6 +17,11 @@ class UserMenu extends Vue {
     menuOpen = false
 
     // ─── 方法 ───
+    toggleTheme() {
+        const isDark = document.documentElement.classList.toggle('dark')
+        localStorage.setItem('app-theme', isDark ? 'dark' : 'light')
+    }
+
     handleLogout() {
         this.actions.clearAuth()
     }
@@ -59,6 +64,15 @@ export default toNative(UserMenu)
       <i class="fas fa-user-circle"></i>
       个人设置
     </router-link>
+
+    <!-- 暗黑模式切换 -->
+    <button
+      class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+      @click="toggleTheme"
+    >
+      <i class="fas fa-moon"></i>
+      <span>切换主题</span>
+    </button>
 
     <!-- 分割线 -->
     <div class="border-t border-slate-100 my-1"></div>

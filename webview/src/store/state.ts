@@ -103,6 +103,12 @@ export const initProvider = () => {
             state.initialized = false
             state.initError = null
 
+            // 初始化主题
+            const theme = localStorage.getItem('app-theme')
+            if (theme === 'dark') {
+                document.documentElement.classList.add('dark')
+            }
+
             try {
                 // 恢复 token
                 const token = localStorage.getItem('app-token')

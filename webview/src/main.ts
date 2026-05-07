@@ -1,4 +1,5 @@
 import { createApp } from 'vue'
+
 import App from '@/app.vue'
 import router from '@/router'
 
@@ -8,6 +9,7 @@ import '@xterm/xterm/css/xterm.css'
 
 // 导入 Tailwind CSS 样式
 import './assets/style.css'
+import './assets/dark.css'
 
 // 创建并挂载应用
 const app = createApp(App)
