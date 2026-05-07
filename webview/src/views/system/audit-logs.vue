@@ -2,21 +2,20 @@
 import { json } from '@codemirror/lang-json'
 import { jsonrepair } from 'jsonrepair'
 import { Codemirror } from 'vue-codemirror'
-import { Component, Inject, toNative, Vue } from 'vue-facing-decorator'
-
-import { APP_ACTIONS_KEY } from '@/store/state'
-import type { AppActions } from '@/store/state'
+import { Component, toNative, Vue } from 'vue-facing-decorator'
 
 import api from '@/service/api'
 import type { AuditLog } from '@/service/types'
 
 import BaseModal from '@/component/modal.vue'
 
+import { usePortal } from '@/stores'
+
 @Component({
     components: { BaseModal, Codemirror }
 })
 class AuditLogs extends Vue {
-    @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
+    portal = usePortal()
 
     // ─── 数据属性 ───
     logs: AuditLog[] = []
@@ -68,7 +67,7 @@ class AuditLogs extends Vue {
             const res = await api.systemAuditLogs()
             this.logs = res.payload || []
         } catch {
-            this.actions.showNotification('error', '获取审计日志失败')
+            this.portal.showNotification('error', '获取审计日志失败')
         } finally {
             this.loading = false
         }

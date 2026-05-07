@@ -1,13 +1,12 @@
 <script lang="ts">
-import { Component, Inject, Vue, toNative } from 'vue-facing-decorator'
-
-import { APP_ACTIONS_KEY } from '@/store/state'
-import type { AppActions } from '@/store/state'
+import { Component, Vue, toNative } from 'vue-facing-decorator'
 
 import api from '@/service/api'
 import type { DockerImageSearchResult, DockerRegistryInfo } from '@/service/types'
 
 import BaseModal from '@/component/modal.vue'
+
+import { usePortal } from '@/stores'
 
 @Component({
     expose: ['show'],
@@ -15,7 +14,7 @@ import BaseModal from '@/component/modal.vue'
     emits: ['success']
 })
 class ImagePullModal extends Vue {
-    @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
+    portal = usePortal()
 
     // ─── 数据属性 ───
     isOpen = false
@@ -72,7 +71,7 @@ class ImagePullModal extends Vue {
         this.modalLoading = true
         try {
             await api.dockerImagePull(imageRef, this.formData.source, '')
-            this.actions.showNotification('success', '镜像拉取成功')
+            this.portal.showNotification('success', '镜像拉取成功')
             this.isOpen = false
             this.$emit('success')
         } catch {
@@ -92,7 +91,7 @@ class ImagePullModal extends Vue {
             const res = await api.dockerImageSearch(keyword)
             this.searchResults = res.payload || []
         } catch {
-            this.actions.showNotification('error', '搜索镜像失败')
+            this.portal.showNotification('error', '搜索镜像失败')
         } finally {
             this.searchLoading = false
         }

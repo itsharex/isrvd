@@ -10,26 +10,22 @@ import { sql } from '@codemirror/lang-sql'
 import { xml } from '@codemirror/lang-xml'
 import { yaml } from '@codemirror/lang-yaml'
 import { Codemirror } from 'vue-codemirror'
-import { Component, Inject, Vue, toNative } from 'vue-facing-decorator'
-
-import { FILER_ACTIONS_KEY } from '@/store/filer'
-import type { FilerActions } from '@/store/filer'
-import { APP_STATE_KEY } from '@/store/state'
-import type { AppState } from '@/store/state'
+import { Component, Vue, toNative } from 'vue-facing-decorator'
 
 import api from '@/service/api'
 import type { FilerFileInfo } from '@/service/types'
 
 import BaseModal from '@/component/modal.vue'
 
+import { usePortal } from '@/stores'
+
 @Component({
     expose: ['show'],
     components: { BaseModal, Codemirror }
 })
 class ModifyModal extends Vue {
-    @Inject({ from: APP_STATE_KEY }) readonly appState!: AppState
-    @Inject({ from: FILER_ACTIONS_KEY }) readonly filerActions!: FilerActions
-
+    portal = usePortal()
+    get appState() { return this.portal }
     // ─── 数据属性 ───
     isOpen = false
     formData = { filename: '', content: '', path: '' }
@@ -46,7 +42,7 @@ class ModifyModal extends Vue {
 
     async handleConfirm() {
         await api.filerModify(this.formData.path, this.formData.content)
-        this.filerActions.loadFiles()
+        this.portal.loadFiles()
         this.isOpen = false
     }
 }

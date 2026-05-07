@@ -1,13 +1,12 @@
 <script lang="ts">
-import { Component, Inject, Vue, toNative } from 'vue-facing-decorator'
-
-import { APP_ACTIONS_KEY } from '@/store/state'
-import type { AppActions } from '@/store/state'
+import { Component, Vue, toNative } from 'vue-facing-decorator'
 
 import api from '@/service/api'
 import type { DockerImageInfo } from '@/service/types'
 
 import BaseModal from '@/component/modal.vue'
+
+import { usePortal } from '@/stores'
 
 @Component({
     expose: ['show'],
@@ -15,7 +14,7 @@ import BaseModal from '@/component/modal.vue'
     emits: ['success']
 })
 class ImageTagModal extends Vue {
-    @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
+    portal = usePortal()
 
     // ─── 数据属性 ───
     isOpen = false
@@ -35,7 +34,7 @@ class ImageTagModal extends Vue {
         this.modalLoading = true
         try {
             await api.dockerImageTag(this.tagImage.id, this.tagRepoTag.trim())
-            this.actions.showNotification('success', '镜像标签添加成功')
+            this.portal.showNotification('success', '镜像标签添加成功')
             this.isOpen = false
             this.$emit('success')
         } catch {}

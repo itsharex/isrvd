@@ -1,11 +1,10 @@
 <script lang="ts">
-import { Component, Inject, Vue, toNative } from 'vue-facing-decorator'
-
-import { APP_ACTIONS_KEY, APP_STATE_KEY } from '@/store/state'
-import type { AppActions, AppState } from '@/store/state'
+import { Component, Vue, toNative } from 'vue-facing-decorator'
 
 import api from '@/service/api'
 import type { ComposeDeployTarget, ComposeMarketplacePick } from '@/service/types'
+
+import { usePortal } from '@/stores'
 
 import ComposeEditor from './widget/compose-editor.vue'
 import MarketplaceModal from './widget/marketplace-modal.vue'
@@ -14,8 +13,7 @@ import MarketplaceModal from './widget/marketplace-modal.vue'
     components: { ComposeEditor, MarketplaceModal }
 })
 class ComposeDeploy extends Vue {
-    @Inject({ from: APP_STATE_KEY }) readonly state!: AppState
-    @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
+    portal = usePortal()
 
     // ─── 数据属性 ───
     loading = false
@@ -29,7 +27,7 @@ class ComposeDeploy extends Vue {
 
     // ─── 计算属性 ───
     get swarmAvailable(): boolean {
-        return this.actions.hasPerm('POST /api/compose/swarm/deploy')
+        return this.portal.hasPerm('POST /api/compose/swarm/deploy')
     }
 
     // 应用市场 modal 开关
@@ -104,7 +102,7 @@ class ComposeDeploy extends Vue {
                 })
             const created = res.payload?.items || []
             const label = this.target === 'swarm' ? '服务' : '容器'
-            this.actions.showNotification('success', `${projectName} 部署成功，已创建 ${created.length} 个${label}`)
+            this.portal.showNotification('success', `${projectName} 部署成功，已创建 ${created.length} 个${label}`)
 
             // 成功后跳转到对应列表页
             if (this.target === 'swarm') {
@@ -152,7 +150,7 @@ export default toNative(ComposeDeploy)
             <button type="button" :disabled="loading" class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors disabled:opacity-50" @click="resetForm()">
               <i class="fas fa-rotate-left"></i>清空
             </button>
-            <button v-if="actions.hasPerm('POST /api/compose/docker/deploy')" type="button" class="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-xs font-medium flex items-center gap-1.5 transition-colors" @click="openMarketplace()">
+            <button v-if="portal.hasPerm('POST /api/compose/docker/deploy')" type="button" class="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-xs font-medium flex items-center gap-1.5 transition-colors" @click="openMarketplace()">
               <i class="fas fa-store"></i>应用市场
             </button>
           </div>
@@ -171,7 +169,7 @@ export default toNative(ComposeDeploy)
             <button type="button" :disabled="loading" class="w-9 h-9 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 flex items-center justify-center transition-colors disabled:opacity-50" title="清空" @click="resetForm()">
               <i class="fas fa-rotate-left"></i>
             </button>
-            <button v-if="actions.hasPerm('POST /api/compose/docker/deploy')" type="button" class="w-9 h-9 rounded-lg bg-amber-500 hover:bg-amber-600 flex items-center justify-center text-white transition-colors" title="从应用市场选择" @click="openMarketplace()">
+            <button v-if="portal.hasPerm('POST /api/compose/docker/deploy')" type="button" class="w-9 h-9 rounded-lg bg-amber-500 hover:bg-amber-600 flex items-center justify-center text-white transition-colors" title="从应用市场选择" @click="openMarketplace()">
               <i class="fas fa-store"></i>
             </button>
           </div>

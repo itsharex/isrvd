@@ -1,15 +1,13 @@
 <script lang="ts">
-import { Component, Inject, Vue, toNative } from 'vue-facing-decorator'
-
-import { APP_STATE_KEY, APP_ACTIONS_KEY } from '@/store/state'
-import type { AppActions, AppState } from '@/store/state'
+import { Component, Vue, toNative } from 'vue-facing-decorator'
 
 import api from '@/service/api'
 
+import { usePortal } from '@/stores'
+
 @Component
 class Login extends Vue {
-    @Inject({ from: APP_STATE_KEY }) readonly state!: AppState
-    @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
+    portal = usePortal()
 
     // ─── 数据属性 ───
     loginForm = {
@@ -22,8 +20,8 @@ class Login extends Vue {
         const { payload } = await api.accountLogin(this.loginForm)
         if (!payload) return
 
-        this.actions.setAuth({ authMode: 'jwt', ...payload })
-        await this.actions.initialize()
+        this.portal.setAuth({ authMode: 'jwt', ...payload })
+        await this.portal.initialize()
         this.loginForm.username = ''
         this.loginForm.password = ''
     }
@@ -94,12 +92,12 @@ export default toNative(Login)
 
           <button 
             type="submit" 
-            :disabled="state.loading"
+            :disabled="portal.loading"
             class="btn-primary w-full py-3 text-base font-semibold mt-6"
           >
-            <i v-if="state.loading" class="fas fa-spinner fa-spin mr-2"></i>
+            <i v-if="portal.loading" class="fas fa-spinner fa-spin mr-2"></i>
             <i v-else class="fas fa-sign-in-alt mr-2"></i>
-            {{ state.loading ? '登录中...' : '登录' }}
+            {{ portal.loading ? '登录中...' : '登录' }}
           </button>
         </form>
       </div>

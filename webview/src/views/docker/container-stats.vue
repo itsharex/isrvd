@@ -2,15 +2,14 @@
 import { Chart, registerables } from 'chart.js'
 import type { ChartOptions, TooltipItem } from 'chart.js'
 import { markRaw, nextTick } from 'vue'
-import { Component, Inject, Ref, Vue, toNative } from 'vue-facing-decorator'
-
-import { APP_ACTIONS_KEY } from '@/store/state'
-import type { AppActions } from '@/store/state'
+import { Component, Ref, Vue, toNative } from 'vue-facing-decorator'
 
 import api from '@/service/api'
 import type { DockerContainerInfo, DockerContainerStats } from '@/service/types'
 
 import { formatFileSize, hexToRgba, POLL_INTERVAL } from '@/helper/utils'
+
+import { usePortal } from '@/stores'
 
 import ContainerNav from './widget/container-nav.vue'
 
@@ -25,7 +24,7 @@ type ChartCallbackContext = TooltipItem<'line'>
     components: { ContainerNav }
 } as Record<string, unknown>)
 class ContainerStats extends Vue {
-    @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
+    portal = usePortal()
 
     // ─── Refs ───
     @Ref readonly cpuRef!: HTMLCanvasElement

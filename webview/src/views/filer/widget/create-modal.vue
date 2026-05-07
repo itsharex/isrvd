@@ -1,24 +1,19 @@
 <script lang="ts">
-import { Component, Inject, Vue, toNative } from 'vue-facing-decorator'
-
-import { FILER_STATE_KEY, FILER_ACTIONS_KEY } from '@/store/filer'
-import type { FilerActions, FilerState } from '@/store/filer'
-import { APP_STATE_KEY } from '@/store/state'
-import type { AppState } from '@/store/state'
+import { Component, Vue, toNative } from 'vue-facing-decorator'
 
 import api from '@/service/api'
 
 import BaseModal from '@/component/modal.vue'
+
+import { usePortal } from '@/stores'
 
 @Component({
     expose: ['show'],
     components: { BaseModal }
 })
 class CreateModal extends Vue {
-    @Inject({ from: APP_STATE_KEY }) readonly appState!: AppState
-    @Inject({ from: FILER_STATE_KEY }) readonly filerState!: FilerState
-    @Inject({ from: FILER_ACTIONS_KEY }) readonly filerActions!: FilerActions
-
+    portal = usePortal()
+    get appState() { return this.portal }
     // ─── 数据属性 ───
     isOpen = false
     formData = { name: '', content: '' }
@@ -31,8 +26,8 @@ class CreateModal extends Vue {
 
     async handleConfirm() {
         if (!this.formData.name.trim()) return
-        await api.filerCreate(this.filerState.currentPath + '/' + this.formData.name, this.formData.content)
-        this.filerActions.loadFiles()
+        await api.filerCreate(this.portal.currentPath + '/' + this.formData.name, this.formData.content)
+        this.portal.loadFiles()
         this.isOpen = false
     }
 }

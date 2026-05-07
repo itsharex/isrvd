@@ -1,11 +1,10 @@
 <script lang="ts">
-import { Component, Inject, Ref, Vue, toNative } from 'vue-facing-decorator'
-
-import { APP_ACTIONS_KEY } from '@/store/state'
-import type { AppActions } from '@/store/state'
+import { Component, Ref, Vue, toNative } from 'vue-facing-decorator'
 
 import api from '@/service/api'
 import type { ApisixPluginConfig } from '@/service/types'
+
+import { usePortal } from '@/stores'
 
 import PluginConfigEditModal from './widget/plugin-config-edit-modal.vue'
 
@@ -13,7 +12,7 @@ import PluginConfigEditModal from './widget/plugin-config-edit-modal.vue'
     components: { PluginConfigEditModal }
 })
 class PluginConfigs extends Vue {
-    @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
+    portal = usePortal()
 
     @Ref readonly editModalRef!: InstanceType<typeof PluginConfigEditModal>
 
@@ -44,7 +43,7 @@ class PluginConfigs extends Vue {
         try {
             this.configs = this.sortConfigs((await api.apisixPluginConfigList()).payload || [])
         } catch {
-            this.actions.showNotification('error', '加载插件配置列表失败')
+            this.portal.showNotification('error', '加载插件配置列表失败')
         }
         this.loading = false
     }
@@ -76,7 +75,7 @@ class PluginConfigs extends Vue {
     deleteConfig(config: ApisixPluginConfig) {
         const id = config.id
         if (!id) return
-        this.actions.showConfirm({
+        this.portal.showConfirm({
             title: '删除插件配置',
             message: `确定要删除插件配置 <strong class="text-slate-900">${id}</strong> 吗？仍被路由引用时 APISIX 可能拒绝删除。`,
             icon: 'fa-trash',
@@ -85,7 +84,7 @@ class PluginConfigs extends Vue {
             danger: true,
             onConfirm: async () => {
                 await api.apisixPluginConfigDelete(id)
-                this.actions.showNotification('success', '删除成功')
+                this.portal.showNotification('success', '删除成功')
                 this.loadConfigs()
             }
         })
@@ -121,7 +120,7 @@ export default toNative(PluginConfigs)
             <button class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors" @click="loadConfigs()">
               <i class="fas fa-rotate"></i>刷新
             </button>
-            <button v-if="actions.hasPerm('POST /api/apisix/plugin-config')" class="px-3 py-1.5 rounded-lg bg-rose-500 hover:bg-rose-600 text-white text-xs font-medium flex items-center gap-1.5 transition-colors" @click="openCreateModal()">
+            <button v-if="portal.hasPerm('POST /api/apisix/plugin-config')" class="px-3 py-1.5 rounded-lg bg-rose-500 hover:bg-rose-600 text-white text-xs font-medium flex items-center gap-1.5 transition-colors" @click="openCreateModal()">
               <i class="fas fa-plus"></i>创建
             </button>
           </div>
@@ -141,7 +140,7 @@ export default toNative(PluginConfigs)
             <button class="w-9 h-9 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-600 transition-colors" title="刷新" @click="loadConfigs()">
               <i class="fas fa-rotate text-sm"></i>
             </button>
-            <button v-if="actions.hasPerm('POST /api/apisix/plugin-config')" class="w-9 h-9 rounded-lg bg-rose-500 hover:bg-rose-600 flex items-center justify-center text-white transition-colors" title="创建" @click="openCreateModal()">
+            <button v-if="portal.hasPerm('POST /api/apisix/plugin-config')" class="w-9 h-9 rounded-lg bg-rose-500 hover:bg-rose-600 flex items-center justify-center text-white transition-colors" title="创建" @click="openCreateModal()">
               <i class="fas fa-plus text-sm"></i>
             </button>
           </div>
@@ -201,10 +200,10 @@ export default toNative(PluginConfigs)
                 <td class="px-4 py-3 whitespace-nowrap text-sm text-slate-600">{{ formatTs(config.create_time) }}</td>
                 <td class="px-4 py-3">
                   <div class="flex justify-end items-center gap-1">
-                    <button v-if="actions.hasPerm('PUT /api/apisix/plugin-config/:id')" class="btn-icon text-rose-600 hover:bg-rose-50" title="编辑" @click="openEditModal(config)">
+                    <button v-if="portal.hasPerm('PUT /api/apisix/plugin-config/:id')" class="btn-icon text-rose-600 hover:bg-rose-50" title="编辑" @click="openEditModal(config)">
                       <i class="fas fa-pen text-xs"></i>
                     </button>
-                    <button v-if="actions.hasPerm('DELETE /api/apisix/plugin-config/:id')" class="btn-icon text-red-600 hover:bg-red-50" title="删除" @click="deleteConfig(config)">
+                    <button v-if="portal.hasPerm('DELETE /api/apisix/plugin-config/:id')" class="btn-icon text-red-600 hover:bg-red-50" title="删除" @click="deleteConfig(config)">
                       <i class="fas fa-trash text-xs"></i>
                     </button>
                   </div>
@@ -245,10 +244,10 @@ export default toNative(PluginConfigs)
             </div>
 
             <div class="flex flex-wrap gap-1.5 pt-2 border-t border-slate-100">
-              <button v-if="actions.hasPerm('PUT /api/apisix/plugin-config/:id')" class="btn-icon text-rose-600 hover:bg-rose-50" title="编辑" @click="openEditModal(config)">
+              <button v-if="portal.hasPerm('PUT /api/apisix/plugin-config/:id')" class="btn-icon text-rose-600 hover:bg-rose-50" title="编辑" @click="openEditModal(config)">
                 <i class="fas fa-pen text-xs"></i><span class="text-xs ml-1">编辑</span>
               </button>
-              <button v-if="actions.hasPerm('DELETE /api/apisix/plugin-config/:id')" class="btn-icon text-red-600 hover:bg-red-50" title="删除" @click="deleteConfig(config)">
+              <button v-if="portal.hasPerm('DELETE /api/apisix/plugin-config/:id')" class="btn-icon text-red-600 hover:bg-red-50" title="删除" @click="deleteConfig(config)">
                 <i class="fas fa-trash text-xs"></i><span class="text-xs ml-1">删除</span>
               </button>
             </div>

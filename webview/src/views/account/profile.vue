@@ -1,16 +1,14 @@
 <script lang="ts">
-import { Component, Inject, Vue, toNative } from 'vue-facing-decorator'
-
-import { APP_ACTIONS_KEY, APP_STATE_KEY } from '@/store/state'
-import type { AppActions, AppState } from '@/store/state'
+import { Component, Vue, toNative } from 'vue-facing-decorator'
 
 import api from '@/service/api'
 import type { ApiTokenResult } from '@/service/types'
 
+import { usePortal } from '@/stores'
+
 @Component
 class Profile extends Vue {
-    @Inject({ from: APP_STATE_KEY }) readonly state!: AppState
-    @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
+    portal = usePortal()
 
     // ─── 数据属性 ───
     activeTab: 'password' | 'token' = 'password'
@@ -44,15 +42,15 @@ class Profile extends Vue {
     // ─── 方法 ───
     async handleChangePassword() {
         if (!this.passwordForm.newPassword) {
-            this.actions.showNotification('error', '请输入新密码')
+            this.portal.showNotification('error', '请输入新密码')
             return
         }
         if (this.passwordForm.newPassword !== this.passwordForm.confirmPassword) {
-            this.actions.showNotification('error', '两次输入的密码不一致')
+            this.portal.showNotification('error', '两次输入的密码不一致')
             return
         }
         if (this.passwordForm.newPassword.length < 6) {
-            this.actions.showNotification('error', '密码长度至少 6 位')
+            this.portal.showNotification('error', '密码长度至少 6 位')
             return
         }
 
@@ -62,18 +60,18 @@ class Profile extends Vue {
                 oldPassword: this.passwordForm.oldPassword,
                 newPassword: this.passwordForm.newPassword
             })
-            this.actions.showNotification('success', '密码修改成功')
+            this.portal.showNotification('success', '密码修改成功')
             this.passwordForm = { oldPassword: '', newPassword: '', confirmPassword: '' }
         } catch (e: unknown) {
             const err = e as { response?: { data?: { message?: string } } }
-            this.actions.showNotification('error', err.response?.data?.message || '密码修改失败')
+            this.portal.showNotification('error', err.response?.data?.message || '密码修改失败')
         }
         this.passwordLoading = false
     }
 
     async handleCreateToken() {
         if (!this.tokenForm.name.trim()) {
-            this.actions.showNotification('error', '请输入令牌名称')
+            this.portal.showNotification('error', '请输入令牌名称')
             return
         }
         this.tokenLoading = true
@@ -84,18 +82,18 @@ class Profile extends Vue {
             })
             this.newToken = res.payload ?? null
             this.tokenForm.name = ''
-            this.actions.showNotification('success', '令牌创建成功')
+            this.portal.showNotification('success', '令牌创建成功')
         } catch {
-            this.actions.showNotification('error', '令牌创建失败')
+            this.portal.showNotification('error', '令牌创建失败')
         }
         this.tokenLoading = false
     }
 
     copyToken(token: string) {
         navigator.clipboard.writeText(token).then(() => {
-            this.actions.showNotification('success', '令牌已复制到剪贴板')
+            this.portal.showNotification('success', '令牌已复制到剪贴板')
         }).catch(() => {
-            this.actions.showNotification('error', '复制失败，请手动复制')
+            this.portal.showNotification('error', '复制失败，请手动复制')
         })
     }
 
@@ -204,7 +202,7 @@ export default toNative(Profile)
       </div>
 
       <!-- API 令牌 -->
-      <div v-else-if="actions.hasPerm('POST /api/account/token')" class="p-4 md:p-6">
+      <div v-else-if="portal.hasPerm('POST /api/account/token')" class="p-4 md:p-6">
         <!-- 新令牌提示 -->
         <div v-if="newToken" class="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
           <div class="flex items-start gap-3">

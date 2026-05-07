@@ -1,11 +1,10 @@
 <script lang="ts">
-import { Component, Inject, Vue, toNative } from 'vue-facing-decorator'
-
-import { APP_ACTIONS_KEY } from '@/store/state'
-import type { AppActions } from '@/store/state'
+import { Component, Vue, toNative } from 'vue-facing-decorator'
 
 import api from '@/service/api'
 import type { DockerContainerInfo } from '@/service/types'
+
+import { usePortal } from '@/stores'
 
 import ContainerNav from './widget/container-nav.vue'
 
@@ -13,7 +12,7 @@ import ContainerNav from './widget/container-nav.vue'
     components: { ContainerNav }
 })
 class ContainerLogs extends Vue {
-    @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
+    portal = usePortal()
 
     // ─── 数据属性 ───
     container: DockerContainerInfo | null = null

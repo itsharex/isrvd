@@ -1,14 +1,13 @@
 <script lang="ts">
-import { Component, Inject, Ref, Vue, toNative } from 'vue-facing-decorator'
-
-import { APP_STATE_KEY } from '@/store/state'
-import type { AppState } from '@/store/state'
+import { Component, Ref, Vue, toNative } from 'vue-facing-decorator'
 
 import * as ShellTerminal from '@/helper/shell'
 
+import { usePortal } from '@/stores'
+
 @Component
 class Shell extends Vue {
-    @Inject({ from: APP_STATE_KEY }) readonly state!: AppState
+    portal = usePortal()
 
     // ─── Refs ───
     @Ref readonly xtermRef!: HTMLDivElement
@@ -21,7 +20,7 @@ class Shell extends Vue {
     handleConnect() {
         if (this.connected) return
         this.connected = true
-        ShellTerminal.create(this.xtermRef, this.state.token || '', this.shellType)
+        ShellTerminal.create(this.xtermRef, this.portal.token || '', this.shellType)
     }
 
     handleDisconnect() {

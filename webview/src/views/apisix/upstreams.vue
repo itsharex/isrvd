@@ -1,13 +1,12 @@
 <script lang="ts">
-import { Component, Inject, Ref, Vue, toNative } from 'vue-facing-decorator'
-
-import { APP_ACTIONS_KEY } from '@/store/state'
-import type { AppActions } from '@/store/state'
+import { Component, Ref, Vue, toNative } from 'vue-facing-decorator'
 
 import api from '@/service/api'
 import type { ApisixUpstream } from '@/service/types'
 
 import { normalizeUpstreamNodes } from '@/helper/apisix'
+
+import { usePortal } from '@/stores'
 
 import UpstreamEditModal from './widget/upstream-edit-modal.vue'
 
@@ -15,7 +14,7 @@ import UpstreamEditModal from './widget/upstream-edit-modal.vue'
     components: { UpstreamEditModal }
 })
 class Upstreams extends Vue {
-    @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
+    portal = usePortal()
 
     @Ref readonly editModalRef!: InstanceType<typeof UpstreamEditModal>
 
@@ -48,7 +47,7 @@ class Upstreams extends Vue {
         try {
             this.upstreams = this.sortUpstreams((await api.apisixUpstreamList()).payload || [])
         } catch {
-            this.actions.showNotification('error', '加载上游列表失败')
+            this.portal.showNotification('error', '加载上游列表失败')
         }
         this.loading = false
     }
@@ -89,7 +88,7 @@ class Upstreams extends Vue {
     deleteUpstream(upstream: ApisixUpstream) {
         const id = upstream.id
         if (!id) return
-        this.actions.showConfirm({
+        this.portal.showConfirm({
             title: '删除上游',
             message: `确定要删除上游 <strong class="text-slate-900">${upstream.name || id}</strong> 吗？仍被路由引用时 APISIX 可能拒绝删除。`,
             icon: 'fa-trash',
@@ -98,7 +97,7 @@ class Upstreams extends Vue {
             danger: true,
             onConfirm: async () => {
                 await api.apisixUpstreamDelete(id)
-                this.actions.showNotification('success', '删除成功')
+                this.portal.showNotification('success', '删除成功')
                 this.loadUpstreams()
             }
         })
@@ -134,7 +133,7 @@ export default toNative(Upstreams)
             <button class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors" @click="loadUpstreams()">
               <i class="fas fa-rotate"></i>刷新
             </button>
-            <button v-if="actions.hasPerm('POST /api/apisix/upstream')" class="px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-medium flex items-center gap-1.5 transition-colors" @click="openCreateModal()">
+            <button v-if="portal.hasPerm('POST /api/apisix/upstream')" class="px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-medium flex items-center gap-1.5 transition-colors" @click="openCreateModal()">
               <i class="fas fa-plus"></i>创建
             </button>
           </div>
@@ -154,7 +153,7 @@ export default toNative(Upstreams)
             <button class="w-9 h-9 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-600 transition-colors" title="刷新" @click="loadUpstreams()">
               <i class="fas fa-rotate text-sm"></i>
             </button>
-            <button v-if="actions.hasPerm('POST /api/apisix/upstream')" class="w-9 h-9 rounded-lg bg-emerald-500 hover:bg-emerald-600 flex items-center justify-center text-white transition-colors" title="创建" @click="openCreateModal()">
+            <button v-if="portal.hasPerm('POST /api/apisix/upstream')" class="w-9 h-9 rounded-lg bg-emerald-500 hover:bg-emerald-600 flex items-center justify-center text-white transition-colors" title="创建" @click="openCreateModal()">
               <i class="fas fa-plus text-sm"></i>
             </button>
           </div>
@@ -214,10 +213,10 @@ export default toNative(Upstreams)
                 <td class="px-4 py-3 whitespace-nowrap text-sm text-slate-600">{{ formatTs(upstream.create_time) }}</td>
                 <td class="px-4 py-3">
                   <div class="flex justify-end items-center gap-1">
-                    <button v-if="actions.hasPerm('PUT /api/apisix/upstream/:id')" class="btn-icon text-emerald-600 hover:bg-emerald-50" title="编辑" @click="openEditModal(upstream)">
+                    <button v-if="portal.hasPerm('PUT /api/apisix/upstream/:id')" class="btn-icon text-emerald-600 hover:bg-emerald-50" title="编辑" @click="openEditModal(upstream)">
                       <i class="fas fa-pen text-xs"></i>
                     </button>
-                    <button v-if="actions.hasPerm('DELETE /api/apisix/upstream/:id')" class="btn-icon text-red-600 hover:bg-red-50" title="删除" @click="deleteUpstream(upstream)">
+                    <button v-if="portal.hasPerm('DELETE /api/apisix/upstream/:id')" class="btn-icon text-red-600 hover:bg-red-50" title="删除" @click="deleteUpstream(upstream)">
                       <i class="fas fa-trash text-xs"></i>
                     </button>
                   </div>
@@ -263,10 +262,10 @@ export default toNative(Upstreams)
             </div>
 
             <div class="flex flex-wrap gap-1.5 pt-2 border-t border-slate-100">
-              <button v-if="actions.hasPerm('PUT /api/apisix/upstream/:id')" class="btn-icon text-emerald-600 hover:bg-emerald-50" title="编辑" @click="openEditModal(upstream)">
+              <button v-if="portal.hasPerm('PUT /api/apisix/upstream/:id')" class="btn-icon text-emerald-600 hover:bg-emerald-50" title="编辑" @click="openEditModal(upstream)">
                 <i class="fas fa-pen text-xs"></i><span class="text-xs ml-1">编辑</span>
               </button>
-              <button v-if="actions.hasPerm('DELETE /api/apisix/upstream/:id')" class="btn-icon text-red-600 hover:bg-red-50" title="删除" @click="deleteUpstream(upstream)">
+              <button v-if="portal.hasPerm('DELETE /api/apisix/upstream/:id')" class="btn-icon text-red-600 hover:bg-red-50" title="删除" @click="deleteUpstream(upstream)">
                 <i class="fas fa-trash text-xs"></i><span class="text-xs ml-1">删除</span>
               </button>
             </div>

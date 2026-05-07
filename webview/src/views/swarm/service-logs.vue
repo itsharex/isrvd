@@ -1,14 +1,13 @@
 <script lang="ts">
-import { Component, Inject, Vue, toNative } from 'vue-facing-decorator'
-
-import { APP_ACTIONS_KEY } from '@/store/state'
-import type { AppActions } from '@/store/state'
+import { Component, Vue, toNative } from 'vue-facing-decorator'
 
 import api from '@/service/api'
 
+import { usePortal } from '@/stores'
+
 @Component
 class ServiceLogs extends Vue {
-    @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
+    portal = usePortal()
 
     // ─── 数据属性 ───
     serviceName = ''
@@ -36,7 +35,7 @@ class ServiceLogs extends Vue {
             this.logsContent = res.payload?.logs || []
         } catch {
             this.logsContent = []
-            this.actions.showNotification('error', '获取日志失败')
+            this.portal.showNotification('error', '获取日志失败')
         }
         this.logsLoading = false
     }
@@ -76,10 +75,10 @@ export default toNative(ServiceLogs)
           </div>
           <div class="flex items-center gap-2">
             <div class="flex gap-1 bg-slate-100 p-1 rounded-lg">
-              <button v-if="actions.hasPerm('GET /api/swarm/service/:id')" :class="['px-3 py-1 text-xs font-medium rounded-md transition-all duration-200 flex items-center gap-1.5', activeTab() === 'swarm-service-info' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700']" @click="switchTab('swarm-service-info')">
+              <button v-if="portal.hasPerm('GET /api/swarm/service/:id')" :class="['px-3 py-1 text-xs font-medium rounded-md transition-all duration-200 flex items-center gap-1.5', activeTab() === 'swarm-service-info' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700']" @click="switchTab('swarm-service-info')">
                 <i class="fas fa-circle-info"></i><span>详情</span>
               </button>
-              <button v-if="actions.hasPerm('GET /api/swarm/service/:id/logs')" :class="['px-3 py-1 text-xs font-medium rounded-md transition-all duration-200 flex items-center gap-1.5', activeTab() === 'swarm-service-logs' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700']" @click="switchTab('swarm-service-logs')">
+              <button v-if="portal.hasPerm('GET /api/swarm/service/:id/logs')" :class="['px-3 py-1 text-xs font-medium rounded-md transition-all duration-200 flex items-center gap-1.5', activeTab() === 'swarm-service-logs' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700']" @click="switchTab('swarm-service-logs')">
                 <i class="fas fa-file-lines"></i><span>日志</span>
               </button>
             </div>
@@ -105,10 +104,10 @@ export default toNative(ServiceLogs)
             </button>
           </div>
           <div class="flex justify-center gap-1 bg-slate-100 p-1 rounded-lg">
-            <button v-if="actions.hasPerm('GET /api/swarm/service/:id')" :class="['px-3 py-1 text-xs font-medium rounded-md transition-all duration-200 flex items-center gap-1.5', activeTab() === 'swarm-service-info' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700']" @click="switchTab('swarm-service-info')">
+            <button v-if="portal.hasPerm('GET /api/swarm/service/:id')" :class="['px-3 py-1 text-xs font-medium rounded-md transition-all duration-200 flex items-center gap-1.5', activeTab() === 'swarm-service-info' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700']" @click="switchTab('swarm-service-info')">
               <i class="fas fa-circle-info"></i><span>详情</span>
             </button>
-            <button v-if="actions.hasPerm('GET /api/swarm/service/:id/logs')" :class="['px-3 py-1 text-xs font-medium rounded-md transition-all duration-200 flex items-center gap-1.5', activeTab() === 'swarm-service-logs' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700']" @click="switchTab('swarm-service-logs')">
+            <button v-if="portal.hasPerm('GET /api/swarm/service/:id/logs')" :class="['px-3 py-1 text-xs font-medium rounded-md transition-all duration-200 flex items-center gap-1.5', activeTab() === 'swarm-service-logs' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700']" @click="switchTab('swarm-service-logs')">
               <i class="fas fa-file-lines"></i><span>日志</span>
             </button>
           </div>

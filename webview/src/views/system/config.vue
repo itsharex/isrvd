@@ -1,17 +1,16 @@
 <script lang="ts">
-import { Component, Inject, Vue, toNative } from 'vue-facing-decorator'
-
-import { APP_ACTIONS_KEY } from '@/store/state'
-import type { AppActions } from '@/store/state'
+import { Component, Vue, toNative } from 'vue-facing-decorator'
 
 import api from '@/service/api'
 import type { AllConfig, ServerConfig, AgentConfig, ApisixConfig, DockerConfig, MarketplaceConfig, LinkConfig } from '@/service/types'
 
 import IconSelect from '@/component/icon-select.vue'
 
+import { usePortal } from '@/stores'
+
 @Component({ components: { IconSelect } })
 class Config extends Vue {
-  @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
+  portal = usePortal()
 
   // ─── 数据属性 ───
   loading = false
@@ -38,10 +37,10 @@ class Config extends Vue {
       this.marketplace = { ...(payload.marketplace || { url: '' }) }
       this.links = payload.links ? payload.links.map(l => ({ ...l })) : []
       if (reload) {
-        this.actions.showNotification('success', '配置已从文件重新加载')
+        this.portal.showNotification('success', '配置已从文件重新加载')
       }
     } catch {
-      this.actions.showNotification('error', reload ? '重载配置失败' : '加载配置失败')
+      this.portal.showNotification('error', reload ? '重载配置失败' : '加载配置失败')
     }
     this.loading = false
   }
@@ -57,7 +56,7 @@ class Config extends Vue {
         marketplace: this.marketplace,
         links: this.links,
       })
-      this.actions.showNotification('success', '全部配置已保存，部分项需重启生效')
+      this.portal.showNotification('success', '全部配置已保存，部分项需重启生效')
       this.loadConfig()
     } catch { }
     this.saving = false

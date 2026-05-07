@@ -1,12 +1,12 @@
 <script lang="ts">
-import { Component, Inject, Ref, Vue, toNative } from 'vue-facing-decorator'
-
-import { APP_STATE_KEY } from '@/store/state'
+import { Component, Ref, Vue, toNative } from 'vue-facing-decorator'
 
 import api from '@/service/api'
 import type { SystemStat } from '@/service/types'
 
 import { POLL_INTERVAL } from '@/helper/utils'
+
+import { usePortal } from '@/stores'
 
 import SystemCpuMem from './system_cpu_mem.vue'
 import SystemDisk from './system_disk.vue'
@@ -19,7 +19,7 @@ import SystemNetwork from './system_network.vue'
     components: { SystemInfo, SystemCpuMem, SystemGpu, SystemDisk, SystemNetwork, SystemGo }
 })
 class SystemOverview extends Vue {
-    @Inject({ from: APP_STATE_KEY }) readonly state!: { token: string | null }
+    portal = usePortal()
     loading = false
     ready = false
 
@@ -54,7 +54,7 @@ class SystemOverview extends Vue {
     }
 
     async poll() {
-        if (!this.state.token) {
+        if (!this.portal.token) {
             this.stopPoll()
             return
         }

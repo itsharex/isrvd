@@ -1,24 +1,19 @@
 <script lang="ts">
-import { Component, Inject, Ref, Vue, toNative } from 'vue-facing-decorator'
-
-import { FILER_STATE_KEY, FILER_ACTIONS_KEY } from '@/store/filer'
-import type { FilerActions, FilerState } from '@/store/filer'
-import { APP_STATE_KEY } from '@/store/state'
-import type { AppState } from '@/store/state'
+import { Component, Ref, Vue, toNative } from 'vue-facing-decorator'
 
 import api from '@/service/api'
 
 import BaseModal from '@/component/modal.vue'
+
+import { usePortal } from '@/stores'
 
 @Component({
     expose: ['show'],
     components: { BaseModal }
 })
 class UploadModal extends Vue {
-    @Inject({ from: APP_STATE_KEY }) readonly appState!: AppState
-    @Inject({ from: FILER_STATE_KEY }) readonly filerState!: FilerState
-    @Inject({ from: FILER_ACTIONS_KEY }) readonly filerActions!: FilerActions
-
+    portal = usePortal()
+    get appState() { return this.portal }
     @Ref readonly fileInput!: HTMLInputElement
 
     isOpen = false
@@ -58,7 +53,7 @@ class UploadModal extends Vue {
         for (let i = 0; i < this.uploadFiles.length; i++) {
             const formData = new FormData()
             formData.append('file', this.uploadFiles[i])
-            formData.append('path', this.filerState.currentPath)
+            formData.append('path', this.portal.currentPath)
             await api.filerUpload(formData, {
                 onUploadProgress: (e) => {
                     this.currentFileProgress = e.total ? Math.round((e.loaded / e.total) * 100) : 0
@@ -67,7 +62,7 @@ class UploadModal extends Vue {
             this.uploadProgress++
             this.currentFileProgress = 0
         }
-        this.filerActions.loadFiles()
+        this.portal.loadFiles()
         this.uploadFiles = []
         this.uploadProgress = 0
         if (this.fileInput) this.fileInput.value = ''

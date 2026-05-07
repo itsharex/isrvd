@@ -1,11 +1,10 @@
 <script lang="ts">
-import { Component, Inject, Ref, Vue, toNative } from 'vue-facing-decorator'
-
-import { APP_ACTIONS_KEY } from '@/store/state'
-import type { AppActions } from '@/store/state'
+import { Component, Ref, Vue, toNative } from 'vue-facing-decorator'
 
 import api from '@/service/api'
 import type { DockerRegistryInfo } from '@/service/types'
+
+import { usePortal } from '@/stores'
 
 import RegistryEditModal from './widget/registry-edit-modal.vue'
 
@@ -13,8 +12,7 @@ import RegistryEditModal from './widget/registry-edit-modal.vue'
     components: { RegistryEditModal }
 })
 class Registries extends Vue {
-    @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
-
+    portal = usePortal()
     @Ref readonly editModalRef!: InstanceType<typeof RegistryEditModal>
 
     // ─── 数据属性 ───
@@ -39,7 +37,7 @@ class Registries extends Vue {
             const res = await api.dockerRegistryList()
             this.registries = res.payload || []
         } catch {
-            this.actions.showNotification('error', '加载仓库列表失败')
+            this.portal.showNotification('error', '加载仓库列表失败')
         }
         this.loading = false
     }
@@ -53,7 +51,7 @@ class Registries extends Vue {
     }
 
     handleDelete(reg: DockerRegistryInfo) {
-        this.actions.showConfirm({
+        this.portal.showConfirm({
             title: '删除镜像仓库',
             message: `确定要删除仓库 <strong class="text-slate-900">${reg.name}</strong> (${reg.url}) 吗？`,
             icon: 'fa-trash',
@@ -63,7 +61,7 @@ class Registries extends Vue {
             onConfirm: async () => {
                 try {
                     await api.dockerRegistryDelete(reg.url)
-                    this.actions.showNotification('success', '仓库删除成功')
+                    this.portal.showNotification('success', '仓库删除成功')
                     this.loadRegistries()
                 } catch {}
             }
@@ -100,7 +98,7 @@ export default toNative(Registries)
             <button class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors" @click="loadRegistries()">
               <i class="fas fa-rotate"></i>刷新
             </button>
-            <button v-if="actions.hasPerm('POST /api/docker/registry')" class="px-3 py-1.5 rounded-lg bg-purple-500 hover:bg-purple-600 text-white text-xs font-medium flex items-center gap-1.5 transition-colors" @click="openAdd">
+            <button v-if="portal.hasPerm('POST /api/docker/registry')" class="px-3 py-1.5 rounded-lg bg-purple-500 hover:bg-purple-600 text-white text-xs font-medium flex items-center gap-1.5 transition-colors" @click="openAdd">
               <i class="fas fa-plus"></i>添加
             </button>
           </div>
@@ -120,7 +118,7 @@ export default toNative(Registries)
             <button class="w-9 h-9 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-600 transition-colors" title="刷新" @click="loadRegistries()">
               <i class="fas fa-rotate text-sm"></i>
             </button>
-            <button v-if="actions.hasPerm('POST /api/docker/registry')" class="w-9 h-9 rounded-lg bg-purple-500 hover:bg-purple-600 flex items-center justify-center text-white transition-colors" title="添加" @click="openAdd">
+            <button v-if="portal.hasPerm('POST /api/docker/registry')" class="w-9 h-9 rounded-lg bg-purple-500 hover:bg-purple-600 flex items-center justify-center text-white transition-colors" title="添加" @click="openAdd">
               <i class="fas fa-plus text-sm"></i>
             </button>
           </div>
@@ -199,10 +197,10 @@ export default toNative(Registries)
                 </td>
                 <td class="px-4 py-3">
                   <div class="flex justify-end items-center gap-1">
-                    <button v-if="actions.hasPerm('PUT /api/docker/registry')" class="btn-icon text-blue-600 hover:bg-blue-50" title="编辑" @click="openEdit(reg)">
+                    <button v-if="portal.hasPerm('PUT /api/docker/registry')" class="btn-icon text-blue-600 hover:bg-blue-50" title="编辑" @click="openEdit(reg)">
                       <i class="fas fa-pen text-xs"></i>
                     </button>
-                    <button v-if="actions.hasPerm('DELETE /api/docker/registry')" class="btn-icon text-red-600 hover:bg-red-50" title="删除" @click="handleDelete(reg)">
+                    <button v-if="portal.hasPerm('DELETE /api/docker/registry')" class="btn-icon text-red-600 hover:bg-red-50" title="删除" @click="handleDelete(reg)">
                       <i class="fas fa-trash text-xs"></i>
                     </button>
                   </div>
@@ -274,10 +272,10 @@ export default toNative(Registries)
 
             <!-- 底部：操作按钮 -->
             <div class="flex flex-wrap gap-1.5 pt-2 border-t border-slate-100">
-              <button v-if="actions.hasPerm('PUT /api/docker/registry')" class="btn-icon text-blue-600 hover:bg-blue-50" title="编辑" @click="openEdit(reg)">
+              <button v-if="portal.hasPerm('PUT /api/docker/registry')" class="btn-icon text-blue-600 hover:bg-blue-50" title="编辑" @click="openEdit(reg)">
                 <i class="fas fa-pen text-xs"></i><span class="text-xs ml-1">编辑</span>
               </button>
-              <button v-if="actions.hasPerm('DELETE /api/docker/registry')" class="btn-icon text-red-600 hover:bg-red-50" title="删除" @click="handleDelete(reg)">
+              <button v-if="portal.hasPerm('DELETE /api/docker/registry')" class="btn-icon text-red-600 hover:bg-red-50" title="删除" @click="handleDelete(reg)">
                 <i class="fas fa-trash text-xs"></i><span class="text-xs ml-1">删除</span>
               </button>
             </div>

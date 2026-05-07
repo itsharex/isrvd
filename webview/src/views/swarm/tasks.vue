@@ -1,17 +1,16 @@
 <script lang="ts">
-import { Component, Inject, Vue, toNative } from 'vue-facing-decorator'
-
-import { APP_ACTIONS_KEY } from '@/store/state'
-import type { AppActions } from '@/store/state'
+import { Component, Vue, toNative } from 'vue-facing-decorator'
 
 import api from '@/service/api'
 import type { SwarmTask, SwarmServiceInfo } from '@/service/types'
 
 import { formatTime } from '@/helper/utils'
 
+import { usePortal } from '@/stores'
+
 @Component
 class Tasks extends Vue {
-    @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
+    portal = usePortal()
 
     // ─── 数据属性 ───
     tasks: SwarmTask[] = []
@@ -40,7 +39,7 @@ class Tasks extends Vue {
             const res = await api.swarmServiceList()
             this.services = res.payload || []
         } catch {
-            this.actions.showNotification('error', '获取服务列表失败')
+            this.portal.showNotification('error', '获取服务列表失败')
         }
     }
 
@@ -50,7 +49,7 @@ class Tasks extends Vue {
             const res = await api.swarmTaskList()
             this.tasks = res.payload || []
         } catch {
-            this.actions.showNotification('error', '获取任务列表失败')
+            this.portal.showNotification('error', '获取任务列表失败')
         }
         this.tasksLoading = false
     }

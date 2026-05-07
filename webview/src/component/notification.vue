@@ -1,13 +1,11 @@
 <script lang="ts">
-import { Component, Inject, Vue, toNative } from 'vue-facing-decorator'
+import { Component, Vue, toNative } from 'vue-facing-decorator'
 
-import { APP_STATE_KEY, APP_ACTIONS_KEY } from '@/store/state'
-import type { AppActions, AppState } from '@/store/state'
+import { usePortal } from '@/stores'
 
 @Component
 class NotificationManager extends Vue {
-    @Inject({ from: APP_STATE_KEY }) readonly state!: AppState
-    @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
+    portal = usePortal()
 
     // ─── 方法 ───
     notificationStyle(type: string) {
@@ -26,7 +24,7 @@ export default toNative(NotificationManager)
 
 <template>
   <Teleport to="body">
-    <div v-if="state.notifications.length" class="fixed top-6 right-6 z-[9999] space-y-3">
+    <div v-if="portal.notifications.length" class="fixed top-6 right-6 z-[9999] space-y-3">
       <TransitionGroup
         enter-active-class="transition duration-300 ease-out"
         enter-from-class="opacity-0 translate-x-4"
@@ -36,7 +34,7 @@ export default toNative(NotificationManager)
         leave-to-class="opacity-0 translate-x-4"
       >
         <div 
-          v-for="item in state.notifications" 
+          v-for="item in portal.notifications" 
           :key="item.id" 
           :class="['flex items-center px-5 py-4 rounded-2xl min-w-80 animate-slide-down', notificationStyle(item.type)]"
         >
@@ -47,7 +45,7 @@ export default toNative(NotificationManager)
           <button 
             type="button" 
             class="ml-4 w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/20 transition-colors"
-            @click="actions.clearNotification(item.id)"
+            @click="portal.clearNotification(item.id)"
           >
             <i class="fas fa-times"></i>
           </button>

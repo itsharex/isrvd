@@ -1,17 +1,16 @@
 <script lang="ts">
-import { Component, Inject, Vue, toNative } from 'vue-facing-decorator'
-
-import { APP_ACTIONS_KEY } from '@/store/state'
-import type { AppActions } from '@/store/state'
+import { Component, Vue, toNative } from 'vue-facing-decorator'
 
 import api from '@/service/api'
 import type { SwarmNodeInspect } from '@/service/types'
 
 import { formatFileSize, formatTime } from '@/helper/utils'
 
+import { usePortal } from '@/stores'
+
 @Component
 class NodeDetail extends Vue {
-    @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
+    portal = usePortal()
 
     // ─── 数据属性 ───
     nodeData: SwarmNodeInspect | null = null
@@ -43,7 +42,7 @@ class NodeDetail extends Vue {
             const res = await api.swarmNode(this.nodeId)
             this.nodeData = res.payload ?? null
         } catch {
-            this.actions.showNotification('error', '获取节点详情失败')
+            this.portal.showNotification('error', '获取节点详情失败')
         }
         this.loading = false
     }

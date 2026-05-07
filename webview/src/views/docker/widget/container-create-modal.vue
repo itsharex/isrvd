@@ -1,14 +1,13 @@
 <script lang="ts">
 import * as yaml from 'js-yaml'
-import { Component, Inject, Vue, toNative } from 'vue-facing-decorator'
-
-import { APP_ACTIONS_KEY } from '@/store/state'
-import type { AppActions } from '@/store/state'
+import { Component, Vue, toNative } from 'vue-facing-decorator'
 
 import api from '@/service/api'
 import type { DockerImageInfo, DockerNetworkInfo } from '@/service/types'
 
 import BaseModal from '@/component/modal.vue'
+
+import { usePortal } from '@/stores'
 
 import CapSelect from './cap-select.vue'
 import ImageSelect from './image-select.vue'
@@ -19,7 +18,7 @@ import ImageSelect from './image-select.vue'
     emits: ['success']
 })
 class ContainerCreateModal extends Vue {
-    @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
+    portal = usePortal()
 
     // ─── 数据属性 ───
     isOpen = false
@@ -141,7 +140,7 @@ class ContainerCreateModal extends Vue {
     async handleConfirm() {
         const projectName = this.formData.name.trim()
         if (!projectName) {
-            this.actions.showNotification('error', '请填写容器名称')
+            this.portal.showNotification('error', '请填写容器名称')
             return
         }
 
@@ -151,7 +150,7 @@ class ContainerCreateModal extends Vue {
         this.modalLoading = true
         try {
             await api.composeDockerDeploy({ content, projectName, target: 'docker' })
-            this.actions.showNotification('success', '容器创建成功')
+            this.portal.showNotification('success', '容器创建成功')
             this.isOpen = false
             this.$emit('success')
         } catch {}

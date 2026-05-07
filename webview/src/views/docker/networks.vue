@@ -1,11 +1,10 @@
 <script lang="ts">
-import { Component, Inject, Ref, Vue, toNative } from 'vue-facing-decorator'
-
-import { APP_ACTIONS_KEY } from '@/store/state'
-import type { AppActions } from '@/store/state'
+import { Component, Ref, Vue, toNative } from 'vue-facing-decorator'
 
 import api from '@/service/api'
 import type { DockerNetworkInfo } from '@/service/types'
+
+import { usePortal } from '@/stores'
 
 import NetworkCreateModal from './widget/network-create-modal.vue'
 
@@ -14,7 +13,7 @@ import NetworkCreateModal from './widget/network-create-modal.vue'
     components: { NetworkCreateModal }
 })
 class Networks extends Vue {
-    @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
+    portal = usePortal()
 
     // ─── Refs ───
     @Ref readonly createModalRef!: InstanceType<typeof NetworkCreateModal>
@@ -30,13 +29,13 @@ class Networks extends Vue {
             const res = await api.dockerNetworkList()
             this.networks = res.payload || []
         } catch {
-            this.actions.showNotification('error', '加载网络列表失败')
+            this.portal.showNotification('error', '加载网络列表失败')
         }
         this.loading = false
     }
 
     handleNetworkAction(net: DockerNetworkInfo, action: string) {
-        this.actions.showConfirm({
+        this.portal.showConfirm({
             title: '删除网络',
             message: `确定要删除网络 <strong class="text-slate-900">${net.name}</strong> 吗？`,
             icon: 'fa-trash',
@@ -45,7 +44,7 @@ class Networks extends Vue {
             danger: true,
             onConfirm: async () => {
                 await api.dockerNetworkAction(net.id, action)
-                this.actions.showNotification('success', '网络删除成功')
+                this.portal.showNotification('success', '网络删除成功')
                 this.loadNetworks()
             }
         })
@@ -102,7 +101,7 @@ export default toNative(Networks)
             <button class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors" @click="loadNetworks()">
               <i class="fas fa-rotate"></i>刷新
             </button>
-            <button v-if="actions.hasPerm('POST /api/docker/network')" class="px-3 py-1.5 rounded-lg bg-purple-500 hover:bg-purple-600 text-white text-xs font-medium flex items-center gap-1.5 transition-colors" @click="createModalRef?.show()">
+            <button v-if="portal.hasPerm('POST /api/docker/network')" class="px-3 py-1.5 rounded-lg bg-purple-500 hover:bg-purple-600 text-white text-xs font-medium flex items-center gap-1.5 transition-colors" @click="createModalRef?.show()">
               <i class="fas fa-plus"></i>创建
             </button>
           </div>
@@ -122,7 +121,7 @@ export default toNative(Networks)
             <button class="w-9 h-9 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-600 transition-colors" title="刷新" @click="loadNetworks()">
               <i class="fas fa-rotate text-sm"></i>
             </button>
-            <button v-if="actions.hasPerm('POST /api/docker/network')" class="w-9 h-9 rounded-lg bg-purple-500 hover:bg-purple-600 flex items-center justify-center text-white transition-colors" title="创建" @click="createModalRef?.show()">
+            <button v-if="portal.hasPerm('POST /api/docker/network')" class="w-9 h-9 rounded-lg bg-purple-500 hover:bg-purple-600 flex items-center justify-center text-white transition-colors" title="创建" @click="createModalRef?.show()">
               <i class="fas fa-plus text-sm"></i>
             </button>
           </div>
@@ -167,11 +166,11 @@ export default toNative(Networks)
                 <td class="px-4 py-3 text-sm text-slate-600">{{ net.scope }}</td>
                 <td class="px-4 py-3">
                   <div class="flex justify-end items-center gap-1">
-                    <button v-if="actions.hasPerm('GET /api/docker/network/:id')" class="btn-icon text-slate-600 hover:bg-slate-50" title="详情" @click="viewNetworkDetail(net)">
+                    <button v-if="portal.hasPerm('GET /api/docker/network/:id')" class="btn-icon text-slate-600 hover:bg-slate-50" title="详情" @click="viewNetworkDetail(net)">
                       <i class="fas fa-circle-info text-xs"></i>
                     </button>
                     <button
-                      v-if="canDeleteNetwork(net) && actions.hasPerm('POST /api/docker/network/:id/action')"
+                      v-if="canDeleteNetwork(net) && portal.hasPerm('POST /api/docker/network/:id/action')"
                       class="btn-icon text-red-600 hover:bg-red-50"
                       title="删除"
                       @click="handleNetworkAction(net, 'remove')"
@@ -228,11 +227,11 @@ export default toNative(Networks)
             
             <!-- 底部：操作按钮 -->
             <div class="flex flex-wrap gap-1.5 pt-2 border-t border-slate-100">
-              <button v-if="actions.hasPerm('GET /api/docker/network/:id')" class="btn-icon text-slate-600 hover:bg-slate-50" title="详情" @click="viewNetworkDetail(net)">
+              <button v-if="portal.hasPerm('GET /api/docker/network/:id')" class="btn-icon text-slate-600 hover:bg-slate-50" title="详情" @click="viewNetworkDetail(net)">
                 <i class="fas fa-circle-info text-xs"></i><span class="text-xs ml-1">详情</span>
               </button>
               <button
-                v-if="canDeleteNetwork(net) && actions.hasPerm('POST /api/docker/network/:id/action')"
+                v-if="canDeleteNetwork(net) && portal.hasPerm('POST /api/docker/network/:id/action')"
                 class="btn-icon text-red-600 hover:bg-red-50"
                 title="删除"
                 @click="handleNetworkAction(net, 'remove')"

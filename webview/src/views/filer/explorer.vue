@@ -1,15 +1,12 @@
 <script lang="ts">
-import { Component, Inject, Ref, Vue, toNative } from 'vue-facing-decorator'
-
-import { FILER_ACTIONS_KEY, FILER_STATE_KEY } from '@/store/filer'
-import type { FilerActions, FilerState } from '@/store/filer'
-import { APP_ACTIONS_KEY } from '@/store/state'
-import type { AppActions } from '@/store/state'
+import { Component, Ref, Vue, toNative } from 'vue-facing-decorator'
 
 import api from '@/service/api'
 import type { FilerFileInfo } from '@/service/types'
 
 import { downloadFile, formatFileSize, formatTime, getFileIcon, isEditableFile } from '@/helper/utils'
+
+import { usePortal } from '@/stores'
 
 import ChmodModal from './widget/chmod-modal.vue'
 import CreateModal from './widget/create-modal.vue'
@@ -28,9 +25,8 @@ import ZipModal from './widget/zip-modal.vue'
     }
 })
 class FileExplorer extends Vue {
-    @Inject({ from: APP_ACTIONS_KEY }) readonly appActions!: AppActions
-    @Inject({ from: FILER_STATE_KEY }) readonly filerState!: FilerState
-    @Inject({ from: FILER_ACTIONS_KEY }) readonly filerActions!: FilerActions
+    portal = usePortal()
+    get appActions() { return this.portal }
 
     // ─── Refs ───
     @Ref readonly modifyModalRef!: InstanceType<typeof ModifyModal>
@@ -51,17 +47,17 @@ class FileExplorer extends Vue {
 
     // ─── 计算属性 ───
     get files() {
-        return this.filerState.files
+        return this.portal.files
     }
 
     get paths() {
-        if (!this.filerState.currentPath || this.filerState.currentPath === '/') return []
-        return this.filerState.currentPath.split('/').filter((part: string) => part)
+        if (!this.portal.currentPath || this.portal.currentPath === '/') return []
+        return this.portal.currentPath.split('/').filter((part: string) => part)
     }
 
     // ─── 方法 ───
     navigateTo(path: string) {
-        this.filerActions.loadFiles(path)
+        this.portal.loadFiles(path)
     }
 
     async download(file: FilerFileInfo) {
@@ -70,12 +66,12 @@ class FileExplorer extends Vue {
     }
 
     refreshFiles() {
-        this.filerActions.loadFiles()
+        this.portal.loadFiles()
     }
 
     // ─── 生命周期 ───
     mounted() {
-        this.filerActions.loadFiles('/')
+        this.portal.loadFiles('/')
     }
 }
 
@@ -167,7 +163,7 @@ export default toNative(FileExplorer)
       </div>
 
       <!-- Loading State -->
-      <div v-if="filerState.loading" class="flex flex-col items-center justify-center py-20">
+      <div v-if="portal.loading" class="flex flex-col items-center justify-center py-20">
         <div class="w-12 h-12 spinner mb-3"></div>
         <p class="text-slate-500">加载中...</p>
       </div>

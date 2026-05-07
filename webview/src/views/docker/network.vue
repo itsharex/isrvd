@@ -1,15 +1,14 @@
 <script lang="ts">
-import { Component, Inject, Vue, toNative } from 'vue-facing-decorator'
-
-import { APP_ACTIONS_KEY } from '@/store/state'
-import type { AppActions } from '@/store/state'
+import { Component, Vue, toNative } from 'vue-facing-decorator'
 
 import api from '@/service/api'
 import type { DockerNetworkInspect } from '@/service/types'
 
+import { usePortal } from '@/stores'
+
 @Component
 class NetworkDetail extends Vue {
-    @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
+    portal = usePortal()
 
     // ─── 数据属性 ───
     detailData: DockerNetworkInspect | null = null
@@ -26,7 +25,7 @@ class NetworkDetail extends Vue {
             const res = await api.dockerNetwork(this.networkId)
             this.detailData = res.payload ?? null
         } catch {
-            this.actions.showNotification('error', '获取网络详情失败')
+            this.portal.showNotification('error', '获取网络详情失败')
         }
         this.loading = false
     }

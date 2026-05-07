@@ -1,13 +1,12 @@
 <script lang="ts">
-import { Component, Inject, Vue, toNative } from 'vue-facing-decorator'
-
-import { APP_ACTIONS_KEY } from '@/store/state'
-import type { AppActions } from '@/store/state'
+import { Component, Vue, toNative } from 'vue-facing-decorator'
 
 import api from '@/service/api'
 import type { ApisixConsumer, ApisixConsumerCreate, ApisixConsumerUpdate } from '@/service/types'
 
 import BaseModal from '@/component/modal.vue'
+
+import { usePortal } from '@/stores'
 
 import PluginConfigPanel from './plugin-config-panel.vue'
 
@@ -23,7 +22,7 @@ const defaultFormData = () => ({
     emits: ['success']
 })
 class ConsumerEditModal extends Vue {
-    @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
+    portal = usePortal()
 
     // ─── 数据属性 ───
     isOpen = false
@@ -68,11 +67,11 @@ class ConsumerEditModal extends Vue {
 
     async handleConfirm() {
         if (!this.formData.username) {
-            this.actions.showNotification('error', '消费者名称不能为空')
+            this.portal.showNotification('error', '消费者名称不能为空')
             return
         }
         if (this.$refs.pluginPanel?.pluginsJsonError) {
-            this.actions.showNotification('error', '请修正 Plugin JSON 格式错误')
+            this.portal.showNotification('error', '请修正 Plugin JSON 格式错误')
             return
         }
         this.modalLoading = true
@@ -89,7 +88,7 @@ await api.apisixConsumerCreate({ username: this.formData.username, desc: payload
             this.isOpen = false
             this.$emit('success')
         } catch (e: unknown) {
-            this.actions.showNotification('error', (e instanceof Error ? e.message : '') || '操作失败')
+            this.portal.showNotification('error', (e instanceof Error ? e.message : '') || '操作失败')
         }
         this.modalLoading = false
     }

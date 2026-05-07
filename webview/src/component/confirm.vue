@@ -1,13 +1,11 @@
 <script lang="ts">
-import { Component, Inject, Vue, toNative } from 'vue-facing-decorator'
+import { Component, Vue, toNative } from 'vue-facing-decorator'
 
-import { APP_ACTIONS_KEY, APP_STATE_KEY } from '@/store/state'
-import type { AppActions, AppState } from '@/store/state'
+import { usePortal } from '@/stores'
 
 @Component
 class ConfirmModal extends Vue {
-    @Inject({ from: APP_STATE_KEY }) readonly state!: AppState
-    @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
+    portal = usePortal()
 
     // ─── 计算属性 ───
     get iconColorClass() {
@@ -18,7 +16,7 @@ class ConfirmModal extends Vue {
             red: 'bg-red-100 text-red-500',
             slate: 'bg-slate-100 text-slate-500'
         }
-        return colors[this.state.confirm.iconColor] || colors.blue
+        return colors[this.portal.confirm.iconColor] || colors.blue
     }
 }
 
@@ -35,19 +33,19 @@ export default toNative(ConfirmModal)
     leave-to-class="opacity-0"
   >
     <div 
-      v-if="state.confirm.show" 
+      v-if="portal.confirm.show" 
       class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
-      @click.self="actions.closeConfirm"
+      @click.self="portal.closeConfirm"
     >
       <div class="w-full max-w-3xl modal-card animate-scale-in">
         <!-- Header -->
         <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200/50">
-          <h1 class="text-lg font-semibold text-slate-800">{{ state.confirm.title }}</h1>
+          <h1 class="text-lg font-semibold text-slate-800">{{ portal.confirm.title }}</h1>
           <button 
             type="button" 
             class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all duration-200"
-            :disabled="state.confirm.loading"
-            @click="actions.closeConfirm"
+            :disabled="portal.confirm.loading"
+            @click="portal.closeConfirm"
           >
             <i class="fas fa-times"></i>
           </button>
@@ -62,11 +60,11 @@ export default toNative(ConfirmModal)
             >
               <i 
                 class="fas text-3xl"
-                :class="[state.confirm.icon, iconColorClass.split(' ')[1]]"
+                :class="[portal.confirm.icon, iconColorClass.split(' ')[1]]"
               ></i>
             </div>
-            <p class="text-lg text-slate-700" v-html="state.confirm.message"></p>
-            <p v-if="state.confirm.danger" class="text-sm text-red-600 flex items-center justify-center mt-3">
+            <p class="text-lg text-slate-700" v-html="portal.confirm.message"></p>
+            <p v-if="portal.confirm.danger" class="text-sm text-red-600 flex items-center justify-center mt-3">
               <i class="fas fa-exclamation-triangle mr-2"></i>
               此操作不可恢复！
             </p>
@@ -78,19 +76,19 @@ export default toNative(ConfirmModal)
           <button 
             type="button" 
             class="btn-secondary"
-            :disabled="state.confirm.loading"
-            @click="actions.closeConfirm"
+            :disabled="portal.confirm.loading"
+            @click="portal.closeConfirm"
           >
             取消
           </button>
           <button 
             type="button" 
-            :class="state.confirm.danger ? 'btn-danger' : 'btn-primary'"
-            :disabled="state.confirm.loading"
-            @click="actions.handleConfirm"
+            :class="portal.confirm.danger ? 'btn-danger' : 'btn-primary'"
+            :disabled="portal.confirm.loading"
+            @click="portal.handleConfirm"
           >
-            <i v-if="state.confirm.loading" class="fas fa-spinner fa-spin mr-2"></i>
-            {{ state.confirm.loading ? '处理中...' : state.confirm.confirmText }}
+            <i v-if="portal.confirm.loading" class="fas fa-spinner fa-spin mr-2"></i>
+            {{ portal.confirm.loading ? '处理中...' : portal.confirm.confirmText }}
           </button>
         </div>
       </div>

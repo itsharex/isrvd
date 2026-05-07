@@ -1,21 +1,19 @@
 <script lang="ts">
-import { Component, Inject, Vue, toNative } from 'vue-facing-decorator'
-
-import { FILER_STATE_KEY, FILER_ACTIONS_KEY } from '@/store/filer'
-import type { FilerActions, FilerState } from '@/store/filer'
+import { Component, Vue, toNative } from 'vue-facing-decorator'
 
 import api from '@/service/api'
 import type { FilerFileInfo } from '@/service/types'
 
 import BaseModal from '@/component/modal.vue'
 
+import { usePortal } from '@/stores'
+
 @Component({
     expose: ['show'],
     components: { BaseModal }
 })
 class UnzipModal extends Vue {
-    @Inject({ from: FILER_STATE_KEY }) readonly filerState!: FilerState
-    @Inject({ from: FILER_ACTIONS_KEY }) readonly filerActions!: FilerActions
+    portal = usePortal()
 
     // ─── 数据属性 ───
     isOpen = false
@@ -29,7 +27,7 @@ class UnzipModal extends Vue {
 
     async handleConfirm() {
         await api.filerUnzip(this.formData.file?.path ?? '')
-        this.filerActions.loadFiles()
+        this.portal.loadFiles()
         this.isOpen = false
     }
 }
@@ -38,7 +36,7 @@ export default toNative(UnzipModal)
 </script>
 
 <template>
-  <BaseModal ref="modalRef" v-model="isOpen" title="解压确认" :loading="filerState.loading" :confirm-disabled="!formData.file" @confirm="handleConfirm">
+  <BaseModal ref="modalRef" v-model="isOpen" title="解压确认" :loading="portal.loading" :confirm-disabled="!formData.file" @confirm="handleConfirm">
     <div v-if="formData.file" class="text-center py-6">
       <div class="w-16 h-16 rounded-lg bg-amber-400 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-amber-500/30">
         <i class="fas fa-expand-arrows-alt text-3xl text-white"></i>
@@ -49,7 +47,7 @@ export default toNative(UnzipModal)
       <p class="text-sm text-slate-500">文件将解压到当前目录</p>
     </div>
     <template #confirm-text>
-      {{ filerState.loading ? '解压中...' : '开始解压' }}
+      {{ portal.loading ? '解压中...' : '开始解压' }}
     </template>
   </BaseModal>
 </template>

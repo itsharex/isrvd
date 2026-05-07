@@ -1,16 +1,15 @@
 <script lang="ts">
-import { Component, Inject, Vue, toNative } from 'vue-facing-decorator'
-
-import { APP_STATE_KEY } from '@/store/state'
-import type { AppState } from '@/store/state'
+import { Component, Vue, toNative } from 'vue-facing-decorator'
 
 import Dropdown from '@/component/dropdown.vue'
+
+import { usePortal } from '@/stores'
 
 @Component({
     components: { Dropdown }
 })
 class ToolbarLinks extends Vue {
-    @Inject({ from: APP_STATE_KEY }) readonly state!: AppState
+    portal = usePortal()
 
     menuOpen = false
 }
@@ -22,7 +21,7 @@ export default toNative(ToolbarLinks)
   <!-- 桌面端：横向按钮列表 -->
   <div class="hidden md:flex items-center gap-2 overflow-x-auto ml-auto mr-2">
     <a
-      v-for="link in state.toolbarLinks"
+      v-for="link in portal.toolbarLinks"
       :key="link.url"
       :href="link.url"
       target="_blank"
@@ -47,12 +46,12 @@ export default toNative(ToolbarLinks)
         </button>
       </template>
 
-      <template v-if="state.toolbarLinks.length === 0">
+      <template v-if="portal.toolbarLinks.length === 0">
         <div class="px-4 py-3 text-sm text-slate-400">无快捷链接</div>
       </template>
 
       <a
-        v-for="link in state.toolbarLinks"
+        v-for="link in portal.toolbarLinks"
         :key="link.url"
         :href="link.url"
         target="_blank"

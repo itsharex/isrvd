@@ -1,13 +1,12 @@
 <script lang="ts">
-import { Component, Inject, Vue, toNative } from 'vue-facing-decorator'
-
-import { APP_ACTIONS_KEY } from '@/store/state'
-import type { AppActions } from '@/store/state'
+import { Component, Vue, toNative } from 'vue-facing-decorator'
 
 import api from '@/service/api'
 import type { ApisixSSLCreate, ApisixSSL, ApisixSSLUpdate } from '@/service/types'
 
 import BaseModal from '@/component/modal.vue'
+
+import { usePortal } from '@/stores'
 
 const defaultFormData = () => ({
     id: '',
@@ -23,8 +22,7 @@ const defaultFormData = () => ({
     emits: ['success']
 })
 class SSLEditModal extends Vue {
-    @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
-
+    portal = usePortal()
     isOpen = false
     modalLoading = false
     isEditMode = false
@@ -71,15 +69,15 @@ class SSLEditModal extends Vue {
     async handleConfirm() {
         const snis = this.parseSnis()
         if (snis.length === 0) {
-            this.actions.showNotification('error', '至少需要填写一个 SNI 域名')
+            this.portal.showNotification('error', '至少需要填写一个 SNI 域名')
             return
         }
         if (!this.isEditMode && !this.formData.cert.trim()) {
-            this.actions.showNotification('error', '证书内容不能为空')
+            this.portal.showNotification('error', '证书内容不能为空')
             return
         }
         if (!this.isEditMode && !this.formData.key.trim()) {
-            this.actions.showNotification('error', '私钥内容不能为空')
+            this.portal.showNotification('error', '私钥内容不能为空')
             return
         }
 
@@ -94,7 +92,7 @@ class SSLEditModal extends Vue {
             this.isOpen = false
             this.$emit('success')
         } catch (e: unknown) {
-            this.actions.showNotification('error', (e instanceof Error ? e.message : '') || '操作失败')
+            this.portal.showNotification('error', (e instanceof Error ? e.message : '') || '操作失败')
         }
         this.modalLoading = false
     }

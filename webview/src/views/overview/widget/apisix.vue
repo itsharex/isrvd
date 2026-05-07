@@ -1,15 +1,14 @@
 <script lang="ts">
-import { Component, Inject, Vue, toNative } from 'vue-facing-decorator'
-
-import { APP_ACTIONS_KEY } from '@/store/state'
-import type { AppActions } from '@/store/state'
+import { Component, Vue, toNative } from 'vue-facing-decorator'
 
 import api from '@/service/api'
 import type { ApisixInfo } from '@/service/types'
 
+import { usePortal } from '@/stores'
+
 @Component
 class ApisixOverview extends Vue {
-    @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
+    portal = usePortal()
 
     // ─── 数据属性 ───
     info: ApisixInfo | null = null
@@ -44,7 +43,7 @@ class ApisixOverview extends Vue {
                 whitelist: whitelist.length,
             }
         } catch {
-            this.actions.showNotification('error', '获取 APISIX 信息失败')
+            this.portal.showNotification('error', '获取 APISIX 信息失败')
             this.info = null
         }
         this.loading = false

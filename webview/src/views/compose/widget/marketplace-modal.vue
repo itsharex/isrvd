@@ -1,11 +1,10 @@
 <script lang="ts">
-import { Component, Inject, Prop, Ref, Vue, Watch, toNative } from 'vue-facing-decorator'
-
-import { APP_ACTIONS_KEY } from '@/store/state'
-import type { AppActions } from '@/store/state'
+import { Component, Prop, Ref, Vue, Watch, toNative } from 'vue-facing-decorator'
 
 import api from '@/service/api'
 import type { AllConfig, ComposeMarketplacePick } from '@/service/types'
+
+import { usePortal } from '@/stores'
 
 // 应用市场 postMessage 协议：仅本组件使用，故就近定义
 interface MarketplaceInstallPayload {
@@ -34,7 +33,7 @@ function isMarketplaceInstallPayload(data: unknown): data is MarketplaceInstallP
     emits: ['update:modelValue', 'pick']
 })
 class MarketplaceModal extends Vue {
-    @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
+    portal = usePortal()
     @Prop({ type: Boolean, default: false }) readonly modelValue!: boolean
 
     // ─── Refs ───
@@ -83,7 +82,7 @@ class MarketplaceModal extends Vue {
                 this.iframeOrigin = ''
             }
         } catch {
-            this.actions.showNotification('error', '加载应用市场配置失败')
+            this.portal.showNotification('error', '加载应用市场配置失败')
         }
         this.loading = false
     }

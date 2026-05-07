@@ -1,8 +1,5 @@
 <script lang="ts">
-import { Component, Inject, Vue, toNative } from 'vue-facing-decorator'
-
-import { APP_ACTIONS_KEY } from '@/store/state'
-import type { AppActions } from '@/store/state'
+import { Component, Vue, toNative } from 'vue-facing-decorator'
 
 import api from '@/service/api'
 import type { DockerContainerInfo } from '@/service/types'
@@ -11,13 +8,15 @@ import BaseModal from '@/component/modal.vue'
 
 import ComposeEditor from '@/views/compose/widget/compose-editor.vue'
 
+import { usePortal } from '@/stores'
+
 @Component({
     expose: ['show'],
     components: { BaseModal, ComposeEditor },
     emits: ['success']
 })
 class ContainerEditModal extends Vue {
-    @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
+    portal = usePortal()
 
     // ─── 数据属性 ───
     isOpen = false
@@ -46,7 +45,7 @@ class ContainerEditModal extends Vue {
         this.modalLoading = true
         try {
             await api.composeDockerRedeploy(this.projectName, { content: this.composeContent })
-            this.actions.showNotification('success', '容器配置更新成功，已重建容器')
+            this.portal.showNotification('success', '容器配置更新成功，已重建容器')
             this.isOpen = false
             this.$emit('success')
         } catch {}
