@@ -27,7 +27,9 @@ export interface DockerContainerInfo {
 }
 
 export interface DockerVolumeMapping {
-    hostPath: string
+    type?: 'bind' | 'volume'
+    source?: string
+    hostPath?: string
     containerPath: string
     readOnly: boolean
 }

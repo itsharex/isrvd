@@ -45,9 +45,17 @@ func ProjectFromCreateRequest(req docker.ContainerCreateRequest) (*types.Project
 	}
 
 	for _, v := range req.Volumes {
+		mountType := v.Type
+		if mountType == "" {
+			mountType = types.VolumeTypeBind
+		}
+		source := v.Source
+		if source == "" {
+			source = v.HostPath
+		}
 		svc.Volumes = append(svc.Volumes, types.ServiceVolumeConfig{
-			Type:     types.VolumeTypeBind,
-			Source:   v.HostPath,
+			Type:     mountType,
+			Source:   source,
 			Target:   v.ContainerPath,
 			ReadOnly: v.ReadOnly,
 		})

@@ -65,7 +65,17 @@ func ServiceToCreateRequest(project *types.Project, svc types.ServiceConfig) (do
 		if v.Source == "" || v.Target == "" {
 			continue
 		}
+		mountType := v.Type
+		if mountType == "" {
+			if strings.HasPrefix(v.Source, "/") || strings.HasPrefix(v.Source, ".") {
+				mountType = types.VolumeTypeBind
+			} else {
+				mountType = types.VolumeTypeVolume
+			}
+		}
 		req.Volumes = append(req.Volumes, docker.VolumeMapping{
+			Type:          string(mountType),
+			Source:        v.Source,
 			HostPath:      v.Source,
 			ContainerPath: v.Target,
 			ReadOnly:      v.ReadOnly,
