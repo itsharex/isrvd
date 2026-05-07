@@ -174,7 +174,7 @@ export default toNative(FileExplorer)
       </div>
 
       <!-- File List -->
-      <div v-else class="space-y-3">
+      <div v-else>
         <!-- Empty State -->
         <div v-if="files.length === 0" class="flex flex-col items-center justify-center py-20">
           <div class="w-16 h-16 rounded-lg bg-slate-100 flex items-center justify-center mb-4">
@@ -184,7 +184,7 @@ export default toNative(FileExplorer)
           <p class="text-sm text-slate-400">上传文件或创建新目录开始使用</p>
         </div>
         <!-- 桌面端表格视图 -->
-        <div class="hidden md:block overflow-x-auto">
+        <div v-else class="hidden md:block overflow-x-auto">
           <table class="w-full border-collapse">
             <thead>
               <tr class="bg-slate-50 border-b border-slate-200">
@@ -345,7 +345,7 @@ export default toNative(FileExplorer)
         </div>
 
         <!-- 移动端卡片视图 -->
-        <div class="md:hidden space-y-3 p-4">
+        <div v-if="files.length > 0" class="md:hidden space-y-3 p-4">
           <div 
             v-for="file in files" 
             :key="file.name"
