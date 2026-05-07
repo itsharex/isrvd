@@ -4,7 +4,6 @@
 
 ```bash
 isrvd_get "/swarm/info"
-isrvd_get "/swarm/info" '{nodes, managers, workers, services}'
 ```
 
 | 字段 | 类型 | 说明 |
@@ -21,7 +20,6 @@ isrvd_get "/swarm/info" '{nodes, managers, workers, services}'
 
 ```bash
 isrvd_get "/swarm/nodes"
-isrvd_get "/swarm/nodes" '.[].{hostname,role,state,addr}'
 ```
 
 | 字段 | 类型 | 说明 |
@@ -39,7 +37,6 @@ isrvd_get "/swarm/nodes" '.[].{hostname,role,state,addr}'
 
 ```bash
 isrvd_get "/swarm/node/NODE_ID"
-isrvd_get "/swarm/node/NODE_ID" '{hostname, os, cpus, memoryBytes, labels}'
 ```
 
 额外字段：`os, architecture, cpus, memoryBytes, labels, createdAt, updatedAt`

@@ -12,7 +12,6 @@
 
 ```bash
 isrvd_get "/apisix/ssls"
-isrvd_get "/apisix/ssls" '.[] | {id, snis, status}'
 isrvd_get "/apisix/ssl/<SSL_ID>"
 isrvd_post "/apisix/ssl" '{"cert":"<CERT_PEM>","key":"<KEY_PEM>","snis":["<DOMAIN>"]}'
 isrvd_put "/apisix/ssl/<SSL_ID>" '{"cert":"<CERT_PEM>","key":"<KEY_PEM>","snis":["<DOMAIN>"]}'

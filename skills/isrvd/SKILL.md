@@ -12,7 +12,7 @@ isrvd_token "$ISRVD_APIURL" "$ISRVD_APITOKEN"
 # 或 isrvd_login "$ISRVD_APIURL" "$ISRVD_USERNAME" "$ISRVD_PASSWORD"
 ```
 
-调用：`isrvd_get "/path" '[jq]'` / `isrvd_post "/path" 'body' '[jq]'`，输出紧凑 JSON。
+调用：`isrvd_get "/path"` / `isrvd_post "/path" '{body}'`，输出紧凑 JSON（数组自动转表格）。按需用 jq 自行处理返回值。
 
 **⚠️ 操作规范（必须遵守）：**
 1. **禁止硬编码**：不要假设任何 IP、端口、路径、容器名——全部通过 API 查询或环境变量获取
@@ -116,9 +116,9 @@ isrvd_token "$ISRVD_APIURL" "$ISRVD_APITOKEN"
 
 ```bash
 isrvd_get "/overview/probe"
-isrvd_get "/overview/status" '{cpu: .system.cpuPercent, mem: .system.memPercent}'
-isrvd_get "/docker/containers" '.[].{name,state}'
-isrvd_get "/swarm/services" '.[] | {name, running: .runningTasks, total: .replicas}'
+isrvd_get "/overview/status"
+isrvd_get "/docker/containers"
+isrvd_get "/swarm/services"
 ```
 
 ### 拉取镜像并创建容器
@@ -126,13 +126,13 @@ isrvd_get "/swarm/services" '.[] | {name, running: .runningTasks, total: .replic
 ```bash
 isrvd_post "/docker/image/pull" '{"image":"<IMAGE>"}'
 isrvd_post "/docker/container" '{"image":"<IMAGE>","name":"<NAME>","ports":{"<HOST_PORT>":"<CONTAINER_PORT>"},"restart":"unless-stopped"}'
-isrvd_get "/docker/containers" '.[].{name,state,image}'
+isrvd_get "/docker/containers"
 ```
 
 ### 更新容器镜像
 
 ```bash
-CID=$(isrvd_get "/docker/containers" '.[] | select(.name=="<NAME>") | .id')
+CID=<CONTAINER_ID>  # 从 isrvd_get "/docker/containers" 结果中获取
 isrvd_post "/docker/image/pull" '{"image":"<NEW_IMAGE>"}'
 isrvd_post "/docker/container/$CID/action" '{"action":"stop"}'
 isrvd_post "/docker/container/$CID/action" '{"action":"remove"}'
@@ -149,7 +149,7 @@ isrvd_post "/compose/docker/deploy" "{\"projectName\":\"<PROJECT>\",\"content\":
 
 ```bash
 isrvd_post "/swarm/service" '{"name":"<NAME>","image":"<IMAGE>","replicas":<N>,"ports":[{"targetPort":<PORT>,"publishedPort":<PORT>}]}'
-isrvd_get "/swarm/services" '.[] | select(.name=="<NAME>") | {runningTasks, replicas}'
+isrvd_get "/swarm/services"
 ```
 
 ### 扩缩容
@@ -168,7 +168,7 @@ isrvd_post "/swarm/service/<SVC_ID>/force-update"
 
 ```bash
 # 先查现有路由
-isrvd_get "/apisix/routes" '.[] | {name, uri, host}'
+isrvd_get "/apisix/routes"
 # 创建（upstream 的 nodes 地址通过查询实际容器/服务获取）
 isrvd_post "/apisix/route" '{"name":"<NAME>","uri":"<URI>","status":1,"upstream":{"type":"roundrobin","nodes":{"<HOST>:<PORT>":1}}}'
 ```

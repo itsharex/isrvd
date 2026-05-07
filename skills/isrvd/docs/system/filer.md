@@ -10,8 +10,8 @@ filer 管理的是 **isrvd 容器内部**挂载的卷，这些路径只在 isrvd
 
 ```bash
 # 查看 isrvd 容器自身的 volume 挂载，找到 filer 路径对应的宿主机路径
-ISRVD_ID=$(isrvd_get "/docker/containers" '.[] | select(.name=="isrvd") | .id')
-isrvd_get "/docker/container/$ISRVD_ID" '.mounts[] | {source, destination}'
+# 1. 从 isrvd_get "/docker/containers" 结果中找到 isrvd 容器的 id
+# 2. 用 isrvd_get "/docker/container/<ISRVD_ID>" 查看 mounts 字段
 ```
 
 **正确的静态文件更新流程**（不需要重建容器）：
@@ -44,7 +44,6 @@ isrvd_post "/filer/create" '{"path":"<FILE>"}'
 
 ```bash
 isrvd_post "/filer/read" '{"path":"<FILE>"}'
-isrvd_post "/filer/read" '{"path":"<FILE>"}' '.content'
 ```
 
 返回：`{"content": "文件内容..."}`

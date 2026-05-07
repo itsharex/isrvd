@@ -23,7 +23,6 @@
 
 ```bash
 isrvd_get "/apisix/upstreams"
-isrvd_get "/apisix/upstreams" '.[] | {id, name, type, nodes}'
 ```
 
 ## 查看上游详情

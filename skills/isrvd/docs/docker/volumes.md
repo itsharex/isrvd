@@ -4,7 +4,6 @@
 
 ```bash
 isrvd_get "/docker/volumes"
-isrvd_get "/docker/volumes" '.[].{name,driver,size}'
 ```
 
 | 字段 | 类型 | 说明 |
@@ -19,7 +18,6 @@ isrvd_get "/docker/volumes" '.[].{name,driver,size}'
 
 ```bash
 isrvd_get "/docker/volume/<VOL_NAME>"
-isrvd_get "/docker/volume/<VOL_NAME>" '{name, size, refCount, usedBy}'
 ```
 
 额外字段：`scope, refCount, usedBy[]{id, name, mountPath, readOnly}`

@@ -25,5 +25,5 @@ GET /api/swarm/tasks?serviceID=<SVC_ID>
 | updatedAt | string | 更新时间 |
 
 ```bash
-isrvd_get "/swarm/tasks?serviceID=<SVC_ID>" '.[] | {nodeName, state, slot}'
+isrvd_get "/swarm/tasks?serviceID=<SVC_ID>"
 ```

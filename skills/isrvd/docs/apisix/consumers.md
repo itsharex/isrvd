@@ -12,7 +12,6 @@
 
 ```bash
 isrvd_get "/apisix/consumers"
-isrvd_get "/apisix/consumers" '.[] | {username, desc}'
 ```
 
 ## 创建消费者
@@ -41,7 +40,6 @@ isrvd_delete "/apisix/consumer/<USERNAME>"
 
 ```bash
 isrvd_get "/apisix/whitelist"
-isrvd_get "/apisix/whitelist" '.[] | {id, name, consumers}'
 ```
 
 返回含 key-auth + consumer-restriction 的路由列表，`consumers` 字段标识白名单消费者。

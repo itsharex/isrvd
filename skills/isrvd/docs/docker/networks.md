@@ -4,7 +4,6 @@
 
 ```bash
 isrvd_get "/docker/networks"
-isrvd_get "/docker/networks" '.[].{name,driver,subnet}'
 ```
 
 | 字段 | 类型 | 说明 |
@@ -19,7 +18,6 @@ isrvd_get "/docker/networks" '.[].{name,driver,subnet}'
 
 ```bash
 isrvd_get "/docker/network/<NETWORK_ID>"
-isrvd_get "/docker/network/<NETWORK_ID>" '{name, subnet, gateway, containers}'
 ```
 
 额外字段：`gateway, internal, enableIPv6, containers[]{id, name, ipv4, ipv6, macAddress}`

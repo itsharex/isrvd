@@ -22,7 +22,6 @@ isrvd_post "/account/login" '{"username":"<USER>","password":"<PASS>"}'
 
 ```bash
 isrvd_get "/account/routes"
-isrvd_get "/account/routes" '.[] | {key, module, label, access}'
 ```
 
 > access: `0`=需权限, `1`=需登录, `2`=匿名
@@ -45,7 +44,6 @@ isrvd_put "/account/password" '{"oldPassword":"<OLD>","newPassword":"<NEW>"}'
 
 ```bash
 isrvd_get "/account/members"
-isrvd_get "/account/members" '.[] | {username, founder, permissions: (.permissions | length)}'
 ```
 
 | 字段 | 类型 | 说明 |

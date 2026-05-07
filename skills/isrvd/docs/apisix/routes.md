@@ -4,7 +4,6 @@
 
 ```bash
 isrvd_get "/apisix/routes"
-isrvd_get "/apisix/routes" '.[] | {id, name, uri, host, status}'
 ```
 
 | 字段 | 类型 | 说明 |

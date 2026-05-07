@@ -4,7 +4,6 @@
 
 ```bash
 isrvd_get "/docker/registries"
-isrvd_get "/docker/registries" '.[].{name,url,username}'
 ```
 
 | 字段 | 类型 | 说明 |
