@@ -4,6 +4,7 @@ import { Component, Vue, toNative } from 'vue-facing-decorator'
 import Dropdown from '@/component/dropdown.vue'
 
 import { usePortal } from '@/stores'
+import { toggleTheme } from '@/helper/utils'
 
 @Component({
     components: { Dropdown }
@@ -16,8 +17,7 @@ class UserMenu extends Vue {
 
     // ─── 方法 ───
     toggleTheme() {
-        const isDark = document.documentElement.classList.toggle('dark')
-        localStorage.setItem('app-theme', isDark ? 'dark' : 'light')
+        toggleTheme()
     }
 
     handleLogout() {

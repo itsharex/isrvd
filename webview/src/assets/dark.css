@@ -1,9 +1,9 @@
 /* 暗黑模式样式 */
 
 .dark {
-  /* slate 灰色系：让 bg-slate/text-slate/border-slate 自动响应暗色 */
+  /* slate 灰色系 */
   --color-slate-50:  oklch(13% 0.02 264);
-  --color-slate-100: oklch(20% 0.03 264);
+  --color-slate-100: oklch(18% 0.025 264);
   --color-slate-200: oklch(27% 0.04 264);
   --color-slate-300: oklch(37% 0.04 264);
   --color-slate-400: oklch(50% 0.04 264);
@@ -14,16 +14,35 @@
   --color-slate-900: oklch(96% 0.005 264);
   --color-slate-950: oklch(98% 0.003 264);
 
-  /* white → 卡片色 */
-  --color-white: oklch(20% 0.03 264);
+  /* white → 卡片色（比 slate-100 稍暗，与页面底色拉开层次）*/
+  --color-white: oklch(16% 0.025 264);
+
+  /* amber（警告提示 bg-amber-50 / border-amber-200 / text-amber-700）*/
+  --color-amber-50:  oklch(20% 0.05 85);
+  --color-amber-200: oklch(35% 0.08 85);
+  --color-amber-700: oklch(82% 0.16 85);
+
+  /* indigo（内联节点激活态 bg-indigo-50 / border-indigo-300 / text-indigo-700）*/
+  --color-indigo-50:  oklch(18% 0.05 270);
+  --color-indigo-300: oklch(40% 0.10 270);
+  --color-indigo-700: oklch(80% 0.14 270);
+
+  /* emerald（内联节点激活态 bg-emerald-50 / border-emerald-300 / text-emerald-700）*/
+  --color-emerald-50:  oklch(18% 0.05 160);
+  --color-emerald-300: oklch(40% 0.10 160);
+  --color-emerald-700: oklch(80% 0.14 160);
 
   color-scheme: dark;
 }
 
-/* === 终端/日志区域：bg-slate-900 保持深色，text-slate-100 保持浅色 === */
+/* === 终端/日志区域 === */
 .dark .bg-slate-900 { background-color: #0f172a !important; }
 .dark .bg-slate-900 .text-slate-100,
 .dark pre.bg-slate-900 { color: #f1f5f9 !important; }
+
+/* === 遮罩层（含 / 透明度的类无法通过变量覆盖）=== */
+.dark .bg-slate-900\/60 { background-color: rgba(10, 14, 36, 0.75) !important; }
+.dark .bg-black\/30     { background-color: rgba(0, 0, 0, 0.5) !important; }
 
 /* === 侧边栏菜单高亮 === */
 .dark .bg-blue-50 { background-color: rgba(37, 99, 235, 0.2) !important; }
@@ -31,8 +50,8 @@
 .dark .hover\:bg-blue-100:hover { background-color: rgba(37, 99, 235, 0.3) !important; }
 
 /* === CodeMirror 编辑器 === */
-.dark .cm-editor                         { background-color: oklch(20% 0.03 264) !important; }
-.dark .cm-editor .cm-gutters             { background-color: oklch(23.065% 0.06007 266.601) !important; border-color: oklch(27% 0.04 264) !important; }
+.dark .cm-editor                         { background-color: oklch(18% 0.025 264) !important; }
+.dark .cm-editor .cm-gutters             { background-color: oklch(13% 0.02 264) !important; border-color: oklch(27% 0.04 264) !important; }
 .dark .cm-editor .cm-gutterElement       { color: oklch(60% 0.04 264) !important; }
 .dark .cm-editor .cm-content             { color: oklch(90% 0.01 264) !important; }
 .dark .cm-editor .cm-cursor              { border-color: oklch(90% 0.01 264) !important; }

@@ -3,6 +3,7 @@ import { ref, reactive } from 'vue'
 
 import api from '@/service/api'
 import type { LinkConfig } from '@/service/types'
+import { initTheme } from '@/helper/utils'
 
 interface ServiceAvailability {
     agent: boolean
@@ -42,11 +43,7 @@ export const useSystemStore = defineStore('system', () => {
         initialized.value = false
         initError.value = null
 
-        // 初始化主题
-        const theme = localStorage.getItem('app-theme')
-        if (theme === 'dark') {
-            document.documentElement.classList.add('dark')
-        }
+        initTheme() // 初始化主题
 
         try {
             await loadSystemData()
