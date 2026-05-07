@@ -13,10 +13,10 @@
 ```bash
 isrvd_get "/apisix/ssls"
 isrvd_get "/apisix/ssls" '.[] | {id, snis, status}'
-isrvd_get "/apisix/ssl/SSL_ID"
-isrvd_post "/apisix/ssl" '{"cert":"-----BEGIN CERTIFICATE-----\n...","key":"-----BEGIN PRIVATE KEY-----\n...","snis":["example.com","www.example.com"]}'
-isrvd_put "/apisix/ssl/SSL_ID" '{"cert":"...","key":"...","snis":["example.com"]}'
-isrvd_delete "/apisix/ssl/SSL_ID"
+isrvd_get "/apisix/ssl/<SSL_ID>"
+isrvd_post "/apisix/ssl" '{"cert":"<CERT_PEM>","key":"<KEY_PEM>","snis":["<DOMAIN>"]}'
+isrvd_put "/apisix/ssl/<SSL_ID>" '{"cert":"<CERT_PEM>","key":"<KEY_PEM>","snis":["<DOMAIN>"]}'
+isrvd_delete "/apisix/ssl/<SSL_ID>"
 ```
 
 ---
@@ -31,10 +31,10 @@ isrvd_delete "/apisix/ssl/SSL_ID"
 
 ```bash
 isrvd_get "/apisix/plugin-configs"
-isrvd_get "/apisix/plugin-config/CONFIG_ID"
-isrvd_post "/apisix/plugin-config" '{"id":"rate-limit","desc":"通用限流","plugins":{"limit-req":{"rate":100,"burst":50,"key":"remote_addr","rejected_code":429}}}'
-isrvd_put "/apisix/plugin-config/CONFIG_ID" '{"desc":"更新","plugins":{...}}'
-isrvd_delete "/apisix/plugin-config/CONFIG_ID"
+isrvd_get "/apisix/plugin-config/<CONFIG_ID>"
+isrvd_post "/apisix/plugin-config" '{"id":"<ID>","desc":"<DESC>","plugins":{...}}'
+isrvd_put "/apisix/plugin-config/<CONFIG_ID>" '{"desc":"<DESC>","plugins":{...}}'
+isrvd_delete "/apisix/plugin-config/<CONFIG_ID>"
 ```
 
 ---

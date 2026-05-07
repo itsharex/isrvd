@@ -26,12 +26,12 @@ isrvd_get "/docker/containers" '.[].{name,state,image}'
 
 ```bash
 isrvd_post "/docker/container" '{
-  "image": "nginx:latest",
-  "name": "my-nginx",
-  "ports": {"8080": "80"},
-  "env": ["NGINX_HOST=example.com"],
-  "volumes": [{"hostPath": "/data/html", "containerPath": "/usr/share/nginx/html", "readOnly": true}],
-  "network": "my-network",
+  "image": "<IMAGE>",
+  "name": "<NAME>",
+  "ports": {"<HOST_PORT>": "<CONTAINER_PORT>"},
+  "env": ["<KEY>=<VALUE>"],
+  "volumes": [{"hostPath": "<HOST_PATH>", "containerPath": "<CONTAINER_PATH>", "readOnly": true}],
+  "network": "<NETWORK>",
   "restart": "unless-stopped",
   "memory": 256,
   "cpus": 0.5
@@ -45,8 +45,8 @@ isrvd_post "/docker/container" '{
 | cmd | string[] | | 启动命令 |
 | env | string[] | | 环境变量（`KEY=VALUE`） |
 | ports | object | | `{"宿主端口": "容器端口"}` |
-| volumes | object[] | | `{hostPath, containerPath, readOnly}` |
-| network | string | | 网络名 |
+| volumes | object[] | | `{hostPath, containerPath, readOnly}`，**hostPath 必须是宿主机真实路径**，filer 显示的路径是 isrvd 内部路径，不可直接使用 |
+| network | string | | 网络名（先通过 API 查询已有网络） |
 | restart | string | | `no` / `always` / `on-failure` / `unless-stopped` |
 | memory | number | | 内存限制（MB） |
 | cpus | number | | CPU 限制（核数） |
@@ -60,19 +60,19 @@ isrvd_post "/docker/container" '{
 ## 容器操作
 
 ```bash
-isrvd_post "/docker/container/CONTAINER_ID/action" '{"action":"start"}'
-isrvd_post "/docker/container/CONTAINER_ID/action" '{"action":"stop"}'
-isrvd_post "/docker/container/CONTAINER_ID/action" '{"action":"restart"}'
-isrvd_post "/docker/container/CONTAINER_ID/action" '{"action":"remove"}'
-isrvd_post "/docker/container/CONTAINER_ID/action" '{"action":"pause"}'
-isrvd_post "/docker/container/CONTAINER_ID/action" '{"action":"unpause"}'
+isrvd_post "/docker/container/<CONTAINER_ID>/action" '{"action":"start"}'
+isrvd_post "/docker/container/<CONTAINER_ID>/action" '{"action":"stop"}'
+isrvd_post "/docker/container/<CONTAINER_ID>/action" '{"action":"restart"}'
+isrvd_post "/docker/container/<CONTAINER_ID>/action" '{"action":"remove"}'
+isrvd_post "/docker/container/<CONTAINER_ID>/action" '{"action":"pause"}'
+isrvd_post "/docker/container/<CONTAINER_ID>/action" '{"action":"unpause"}'
 ```
 
 ## 容器日志
 
 ```bash
-isrvd_get "/docker/container/CONTAINER_ID/logs?tail=100"
-isrvd_get "/docker/container/CONTAINER_ID/logs?tail=50" '.logs[-10:]'
+isrvd_get "/docker/container/<CONTAINER_ID>/logs?tail=100"
+isrvd_get "/docker/container/<CONTAINER_ID>/logs?tail=50" '.logs[-10:]'
 ```
 
 返回：`{id, logs: string[]}`
@@ -80,8 +80,8 @@ isrvd_get "/docker/container/CONTAINER_ID/logs?tail=50" '.logs[-10:]'
 ## 容器资源统计
 
 ```bash
-isrvd_get "/docker/container/CONTAINER_ID/stats"
-isrvd_get "/docker/container/CONTAINER_ID/stats" '{cpu: .cpuPercent, mem: .memoryPercent}'
+isrvd_get "/docker/container/<CONTAINER_ID>/stats"
+isrvd_get "/docker/container/<CONTAINER_ID>/stats" '{cpu: .cpuPercent, mem: .memoryPercent}'
 ```
 
 | 字段 | 类型 | 说明 |

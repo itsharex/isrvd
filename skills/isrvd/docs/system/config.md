@@ -18,15 +18,10 @@ isrvd_get "/system/config" '{server, agent, apisix}'
 
 ## 更新配置
 
+> 先通过 `isrvd_get "/system/config"` 获取当前值，按需修改后提交，不要硬编码配置内容。
+
 ```bash
-isrvd_put "/system/config" '{
-  "server": {"debug": false, "listenAddr": ":8080", "proxyHeaderName": "", "rootDirectory": "/data"},
-  "agent": {"model": "gpt-4", "baseUrl": "https://api.openai.com/v1", "apiKey": "sk-..."},
-  "apisix": {"adminUrl": "http://127.0.0.1:9180", "adminKey": "edd1c9f..."},
-  "docker": {"host": "unix:///var/run/docker.sock", "containerRoot": "/data/containers"},
-  "marketplace": {"url": ""},
-  "links": [{"label": "Grafana", "url": "https://grafana.example.com", "icon": "chart"}]
-}'
+isrvd_put "/system/config" '<CURRENT_CONFIG_WITH_CHANGES>'
 ```
 
 ---
@@ -35,7 +30,7 @@ isrvd_put "/system/config" '{
 
 ```bash
 isrvd_get "/system/audit/logs?limit=20"
-isrvd_get "/system/audit/logs?username=admin&limit=10" '.[] | {timestamp, method, uri, success}'
+isrvd_get "/system/audit/logs?username=<USER>&limit=10" '.[] | {timestamp, method, uri, success}'
 ```
 
 | 字段 | 类型 | 说明 |

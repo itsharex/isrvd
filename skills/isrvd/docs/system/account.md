@@ -11,7 +11,7 @@ isrvd_get "/account/info"
 ## 登录
 
 ```bash
-isrvd_post "/account/login" '{"username":"admin","password":"password"}'
+isrvd_post "/account/login" '{"username":"<USER>","password":"<PASS>"}'
 ```
 
 返回：`{"token": "eyJ..."}`
@@ -30,7 +30,7 @@ isrvd_get "/account/routes" '.[] | {key, module, label, access}'
 ## 创建 API Token
 
 ```bash
-isrvd_post "/account/token" '{"name":"my-token","expiresIn":"720h"}'
+isrvd_post "/account/token" '{"name":"<TOKEN_NAME>","expiresIn":"720h"}'
 ```
 
 返回：`{"token": "长效token..."}`
@@ -38,7 +38,7 @@ isrvd_post "/account/token" '{"name":"my-token","expiresIn":"720h"}'
 ## 修改密码
 
 ```bash
-isrvd_put "/account/password" '{"oldPassword":"旧密码","newPassword":"新密码"}'
+isrvd_put "/account/password" '{"oldPassword":"<OLD>","newPassword":"<NEW>"}'
 ```
 
 ## 列出成员
@@ -59,13 +59,13 @@ isrvd_get "/account/members" '.[] | {username, founder, permissions: (.permissio
 ## 创建成员
 
 ```bash
-isrvd_post "/account/member" '{"username":"dev1","password":"securepass","homeDirectory":"/home/dev1","description":"开发人员","permissions":["GET /api/docker/containers","GET /api/docker/images"]}'
+isrvd_post "/account/member" '{"username":"<USER>","password":"<PASS>","homeDirectory":"<HOME_DIR>","description":"<DESC>","permissions":["GET /api/docker/containers","GET /api/docker/images"]}'
 ```
 
 ## 更新成员
 
 ```bash
-isrvd_put "/account/member/dev1" '{"description":"高级开发","permissions":["GET /api/docker/containers","GET /api/docker/images","GET /api/swarm/services"]}'
+isrvd_put "/account/member/<USER>" '{"description":"<DESC>","permissions":["GET /api/docker/containers","GET /api/docker/images","GET /api/swarm/services"]}'
 ```
 
 > password 为空则不修改。
@@ -73,5 +73,5 @@ isrvd_put "/account/member/dev1" '{"description":"高级开发","permissions":["
 ## 删除成员
 
 ```bash
-isrvd_delete "/account/member/dev1"
+isrvd_delete "/account/member/<USER>"
 ```

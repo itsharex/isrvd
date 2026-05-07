@@ -29,24 +29,24 @@ isrvd_get "/apisix/routes" '.[] | {id, name, uri, host, status}'
 ## 查看路由详情
 
 ```bash
-isrvd_get "/apisix/route/ROUTE_ID"
+isrvd_get "/apisix/route/<ROUTE_ID>"
 ```
 
 ## 创建路由
 
 ```bash
 # 最小
-isrvd_post "/apisix/route" '{"name":"my-api","uri":"/api/*","status":1,"upstream":{"type":"roundrobin","nodes":{"127.0.0.1:3000":1}}}'
+isrvd_post "/apisix/route" '{"name":"<NAME>","uri":"<URI>","status":1,"upstream":{"type":"roundrobin","nodes":{"<HOST>:<PORT>":1}}}'
 
-# 完整
+# 完整（所有值通过 API 查询获取，不要假设）
 isrvd_post "/apisix/route" '{
-  "name": "web-app",
-  "uri": "/*",
-  "host": "app.example.com",
+  "name": "<NAME>",
+  "uri": "<URI>",
+  "host": "<DOMAIN>",
   "status": 1,
   "priority": 10,
   "enable_websocket": true,
-  "upstream": {"type":"roundrobin","nodes":{"10.0.0.1:8080":1,"10.0.0.2:8080":1}},
+  "upstream": {"type":"roundrobin","nodes":{"<HOST>:<PORT>":1}},
   "plugins": {
     "proxy-rewrite": {"regex_uri": ["^/api/v1/(.*)", "/$1"]},
     "limit-req": {"rate":100,"burst":50,"key_type":"var","key":"remote_addr","rejected_code":429}
@@ -57,18 +57,18 @@ isrvd_post "/apisix/route" '{
 ## 更新路由
 
 ```bash
-isrvd_put "/apisix/route/ROUTE_ID" '{"name":"my-api","uri":"/api/*","status":1,"upstream":{"type":"roundrobin","nodes":{"10.0.0.1:3000":1,"10.0.0.2:3000":1}}}'
+isrvd_put "/apisix/route/<ROUTE_ID>" '{"name":"<NAME>","uri":"<URI>","status":1,"upstream":{"type":"roundrobin","nodes":{"<HOST>:<PORT>":1}}}'
 ```
 
 ## 启用/禁用路由
 
 ```bash
-isrvd_patch "/apisix/route/ROUTE_ID/status" '{"status":0}'  # 禁用
-isrvd_patch "/apisix/route/ROUTE_ID/status" '{"status":1}'  # 启用
+isrvd_patch "/apisix/route/<ROUTE_ID>/status" '{"status":0}'  # 禁用
+isrvd_patch "/apisix/route/<ROUTE_ID>/status" '{"status":1}'  # 启用
 ```
 
 ## 删除路由
 
 ```bash
-isrvd_delete "/apisix/route/ROUTE_ID"
+isrvd_delete "/apisix/route/<ROUTE_ID>"
 ```

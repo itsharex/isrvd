@@ -18,19 +18,19 @@ isrvd_get "/apisix/consumers" '.[] | {username, desc}'
 ## 创建消费者
 
 ```bash
-isrvd_post "/apisix/consumer" '{"username":"app-client","desc":"移动端","plugins":{"key-auth":{"key":"my-secret-key"}}}'
+isrvd_post "/apisix/consumer" '{"username":"<USERNAME>","desc":"<DESC>","plugins":{"key-auth":{"key":"<AUTH_KEY>"}}}'
 ```
 
 ## 更新消费者
 
 ```bash
-isrvd_put "/apisix/consumer/app-client" '{"desc":"新描述","plugins":{"key-auth":{"key":"new-key"}}}'
+isrvd_put "/apisix/consumer/<USERNAME>" '{"desc":"<DESC>","plugins":{"key-auth":{"key":"<AUTH_KEY>"}}}'
 ```
 
 ## 删除消费者
 
 ```bash
-isrvd_delete "/apisix/consumer/app-client"
+isrvd_delete "/apisix/consumer/<USERNAME>"
 ```
 
 ---
@@ -49,5 +49,5 @@ isrvd_get "/apisix/whitelist" '.[] | {id, name, consumers}'
 ### 撤销白名单
 
 ```bash
-isrvd_post "/apisix/whitelist/revoke" '{"route_id":"ROUTE_ID","consumer_name":"app-client"}'
+isrvd_post "/apisix/whitelist/revoke" '{"route_id":"<ROUTE_ID>","consumer_name":"<USERNAME>"}'
 ```
