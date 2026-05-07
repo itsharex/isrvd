@@ -59,31 +59,48 @@
 - 新增/修改/删除 配置项或环境变量
 - 新增/修改/删除 Shell 脚本中的命令或参数
 
+### Skill 文件结构
+
+```
+skills/isrvd/
+├── SKILL.md                      ← 索引 + 决策树 + 常见工作流
+├── scripts/api.sh                ← 认证持久化 + API 调用封装
+└── docs/
+    ├── docker/{containers,images,networks,volumes,registries}.md
+    ├── swarm/{info,services,tasks}.md
+    ├── compose.md
+    ├── apisix/{routes,upstreams,consumers,ssl}.md
+    └── system/{overview,config,account,filer}.md
+```
+
 ### 需要同步更新的文件
 
 | 代码变更位置 | 需同步更新的文档 |
 |---|---|
-| `internal/server/ctrl_*.go`（路由/参数） | `skills/isrvd/docs/*.md` 对应章节 |
-| `pkgs/*/`（数据结构） | `skills/isrvd/docs/*.md` 中的字段表 |
-| `internal/server/route.go`（路由注册） | `skills/isrvd/SKILL.md` API 速查表 |
-| 部署/运维相关变更 | `skills/isrvd/scripts/*.sh` |
-| 新功能/新模块 | `skills/isrvd/SKILL.md` 决策树 |
+| `internal/server/ctrl_docker.go` | `skills/isrvd/docs/docker/` 下对应资源文件 |
+| `internal/server/ctrl_swarm.go` | `skills/isrvd/docs/swarm/` 下对应资源文件 |
+| `internal/server/ctrl_apisix.go` | `skills/isrvd/docs/apisix/` 下对应资源文件 |
+| `internal/server/ctrl_compose.go` | `skills/isrvd/docs/compose.md` |
+| `internal/server/ctrl_system.go` / `ctrl_account.go` | `skills/isrvd/docs/system/` 下对应文件 |
+| `pkgs/*/`（数据结构变更） | 对应 docs 文件中的字段表 |
+| 新增路由/模块 | `skills/isrvd/SKILL.md` 索引表 + 决策树 |
+| 脚本相关变更 | `skills/isrvd/scripts/api.sh` |
 
 ### 执行步骤
 
-1. **识别影响范围**：修改代码后，明确哪些文档和 skills 文件会受影响
+1. **识别影响范围**：修改代码后，定位对应的 docs 文件（按模块+资源查找）
 2. **同步更新文档**：
-   - API 变更 → 更新 `docs/*.md` 中对应的路由、请求体、响应字段
-   - 数据结构变更 → 更新 `docs/*.md` 中的字段表，确保与 Go struct 定义一致
-   - 新增路由 → 在 `SKILL.md` API 速查表中添加条目
-   - 脚本相关变更 → 更新 `scripts/*.sh` 中的对应命令
-3. **验证一致性**：确认文档中的字段名、类型、路径与代码完全匹配
+   - API 变更 → 更新对应 docs 文件的 bash 用法、请求体、响应字段
+   - 数据结构变更 → 更新字段表，确保与 Go struct json tag 一致
+   - 新增路由 → 在 `SKILL.md` 索引表和决策树中添加条目
+3. **验证格式**：所有 API 必须以 `isrvd_get/post/put/patch/delete/upload` bash 用法为主要表达方式，不得只写 HTTP 格式
 
 ### 注意事项
 
 - 文档中标注"只读"的字段（如 `create_time`、`update_time`、`id`）也必须列出
 - 请求体和响应体中的字段必须与 Go struct 的 json tag 完全一致
 - 路由路径必须与 `ctrl_*.go` 中的注册路径完全一致
+- 每个 API 端点必须有对应的 bash 示例，不能只写 `GET /api/...` HTTP 格式
 
 ---
 
