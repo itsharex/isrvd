@@ -190,65 +190,41 @@
 
   /* 按钮样式 */
   .btn {
-    @apply inline-flex items-center justify-center px-4 py-2 font-medium rounded-xl transition-all duration-200;
-    @apply focus:outline-none focus:ring-2 focus:ring-offset-2;
+    @apply inline-flex items-center justify-center gap-1.5 px-4 py-2.5 text-sm font-medium rounded-lg transition-colors;
+    @apply focus:outline-none;
     @apply disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
   .btn-primary {
-    @apply bg-primary-500 text-white;
-    @apply hover:bg-primary-600;
-    @apply focus:ring-primary-500;
-    @apply active:scale-95;
-    box-shadow: 0 4px 14px 0 rgba(14, 165, 233, 0.39);
+    @apply bg-primary-500 text-white hover:bg-primary-600;
   }
 
   .btn-secondary {
-    @apply bg-slate-100 text-slate-700;
-    @apply hover:bg-slate-200;
-    @apply focus:ring-slate-500;
+    @apply bg-white border border-slate-200 text-slate-700 hover:bg-slate-50;
   }
 
   .btn-success {
-    @apply bg-emerald-500 text-white;
-    @apply hover:bg-emerald-600;
-    @apply focus:ring-emerald-500;
-    box-shadow: 0 4px 14px 0 rgba(16, 185, 129, 0.39);
+    @apply bg-emerald-500 text-white hover:bg-emerald-600;
   }
 
   .btn-danger {
-    @apply bg-red-500 text-white;
-    @apply hover:bg-red-600;
-    @apply focus:ring-red-500;
-    box-shadow: 0 4px 14px 0 rgba(239, 68, 68, 0.39);
+    @apply bg-red-500 text-white hover:bg-red-600;
   }
 
   .btn-cyan {
-    @apply bg-cyan-500 text-white;
-    @apply hover:bg-cyan-600;
-    @apply focus:ring-cyan-500;
-    box-shadow: 0 4px 14px 0 rgba(6, 182, 212, 0.39);
+    @apply bg-cyan-500 text-white hover:bg-cyan-600;
   }
 
   .btn-indigo {
-    @apply bg-indigo-500 text-white;
-    @apply hover:bg-indigo-600;
-    @apply focus:ring-indigo-500;
-    box-shadow: 0 4px 14px 0 rgba(99, 102, 241, 0.39);
+    @apply bg-indigo-500 text-white hover:bg-indigo-600;
   }
 
   .btn-rose {
-    @apply bg-rose-500 text-white;
-    @apply hover:bg-rose-600;
-    @apply focus:ring-rose-500;
-    box-shadow: 0 4px 14px 0 rgba(244, 63, 94, 0.39);
+    @apply bg-rose-500 text-white hover:bg-rose-600;
   }
 
   .btn-violet {
-    @apply bg-violet-500 text-white;
-    @apply hover:bg-violet-600;
-    @apply focus:ring-violet-500;
-    box-shadow: 0 4px 14px 0 rgba(139, 92, 246, 0.39);
+    @apply bg-violet-500 text-white hover:bg-violet-600;
   }
 
   .btn-ghost {
