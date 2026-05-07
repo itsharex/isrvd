@@ -10,6 +10,7 @@ import ConfirmModal from '@/component/confirm.vue'
 import NavigationBar from '@/component/navigation.vue'
 import NotificationManager from '@/component/notification.vue'
 import PageAgent from '@/component/page-agent.vue'
+import ToolbarLinks from '@/component/toolbar-links.vue'
 import UserMenu from '@/component/user-menu.vue'
 
 import AuthLogin from '@/views/account/login.vue'
@@ -19,7 +20,7 @@ const { state: filerState, actions: filerActions } = initFilerProvider()
 setRouterGuard(actions.hasPerm, () => state.permissionsLoaded, actions.isAuthenticated)
 
 @Component({
-    components: { ConfirmModal, NavigationBar, NotificationManager, PageAgent, UserMenu, AuthLogin }
+    components: { ConfirmModal, NavigationBar, NotificationManager, PageAgent, ToolbarLinks, UserMenu, AuthLogin }
 })
 class App extends Vue {
     @Provide(APP_STATE_KEY) state = state
@@ -68,19 +69,7 @@ export default toNative(App)
         </button>
 
         <!-- 工具栏按钮区域 -->
-        <div class="flex items-center gap-2 overflow-x-auto ml-auto">
-          <a
-            v-for="link in state.toolbarLinks"
-            :key="link.url"
-            :href="link.url"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="flex items-center gap-2 px-2 py-2 rounded-lg text-sm font-medium text-slate-500 hover:bg-slate-100 transition-colors whitespace-nowrap flex-shrink-0"
-          >
-            <i v-if="link.icon" :class="link.icon.includes(' ') ? link.icon : `fas ${link.icon}`"></i>
-            <span>{{ link.label }}</span>
-          </a>
-        </div>
+        <ToolbarLinks />
 
         <!-- 用户信息 -->
         <div class="flex items-center gap-1">
