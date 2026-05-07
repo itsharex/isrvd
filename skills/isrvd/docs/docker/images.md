@@ -19,8 +19,8 @@ isrvd_get "/docker/images" '.[].{tags: .repoTags, size}'
 ## 查看镜像详情
 
 ```bash
-isrvd_get "/docker/image/IMAGE_ID"
-isrvd_get "/docker/image/IMAGE_ID" '{tags: .repoTags, arch: .architecture, cmd, env}'
+isrvd_get "/docker/image/<IMAGE_ID>"
+isrvd_get "/docker/image/<IMAGE_ID>" '{tags: .repoTags, arch: .architecture, cmd, env}'
 ```
 
 | 字段 | 类型 | 说明 |
@@ -41,32 +41,32 @@ isrvd_get "/docker/image/IMAGE_ID" '{tags: .repoTags, arch: .architecture, cmd, 
 ## 搜索镜像
 
 ```bash
-isrvd_get "/docker/images/search?name=nginx"
+isrvd_get "/docker/images/search?name=<KEYWORD>"
 ```
 
 ## 构建镜像
 
 ```bash
-isrvd_post "/docker/image/build" '{"dockerfile":"FROM nginx:latest\nCOPY . /app","tag":"myimage:v1"}'
+isrvd_post "/docker/image/build" '{"dockerfile":"<DOCKERFILE_CONTENT>","tag":"<IMAGE>:<TAG>"}'
 ```
 
 ## 镜像打标签
 
 ```bash
-isrvd_post "/docker/image/IMAGE_ID/tag" '{"repoTag":"myrepo/nginx:v2"}'
+isrvd_post "/docker/image/<IMAGE_ID>/tag" '{"repoTag":"<REPO>/<NAME>:<TAG>"}'
 ```
 
 ## 镜像删除
 
 ```bash
-isrvd_post "/docker/image/IMAGE_ID/action" '{"action":"remove"}'
+isrvd_post "/docker/image/<IMAGE_ID>/action" '{"action":"remove"}'
 ```
 
 ## 拉取镜像
 
 ```bash
-isrvd_post "/docker/image/pull" '{"image":"nginx:latest"}'
-isrvd_post "/docker/image/pull" '{"image":"myapp:v1","registryUrl":"https://registry.example.com","namespace":"myns"}'
+isrvd_post "/docker/image/pull" '{"image":"<IMAGE>"}'
+isrvd_post "/docker/image/pull" '{"image":"<IMAGE>","registryUrl":"<REGISTRY_URL>","namespace":"<NS>"}'
 ```
 
 > `registryUrl` 为空则从 Docker Hub 拉取
@@ -74,5 +74,5 @@ isrvd_post "/docker/image/pull" '{"image":"myapp:v1","registryUrl":"https://regi
 ## 推送镜像
 
 ```bash
-isrvd_post "/docker/image/push" '{"image":"myapp:v1","registryUrl":"https://registry.example.com","namespace":"myns"}'
+isrvd_post "/docker/image/push" '{"image":"<IMAGE>","registryUrl":"<REGISTRY_URL>","namespace":"<NS>"}'
 ```

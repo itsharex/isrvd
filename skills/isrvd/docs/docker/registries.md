@@ -17,13 +17,13 @@ isrvd_get "/docker/registries" '.[].{name,url,username}'
 ## 添加仓库
 
 ```bash
-isrvd_post "/docker/registry" '{"name":"私有仓库","url":"https://registry.example.com","username":"user","password":"pass","description":"描述"}'
+isrvd_post "/docker/registry" '{"name":"<NAME>","url":"<REGISTRY_URL>","username":"<USER>","password":"<PASS>","description":"<DESC>"}'
 ```
 
 ## 更新仓库
 
 ```bash
-isrvd_put "/docker/registry?url=https://registry.example.com" '{"name":"新名称","url":"https://registry.example.com","username":"user","password":"newpass","description":"描述"}'
+isrvd_put "/docker/registry?url=<REGISTRY_URL>" '{"name":"<NAME>","url":"<REGISTRY_URL>","username":"<USER>","password":"<PASS>","description":"<DESC>"}'
 ```
 
 > 密码为空时保留原密码。
@@ -31,5 +31,5 @@ isrvd_put "/docker/registry?url=https://registry.example.com" '{"name":"新名�
 ## 删除仓库
 
 ```bash
-isrvd_delete "/docker/registry?url=https://registry.example.com"
+isrvd_delete "/docker/registry?url=<REGISTRY_URL>"
 ```

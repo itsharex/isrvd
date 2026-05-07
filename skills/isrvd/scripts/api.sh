@@ -3,7 +3,6 @@
 # isrvd API Harness — 认证持久化 + 通用 curl 封装
 # 用法: source scripts/api.sh
 # =============================================================================
-set -euo pipefail
 
 ISRVD_CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/isrvd"
 ISRVD_CONFIG_FILE="$ISRVD_CONFIG_DIR/profile.json"
@@ -118,17 +117,79 @@ _isrvd_check() {
   _isrvd_load_config 2>/dev/null || true
 
   if [ -z "$ISRVD_BASE_URL" ] || [ -z "$ISRVD_TOKEN" ]; then
-    _red "✗ 未认证。请先执行:"
-    _red "  isrvd_login <base_url> <username> <password>"
-    _red "  isrvd_token <base_url> <token>"
+    _red "✗ 未认证。请先执行:" >&2
+    _red "  isrvd_login <base_url> <username> <password>" >&2
+    _red "  isrvd_token <base_url> <token>" >&2
     return 1
   fi
+}
+
+# ---------------------------------------------------------------------------
+# _isrvd_format — 数组对象自动转紧凑表格
+# 输入: jq 输出（stdin），输出: 表格或原样
+# 表格格式: [N]{field1,field2,...}:
+#             val1,val2,...
+# ---------------------------------------------------------------------------
+_isrvd_format() {
+  local input
+  input=$(cat)
+  [ -z "$input" ] && return
+
+  local line_count first_line first_type
+  line_count=$(printf '%s\n' "$input" | wc -l | tr -d ' ')
+  first_line=$(printf '%s\n' "$input" | head -1)
+  first_type=$(printf '%s' "$first_line" | jq -r 'type' 2>/dev/null) || {
+    printf '%s\n' "$input"; return
+  }
+
+  local _fmt='keys_unsorted as $ks |
+    [$ks[] as $k | .[$k]] |
+    map(if . == null then "null"
+        elif type == "string" then @json
+        elif type == "number" or type == "boolean" then tostring
+        else tojson end) |
+    "  " + join(",")'
+
+  # 多行对象 → 表格
+  if [ "$line_count" -gt 1 ] && [ "$first_type" = "object" ]; then
+    local keys
+    keys=$(printf '%s' "$first_line" | jq -r 'keys_unsorted | join(",")')
+    printf '[%s]{%s}:\n' "$line_count" "$keys"
+    printf '%s\n' "$input" | jq -r "$_fmt"
+    return
+  fi
+
+  # 单行数组（元素为对象）→ 表格
+  if [ "$line_count" -eq 1 ] && [ "$first_type" = "array" ]; then
+    local arr_len inner_type
+    arr_len=$(printf '%s' "$input" | jq -r 'length')
+    if [ "$arr_len" -gt 0 ]; then
+      inner_type=$(printf '%s' "$input" | jq -r '.[0] | type')
+      if [ "$inner_type" = "object" ]; then
+        local keys
+        keys=$(printf '%s' "$input" | jq -r '.[0] | keys_unsorted | join(",")')
+        printf '[%s]{%s}:\n' "$arr_len" "$keys"
+        printf '%s' "$input" | jq -r "(.[\$zero] | keys_unsorted) as \$ks |
+          .[] | . as \$o |
+          [\$ks[] as \$k | \$o[\$k]] |
+          map(if . == null then \"null\"
+              elif type == \"string\" then @json
+              elif type == \"number\" or type == \"boolean\" then tostring
+              else tojson end) |
+          \"  \" + join(\",\")" --argjson zero 0
+        return
+      fi
+    fi
+  fi
+
+  printf '%s\n' "$input"
 }
 
 # ---------------------------------------------------------------------------
 # _isrvd_curl — 底层 curl 封装
 # 参数: method path [body] [jq_filter]
 # 默认输出紧凑 JSON（.payload），传 jq_filter 可按需提取字段
+# 数组对象自动转紧凑表格格式，大幅减少 token 消耗
 # ---------------------------------------------------------------------------
 _isrvd_curl() {
   local method="$1"
@@ -172,7 +233,7 @@ _isrvd_curl() {
   raw=$(echo "$output" | sed '$d')
 
   if [[ ! "$http_code" =~ ^2 ]]; then
-    echo "$raw" | jq -c . 2>/dev/null || echo "$raw"
+    echo "$raw" | jq -rc . 2>/dev/null || echo "$raw"
     _red "✗ HTTP $http_code" >&2
     return 1
   fi
@@ -181,11 +242,14 @@ _isrvd_curl() {
   local payload
   payload=$(echo "$raw" | jq -c '.payload // .' 2>/dev/null) || payload="$raw"
 
+  local result
   if [ -n "$jq_filter" ]; then
-    echo "$payload" | jq -c "$jq_filter"
+    result=$(echo "$payload" | jq -rc "$jq_filter")
   else
-    echo "$payload" | jq -c .
+    result=$(echo "$payload" | jq -rc .)
   fi
+
+  printf '%s\n' "$result" | _isrvd_format
 }
 
 # ---------------------------------------------------------------------------
@@ -286,10 +350,10 @@ isrvd API Harness
   认证优先级: 环境变量 > 配置文件
 
   示例:
-    isrvd_login "http://10.0.0.1:8080" "admin" "mypassword"
+    isrvd_token "$ISRVD_APIURL" "$ISRVD_APITOKEN"
     isrvd_get "/docker/containers"
     isrvd_get "/docker/containers" '.[].{name,state}'
-    isrvd_post "/docker/container" '{"image":"nginx:latest","name":"web"}'
+    isrvd_post "/docker/container" '{"image":"...","name":"..."}'
     isrvd_get "/swarm/services" '.[] | {name, replicas, image}'
 EOF
 }
@@ -298,7 +362,7 @@ EOF
 # 自动加载配置
 # ---------------------------------------------------------------------------
 if _isrvd_load_config 2>/dev/null; then
-  _green "✓ isrvd harness 已加载 (${ISRVD_BASE_URL:-未配置})"
+  _green "✓ isrvd harness 已加载 (${ISRVD_BASE_URL:-未配置})" >&2
 else
-  _yellow "○ isrvd harness 已加载，未找到配置。执行 isrvd_login 或 isrvd_token 初始化。"
+  _yellow "○ isrvd harness 已加载，未找到配置。执行 isrvd_login 或 isrvd_token 初始化。" >&2
 fi

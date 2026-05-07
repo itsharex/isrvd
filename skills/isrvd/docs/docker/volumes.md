@@ -18,8 +18,8 @@ isrvd_get "/docker/volumes" '.[].{name,driver,size}'
 ## 查看数据卷详情
 
 ```bash
-isrvd_get "/docker/volume/VOL_NAME"
-isrvd_get "/docker/volume/VOL_NAME" '{name, size, refCount, usedBy}'
+isrvd_get "/docker/volume/<VOL_NAME>"
+isrvd_get "/docker/volume/<VOL_NAME>" '{name, size, refCount, usedBy}'
 ```
 
 额外字段：`scope, refCount, usedBy[]{id, name, mountPath, readOnly}`
@@ -27,11 +27,11 @@ isrvd_get "/docker/volume/VOL_NAME" '{name, size, refCount, usedBy}'
 ## 创建数据卷
 
 ```bash
-isrvd_post "/docker/volume" '{"name":"my-vol","driver":"local"}'
+isrvd_post "/docker/volume" '{"name":"<NAME>","driver":"local"}'
 ```
 
 ## 删除数据卷
 
 ```bash
-isrvd_post "/docker/volume/VOL_NAME/action" '{"action":"remove"}'
+isrvd_post "/docker/volume/<VOL_NAME>/action" '{"action":"remove"}'
 ```

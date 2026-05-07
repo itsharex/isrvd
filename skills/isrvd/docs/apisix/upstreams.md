@@ -29,23 +29,23 @@ isrvd_get "/apisix/upstreams" '.[] | {id, name, type, nodes}'
 ## 查看上游详情
 
 ```bash
-isrvd_get "/apisix/upstream/UPSTREAM_ID"
+isrvd_get "/apisix/upstream/<UPSTREAM_ID>"
 ```
 
 ## 创建上游
 
 ```bash
-isrvd_post "/apisix/upstream" '{"name":"backend","type":"roundrobin","nodes":{"10.0.0.1:8080":1,"10.0.0.2:8080":2},"retries":2,"timeout":{"connect":5,"send":10,"read":10}}'
+isrvd_post "/apisix/upstream" '{"name":"<NAME>","type":"roundrobin","nodes":{"<HOST>:<PORT>":<WEIGHT>},"retries":2,"timeout":{"connect":5,"send":10,"read":10}}'
 ```
 
 ## 更新上游
 
 ```bash
-isrvd_put "/apisix/upstream/UPSTREAM_ID" '{"name":"backend","type":"roundrobin","nodes":{"10.0.0.1:8080":1,"10.0.0.3:8080":1}}'
+isrvd_put "/apisix/upstream/<UPSTREAM_ID>" '{"name":"<NAME>","type":"roundrobin","nodes":{"<HOST>:<PORT>":<WEIGHT>}}'
 ```
 
 ## 删除上游
 
 ```bash
-isrvd_delete "/apisix/upstream/UPSTREAM_ID"
+isrvd_delete "/apisix/upstream/<UPSTREAM_ID>"
 ```

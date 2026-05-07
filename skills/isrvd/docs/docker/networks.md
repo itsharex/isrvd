@@ -18,8 +18,8 @@ isrvd_get "/docker/networks" '.[].{name,driver,subnet}'
 ## 查看网络详情
 
 ```bash
-isrvd_get "/docker/network/NETWORK_ID"
-isrvd_get "/docker/network/NETWORK_ID" '{name, subnet, gateway, containers}'
+isrvd_get "/docker/network/<NETWORK_ID>"
+isrvd_get "/docker/network/<NETWORK_ID>" '{name, subnet, gateway, containers}'
 ```
 
 额外字段：`gateway, internal, enableIPv6, containers[]{id, name, ipv4, ipv6, macAddress}`
@@ -27,11 +27,11 @@ isrvd_get "/docker/network/NETWORK_ID" '{name, subnet, gateway, containers}'
 ## 创建网络
 
 ```bash
-isrvd_post "/docker/network" '{"name":"my-net","driver":"bridge","subnet":"172.20.0.0/16"}'
+isrvd_post "/docker/network" '{"name":"<NAME>","driver":"<DRIVER>","subnet":"<CIDR>"}'
 ```
 
 ## 删除网络
 
 ```bash
-isrvd_post "/docker/network/NETWORK_ID/action" '{"action":"remove"}'
+isrvd_post "/docker/network/<NETWORK_ID>/action" '{"action":"remove"}'
 ```

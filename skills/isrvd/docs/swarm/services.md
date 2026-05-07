@@ -28,19 +28,19 @@ isrvd_get "/swarm/services" '.[] | {name, image, replicas, runningTasks}'
 ## 查看服务详情
 
 ```bash
-isrvd_get "/swarm/service/SVC_ID"
-isrvd_get "/swarm/service/SVC_ID" '{name, image, replicas, runningTasks, ports, env}'
+isrvd_get "/swarm/service/<SVC_ID>"
+isrvd_get "/swarm/service/<SVC_ID>" '{name, image, replicas, runningTasks, ports, env}'
 ```
 
 ## 创建服务
 
 ```bash
 isrvd_post "/swarm/service" '{
-  "name": "web",
-  "image": "nginx:latest",
-  "replicas": 3,
-  "ports": [{"targetPort": 80, "publishedPort": 80, "protocol": "tcp"}],
-  "mounts": [{"type": "bind", "source": "/data", "target": "/app/data"}]
+  "name": "<NAME>",
+  "image": "<IMAGE>",
+  "replicas": <N>,
+  "ports": [{"targetPort": <PORT>, "publishedPort": <PORT>, "protocol": "tcp"}],
+  "mounts": [{"type": "bind", "source": "<HOST_PATH>", "target": "<CONTAINER_PATH>"}]
 }'
 ```
 
@@ -61,26 +61,26 @@ isrvd_post "/swarm/service" '{
 ## 扩缩容
 
 ```bash
-isrvd_post "/swarm/service/SVC_ID/action" '{"action":"scale","replicas":5}'
+isrvd_post "/swarm/service/<SVC_ID>/action" '{"action":"scale","replicas":<N>}'
 ```
 
 ## 删除服务
 
 ```bash
-isrvd_post "/swarm/service/SVC_ID/action" '{"action":"remove"}'
+isrvd_post "/swarm/service/<SVC_ID>/action" '{"action":"remove"}'
 ```
 
 ## 强制更新（重新部署）
 
 ```bash
-isrvd_post "/swarm/service/SVC_ID/force-update"
+isrvd_post "/swarm/service/<SVC_ID>/force-update"
 ```
 
 ## 服务日志
 
 ```bash
-isrvd_get "/swarm/service/SVC_ID/logs?tail=100"
-isrvd_get "/swarm/service/SVC_ID/logs?tail=20" '.logs'
+isrvd_get "/swarm/service/<SVC_ID>/logs?tail=100"
+isrvd_get "/swarm/service/<SVC_ID>/logs?tail=20" '.logs'
 ```
 
 返回：`{"logs": ["timestamped log line", ...]}`

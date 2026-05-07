@@ -5,7 +5,7 @@
 ## 列出任务
 
 ```
-GET /api/swarm/tasks?serviceID=服务ID
+GET /api/swarm/tasks?serviceID=<SVC_ID>
 ```
 
 返回 `Task[]`：
@@ -25,5 +25,5 @@ GET /api/swarm/tasks?serviceID=服务ID
 | updatedAt | string | 更新时间 |
 
 ```bash
-isrvd_get "/swarm/tasks?serviceID=abc123" '.[] | {nodeName, state, slot}'
+isrvd_get "/swarm/tasks?serviceID=<SVC_ID>" '.[] | {nodeName, state, slot}'
 ```
