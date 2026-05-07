@@ -1,150 +1,58 @@
 # Compose 部署 API
 
-> 所有接口前缀: `/api/compose`
-> Compose 功能依赖 Docker 引擎可用
+## Docker Compose（单机部署）
 
----
+### 部署
 
-## §1 Docker Compose 部署（单机）
+```bash
+# JSON 方式
+isrvd_post "/compose/docker/deploy" "{\"projectName\":\"my-app\",\"content\":$(cat docker-compose.yml | jq -sR)}"
 
-### §1.1 部署
-
-```
-POST /api/compose/docker/deploy
-Content-Type: multipart/form-data
+# multipart 方式（带初始化文件）
+isrvd_upload "/compose/docker/deploy" "initFile" "./init.tar.gz" "projectName=my-app" "content=$(cat docker-compose.yml)"
 ```
 
 | 字段 | 类型 | 必填 | 说明 |
 |------|------|------|------|
-| content | string | ✅ | 完整的 docker-compose.yml 文本 |
-| projectName | string | ✅ | 项目名（匹配 `^[a-zA-Z0-9][a-zA-Z0-9_.-]*$`） |
-| initURL | string | | 附加运行文件 zip 下载地址 |
-| initFile | file | | 上传的附加运行文件 zip |
+| projectName | string | ✅ | 项目名 |
+| content | string | ✅ | docker-compose.yml 内容 |
+| initURL | string | | 初始化数据 URL |
+| initFile | file | | 初始化数据文件 |
 
-> ⚠️ 此接口使用 `multipart/form-data`（因为支持文件上传），不是 JSON。
+返回 `DeployResult`：`{target, items: string[], installDir}`
 
-返回 `DeployResult`：
-
-```json
-{
-  "target": "docker",
-  "items": ["容器名 (shortId)", "..."],
-  "installDir": "/path/to/install"
-}
-```
-
-### §1.2 获取已部署内容
-
-```
-GET /api/compose/docker/:name
-```
-
-返回该项目的 docker-compose.yml 内容。
-
-### §1.3 重建部署
-
-```
-POST /api/compose/docker/:name/redeploy
-Body: { "content": "新的 docker-compose.yml 文本" }
-```
-
----
-
-## §2 Swarm Stack 部署（集群）
-
-### §2.1 部署
-
-```
-POST /api/compose/swarm/deploy
-Content-Type: application/json
-Body: {
-  "content": "完整的 docker-compose.yml 文本",
-  "projectName": "项目名"
-}
-```
-
-> ⚠️ 与 Docker Compose 不同，Swarm 部署使用 JSON 格式。
-
-### §2.2 获取已部署内容
-
-```
-GET /api/compose/swarm/:name
-```
-
-### §2.3 重建部署
-
-```
-POST /api/compose/swarm/:name/redeploy
-Body: { "content": "新的 docker-compose.yml 文本" }
-```
-
----
-
-## §3 projectName 命名规则
-
-- 必须匹配正则: `^[a-zA-Z0-9][a-zA-Z0-9_.-]*$`
-- 以字母或数字开头
-- 只能包含字母、数字、下划线、点、连字符
-
----
-
-## §4 更新已有部署的镜像
-
-### Docker Compose 方式
+### 获取 Compose 文件内容
 
 ```bash
-# 1. 获取当前 compose 内容
 isrvd_get "/compose/docker/my-app"
-
-# 2. 修改 compose 中的镜像版本（在本地编辑）
-
-# 3. 重建部署
-isrvd_post "/compose/docker/my-app/redeploy" '{"content":"修改后的 compose 内容"}'
+isrvd_get "/compose/docker/my-app" '.content'
 ```
 
-### Swarm Stack 方式
+### 重新部署
 
 ```bash
-# 获取当前 compose 内容
-isrvd_get "/compose/swarm/my-stack"
-
-# 修改镜像版本后...
-isrvd_post "/compose/swarm/my-stack/redeploy" '{"content":"修改后的 compose 内容"}'
+isrvd_post "/compose/docker/my-app/redeploy" '{"content":"version: \"3\"\nservices:\n  web:\n    image: nginx:latest"}'
 ```
 
 ---
 
-## 常见工作流
+## Swarm Stack（集群部署）
 
-### 首次部署多容器应用
+### 部署
 
 ```bash
-# Docker Compose（单机）
-isrvd_upload "/compose/docker/deploy" "content" "" \
-  "content=version: '3.8'
-services:
-  web:
-    image: nginx:latest
-    ports:
-      - '80:80'
-  db:
-    image: mysql:8
-    environment:
-      MYSQL_ROOT_PASSWORD: secret" \
-  "projectName=my-app"
-
-# 或者带附加文件
-isrvd_upload "/compose/docker/deploy" "initFile" "./init-files.zip" \
-  "content=@docker-compose.yml" \
-  "projectName=my-app"
+isrvd_post "/compose/swarm/deploy" "{\"projectName\":\"my-stack\",\"content\":$(cat docker-compose.yml | jq -sR)}"
 ```
 
-### 使用 deploy.sh 快捷部署
+### 获取 Stack 文件内容
 
 ```bash
-# 单机 Compose 部署
-./scripts/deploy.sh compose my-app ./docker-compose.yml
+isrvd_get "/compose/swarm/my-stack"
+isrvd_get "/compose/swarm/my-stack" '.content'
+```
 
-# Swarm Stack 部署
-./scripts/deploy.sh swarm my-stack ./docker-compose.yml
+### 重新部署
+
+```bash
+isrvd_post "/compose/swarm/my-stack/redeploy" '{"content":"新的 compose 内容"}'
 ```
