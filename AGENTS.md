@@ -374,6 +374,33 @@
 
 系统终端走 `helper/shell.ts`，容器终端走 `helper/container-exec.ts`，禁止页面直接创建 Terminal/WebSocket 实例
 
+### 6.15 暗黑模式样式（强制）
+
+暗黑模式样式统一在 `webview/src/assets/dark.css` 中定义，**禁止在组件中使用 `dark:` 前缀**。
+
+**CSS 选择器转义规则**：
+
+| 原始类名 | CSS 选择器 | 说明 |
+|---|---|---|
+| `bg-white/80` | `.dark .bg-white\\/80` | 斜杠 `/` 转义为 `\\/` |
+| `lg:bg-white` | `.dark .lg\\:bg-white` | 冒号 `:` 转义为 `\\:` |
+| `hover:bg-slate-100` | `.dark .hover\\:bg-slate-100:hover` | `hover:` 转义 + `:hover` 伪类 |
+| `group-hover:text-primary-600` | `.dark .group:hover .group-hover\\:text-primary-600` | 组悬停需 `.group:hover` 父选择器 |
+
+**已覆盖的颜色类**：
+
+- 背景：`bg-slate-50/100/200/700/800/900`、`bg-white`、半透明 `bg-white/80/95`
+- 文字：`text-slate-100/200/300/400/500/600/700/800/900`
+- 强调色：`blue`、`primary`、`emerald`、`amber`、`red`、`indigo`、`violet`、`teal`、`cyan`、`rose`、`orange`、`sky`
+
+**新增颜色时必须同步更新**：
+
+1. 在 `dark.css` 对应色系区块添加样式
+2. 同时添加 `bg-`、`text-`、`hover:bg-`、`hover:text-` 等变体
+3. 检查是否有响应式前缀（`lg:`、`md:`）或组悬停（`group-hover:`）需求
+
+**终端/日志区域**：使用 `bg-slate-900` 保持深色背景，不跟随主题切换
+
 ---
 
 ## 7) 路由与导航
