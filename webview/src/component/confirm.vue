@@ -42,7 +42,7 @@ export default toNative(ConfirmModal)
       <div class="w-full max-w-3xl modal-card animate-scale-in">
         <!-- Header -->
         <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200/50">
-          <h3 class="text-lg font-semibold text-slate-800">{{ state.confirm.title }}</h3>
+          <h1 class="text-lg font-semibold text-slate-800">{{ state.confirm.title }}</h1>
           <button 
             type="button" 
             class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all duration-200"
@@ -57,7 +57,7 @@ export default toNative(ConfirmModal)
         <div class="px-6 py-6">
           <div class="text-center">
             <div 
-              class="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4"
+              class="w-16 h-16 rounded-lg flex items-center justify-center mx-auto mb-4"
               :class="iconColorClass.split(' ')[0]"
             >
               <i 

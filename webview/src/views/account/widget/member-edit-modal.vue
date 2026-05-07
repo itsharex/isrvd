@@ -295,9 +295,9 @@ export default toNative(MemberEditModal)
         <div class="flex items-center gap-2 mb-2">
           <label class="block text-sm font-medium text-slate-700">路由权限</label>
           <div class="ml-auto flex items-center gap-1">
-            <button type="button" class="px-2 py-1 rounded-md bg-blue-50 text-blue-600 hover:bg-blue-100 text-xs font-medium transition-colors" @click="selectAllRoutes">全选</button>
-            <button type="button" class="px-2 py-1 rounded-md bg-slate-50 text-slate-600 hover:bg-slate-100 text-xs font-medium transition-colors" @click="selectReadOnlyRoutes">只读</button>
-            <button type="button" class="px-2 py-1 rounded-md bg-red-50 text-red-600 hover:bg-red-100 text-xs font-medium transition-colors" @click="clearRoutes">清空</button>
+            <button type="button" class="px-2 py-0.5 rounded-md bg-blue-50 text-blue-600 hover:bg-blue-100 text-xs font-medium transition-colors" @click="selectAllRoutes">全选</button>
+            <button type="button" class="px-2 py-0.5 rounded-md bg-slate-50 text-slate-600 hover:bg-slate-100 text-xs font-medium transition-colors" @click="selectReadOnlyRoutes">只读</button>
+            <button type="button" class="px-2 py-0.5 rounded-md bg-red-50 text-red-600 hover:bg-red-100 text-xs font-medium transition-colors" @click="clearRoutes">清空</button>
           </div>
         </div>
         <div class="space-y-2">

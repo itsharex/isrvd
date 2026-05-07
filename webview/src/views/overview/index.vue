@@ -100,7 +100,7 @@ export default toNative(Overview)
       <div v-if="actions.hasPerm('GET /api/apisix/routes')" class="p-6 border-b border-slate-100">
         <div class="flex items-center gap-2 mb-4">
           <i class="fas fa-route text-orange-500 text-lg"></i>
-          <h2 class="text-base font-semibold text-slate-700">APISIX 网关</h2>
+          <h1 class="text-lg font-semibold text-slate-700">APISIX 网关</h1>
         </div>
         <ApisixOverview ref="apisixRef" />
       </div>
@@ -109,7 +109,7 @@ export default toNative(Overview)
       <div v-if="actions.hasPerm('GET /api/docker/containers')" class="p-6 border-b border-slate-100">
         <div class="flex items-center gap-2 mb-4">
           <i class="fab fa-docker text-blue-500 text-lg"></i>
-          <h2 class="text-base font-semibold text-slate-700">Docker 服务</h2>
+          <h1 class="text-lg font-semibold text-slate-700">Docker 服务</h1>
         </div>
         <DockerOverview ref="dockerRef" />
       </div>
@@ -118,7 +118,7 @@ export default toNative(Overview)
       <div v-if="actions.hasPerm('GET /api/swarm/info')" class="p-6 border-b border-slate-100">
         <div class="flex items-center gap-2 mb-4">
           <i class="fas fa-circle-nodes text-cyan-600 text-lg"></i>
-          <h2 class="text-base font-semibold text-slate-700">Swarm 集群</h2>
+          <h1 class="text-lg font-semibold text-slate-700">Swarm 集群</h1>
         </div>
         <SwarmOverview ref="swarmRef" />
       </div>
@@ -127,7 +127,7 @@ export default toNative(Overview)
       <div v-if="actions.hasPerm('GET /api/overview/status')" class="p-6 border-b border-slate-100">
         <div class="flex items-center gap-2 mb-4">
           <i class="fas fa-server text-slate-500 text-lg"></i>
-          <h2 class="text-base font-semibold text-slate-700">系统信息</h2>
+          <h1 class="text-lg font-semibold text-slate-700">系统信息</h1>
         </div>
         <SystemOverview ref="systemRef" />
       </div>

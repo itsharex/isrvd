@@ -70,7 +70,7 @@ export default toNative(NodeDetail)
             </div>
             <div>
               <h1 class="text-lg font-semibold text-slate-800">节点详情</h1>
-              <p class="text-xs text-slate-500 font-mono truncate max-w-xs">Node ID: {{ nodeId }}</p>
+              <p class="text-xs text-slate-600 font-mono truncate max-w-xs">Node ID: {{ nodeId }}</p>
             </div>
           </div>
           <div class="flex items-center gap-2">
@@ -87,7 +87,7 @@ export default toNative(NodeDetail)
             </div>
             <div class="min-w-0">
               <h1 class="text-lg font-semibold text-slate-800 truncate">节点详情</h1>
-              <p class="text-xs text-slate-500 font-mono truncate">{{ nodeId }}</p>
+              <p class="text-xs text-slate-600 font-mono truncate">{{ nodeId }}</p>
             </div>
           </div>
           <button class="w-9 h-9 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-600 transition-colors flex-shrink-0" title="刷新" @click="loadDetail()">
@@ -195,7 +195,7 @@ export default toNative(NodeDetail)
 
       <!-- Empty -->
       <div v-else class="flex flex-col items-center justify-center py-20">
-        <div class="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center mb-4">
+        <div class="w-16 h-16 rounded-lg bg-slate-100 flex items-center justify-center mb-4">
           <i class="fas fa-server text-4xl text-slate-300"></i>
         </div>
         <p class="text-slate-600 font-medium">未找到节点详情</p>

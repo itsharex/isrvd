@@ -40,7 +40,7 @@ export default toNative(UnzipModal)
 <template>
   <BaseModal ref="modalRef" v-model="isOpen" title="解压确认" :loading="filerState.loading" :confirm-disabled="!formData.file" @confirm="handleConfirm">
     <div v-if="formData.file" class="text-center py-6">
-      <div class="w-20 h-20 rounded-full bg-amber-400 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-amber-500/30">
+      <div class="w-16 h-16 rounded-lg bg-amber-400 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-amber-500/30">
         <i class="fas fa-expand-arrows-alt text-3xl text-white"></i>
       </div>
       <p class="text-lg text-slate-700 mb-2">

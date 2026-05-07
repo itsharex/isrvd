@@ -205,7 +205,7 @@ export default toNative(SystemDisk)
               <p class="text-xs font-semibold text-slate-700 truncate">{{ dp.Mountpoint }}</p>
               <p class="text-xs text-slate-400 shrink-0">{{ dp.Device }} · {{ dp.Fstype }}</p>
             </div>
-            <p class="text-xs text-slate-500 font-mono shrink-0">{{ fmtBytes(dp.Used) }} / {{ fmtBytes(dp.Total) }} ({{ memPercent(dp.Used, dp.Total) }}%)</p>
+            <p class="text-xs text-slate-600 font-mono shrink-0">{{ fmtBytes(dp.Used) }} / {{ fmtBytes(dp.Total) }} ({{ memPercent(dp.Used, dp.Total) }}%)</p>
           </div>
           <div class="h-1 relative bg-slate-100 rounded overflow-hidden">
             <div :class="['absolute inset-y-0 left-0 rounded', barColor(memPercent(dp.Used, dp.Total))]" :style="{ width: memPercent(dp.Used, dp.Total) + '%' }"></div>

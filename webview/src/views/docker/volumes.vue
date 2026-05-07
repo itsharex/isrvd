@@ -186,7 +186,7 @@ export default toNative(Volumes)
 
             <!-- 挂载点 -->
             <div class="flex items-start gap-2 mb-3">
-              <span class="text-xs text-slate-400 flex-shrink-0">挂载点</span>
+              <span class="text-xs text-slate-400 flex-shrink-0 mt-0.5">挂载点</span>
               <code class="font-mono text-xs text-slate-500 break-all" :title="vol.mountpoint">{{ vol.mountpoint }}</code>
             </div>
 
@@ -211,7 +211,7 @@ export default toNative(Volumes)
 
       <!-- Empty State -->
       <div v-else class="flex flex-col items-center justify-center py-20">
-        <div class="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center mb-4">
+        <div class="w-16 h-16 rounded-lg bg-slate-100 flex items-center justify-center mb-4">
           <i class="fas fa-database text-4xl text-slate-300"></i>
         </div>
         <p class="text-slate-600 font-medium mb-1">暂无数据卷</p>

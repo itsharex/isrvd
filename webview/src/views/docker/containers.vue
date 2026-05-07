@@ -249,24 +249,24 @@ export default toNative(Containers)
               </div>
             </div>
 
-              <!-- 状态 -->
-              <div class="flex items-start gap-2 mb-3">
-                <span class="text-xs text-slate-400 flex-shrink-0 mt-0.5">状态</span>
-                <span :class="['text-xs px-2 py-0.5 rounded-lg', ct.state === 'running' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600']" :title="ct.status">{{ ct.state }}</span>
-              </div>
-              <!-- 创建时间 -->
-              <div class="flex items-center gap-2 mb-3">
-                <span class="text-xs text-slate-400 flex-shrink-0">创建</span>
-                <span class="text-xs text-slate-500">{{ formatTime(new Date(ct.created * 1000).toISOString()) }}</span>
-              </div>
+            <!-- 状态 -->
+            <div class="flex items-start gap-2 mb-3">
+              <span class="text-xs text-slate-400 flex-shrink-0 mt-0.5">状态</span>
+              <span :class="['text-xs px-2 py-0.5 rounded-lg', ct.state === 'running' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600']" :title="ct.status">{{ ct.state }}</span>
+            </div>
+            <!-- 创建时间 -->
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-xs text-slate-400 flex-shrink-0">创建</span>
+              <span class="text-xs text-slate-500">{{ formatTime(new Date(ct.created * 1000).toISOString()) }}</span>
+            </div>
 
-              <!-- 端口信息 -->
-              <div v-if="ct.ports && ct.ports.length > 0" class="flex items-start gap-2 mb-3">
-                <span class="text-xs text-slate-400 flex-shrink-0 mt-0.5">端口</span>
-                <div class="flex flex-wrap gap-1">
-                  <code v-for="port in ct.ports" :key="port" class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-mono bg-slate-100 text-slate-600">{{ port }}</code>
-                </div>
+            <!-- 端口信息 -->
+            <div v-if="ct.ports && ct.ports.length > 0" class="flex items-start gap-2 mb-3">
+              <span class="text-xs text-slate-400 flex-shrink-0 mt-0.5">端口</span>
+              <div class="flex flex-wrap gap-1">
+                <code v-for="port in ct.ports" :key="port" class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-mono bg-slate-100 text-slate-600">{{ port }}</code>
               </div>
+            </div>
 
             <!-- 底部：操作按钮 -->
             <div class="flex flex-wrap gap-1.5 pt-2 border-t border-slate-100">
@@ -301,7 +301,7 @@ export default toNative(Containers)
 
       <!-- Empty State -->
       <div v-else class="flex flex-col items-center justify-center py-20">
-        <div class="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center mb-4">
+        <div class="w-16 h-16 rounded-lg bg-slate-100 flex items-center justify-center mb-4">
           <i class="fab fa-docker text-4xl text-slate-300"></i>
         </div>
         <p class="text-slate-600 font-medium mb-1">暂无容器</p>

@@ -186,7 +186,7 @@
 
   /* 徽章样式 */
   .badge {
-    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium;
+    @apply inline-flex items-center px-3 py-1 rounded-lg text-xs font-medium;
   }
 
   .badge-primary {

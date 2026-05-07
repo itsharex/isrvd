@@ -221,8 +221,8 @@ export default toNative(Networks)
               <span class="text-xs text-slate-500">{{ net.scope }}</span>
             </div>
 
-            <div class="flex items-center gap-2 mb-3">
-              <span class="text-xs text-slate-400 flex-shrink-0">子网</span>
+            <div class="flex items-start gap-2 mb-3">
+              <span class="text-xs text-slate-400 flex-shrink-0 mt-0.5">子网</span>
               <code class="font-mono text-xs text-slate-500">{{ net.subnet || '-' }}</code>
             </div>
             
@@ -254,7 +254,7 @@ export default toNative(Networks)
 
       <!-- Empty State -->
       <div v-else class="flex flex-col items-center justify-center py-20">
-        <div class="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center mb-4">
+        <div class="w-16 h-16 rounded-lg bg-slate-100 flex items-center justify-center mb-4">
           <i class="fas fa-network-wired text-4xl text-slate-300"></i>
         </div>
         <p class="text-slate-600 font-medium mb-1">暂无自定义网络</p>

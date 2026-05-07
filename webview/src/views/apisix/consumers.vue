@@ -165,7 +165,7 @@ export default toNative(Consumers)
 
       <!-- 空状态 -->
       <div v-else-if="filteredConsumers.length === 0" class="flex flex-col items-center justify-center py-20">
-        <div class="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center mb-4">
+        <div class="w-16 h-16 rounded-lg bg-slate-100 flex items-center justify-center mb-4">
           <i class="fas fa-users text-4xl text-slate-300"></i>
         </div>
         <p class="text-slate-600 font-medium mb-1">暂无消费者</p>
@@ -199,18 +199,18 @@ export default toNative(Consumers)
                     </div>
                   </div>
                 </td>
-                  <td class="px-4 py-3">
-                    <div v-if="Object.keys(consumer.plugins || {}).length > 0" class="flex flex-wrap gap-1">
-                      <span v-for="(_, name) in consumer.plugins" :key="name" class="inline-flex items-center px-1.5 py-0.5 bg-blue-50 text-blue-700 rounded text-xs">{{ name }}</span>
-                    </div>
-                    <span v-else class="text-xs text-slate-400">-</span>
-                  </td>
-                  <td class="px-4 py-3">
-                    <div v-if="getConsumerRoutes(consumer.username).length > 0" class="flex flex-wrap gap-1">
-                      <span v-for="name in getConsumerRoutes(consumer.username)" :key="name" class="inline-flex items-center px-1.5 py-0.5 bg-amber-50 text-amber-700 rounded text-xs">{{ name }}</span>
-                    </div>
-                    <span v-else class="text-xs text-slate-400">-</span>
-                  </td>
+                <td class="px-4 py-3">
+                  <div v-if="Object.keys(consumer.plugins || {}).length > 0" class="flex flex-wrap gap-1">
+                    <span v-for="(_, name) in consumer.plugins" :key="name" class="inline-flex items-center px-1.5 py-0.5 bg-blue-50 text-blue-700 rounded text-xs">{{ name }}</span>
+                  </div>
+                  <span v-else class="text-xs text-slate-400">-</span>
+                </td>
+                <td class="px-4 py-3">
+                  <div v-if="getConsumerRoutes(consumer.username).length > 0" class="flex flex-wrap gap-1">
+                    <span v-for="name in getConsumerRoutes(consumer.username)" :key="name" class="inline-flex items-center px-1.5 py-0.5 bg-amber-50 text-amber-700 rounded text-xs">{{ name }}</span>
+                  </div>
+                  <span v-else class="text-xs text-slate-400">-</span>
+                </td>
                 <td class="px-4 py-3 whitespace-nowrap text-sm text-slate-600">
                   {{ formatTs(consumer.create_time) }}
                 </td>
@@ -255,22 +255,22 @@ export default toNative(Consumers)
               <span class="text-xs text-slate-500">{{ formatTs(consumer.create_time) }}</span>
             </div>
             
-              <div class="flex items-start gap-2 mb-3">
-                <span class="text-xs text-slate-400 flex-shrink-0 mt-0.5">插件</span>
-                <div v-if="Object.keys(consumer.plugins || {}).length > 0" class="flex flex-wrap gap-1">
-                  <span v-for="(_, name) in consumer.plugins" :key="name" class="inline-flex items-center px-1.5 py-0.5 bg-blue-50 text-blue-700 rounded text-xs">{{ name }}</span>
-                </div>
-                <span v-else class="text-xs text-slate-400">-</span>
+            <div class="flex items-start gap-2 mb-3">
+              <span class="text-xs text-slate-400 flex-shrink-0 mt-0.5">插件</span>
+              <div v-if="Object.keys(consumer.plugins || {}).length > 0" class="flex flex-wrap gap-1">
+                <span v-for="(_, name) in consumer.plugins" :key="name" class="inline-flex items-center px-1.5 py-0.5 bg-blue-50 text-blue-700 rounded text-xs">{{ name }}</span>
               </div>
+              <span v-else class="text-xs text-slate-400">-</span>
+            </div>
 
-              <!-- 授权路由 -->
-              <div class="flex items-start gap-2 mb-3">
-                <span class="text-xs text-slate-400 flex-shrink-0 mt-0.5">路由</span>
-                <div v-if="getConsumerRoutes(consumer.username).length > 0" class="flex flex-wrap gap-1">
-                  <span v-for="name in getConsumerRoutes(consumer.username)" :key="name" class="inline-flex items-center px-1.5 py-0.5 bg-amber-50 text-amber-700 rounded text-xs">{{ name }}</span>
-                </div>
-                <span v-else class="text-xs text-slate-400">-</span>
+            <!-- 授权路由 -->
+            <div class="flex items-start gap-2 mb-3">
+              <span class="text-xs text-slate-400 flex-shrink-0 mt-0.5">路由</span>
+              <div v-if="getConsumerRoutes(consumer.username).length > 0" class="flex flex-wrap gap-1">
+                <span v-for="name in getConsumerRoutes(consumer.username)" :key="name" class="inline-flex items-center px-1.5 py-0.5 bg-amber-50 text-amber-700 rounded text-xs">{{ name }}</span>
               </div>
+              <span v-else class="text-xs text-slate-400">-</span>
+            </div>
             
             <!-- 底部：操作按钮 -->
             <div class="flex flex-wrap gap-1.5 pt-2 border-t border-slate-100">

@@ -177,7 +177,7 @@ export default toNative(FileExplorer)
       <div v-else class="space-y-3">
         <!-- Empty State -->
         <div v-if="files.length === 0" class="flex flex-col items-center justify-center py-20">
-          <div class="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center mb-4">
+          <div class="w-16 h-16 rounded-lg bg-slate-100 flex items-center justify-center mb-4">
             <i class="fas fa-folder-open text-4xl text-slate-300"></i>
           </div>
           <p class="text-slate-600 font-medium mb-1">此目录为空</p>
@@ -388,8 +388,8 @@ export default toNative(FileExplorer)
 
             <!-- 权限 -->
             <div class="flex items-start gap-2 mb-3">
-              <span class="text-xs text-slate-400 flex-shrink-0 mt-1">权限</span>
-              <code class="text-xs bg-slate-100 px-2 py-1 rounded font-mono text-slate-700">{{ file.mode }}</code>
+              <span class="text-xs text-slate-400 flex-shrink-0 mt-0.5">权限</span>
+              <code class="text-xs bg-slate-100 px-2 py-0.5 rounded font-mono text-slate-700">{{ file.mode }}</code>
             </div>
 
             <!-- 底部：操作按钮 -->

@@ -33,7 +33,9 @@
 
 ### 禁止
 
-- `pkgs/` 依赖 `internal/`；handler 中堆叠业务逻辑；service/handler 直接从配置创建外部客户端
+- `pkgs/` 依赖 `internal/`
+- `handler` 中堆叠业务逻辑
+- `service/handler` 直接从配置创建外部客户端
 
 ### 内聚与耦合
 
@@ -203,15 +205,17 @@
 - 详情页右侧仅保留刷新等功能按钮，**不添加返回按钮**
 
 **toolbar 图标与标题（强制）**：
+
 - 图标：`w-9 h-9 rounded-lg`（不得用 `w-10`/`w-8` 或 `rounded-xl`）
-- 标题：`<h1 class="text-lg font-semibold text-slate-800 truncate">`（不得用 `h3`/`text-base`）
+- 标题：`<h1 class="text-lg font-semibold text-slate-800 truncate">`（不得用 `h3`/`h2`/`text-base`）
 - 副标题：`<p class="text-xs text-slate-500 truncate">`
 - 移动端左侧容器：`flex items-center gap-3 min-w-0 flex-1`，图标加 `flex-shrink-0`，文字容器加 `min-w-0`
 - 桌面端右侧按钮区：`flex items-center gap-2 flex-shrink-0`（刷新等功能按钮）
 
-**空状态（强制）**：
-- 列表页空状态必须有两行文字：`<p class="text-slate-600 font-medium mb-1">暂无 xxx</p>` + `<p class="text-sm text-slate-400">引导操作文字</p>`
-- 详情页「未找到」状态只需一行文字
+**图标样式（强制）**：
+
+- 形状：`rounded-lg`（禁止 `rounded-full`/`rounded-2xl`）
+- 尺寸：`w-16 h-16`（空状态/登录）、`w-12 h-12`（加载）、`w-10 h-10`（移动卡片）、`w-9 h-9`（toolbar）、`w-8 h-8`（桌面表格）
 
 ### 6.7 列表双视图（强制）
 
@@ -219,22 +223,8 @@
 - 移动：`md:hidden space-y-3 p-4` + 卡片列表（**`p-4` 不得省略**，卡片 `rounded-xl border border-slate-200 bg-white p-4 transition-all hover:shadow-sm`）
 
 **移动端卡片顶部结构（强制）**：
-```html
-<!-- 有右侧内容（状态 badge 等）时 -->
-<div class="flex items-center justify-between mb-3">
-  <div class="flex items-center gap-3 min-w-0 flex-1">
-    <div class="w-10 h-10 rounded-lg bg-xxx flex items-center justify-center flex-shrink-0">
-      <i class="fas fa-xxx text-white text-base"></i>
-    </div>
-    <div class="min-w-0">
-      <span class="font-medium text-slate-800 text-sm truncate block">{{ 主名称 }}</span>
-      <span class="text-xs text-slate-400 truncate block mt-0.5">{{ 副信息 }}</span>
-    </div>
-  </div>
-  <!-- 右侧状态 badge 等 -->
-</div>
 
-<!-- 无右侧内容时 -->
+```html
 <div class="flex items-center gap-3 min-w-0 flex-1 mb-3">
   <div class="w-10 h-10 rounded-lg bg-xxx flex items-center justify-center flex-shrink-0">
     <i class="fas fa-xxx text-white text-base"></i>
@@ -245,50 +235,36 @@
   </div>
 </div>
 ```
-- 卡片图标：`w-10 h-10 rounded-lg`（不得用 `w-9` 或 `rounded-xl`）
-- 主名称：`font-medium text-slate-800 text-sm truncate block`（**`truncate block` 不得省略，不得用额外 flex 包裹**）
-- 副信息：`text-xs text-slate-400 truncate block mt-0.5`（**`mt-0.5` 不得省略**，不得用 `font-normal`）
-- 无右侧内容时顶部容器用 `flex items-center gap-3 min-w-0 flex-1 mb-3`（**必须有 `flex-1`**）
+
+- 卡片图标：`w-10 h-10 rounded-lg`
+- 主名称：`font-medium text-slate-800 text-sm truncate block`
+- 副信息：`text-xs text-slate-400 truncate block mt-0.5`
 
 ### 6.8 移动端卡片属性行对齐（强制）
 
-卡片内每条属性行由 `<标签 span>` + `<值>` 组成，对齐方式取决于值的类型，**行间距统一 `mb-3`**（不得用 `mb-2`）：
+卡片内每条属性行由 `<标签 span>` + `<值>` 组成，**行间距统一 `mb-3`**：
 
-| 值的类型 | 行容器 | 标签 `mt` | 值文字色 |
-|---|---|---|---|
-| 纯文本（无 padding） | `flex items-center gap-2` | 无 `mt` | `text-slate-500` |
-| badge / code（`py-0.5`） | `flex items-start gap-2` | `mt-0.5` | — |
-| badge / code（`py-1`） | `flex items-start gap-2` | `mt-1` | — |
-| 多行内容（`flex-wrap` 标签组） | `flex items-start gap-2` | `mt-0.5` | — |
-| 分隔符 `\|`（与 badge 同行） | — | `mt-0.5` | — |
-
-> 纯文本值统一用 `text-slate-500`（不得用 `text-slate-600`）；badge/code 颜色由语义决定；**badge 形状统一用 `rounded` 或 `rounded-lg`，不得用 `rounded-full`**
+- 纯文本：`flex items-center gap-2 mb-3`，值用 `text-slate-500`
+- badge/code：`flex items-start gap-2 mb-3`，标签加 `mt-0.5`
+- badge 形状：`rounded` 或 `rounded-lg`（禁止 `rounded-full`）
 
 ```html
-<!-- 纯文本：值用 text-slate-500 -->
+<!-- 纯文本 -->
 <div class="flex items-center gap-2 mb-3">
   <span class="text-xs text-slate-400 flex-shrink-0">创建</span>
   <span class="text-xs text-slate-500">{{ value }}</span>
 </div>
 
-<!-- badge（py-0.5）：用 rounded 或 rounded-lg，不用 rounded-full -->
+<!-- badge -->
 <div class="flex items-start gap-2 mb-3">
   <span class="text-xs text-slate-400 flex-shrink-0 mt-0.5">状态</span>
   <span class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-medium ...">{{ value }}</span>
 </div>
 
-<!-- code（py-1） -->
+<!-- code -->
 <div class="flex items-start gap-2 mb-3">
-  <span class="text-xs text-slate-400 flex-shrink-0 mt-1">路径</span>
-  <code class="text-xs bg-slate-100 px-2 py-1 rounded break-all">{{ value }}</code>
-</div>
-
-<!-- 多行标签组 -->
-<div class="flex items-start gap-2 mb-3">
-  <span class="text-xs text-slate-400 flex-shrink-0 mt-0.5">标签</span>
-  <div class="flex flex-wrap gap-1">
-    <span v-for="tag in tags" :key="tag" class="inline-flex items-center px-1.5 py-0.5 rounded text-xs ...">{{ tag }}</span>
-  </div>
+  <span class="text-xs text-slate-400 flex-shrink-0 mt-0.5">路径</span>
+  <code class="text-xs bg-slate-100 px-2 py-0.5 rounded break-all">{{ value }}</code>
 </div>
 ```
 
@@ -301,10 +277,11 @@
 - **主名称直接用 `<span class="font-medium text-slate-800 truncate block">`，不得用额外 flex 容器包裹**
 
 **桌面端表格文字颜色规范**：
-- 时间列、普通数据列：`text-sm text-slate-600`（不得用 `text-slate-500`）
-- 次要/辅助信息（副信息行）：`text-xs text-slate-400`
-- 操作按钮列：`flex justify-end items-center gap-1`（**gap 必须是 `gap-1`，不得用 `gap-0.5`**）
-- **桌面端表格状态 badge 形状统一用 `rounded` 或 `rounded-lg`，不得用 `rounded-full`**
+
+- 数据列：`text-sm text-slate-600`
+- 副信息行：`text-xs text-slate-400`
+- 操作按钮列：`flex justify-end items-center gap-1`
+- badge 形状：`rounded` 或 `rounded-lg`（禁止 `rounded-full`）
 
 ```html
 <td class="px-4 py-3 max-w-[280px]">
@@ -372,6 +349,7 @@
 > APISIX 域各资源编辑按钮颜色：路由 `indigo`、消费者 `violet`、SSL `cyan`、上游 `emerald`、插件配置 `rose`；其余模块（docker/swarm/account/filer/compose）统一 `blue`
 
 **移动端操作按钮区（强制）**：
+
 - 容器：`flex flex-wrap gap-1.5 pt-2 border-t border-slate-100`（**`gap-1.5` 不得用 `gap-1`**）
 
 ### 6.11 表单与敏感字段
@@ -387,6 +365,7 @@
 ### 6.13 import 分组排序
 
 `<script>` 内 import 按以下顺序，组间空一行，组内字母升序：
+
 1. 第三方库  2. `@/store/...`  3. `@/router`  4. `@/service/...`  5. `@/helper/...`  6. `@/component/...`  7. `@/views/...`  8. 其余 `@/`
 
 同模块普通导入在前、`type` 导入在后紧邻。批量整理：`cd webview && python3 sort-imports.py src`（支持 `--dry-run`）

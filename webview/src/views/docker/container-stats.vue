@@ -462,7 +462,7 @@ export default toNative(ContainerStats)
 
         <!-- 容器未运行提示 -->
         <div v-else-if="container && container.state !== 'running'" class="flex flex-col items-center justify-center py-12 gap-3 text-slate-400 text-sm">
-          <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center">
+          <div class="w-16 h-16 rounded-lg bg-slate-100 flex items-center justify-center">
             <i class="fas fa-stop text-slate-400 text-lg"></i>
           </div>
           <span>容器未运行，无法采集监控数据</span>

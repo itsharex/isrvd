@@ -71,7 +71,7 @@ export default toNative(ServiceLogs)
             </div>
             <div>
               <h1 class="text-lg font-semibold text-slate-800">{{ serviceName || '服务详情' }}</h1>
-              <p class="text-xs text-slate-500 font-mono truncate max-w-xs">{{ serviceId }}</p>
+              <p class="text-xs text-slate-600 font-mono truncate max-w-xs">{{ serviceId }}</p>
             </div>
           </div>
           <div class="flex items-center gap-2">
@@ -97,7 +97,7 @@ export default toNative(ServiceLogs)
               </div>
               <div class="min-w-0">
                 <h1 class="text-lg font-semibold text-slate-800 truncate">{{ serviceName || '服务详情' }}</h1>
-                <p class="text-xs text-slate-500 font-mono truncate">{{ serviceId.slice(0, 12) }}</p>
+                <p class="text-xs text-slate-600 font-mono truncate">{{ serviceId.slice(0, 12) }}</p>
               </div>
             </div>
             <button class="w-9 h-9 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-600 transition-colors flex-shrink-0" title="刷新" @click="loadLogs()">
@@ -106,10 +106,10 @@ export default toNative(ServiceLogs)
           </div>
           <div class="flex justify-center gap-1 bg-slate-100 p-1 rounded-lg">
             <button v-if="actions.hasPerm('GET /api/swarm/service/:id')" :class="['px-3 py-1 text-xs font-medium rounded-md transition-all duration-200 flex items-center gap-1.5', activeTab() === 'swarm-service-info' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700']" @click="switchTab('swarm-service-info')">
-              <i class="fas fa-circle-info"></i><span class="hidden sm:inline">详情</span>
+              <i class="fas fa-circle-info"></i><span>详情</span>
             </button>
             <button v-if="actions.hasPerm('GET /api/swarm/service/:id/logs')" :class="['px-3 py-1 text-xs font-medium rounded-md transition-all duration-200 flex items-center gap-1.5', activeTab() === 'swarm-service-logs' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700']" @click="switchTab('swarm-service-logs')">
-              <i class="fas fa-file-lines"></i><span class="hidden sm:inline">日志</span>
+              <i class="fas fa-file-lines"></i><span>日志</span>
             </button>
           </div>
         </div>
@@ -133,7 +133,7 @@ export default toNative(ServiceLogs)
         </div>
         <pre v-else-if="logsContent.length > 0" class="bg-slate-900 text-slate-100 rounded-xl p-3 md:p-4 text-xs font-mono overflow-auto max-h-[600px] whitespace-pre-wrap break-all">{{ logsContent.join('') }}</pre>
         <div v-else class="flex flex-col items-center justify-center py-16">
-          <div class="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mb-3">
+          <div class="w-16 h-16 rounded-lg bg-slate-100 flex items-center justify-center mb-4">
             <i class="fas fa-file-lines text-2xl text-slate-300"></i>
           </div>
           <p class="text-slate-500 text-sm">暂无日志</p>

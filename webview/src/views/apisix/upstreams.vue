@@ -174,7 +174,7 @@ export default toNative(Upstreams)
       </div>
 
       <div v-else-if="filteredUpstreams.length === 0" class="flex flex-col items-center justify-center py-20">
-        <div class="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center mb-4">
+        <div class="w-16 h-16 rounded-lg bg-slate-100 flex items-center justify-center mb-4">
           <i class="fas fa-diagram-project text-4xl text-slate-300"></i>
         </div>
         <p class="text-slate-600 font-medium mb-1">暂无上游</p>
@@ -207,10 +207,10 @@ export default toNative(Upstreams)
                   </div>
                 </td>
                 <td class="px-4 py-3">
-                  <span :class="['text-xs px-2 py-1 rounded', getUpstreamTypeClass(upstream.type)]">{{ upstream.type || '-' }}</span>
+                  <span :class="['text-xs px-2 py-0.5 rounded', getUpstreamTypeClass(upstream.type)]">{{ upstream.type || '-' }}</span>
                   <span v-if="upstream.type === 'chash' && upstream.key" class="ml-2 text-xs text-slate-400">{{ upstream.hash_on }}: {{ upstream.key }}</span>
                 </td>
-                  <td class="px-4 py-3 text-xs text-slate-600 break-all">{{ getUpstreamNodes(upstream) }}</td>
+                <td class="px-4 py-3 text-xs text-slate-600 break-all">{{ getUpstreamNodes(upstream) }}</td>
                 <td class="px-4 py-3 whitespace-nowrap text-sm text-slate-600">{{ formatTs(upstream.create_time) }}</td>
                 <td class="px-4 py-3">
                   <div class="flex justify-end items-center gap-1">
@@ -245,18 +245,18 @@ export default toNative(Upstreams)
               </div>
             </div>
 
-              <div class="flex items-center gap-2 mb-3">
-                <span class="text-xs text-slate-400 flex-shrink-0">策略</span>
-                <span class="text-xs text-slate-600">{{ upstream.type || '-' }}</span>
-              </div>
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-xs text-slate-400 flex-shrink-0">策略</span>
+              <span class="text-xs text-slate-600">{{ upstream.type || '-' }}</span>
+            </div>
             <div v-if="upstream.type === 'chash' && upstream.key" class="flex items-center gap-2 mb-3">
               <span class="text-xs text-slate-400 flex-shrink-0">哈希</span>
               <span class="text-xs text-slate-500 break-all">{{ upstream.hash_on }}: {{ upstream.key }}</span>
             </div>
-              <div class="flex items-center gap-2 mb-3">
-                <span class="text-xs text-slate-400 flex-shrink-0">节点</span>
-                <span class="text-xs text-slate-600 break-all">{{ getUpstreamNodes(upstream) }}</span>
-              </div>
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-xs text-slate-400 flex-shrink-0">节点</span>
+              <span class="text-xs text-slate-600 break-all">{{ getUpstreamNodes(upstream) }}</span>
+            </div>
             <div class="flex items-center gap-2 mb-3">
               <span class="text-xs text-slate-400 flex-shrink-0">创建</span>
               <span class="text-xs text-slate-500">{{ formatTs(upstream.create_time) }}</span>

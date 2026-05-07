@@ -144,10 +144,10 @@ export default toNative(Profile)
         </div>
         <!-- 移动端 Tab -->
         <div class="flex md:hidden mt-3 bg-slate-100 p-1 rounded-lg gap-0.5">
-          <button type="button" :class="['flex-1 px-2 py-1 rounded-md text-xs font-medium transition-colors', activeTab === 'password' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500']" @click="activeTab = 'password'">
+          <button type="button" :class="['flex-1 px-2 py-0.5 rounded-md text-xs font-medium transition-colors', activeTab === 'password' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500']" @click="activeTab = 'password'">
             <i class="fas fa-lock mr-1"></i>修改密码
           </button>
-          <button type="button" :class="['flex-1 px-2 py-1 rounded-md text-xs font-medium transition-colors', activeTab === 'token' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500']" @click="activeTab = 'token'">
+          <button type="button" :class="['flex-1 px-2 py-0.5 rounded-md text-xs font-medium transition-colors', activeTab === 'token' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500']" @click="activeTab = 'token'">
             <i class="fas fa-key mr-1"></i>API 令牌
           </button>
         </div>

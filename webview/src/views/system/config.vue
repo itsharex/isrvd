@@ -134,16 +134,16 @@ export default toNative(Config)
         </div>
         <!-- 移动端 Tab -->
         <div class="flex md:hidden mt-3 bg-slate-100 p-1 rounded-lg gap-0.5 overflow-x-auto">
-          <button type="button" :class="['flex-1 min-w-0 px-2 py-1 rounded-md text-xs font-medium transition-colors whitespace-nowrap', activeTab === 'server' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500']" @click="activeTab = 'server'">
+          <button type="button" :class="['flex-1 min-w-0 px-2 py-0.5 rounded-md text-xs font-medium transition-colors whitespace-nowrap', activeTab === 'server' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500']" @click="activeTab = 'server'">
             <i class="fas fa-server mr-1"></i>全局
           </button>
-          <button type="button" :class="['flex-1 min-w-0 px-2 py-1 rounded-md text-xs font-medium transition-colors whitespace-nowrap', activeTab === 'agent' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500']" @click="activeTab = 'agent'">
+          <button type="button" :class="['flex-1 min-w-0 px-2 py-0.5 rounded-md text-xs font-medium transition-colors whitespace-nowrap', activeTab === 'agent' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500']" @click="activeTab = 'agent'">
             <i class="fas fa-robot mr-1"></i>Agent
           </button>
-          <button type="button" :class="['flex-1 min-w-0 px-2 py-1 rounded-md text-xs font-medium transition-colors whitespace-nowrap', activeTab === 'app' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500']" @click="activeTab = 'app'">
+          <button type="button" :class="['flex-1 min-w-0 px-2 py-0.5 rounded-md text-xs font-medium transition-colors whitespace-nowrap', activeTab === 'app' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500']" @click="activeTab = 'app'">
             <i class="fas fa-layer-group mr-1"></i>应用
           </button>
-          <button type="button" :class="['flex-1 min-w-0 px-2 py-1 rounded-md text-xs font-medium transition-colors whitespace-nowrap', activeTab === 'links' ? 'bg-white text-orange-600 shadow-sm' : 'text-slate-500']" @click="activeTab = 'links'">
+          <button type="button" :class="['flex-1 min-w-0 px-2 py-0.5 rounded-md text-xs font-medium transition-colors whitespace-nowrap', activeTab === 'links' ? 'bg-white text-orange-600 shadow-sm' : 'text-slate-500']" @click="activeTab = 'links'">
             <i class="fas fa-link mr-1"></i>导航
           </button>
         </div>

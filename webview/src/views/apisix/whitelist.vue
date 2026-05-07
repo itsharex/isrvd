@@ -132,7 +132,7 @@ export default toNative(Whitelist)
 
       <!-- Empty -->
       <div v-else-if="filteredWhitelist.length === 0" class="flex flex-col items-center justify-center py-20">
-        <div class="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center mb-4">
+        <div class="w-16 h-16 rounded-lg bg-slate-100 flex items-center justify-center mb-4">
           <i class="fas fa-shield-halved text-4xl text-slate-300"></i>
         </div>
         <p class="text-slate-600 font-medium mb-1">暂无白名单数据</p>

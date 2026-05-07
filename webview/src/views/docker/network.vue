@@ -52,7 +52,7 @@ export default toNative(NetworkDetail)
             </div>
             <div>
               <h1 class="text-lg font-semibold text-slate-800">网络详情</h1>
-              <p class="text-xs text-slate-500 font-mono truncate max-w-xs">{{ detailData?.name || networkId }}</p>
+              <p class="text-xs text-slate-600 font-mono truncate max-w-xs">{{ detailData?.name || networkId }}</p>
             </div>
           </div>
           <div class="flex items-center gap-2">
@@ -69,7 +69,7 @@ export default toNative(NetworkDetail)
             </div>
             <div class="min-w-0">
               <h1 class="text-lg font-semibold text-slate-800 truncate">网络详情</h1>
-              <p class="text-xs text-slate-500 font-mono truncate">{{ detailData?.name || networkId }}</p>
+              <p class="text-xs text-slate-600 font-mono truncate">{{ detailData?.name || networkId }}</p>
             </div>
           </div>
           <div class="flex items-center gap-1 flex-shrink-0">
@@ -102,7 +102,7 @@ export default toNative(NetworkDetail)
             </div>
             <div>
               <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">驱动</label>
-                <div class="px-3 py-2 bg-slate-50 rounded-lg text-slate-700">{{ detailData.driver }}</div>
+              <div class="px-3 py-2 bg-slate-50 rounded-lg text-slate-700">{{ detailData.driver }}</div>
             </div>
             <div>
               <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">范围</label>
@@ -166,7 +166,7 @@ export default toNative(NetworkDetail)
 
       <!-- Empty -->
       <div v-else class="flex flex-col items-center justify-center py-20">
-        <div class="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center mb-4">
+        <div class="w-16 h-16 rounded-lg bg-slate-100 flex items-center justify-center mb-4">
           <i class="fas fa-network-wired text-4xl text-slate-300"></i>
         </div>
         <p class="text-slate-600 font-medium">未找到网络详情</p>

@@ -165,7 +165,7 @@ export default toNative(SSLs)
       </div>
 
       <div v-else-if="filteredSSLs.length === 0" class="flex flex-col items-center justify-center py-20">
-        <div class="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center mb-4">
+        <div class="w-16 h-16 rounded-lg bg-slate-100 flex items-center justify-center mb-4">
           <i class="fas fa-certificate text-4xl text-slate-300"></i>
         </div>
         <p class="text-slate-600 font-medium mb-1">暂无证书</p>
@@ -197,7 +197,7 @@ export default toNative(SSLs)
                   </div>
                 </td>
                 <td class="px-4 py-3">
-                  <span :class="['text-xs px-2 py-1 rounded', getStatusClass(ssl)]">{{ getStatusText(ssl) }}</span>
+                  <span :class="['text-xs px-2 py-0.5 rounded', getStatusClass(ssl)]">{{ getStatusText(ssl) }}</span>
                 </td>
                 <td class="px-4 py-3 whitespace-nowrap text-sm text-slate-600">{{ formatTs(ssl.update_time || ssl.create_time) }}</td>
                 <td class="px-4 py-3">
@@ -231,7 +231,7 @@ export default toNative(SSLs)
                   <div class="text-xs text-slate-400 mt-0.5 truncate font-mono">{{ ssl.id }}</div>
                 </div>
               </div>
-              <span :class="['text-xs px-2 py-1 rounded flex-shrink-0', getStatusClass(ssl)]">{{ getStatusText(ssl) }}</span>
+              <span :class="['text-xs px-2 py-0.5 rounded flex-shrink-0', getStatusClass(ssl)]">{{ getStatusText(ssl) }}</span>
             </div>
 
             <div class="flex items-center gap-2 mb-3">

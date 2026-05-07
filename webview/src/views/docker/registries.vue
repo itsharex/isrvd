@@ -162,9 +162,9 @@ export default toNative(Registries)
                 </td>
                 <td class="px-4 py-3">
                   <div class="flex flex-col gap-1">
-                    <code class="text-xs bg-slate-100 px-2 py-1 rounded self-start">{{ indexServerAddress || 'https://index.docker.io/v1/' }}</code>
+                    <code class="text-xs bg-slate-100 px-2 py-0.5 rounded self-start">{{ indexServerAddress || 'https://index.docker.io/v1/' }}</code>
                     <template v-if="daemonMirrors.length > 0">
-                      <code v-for="mirror in daemonMirrors" :key="mirror" class="text-xs bg-sky-50 text-sky-700 px-2 py-1 rounded self-start inline-flex items-center gap-1">
+                      <code v-for="mirror in daemonMirrors" :key="mirror" class="text-xs bg-sky-50 text-sky-700 px-2 py-0.5 rounded self-start inline-flex items-center gap-1">
                         <i class="fas fa-bolt text-sky-400 text-xs"></i>{{ mirror }}
                       </code>
                     </template>
@@ -188,7 +188,7 @@ export default toNative(Registries)
                     </div>
                   </div>
                 </td>
-                <td class="px-4 py-3"><code class="text-xs bg-slate-100 px-2 py-1 rounded">{{ reg.url }}</code></td>
+                <td class="px-4 py-3"><code class="text-xs bg-slate-100 px-2 py-0.5 rounded">{{ reg.url }}</code></td>
                 <td class="px-4 py-3 text-sm text-slate-600">
                   <template v-if="reg.username">
                     <i class="fas fa-user text-slate-400 mr-1"></i>{{ reg.username }}
@@ -218,13 +218,13 @@ export default toNative(Registries)
           <div class="rounded-xl border border-slate-200 bg-white p-4 transition-all hover:shadow-sm">
             <div class="flex items-center justify-between mb-3">
               <div class="flex items-center gap-3 min-w-0 flex-1">
-              <div class="w-10 h-10 rounded-lg bg-blue-500 flex items-center justify-center flex-shrink-0">
-                <i class="fab fa-docker text-white text-base"></i>
-              </div>
-              <div class="min-w-0">
-                <span class="font-medium text-slate-800 text-sm truncate block">Docker Hub</span>
-                <span class="text-xs text-slate-400 truncate block mt-0.5">默认</span>
-              </div>
+                <div class="w-10 h-10 rounded-lg bg-blue-500 flex items-center justify-center flex-shrink-0">
+                  <i class="fab fa-docker text-white text-base"></i>
+                </div>
+                <div class="min-w-0">
+                  <span class="font-medium text-slate-800 text-sm truncate block">Docker Hub</span>
+                  <span class="text-xs text-slate-400 truncate block mt-0.5">默认</span>
+                </div>
               </div>
             </div>
 
@@ -250,13 +250,13 @@ export default toNative(Registries)
           <div v-for="reg in registries" :key="reg.url" class="rounded-xl border border-slate-200 bg-white p-4 transition-all hover:shadow-sm">
             <div class="flex items-center justify-between mb-3">
               <div class="flex items-center gap-3 min-w-0 flex-1">
-              <div class="w-10 h-10 rounded-lg bg-purple-400 flex items-center justify-center flex-shrink-0">
-                <i class="fas fa-warehouse text-white text-base"></i>
-              </div>
-              <div class="min-w-0">
-                <span class="font-medium text-slate-800 text-sm truncate block">{{ reg.name }}</span>
-                <span v-if="reg.description" class="text-xs text-slate-400 truncate block mt-0.5">{{ reg.description }}</span>
-              </div>
+                <div class="w-10 h-10 rounded-lg bg-purple-400 flex items-center justify-center flex-shrink-0">
+                  <i class="fas fa-warehouse text-white text-base"></i>
+                </div>
+                <div class="min-w-0">
+                  <span class="font-medium text-slate-800 text-sm truncate block">{{ reg.name }}</span>
+                  <span v-if="reg.description" class="text-xs text-slate-400 truncate block mt-0.5">{{ reg.description }}</span>
+                </div>
               </div>
             </div>
 

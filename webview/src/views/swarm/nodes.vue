@@ -254,7 +254,7 @@ export default toNative(Nodes)
             <!-- IP 地址（独立） -->
             <div class="flex items-center gap-2 mb-3">
               <span class="text-xs text-slate-400 flex-shrink-0">IP 地址</span>
-              <span class="text-xs text-slate-500 font-mono">{{ n.addr || '-' }}</span>
+              <span class="text-xs text-slate-600 font-mono">{{ n.addr || '-' }}</span>
             </div>
             <!-- 引擎版本（独立） -->
             <div class="flex items-center gap-2 mb-3">
@@ -284,7 +284,7 @@ export default toNative(Nodes)
         </div>
       </div>
       <div v-else class="flex flex-col items-center justify-center py-20">
-        <div class="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center mb-4">
+        <div class="w-16 h-16 rounded-lg bg-slate-100 flex items-center justify-center mb-4">
           <i class="fas fa-server text-4xl text-slate-300"></i>
         </div>
         <p class="text-slate-600 font-medium mb-1">暂无节点</p>

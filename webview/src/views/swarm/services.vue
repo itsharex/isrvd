@@ -245,7 +245,7 @@ export default toNative(Services)
             
             <!-- 端口信息 -->
             <div v-if="svc.ports && svc.ports.length" class="flex items-start gap-2 mb-3">
-              <span class="text-xs text-slate-400 flex-shrink-0">端口</span>
+              <span class="text-xs text-slate-400 flex-shrink-0 mt-0.5">端口</span>
               <div class="font-mono text-xs text-slate-500">
                 <div v-for="p in svc.ports" :key="p.publishedPort">{{ p.publishedPort }}:{{ p.targetPort }}/{{ p.protocol }}</div>
               </div>
@@ -282,7 +282,7 @@ export default toNative(Services)
         </div>
       </div>
       <div v-else class="flex flex-col items-center justify-center py-20">
-        <div class="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center mb-4">
+        <div class="w-16 h-16 rounded-lg bg-slate-100 flex items-center justify-center mb-4">
           <i class="fas fa-cubes text-4xl text-slate-300"></i>
         </div>
         <p class="text-slate-600 font-medium mb-1">暂无服务</p>

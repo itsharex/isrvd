@@ -161,7 +161,7 @@ export default toNative(PluginConfigs)
       </div>
 
       <div v-else-if="filteredConfigs.length === 0" class="flex flex-col items-center justify-center py-20">
-        <div class="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center mb-4">
+        <div class="w-16 h-16 rounded-lg bg-slate-100 flex items-center justify-center mb-4">
           <i class="fas fa-puzzle-piece text-4xl text-slate-300"></i>
         </div>
         <p class="text-slate-600 font-medium mb-1">暂无插件配置</p>
@@ -192,12 +192,12 @@ export default toNative(PluginConfigs)
                     </div>
                   </div>
                 </td>
-                  <td class="px-4 py-3">
-                    <div v-if="getPluginNames(config).length > 0" class="flex flex-wrap gap-1">
-                      <span v-for="name in getPluginNames(config)" :key="name" class="inline-flex items-center px-1.5 py-0.5 bg-rose-50 text-rose-700 rounded text-xs">{{ name }}</span>
-                    </div>
-                    <span v-else class="text-xs text-slate-400">未配置</span>
-                  </td>
+                <td class="px-4 py-3">
+                  <div v-if="getPluginNames(config).length > 0" class="flex flex-wrap gap-1">
+                    <span v-for="name in getPluginNames(config)" :key="name" class="inline-flex items-center px-1.5 py-0.5 bg-rose-50 text-rose-700 rounded text-xs">{{ name }}</span>
+                  </div>
+                  <span v-else class="text-xs text-slate-400">未配置</span>
+                </td>
                 <td class="px-4 py-3 whitespace-nowrap text-sm text-slate-600">{{ formatTs(config.create_time) }}</td>
                 <td class="px-4 py-3">
                   <div class="flex justify-end items-center gap-1">
@@ -232,13 +232,13 @@ export default toNative(PluginConfigs)
               </div>
             </div>
 
-              <div class="flex items-start gap-2 mb-3">
-                <span class="text-xs text-slate-400 flex-shrink-0 mt-0.5">插件</span>
-                <div v-if="getPluginNames(config).length > 0" class="flex flex-wrap gap-1">
-                  <span v-for="name in getPluginNames(config)" :key="name" class="inline-flex items-center px-1.5 py-0.5 bg-rose-50 text-rose-700 rounded text-xs">{{ name }}</span>
-                </div>
-                <span v-else class="text-xs text-slate-400">未配置</span>
+            <div class="flex items-start gap-2 mb-3">
+              <span class="text-xs text-slate-400 flex-shrink-0 mt-0.5">插件</span>
+              <div v-if="getPluginNames(config).length > 0" class="flex flex-wrap gap-1">
+                <span v-for="name in getPluginNames(config)" :key="name" class="inline-flex items-center px-1.5 py-0.5 bg-rose-50 text-rose-700 rounded text-xs">{{ name }}</span>
               </div>
+              <span v-else class="text-xs text-slate-400">未配置</span>
+            </div>
             <div class="flex items-center gap-2 mb-3">
               <span class="text-xs text-slate-400 flex-shrink-0">创建</span>
               <span class="text-xs text-slate-500">{{ formatTs(config.create_time) }}</span>

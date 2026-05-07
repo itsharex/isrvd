@@ -162,7 +162,7 @@ export default toNative(ComposeDeploy)
             <div class="w-9 h-9 rounded-lg bg-violet-500 flex items-center justify-center flex-shrink-0">
               <i class="fas fa-file-code text-white"></i>
             </div>
-          <div class="min-w-0 flex-1">
+            <div class="min-w-0 flex-1">
               <h1 class="text-lg font-semibold text-slate-800 truncate">Compose 部署</h1>
               <p class="text-xs text-slate-500 truncate">粘贴 compose.yml 或从应用市场选择</p>
             </div>

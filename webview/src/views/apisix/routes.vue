@@ -193,7 +193,7 @@ export default toNative(Routes)
       </div>
       <div v-if="loading" class="flex flex-col items-center justify-center py-20"><div class="w-12 h-12 spinner mb-3"></div><p class="text-slate-500">加载中...</p></div>
       <div v-else-if="filteredRoutes.length === 0" class="flex flex-col items-center justify-center py-20">
-        <div class="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center mb-4"><i class="fas fa-route text-4xl text-slate-300"></i></div>
+        <div class="w-16 h-16 rounded-lg bg-slate-100 flex items-center justify-center mb-4"><i class="fas fa-route text-4xl text-slate-300"></i></div>
         <p class="text-slate-600 font-medium mb-1">暂无路由</p>
         <p class="text-sm text-slate-400">点击「创建」添加新路由</p>
       </div>
@@ -224,10 +224,10 @@ export default toNative(Routes)
                     </div>
                   </div>
                 </td>
-                  <td class="px-4 py-3"><code class="text-xs font-mono text-slate-700 break-all">{{ getRouteUri(route) }}</code></td>
+                <td class="px-4 py-3"><code class="text-xs font-mono text-slate-700 break-all">{{ getRouteUri(route) }}</code></td>
                 <td class="px-4 py-3"><span :class="getRouteHost(route) === '*' ? 'text-slate-400' : 'text-teal-600 font-medium'" class="text-sm break-all">{{ getRouteHost(route) }}</span></td>
                 <td class="px-4 py-3"><span class="text-xs text-slate-600">{{ getRouteUpstreamType(route) || '-' }}</span></td>
-<td class="px-4 py-3"><span :class="getRouteUpstreamTagClass(route)" class="inline-block text-xs px-2 py-0.5 rounded-lg font-mono break-all">{{ getRouteUpstreamNodes(route) }}</span></td>
+                <td class="px-4 py-3"><span :class="getRouteUpstreamTagClass(route)" class="inline-block text-xs px-2 py-0.5 rounded-lg font-mono break-all">{{ getRouteUpstreamNodes(route) }}</span></td>
                 <td class="px-4 py-3">
                   <div class="flex justify-end items-center gap-1">
                     <button v-if="actions.hasPerm('PATCH /api/apisix/route/:id/status')" :class="['btn-icon', route.status === 1 ? 'text-amber-500 hover:bg-amber-50' : 'text-emerald-600 hover:bg-emerald-50']" :title="route.status === 1 ? '禁用' : '启用'" @click="toggleStatus(route)">
@@ -263,10 +263,10 @@ export default toNative(Routes)
             </div>
 
             <!-- 中间：URI和Host信息 -->
-              <div class="flex items-center gap-2 mb-3">
-                <span class="text-xs text-slate-400 flex-shrink-0">URI</span>
-                <code class="text-xs font-mono text-slate-700 break-all">{{ getRouteUri(route) }}</code>
-              </div>
+            <div class="flex items-start gap-2 mb-3">
+              <span class="text-xs text-slate-400 flex-shrink-0 mt-0.5">URI</span>
+              <code class="text-xs font-mono text-slate-700 break-all">{{ getRouteUri(route) }}</code>
+            </div>
 
             <div class="flex items-center gap-2 mb-3">
               <span class="text-xs text-slate-400 flex-shrink-0">Host</span>
@@ -277,10 +277,10 @@ export default toNative(Routes)
               <span class="text-xs text-slate-400 flex-shrink-0">策略</span>
               <span class="text-xs text-slate-500">{{ getRouteUpstreamType(route) || '-' }}</span>
             </div>
-              <div class="flex items-start gap-2 mb-3">
-                <span class="text-xs text-slate-400 flex-shrink-0 mt-0.5">上游</span>
-                <span :class="getRouteUpstreamTagClass(route)" class="inline-block text-xs px-2 py-0.5 rounded-lg font-mono break-all">{{ getRouteUpstreamNodes(route) }}</span>
-              </div>
+            <div class="flex items-start gap-2 mb-3">
+              <span class="text-xs text-slate-400 flex-shrink-0 mt-0.5">上游</span>
+              <span :class="getRouteUpstreamTagClass(route)" class="inline-block text-xs px-2 py-0.5 rounded-lg font-mono break-all">{{ getRouteUpstreamNodes(route) }}</span>
+            </div>
 
             <!-- 底部：操作按钮 -->
             <div class="flex flex-wrap gap-1.5 pt-2 border-t border-slate-100">
