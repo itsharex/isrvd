@@ -36,20 +36,30 @@
 .dark .bg-white { background-color: var(--dark-bg-card) !important; }
 .dark .bg-slate-100 { background-color: var(--dark-bg-elevated) !important; }
 .dark .bg-slate-200 { background-color: var(--dark-bg-hover) !important; }
+.dark .bg-slate-700 { background-color: #334155 !important; }
+.dark .bg-slate-800 { background-color: #1e293b !important; }
+.dark .hover\:bg-slate-800:hover { background-color: #1e293b !important; }
 
 /* 半透明背景 */
-.dark .bg-white\/80 { background-color: rgba(30, 41, 59, 0.8) !important; }
+.dark .bg-white\/80,
+.dark .lg\:bg-white\/80 { background-color: rgba(30, 41, 59, 0.8) !important; }
 .dark .bg-white\/95 { background-color: rgba(30, 41, 59, 0.95) !important; }
 .dark .bg-slate-50\/50 { background-color: rgba(15, 23, 42, 0.5) !important; }
 .dark .bg-slate-900\/60 { background-color: rgba(0, 0, 0, 0.6) !important; }
 
+/* 终端/日志区域保持深色 */
+.dark .bg-slate-900 { background-color: #0f172a !important; }
+
 /* === 文字颜色 === */
+.dark .text-slate-200 { color: var(--dark-text-secondary) !important; }
+.dark .text-slate-300 { color: var(--dark-text-muted) !important; }
 .dark .text-slate-400 { color: var(--dark-text-muted) !important; }
 .dark .text-slate-500 { color: var(--dark-text-secondary) !important; }
 .dark .text-slate-600 { color: var(--dark-text-primary) !important; }
 .dark .text-slate-700 { color: var(--dark-text-emphasis) !important; }
 .dark .text-slate-800 { color: var(--dark-text-heading) !important; }
 .dark .text-slate-900 { color: var(--dark-text-inverse) !important; }
+.dark .text-slate-100 { color: var(--dark-text-heading) !important; }
 
 /* === 边框颜色 === */
 .dark .border-slate-100,
@@ -63,11 +73,18 @@
 .dark .hover\:bg-slate-50:hover,
 .dark .hover\:bg-slate-100:hover { background-color: var(--dark-bg-elevated) !important; }
 .dark .hover\:bg-slate-200:hover { background-color: var(--dark-bg-hover) !important; }
+.dark .hover\:bg-white:hover { background-color: var(--dark-bg-elevated) !important; }
+.dark .hover\:bg-white\/20:hover { background-color: rgba(51, 65, 85, 0.2) !important; }
 .dark .hover\:text-slate-600:hover { color: var(--dark-text-emphasis) !important; }
 .dark .hover\:text-slate-700:hover,
 .dark .hover\:text-slate-900:hover { color: var(--dark-text-inverse) !important; }
+.dark .hover\:text-primary-600:hover { color: var(--dark-accent-blue) !important; }
 .dark .hover\:border-slate-300:hover { border-color: var(--dark-border-strong) !important; }
 .dark .hover\:border-slate-400:hover { border-color: var(--dark-text-muted) !important; }
+
+/* === 组悬停效果 === */
+.dark .group:hover .group-hover\:text-primary-600 { color: var(--dark-accent-blue) !important; }
+.dark .group:hover .group-hover\:border-slate-400 { border-color: var(--dark-text-muted) !important; }
 
 /* === 组件样式 === */
 .dark .card { background-color: var(--dark-bg-card) !important; border-color: var(--dark-border-default) !important; }
@@ -93,6 +110,7 @@
 
 /* 绿色 */
 .dark .bg-emerald-50 { background-color: rgba(6, 78, 59, 0.2) !important; }
+.dark .text-emerald-400,
 .dark .text-emerald-600,
 .dark .text-emerald-700 { color: var(--dark-accent-green) !important; }
 .dark .border-emerald-100,
@@ -152,6 +170,19 @@
 .dark .text-rose-600 { color: var(--dark-accent-rose) !important; }
 .dark .hover\:bg-rose-50:hover { background-color: rgba(159, 18, 57, 0.3) !important; }
 .dark .hover\:text-rose-600:hover { color: var(--dark-accent-rose) !important; }
+
+/* 橙色 */
+.dark .bg-orange-50 { background-color: rgba(88, 28, 5, 0.2) !important; }
+.dark .bg-orange-500 { background-color: #f97316 !important; }
+.dark .text-orange-500,
+.dark .text-orange-600,
+.dark .text-orange-700 { color: #fb923c !important; }
+.dark .hover\:bg-orange-50:hover { background-color: rgba(88, 28, 5, 0.3) !important; }
+
+/* 天蓝色 */
+.dark .bg-sky-50 { background-color: rgba(7, 89, 133, 0.2) !important; }
+.dark .text-sky-400 { color: #38bdf8 !important; }
+.dark .text-sky-700 { color: #7dd3fc !important; }
 
 /* === 分割线 === */
 .dark .border-slate-100 { border-color: var(--dark-border-default) !important; }
