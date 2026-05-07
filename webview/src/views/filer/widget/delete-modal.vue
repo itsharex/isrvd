@@ -51,6 +51,7 @@ export default toNative(DeleteModal)
         此操作不可恢复！
       </p>
     </div>
+
     <template #confirm-text>
       {{ appState.loading ? '删除中...' : '确认删除' }}
     </template>

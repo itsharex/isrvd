@@ -197,7 +197,7 @@ export default toNative(SystemDisk)
         总计 {{ fmtBytes(current.DiskTotal) }}，已用 {{ fmtBytes(current.DiskUsed) }}
       </span>
     </div>
-    <div ref="diskIOContainerRef" class="divide-y divide-slate-50">
+    <div ref="diskIOContainerRef" class="divide-y divide-slate-100">
       <div v-for="dp in current.DiskPartition" :key="dp.Mountpoint" class="px-4 py-3">
         <div class="flex flex-col gap-2">
           <div class="flex items-center justify-between gap-2">

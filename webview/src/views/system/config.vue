@@ -271,8 +271,10 @@ export default toNative(Config)
 
         <!-- 统一保存 -->
         <div class="max-w-3xl mt-6 pt-4 border-t border-slate-200 flex flex-col sm:flex-row sm:items-center gap-3">
-          <button type="submit" :disabled="saving" class="btn-primary self-start text-sm flex-shrink-0">
-            <i :class="['fas mr-1.5', saving ? 'fa-spinner fa-spin' : 'fa-save']"></i>{{ saving ? '保存中...' : '保存配置' }}
+          <button type="submit" :disabled="saving" class="btn btn-primary whitespace-nowrap flex-shrink-0 self-start">
+            <i v-if="saving" class="fas fa-spinner fa-spin"></i>
+            <i v-else class="fas fa-save"></i>
+            <span>{{ saving ? '保存中...' : '保存配置' }}</span>
           </button>
           <p class="text-xs text-slate-400 flex items-start gap-1">
             <i class="fas fa-circle-info mt-0.5 flex-shrink-0"></i>

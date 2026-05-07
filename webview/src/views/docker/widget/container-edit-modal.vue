@@ -64,10 +64,10 @@ export default toNative(ContainerEditModal)
     show-footer
     @confirm="handleConfirm"
   >
-    <template #confirm-text>更新并重建</template>
     <ComposeEditor
       v-model="composeContent"
       warning="更新配置后将会重建容器，旧容器将被停止并删除"
     />
+    <template #confirm-text>更新并重建</template>
   </BaseModal>
 </template>

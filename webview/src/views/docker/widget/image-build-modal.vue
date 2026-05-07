@@ -52,7 +52,6 @@ export default toNative(ImageBuildModal)
     show-footer
     @confirm="handleConfirm"
   >
-    <template #confirm-text>开始构建</template>
     <div class="space-y-4">
       <div>
         <label class="block text-sm font-medium text-slate-700 mb-2">镜像标签</label>
@@ -70,5 +69,7 @@ export default toNative(ImageBuildModal)
         ></textarea>
       </div>
     </div>
+
+    <template #confirm-text>开始构建</template>
   </BaseModal>
 </template>

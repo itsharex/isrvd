@@ -50,7 +50,6 @@ export default toNative(VolumeCreateModal)
     show-footer
     @confirm="handleConfirm"
   >
-    <template #confirm-text>确认创建</template>
     <form class="space-y-4" @submit.prevent="handleConfirm">
       <div>
         <label class="block text-sm font-medium text-slate-700 mb-2">卷名称</label>
@@ -63,5 +62,7 @@ export default toNative(VolumeCreateModal)
         </select>
       </div>
     </form>
+
+    <template #confirm-text>确认创建</template>
   </BaseModal>
 </template>

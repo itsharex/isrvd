@@ -46,6 +46,7 @@ export default toNative(UnzipModal)
       </p>
       <p class="text-sm text-slate-500">文件将解压到当前目录</p>
     </div>
+
     <template #confirm-text>
       {{ portal.loading ? '解压中...' : '开始解压' }}
     </template>

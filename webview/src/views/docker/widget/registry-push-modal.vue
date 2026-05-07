@@ -86,7 +86,6 @@ export default toNative(RegistryPushModal)
     show-footer
     @confirm="handleConfirm"
   >
-    <template #confirm-text>开始推送</template>
     <form class="space-y-4" @submit.prevent="handleConfirm">
       <div>
         <label class="block text-sm font-medium text-slate-700 mb-2">本地镜像</label>
@@ -108,5 +107,7 @@ export default toNative(RegistryPushModal)
         <p class="mt-1 text-xs text-slate-400">镜像将被推送为: {{ pushTargetPreview }}</p>
       </div>
     </form>
+
+    <template #confirm-text>开始推送</template>
   </BaseModal>
 </template>

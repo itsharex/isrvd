@@ -171,7 +171,7 @@ export default toNative(SystemNetwork)
       </div>
       <span class="text-sm font-semibold text-slate-700">网络接口</span>
     </div>
-    <div ref="netContainerRef" class="divide-y divide-slate-50">
+    <div ref="netContainerRef" class="divide-y divide-slate-100">
       <div v-for="ni in currentIfaces" :key="ni.Name" class="px-4 py-3">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-1">
           <p class="text-xs font-semibold text-slate-700">{{ ni.Name }}</p>

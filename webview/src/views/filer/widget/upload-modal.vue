@@ -138,6 +138,7 @@ export default toNative(UploadModal)
         </div>
       </div>
     </form>
+
     <template #confirm-text>
       {{ appState.loading ? `上传中 ${uploadProgress}/${uploadFiles.length}...` : '开始上传' }}
     </template>

@@ -93,7 +93,7 @@ export default toNative(Login)
           <button 
             type="submit" 
             :disabled="portal.loading"
-            class="btn-primary w-full py-3 text-base font-semibold mt-6"
+            class="btn btn-primary w-full py-3 text-base font-semibold mt-6"
           >
             <i v-if="portal.loading" class="fas fa-spinner fa-spin mr-2"></i>
             <i v-else class="fas fa-sign-in-alt mr-2"></i>

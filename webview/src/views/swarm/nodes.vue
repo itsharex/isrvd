@@ -293,11 +293,7 @@ export default toNative(Nodes)
   </div>
 
   <!-- 加入集群弹窗 -->
-  <BaseModal v-model="showJoinModal" title="加入集群" :loading="joinTokensLoading" :show-footer="!joinTokensLoading">
-    <template #confirm-text>关闭</template>
-    <template #footer>
-      <button type="button" class="btn-secondary" @click="showJoinModal = false">关闭</button>
-    </template>
+  <BaseModal v-model="showJoinModal" title="加入集群" :loading="joinTokensLoading" :show-confirm="false">
     <div v-if="joinTokensLoading" class="flex flex-col items-center justify-center py-8">
       <div class="w-10 h-10 spinner mb-3"></div>
       <p class="text-slate-500 text-sm">加载中...</p>

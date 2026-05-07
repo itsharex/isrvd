@@ -284,7 +284,7 @@ export default toNative(ComposeDeploy)
           <button
             type="button"
             :disabled="!canSubmit"
-            class="whitespace-nowrap flex-shrink-0 self-start px-5 py-2 rounded-lg bg-blue-500 hover:bg-blue-600 disabled:bg-slate-300 disabled:cursor-not-allowed text-white text-sm font-medium flex items-center gap-2 transition-colors"
+            class="btn btn-primary whitespace-nowrap flex-shrink-0 self-start"
             @click="handleDeploy()"
           >
             <i v-if="loading" class="fas fa-spinner fa-spin"></i>

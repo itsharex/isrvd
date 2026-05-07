@@ -60,6 +60,7 @@ export default toNative(RenameModal)
         </div>
       </div>
     </form>
+
     <template #confirm-text>
       {{ appState.loading ? '重命名中...' : '确认重命名' }}
     </template>

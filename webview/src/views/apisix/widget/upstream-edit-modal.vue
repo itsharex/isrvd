@@ -198,6 +198,7 @@ export default toNative(UpstreamEditModal)
     v-model="isOpen"
     :title="isEditMode ? '编辑上游' : '创建上游'"
     :loading="modalLoading"
+    confirm-class="btn-success"
   >
     <div class="max-w-3xl space-y-4 p-1">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -276,13 +277,9 @@ export default toNative(UpstreamEditModal)
       </div>
     </div>
 
-    <template #footer>
-      <div class="flex justify-end gap-2">
-        <button class="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50" @click="isOpen = false">取消</button>
-        <button :disabled="modalLoading" class="px-4 py-2 text-sm font-medium text-white bg-emerald-500 rounded-lg hover:bg-emerald-600 disabled:opacity-50 shadow-sm" @click="handleConfirm()">
-          <i v-if="modalLoading" class="fas fa-spinner fa-spin mr-1"></i>{{ isEditMode ? '保存' : '创建' }}
-        </button>
-      </div>
+    <template #confirm-text>
+      <i v-if="modalLoading" class="fas fa-spinner fa-spin"></i>
+      {{ isEditMode ? '保存' : '创建' }}
     </template>
   </BaseModal>
 </template>

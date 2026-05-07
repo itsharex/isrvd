@@ -79,7 +79,6 @@ export default toNative(ServiceCreateModal)
 
 <template>
   <BaseModal v-model="isOpen" title="创建服务" :loading="loading" show-footer @confirm="handleConfirm">
-    <template #confirm-text>创建</template>
     <form class="space-y-4" @submit.prevent="handleConfirm">
       <!-- 基础设置 -->
       <div class="grid grid-cols-2 gap-3">
@@ -149,5 +148,7 @@ export default toNative(ServiceCreateModal)
         </div>
       </div>
     </form>
+
+    <template #confirm-text>确认创建</template>
   </BaseModal>
 </template>

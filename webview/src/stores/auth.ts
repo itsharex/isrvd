@@ -53,7 +53,12 @@ export const useAuthStore = defineStore('auth', () => {
 
         // 验证认证
         const authRes = await api.accountInfo()
-        const payload = authRes?.payload || {} as AuthInfo
+        if (!authRes?.payload) {
+            clearAuth()
+            return
+        }
+
+        const payload = authRes.payload as AuthInfo
 
         // 核心原则：无 username 或无 member = 无权限，直接清理
         if (!payload?.username || !payload?.member) {

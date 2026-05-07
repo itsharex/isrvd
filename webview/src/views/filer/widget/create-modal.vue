@@ -71,6 +71,7 @@ export default toNative(CreateModal)
         ></textarea>
       </div>
     </form>
+
     <template #confirm-text>
       {{ appState.loading ? '创建中...' : '创建文件' }}
     </template>

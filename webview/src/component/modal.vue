@@ -11,6 +11,8 @@ class BaseModal extends Vue {
     @Prop({ type: Boolean, default: false }) readonly loading!: boolean
     @Prop({ type: Boolean, default: true }) readonly showFooter!: boolean
     @Prop({ type: Boolean, default: false }) readonly confirmDisabled!: boolean
+    @Prop({ type: String, default: 'btn-primary' }) readonly confirmClass!: string
+    @Prop({ type: Boolean, default: true }) readonly showConfirm!: boolean
 
     // ─── Refs ───
     @Ref readonly modalRef!: HTMLDivElement
@@ -120,20 +122,22 @@ export default toNative(BaseModal)
             <slot name="footer">
               <button 
                 type="button" 
-                class="btn-secondary"
+                class="btn btn-secondary"
                 :disabled="loading"
                 @click="handleCancel"
               >
-                <slot name="cancel-text">取消</slot>
+                <span><slot name="cancel-text">取消</slot></span>
               </button>
               <button 
+                v-if="showConfirm"
                 type="button" 
-                class="btn-primary"
+                class="btn"
+                :class="confirmClass"
                 :disabled="loading || confirmDisabled"
                 @click="handleConfirm"
               >
-                <i v-if="loading" class="fas fa-spinner fa-spin mr-2"></i>
-                <slot name="confirm-text">确认</slot>
+                <i v-if="loading" class="fas fa-spinner fa-spin"></i>
+                <span><slot name="confirm-text">确认</slot></span>
               </button>
             </slot>
           </div>

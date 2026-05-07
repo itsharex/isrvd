@@ -49,7 +49,6 @@ export default toNative(NetworkCreateModal)
     show-footer
     @confirm="handleConfirm"
   >
-    <template #confirm-text>确认创建</template>
     <form class="space-y-4" @submit.prevent="handleConfirm">
       <div>
         <label class="block text-sm font-medium text-slate-700 mb-2">网络名称</label>
@@ -69,5 +68,7 @@ export default toNative(NetworkCreateModal)
         <input v-model="formData.subnet" type="text" placeholder="例如: 172.20.0.0/16" class="input" />
       </div>
     </form>
+
+    <template #confirm-text>确认创建</template>
   </BaseModal>
 </template>

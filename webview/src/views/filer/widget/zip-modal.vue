@@ -46,6 +46,7 @@ export default toNative(ZipModal)
       </p>
       <p class="text-sm text-slate-500">压缩后的文件将保存在当前目录</p>
     </div>
+
     <template #confirm-text>
       {{ portal.loading ? '压缩中...' : '开始压缩' }}
     </template>

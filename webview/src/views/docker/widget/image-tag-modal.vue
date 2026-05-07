@@ -53,7 +53,6 @@ export default toNative(ImageTagModal)
     show-footer
     @confirm="handleConfirm"
   >
-    <template #confirm-text>确认添加</template>
     <div v-if="tagImage" class="space-y-4">
       <div>
         <label class="block text-sm font-medium text-slate-700 mb-2">当前镜像</label>
@@ -73,5 +72,7 @@ export default toNative(ImageTagModal)
         <p class="mt-1 text-xs text-slate-400">格式: 仓库路径:标签，如 myapp:v1.0</p>
       </div>
     </div>
+
+    <template #confirm-text>确认添加</template>
   </BaseModal>
 </template>

@@ -280,7 +280,10 @@
 /* === 分割线 === */
 .dark .border-slate-100 { border-color: var(--dark-border-default) !important; }
 .dark .divide-slate-100 > * + * { border-color: var(--dark-border-default) !important; }
-.dark .divide-slate-200 > * + * { border-color: var(--dark-border-strong) !important; }
+
+/* === 表格样式 === */
+.dark tbody { background-color: var(--dark-bg-card) !important; }
+.dark tbody tr { border-bottom-color: var(--dark-border-default) !important; }
 
 /* === 滚动条 === */
 .dark ::-webkit-scrollbar-thumb { background-color: var(--dark-border-strong) !important; }

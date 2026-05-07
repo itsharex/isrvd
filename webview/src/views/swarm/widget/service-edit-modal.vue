@@ -64,10 +64,10 @@ export default toNative(ServiceEditModal)
     show-footer
     @confirm="handleConfirm"
   >
-    <template #confirm-text>更新并重建</template>
     <ComposeEditor
       v-model="composeContent"
       warning="更新配置后将会删除旧服务并重新创建，期间服务短暂不可用"
     />
+    <template #confirm-text>更新并重建</template>
   </BaseModal>
 </template>

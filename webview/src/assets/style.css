@@ -230,6 +230,27 @@
     box-shadow: 0 4px 14px 0 rgba(6, 182, 212, 0.39);
   }
 
+  .btn-indigo {
+    @apply bg-indigo-500 text-white;
+    @apply hover:bg-indigo-600;
+    @apply focus:ring-indigo-500;
+    box-shadow: 0 4px 14px 0 rgba(99, 102, 241, 0.39);
+  }
+
+  .btn-rose {
+    @apply bg-rose-500 text-white;
+    @apply hover:bg-rose-600;
+    @apply focus:ring-rose-500;
+    box-shadow: 0 4px 14px 0 rgba(244, 63, 94, 0.39);
+  }
+
+  .btn-violet {
+    @apply bg-violet-500 text-white;
+    @apply hover:bg-violet-600;
+    @apply focus:ring-violet-500;
+    box-shadow: 0 4px 14px 0 rgba(139, 92, 246, 0.39);
+  }
+
   .btn-ghost {
     @apply bg-transparent hover:bg-slate-100 text-slate-700;
     @apply focus:ring-0 focus:ring-offset-0;

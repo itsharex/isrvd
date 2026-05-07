@@ -75,20 +75,21 @@ export default toNative(ConfirmModal)
         <div class="flex justify-end gap-3 px-6 py-4 border-t border-slate-200/50 bg-slate-50/50">
           <button 
             type="button" 
-            class="btn-secondary"
+            class="btn btn-secondary"
             :disabled="portal.confirm.loading"
             @click="portal.closeConfirm"
           >
-            取消
+            <span>取消</span>
           </button>
           <button 
             type="button" 
+            class="btn"
             :class="portal.confirm.danger ? 'btn-danger' : 'btn-primary'"
             :disabled="portal.confirm.loading"
             @click="portal.handleConfirm"
           >
-            <i v-if="portal.confirm.loading" class="fas fa-spinner fa-spin mr-2"></i>
-            {{ portal.confirm.loading ? '处理中...' : portal.confirm.confirmText }}
+            <i v-if="portal.confirm.loading" class="fas fa-spinner fa-spin"></i>
+            <span>{{ portal.confirm.loading ? '处理中...' : portal.confirm.confirmText }}</span>
           </button>
         </div>
       </div>

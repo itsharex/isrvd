@@ -55,6 +55,7 @@ export default toNative(ModifyModal)
     <div class="rounded-xl overflow-hidden border border-slate-200">
       <Codemirror v-model="formData.content" :style="{ height: '60vh' }" :extensions="extensions" :disabled="appState.loading" />
     </div>
+
     <template #confirm-text>
       {{ appState.loading ? '保存中...' : '保存文件' }}
     </template>

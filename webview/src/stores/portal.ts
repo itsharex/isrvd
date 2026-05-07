@@ -4,10 +4,8 @@ import { interceptors } from '@/service/axios'
 
 import { useAuthStore } from './auth'
 import { useSystemStore } from './system'
-import { useUIStore, type ConfirmOptions } from './ui'
+import { useUIStore } from './ui'
 import { useFilerStore } from './filer'
-
-export type { ConfirmOptions }
 
 /**
  * Portal Store - 统一入口
@@ -18,7 +16,7 @@ export type { ConfirmOptions }
  * 2. 注册 axios 拦截器
  * 3. 提供统一的访问入口，隔离内部实现
  */
-export const usePortal = defineStore('portal', () => {
+export const usePortalStore = defineStore('portal', () => {
     // ─── 引用子 Store ───
     
     const authStore = useAuthStore()
@@ -69,20 +67,42 @@ export const usePortal = defineStore('portal', () => {
 
     // ─── 导出统一接口 ───
 
+    // 使用 storeToRefs 保持响应性
+    const authRefs = storeToRefs(authStore)
+    const systemRefs = storeToRefs(systemStore)
+    const uiRefs = storeToRefs(uiStore)
+    const filerRefs = storeToRefs(filerStore)
+
     return {
-        // Auth Store 状态和方法
-        ...storeToRefs(authStore),
+        // Portal 方法
+        initialize,
+
+        // Auth Store 状态（响应式）
+        authMode: authRefs.authMode,
+        token: authRefs.token,
+        username: authRefs.username,
+        permissionsLoaded: authRefs.permissionsLoaded,
+        founder: authRefs.founder,
+        permissions: authRefs.permissions,
+        // Auth Store 方法
         setAuth: authStore.setAuth,
         clearAuth: authStore.clearAuth,
         isAuthenticated: authStore.isAuthenticated,
 
-        // System Store 状态和方法
-        ...storeToRefs(systemStore),
+        // System Store 状态（响应式）
+        initialized: systemRefs.initialized,
+        initError: systemRefs.initError,
+        serviceAvailability: systemRefs.serviceAvailability,
+        toolbarLinks: systemRefs.toolbarLinks,
+        // System Store 方法
         loadSystemData: systemStore.loadSystemData,
         hasPerm,
 
-        // UI Store 状态和方法
-        ...storeToRefs(uiStore),
+        // UI Store 状态（响应式）
+        loading: uiRefs.loading,
+        notifications: uiRefs.notifications,
+        confirm: uiRefs.confirm,
+        // UI Store 方法
         showNotification: uiStore.showNotification,
         clearNotification: uiStore.clearNotification,
         showConfirm: uiStore.showConfirm,
@@ -90,14 +110,14 @@ export const usePortal = defineStore('portal', () => {
         closeConfirm: uiStore.closeConfirm,
         handleConfirm: uiStore.handleConfirm,
 
-        // Filer Store 状态和方法
-        ...storeToRefs(filerStore),
+        // Filer Store 状态（响应式）
+        filerLoading: filerRefs.loading,
+        currentPath: filerRefs.currentPath,
+        files: filerRefs.files,
+        // Filer Store 方法
         loadFiles: filerStore.loadFiles,
-
-        // Portal 方法
-        initialize
     }
 })
 
 // ─── 类型导出 ───
-export type Portal = ReturnType<typeof usePortal>
+export type PortalStore = ReturnType<typeof usePortalStore>
