@@ -192,13 +192,13 @@ cd webview && python3 sort-imports.py --dry-run src
 **NVIDIA**：
 
 ```bash
-docker run -d --gpus all -p 8080:8080 -v /var/run/docker.sock:/var/run/docker.sock -v /mnt/isrvd:/data rehiy/isrvd:slim
+docker run -d --gpus all rehiy/isrvd:slim
 ```
 
 **AMD / Intel**：
 
 ```bash
-docker run -d --device /dev/dri:/dev/dri -p 8080:8080 -v /var/run/docker.sock:/var/run/docker.sock -v /mnt/isrvd:/data rehiy/isrvd:slim
+docker run -d --device /dev/dri:/dev/dri rehiy/isrvd:slim
 ```
 
 ## 架构设计
