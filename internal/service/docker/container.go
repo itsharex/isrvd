@@ -24,8 +24,11 @@ func (s *Service) ContainerList(ctx context.Context, all bool) ([]*pkgdocker.Con
 	return s.docker.ContainerList(ctx, all)
 }
 
-// ContainerCreate 创建容器
+// ContainerCreate 创建并启动容器
 func (s *Service) ContainerCreate(ctx context.Context, req pkgdocker.ContainerCreateRequest) (*ContainerCreateResult, error) {
+	if err := s.docker.ImageEnsure(ctx, req.Image); err != nil {
+		return nil, fmt.Errorf("镜像 %s 不存在，拉取失败: %w", req.Image, err)
+	}
 	id, err := s.docker.ContainerCreate(ctx, req)
 	if err != nil {
 		return nil, err

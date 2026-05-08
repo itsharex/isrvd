@@ -22,11 +22,6 @@ func (s *Service) deployDocker(ctx context.Context, req DeployRequest) (*DeployR
 		return nil, fmt.Errorf("未配置容器数据根目录")
 	}
 
-	// 检查容器是否已存在
-	if _, err := s.docker.ContainerInspect(ctx, req.ProjectName); err == nil {
-		return nil, fmt.Errorf("实例 %s 已存在，请使用重建功能", req.ProjectName)
-	}
-
 	// 目录已存在且有 compose 文件，拒绝部署
 	installDir := filepath.Join(root, req.ProjectName)
 	composeFile := filepath.Join(installDir, "compose.yml")
@@ -41,10 +36,10 @@ func (s *Service) deployDocker(ctx context.Context, req DeployRequest) (*DeployR
 		return nil, fmt.Errorf("创建安装目录失败: %w", err)
 	}
 
-	// 异常清理：仅清理本次新创建的目录
-	ok := false
+	// 异常清理：仅清理本次新创建的目录，且容器全部未创建成功才删目录
+	deployed := false
 	defer func() {
-		if !ok && !installDirExists {
+		if !deployed && !installDirExists {
 			_ = os.RemoveAll(installDir)
 		}
 	}()
@@ -68,13 +63,28 @@ func (s *Service) deployDocker(ctx context.Context, req DeployRequest) (*DeployR
 		return nil, err
 	}
 
+	// 检查 compose 中所有服务的容器名是否已存在
+	for _, svc := range project.Services {
+		name := svc.ContainerName
+		if name == "" {
+			name = svc.Name
+		}
+		if _, err := s.docker.ContainerInspect(ctx, name); err == nil {
+			return nil, fmt.Errorf("容器 %s 已存在，请先移除或使用其它实例名", name)
+		}
+	}
+
 	// 部署
 	items, err := s.compose.DeployProject(ctx, project)
 	if err != nil {
+		// 有容器已创建时保留目录（容器可能挂载了目录下的文件）
+		if len(items) > 0 {
+			deployed = true
+		}
 		return nil, err
 	}
 
-	ok = true
+	deployed = true
 	logman.Info("Compose deployed", "name", req.ProjectName, "dir", installDir)
 	return &DeployResult{Target: TargetDocker, Items: items, InstallDir: installDir}, nil
 }
