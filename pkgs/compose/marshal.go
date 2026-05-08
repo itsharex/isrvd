@@ -65,7 +65,7 @@ func ProjectFromCreateRequest(req docker.ContainerCreateRequest) (*types.Project
 		svc.Deploy = &types.DeployConfig{
 			Resources: types.Resources{Limits: &types.Resource{
 				MemoryBytes: types.UnitBytes(req.Memory * 1024 * 1024),
-				NanoCPUs:    types.NanoCPUs(req.Cpus),
+				NanoCPUs:    types.NanoCPUs(req.Cpus * 1e9),
 			}},
 		}
 	}

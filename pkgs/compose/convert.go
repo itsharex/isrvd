@@ -78,7 +78,6 @@ func ServiceToCreateRequest(project *types.Project, svc types.ServiceConfig) (do
 		req.Volumes = append(req.Volumes, docker.VolumeMapping{
 			Type:          string(mountType),
 			Source:        v.Source,
-			HostPath:      v.Source,
 			ContainerPath: v.Target,
 			ReadOnly:      v.ReadOnly,
 		})

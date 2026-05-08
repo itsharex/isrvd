@@ -165,8 +165,8 @@ type ContainerCreateRequest struct {
 	Volumes    []VolumeMapping   `json:"volumes"`
 	Network    string            `json:"network"`
 	Restart    string            `json:"restart"`
-	Memory     int64             `json:"memory"`
-	Cpus       float64           `json:"cpus"`
+	Memory     int64             `json:"memory"`   // 内存限制，单位 MB
+	Cpus       float64           `json:"cpus"`     // CPU 核数限制，如 0.5、2.0
 	Workdir    string            `json:"workdir"`
 	User       string            `json:"user"`
 	Hostname   string            `json:"hostname"`
@@ -216,6 +216,7 @@ func (s *DockerService) ContainerCreate(ctx context.Context, req ContainerCreate
 	// 处理端口映射，key 格式：hostPort 或 hostPort/proto（如 "8080" 或 "53/udp"）
 	if len(req.Ports) > 0 {
 		portBindings := make(nat.PortMap)
+		exposedPorts := make(nat.PortSet)
 		for hostPortSpec, containerPort := range req.Ports {
 			hostPort := hostPortSpec
 			proto := "tcp"
@@ -223,20 +224,16 @@ func (s *DockerService) ContainerCreate(ctx context.Context, req ContainerCreate
 				hostPort = hostPortSpec[:idx]
 				proto = hostPortSpec[idx+1:]
 			}
-			port := nat.Port(containerPort + "/" + proto)
-			portBindings[port] = []nat.PortBinding{
-				{HostIP: "0.0.0.0", HostPort: hostPort},
+			// 防御性剥离 containerPort 中可能携带的协议后缀（如 "80/tcp"）
+			if idx := strings.Index(containerPort, "/"); idx >= 0 {
+				containerPort = containerPort[:idx]
 			}
+			port := nat.Port(containerPort + "/" + proto)
+			portBindings[port] = []nat.PortBinding{{HostIP: "0.0.0.0", HostPort: hostPort}}
+			exposedPorts[port] = struct{}{}
 		}
 		hostConfig.PortBindings = portBindings
-		containerConfig.ExposedPorts = make(nat.PortSet)
-		for hostPortSpec, containerPort := range req.Ports {
-			proto := "tcp"
-			if idx := strings.LastIndex(hostPortSpec, "/"); idx >= 0 {
-				proto = hostPortSpec[idx+1:]
-			}
-			containerConfig.ExposedPorts[nat.Port(containerPort+"/"+proto)] = struct{}{}
-		}
+		containerConfig.ExposedPorts = exposedPorts
 	}
 
 	// 处理挂载映射
@@ -293,8 +290,8 @@ type ContainerUpdateRequest struct {
 	Volumes    []VolumeMapping   `json:"volumes"`
 	Network    string            `json:"network"`
 	Restart    string            `json:"restart"`
-	Memory     int64             `json:"memory"`
-	Cpus       float64           `json:"cpus"`
+	Memory     int64             `json:"memory"`   // 内存限制，单位 MB
+	Cpus       float64           `json:"cpus"`     // CPU 核数限制，如 0.5、2.0
 	Workdir    string            `json:"workdir"`
 	User       string            `json:"user"`
 	Hostname   string            `json:"hostname"`
@@ -369,15 +366,15 @@ func (s *DockerService) buildMount(containerName string, vol VolumeMapping) (mou
 		return mount.Mount{}, fmt.Errorf("挂载目标不能为空")
 	}
 	if mountType == "" {
-		if vol.HostPath != "" && vol.Source == "" {
-			mountType = string(mount.TypeBind)
-		} else {
-			mountType = inferMountType(source)
-		}
+		mountType = inferMountType(source)
 	}
 
 	switch mountType {
 	case string(mount.TypeVolume):
+		// volume 名不能含路径分隔符
+		if strings.ContainsRune(source, '/') {
+			return mount.Mount{}, fmt.Errorf("volume 名称不能包含路径分隔符，请使用 bind 类型或改用合法的 volume 名: %s", source)
+		}
 		return mount.Mount{
 			Type:     mount.TypeVolume,
 			Source:   source,
