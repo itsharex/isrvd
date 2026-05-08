@@ -45,18 +45,20 @@ func ServiceToCreateRequest(project *types.Project, svc types.ServiceConfig) (do
 		}
 	}
 
-	// 端口：types.ServicePortConfig → map[hostPort]containerPort
+	// 端口：types.ServicePortConfig → map[hostPort/proto]containerPort
 	if len(svc.Ports) > 0 {
 		req.Ports = make(map[string]string, len(svc.Ports))
 		for _, p := range svc.Ports {
 			if p.Target == 0 {
 				continue
 			}
+			proto := defaultString(strings.ToLower(p.Protocol), "tcp")
 			host := p.Published
 			if host == "" {
 				host = strconv.Itoa(int(p.Target))
 			}
-			req.Ports[host] = strconv.Itoa(int(p.Target))
+			// key 格式 hostPort/proto，与 docker/container.go 约定一致
+			req.Ports[host+"/"+proto] = strconv.Itoa(int(p.Target))
 		}
 	}
 
@@ -89,7 +91,7 @@ func ServiceToCreateRequest(project *types.Project, svc types.ServiceConfig) (do
 			req.Memory = int64(lim.MemoryBytes) / (1024 * 1024)
 		}
 		if lim.NanoCPUs > 0 {
-			req.Cpus = float64(lim.NanoCPUs)
+			req.Cpus = float64(lim.NanoCPUs) / 1e9
 		}
 	}
 	if req.Memory == 0 && svc.MemLimit > 0 {
