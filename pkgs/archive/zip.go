@@ -17,48 +17,73 @@ func NewZipper() *Zipper {
 
 // 创建归档文件
 func (zs *Zipper) Zip(path string) error {
-	srcPath := path
-	zipName := filepath.Base(srcPath) + ".zip"
+	srcInfo, err := os.Stat(path)
+	if err != nil {
+		return err
+	}
 
-	// 在源路径的父目录中创建归档文件
-	f, err := os.Create(filepath.Join(filepath.Dir(srcPath), zipName))
+	zipFilePath := filepath.Join(filepath.Dir(path), filepath.Base(path)+".zip")
+
+	f, err := os.Create(zipFilePath)
+	if err != nil {
+		return err
+	}
+
+	zw := zip.NewWriter(f)
+
+	if srcInfo.IsDir() {
+		err = zipDir(zw, path)
+	} else {
+		err = zipFile(zw, path)
+	}
+
+	// 先关闭 writer 和 file，再删除（Windows 上未关闭的文件不可删除）
+	zw.Close()
+	f.Close()
+
+	if err != nil {
+		os.Remove(zipFilePath)
+	}
+	return err
+}
+
+// zipFile 将单个文件写入 zip
+func zipFile(zw *zip.Writer, srcPath string) error {
+	w, err := zw.Create(filepath.Base(srcPath))
+	if err != nil {
+		return err
+	}
+	f, err := os.Open(srcPath)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
+	_, err = io.Copy(w, f)
+	return err
+}
 
-	zipWriter := zip.NewWriter(f)
-	defer zipWriter.Close()
-
+// zipDir 将目录下所有文件递归写入 zip
+func zipDir(zw *zip.Writer, srcPath string) error {
 	baseName := filepath.Base(srcPath)
 	return filepath.Walk(srcPath, func(filePath string, info os.FileInfo, err error) error {
-		if err != nil {
+		if err != nil || info.IsDir() {
 			return err
 		}
-
-		if info.IsDir() {
-			return nil
-		}
-
 		relPath, err := filepath.Rel(srcPath, filePath)
 		if err != nil {
 			return err
 		}
-
 		// zip 规范要求内部路径使用正斜杠
-		zipPath := filepath.ToSlash(filepath.Join(baseName, relPath))
-		w, err := zipWriter.Create(zipPath)
+		w, err := zw.Create(filepath.ToSlash(filepath.Join(baseName, relPath)))
 		if err != nil {
 			return err
 		}
-
-		file, err := os.Open(filePath)
+		f, err := os.Open(filePath)
 		if err != nil {
 			return err
 		}
-		defer file.Close()
-
-		_, err = io.Copy(w, file)
+		defer f.Close()
+		_, err = io.Copy(w, f)
 		return err
 	})
 }
