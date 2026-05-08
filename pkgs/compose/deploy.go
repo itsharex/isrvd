@@ -26,7 +26,8 @@ func (s *ComposeService) DeployProject(ctx context.Context, project *types.Proje
 	}
 
 	// 先确保所有用到的外部网络存在
-	for _, name := range collectNetworks(project) {		if err := s.ensureNetwork(ctx, name); err != nil {
+	for _, name := range collectNetworks(project) {
+		if err := s.ensureNetwork(ctx, name); err != nil {
 			return nil, fmt.Errorf("网络 %s 不存在，创建失败: %w", name, err)
 		}
 	}
