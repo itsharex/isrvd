@@ -37,7 +37,7 @@ isrvd_post "/filer/mkdir" '{"path":"<DIR>"}'
 ## 创建文件
 
 ```bash
-isrvd_post "/filer/create" '{"path":"<FILE>"}'
+isrvd_post "/filer/create" '{"path":"<FILE>","content":"<CONTENT>"}'
 ```
 
 ## 读取文件
@@ -57,7 +57,7 @@ isrvd_post "/filer/modify" '{"path":"<FILE>","content":"<CONTENT>"}'
 ## 重命名
 
 ```bash
-isrvd_post "/filer/rename" '{"oldPath":"<OLD_PATH>","newPath":"<NEW_PATH>"}'
+isrvd_post "/filer/rename" '{"path":"<OLD_PATH>","target":"<NEW_NAME>"}'
 ```
 
 ## 删除
@@ -89,11 +89,11 @@ isrvd_post "/filer/download" '{"path":"<FILE>"}'
 ## 压缩
 
 ```bash
-isrvd_post "/filer/zip" '{"path":"<DIR>","dest":"<OUTPUT>.zip"}'
+isrvd_post "/filer/zip" '{"path":"<DIR_OR_FILE>"}'
 ```
 
 ## 解压
 
 ```bash
-isrvd_post "/filer/unzip" '{"path":"<FILE>.zip","dest":"<DEST_DIR>"}'
+isrvd_post "/filer/unzip" '{"path":"<FILE>.zip"}'
 ```

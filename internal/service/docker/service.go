@@ -34,8 +34,3 @@ func (s *Service) CheckAvailability(ctx context.Context) bool {
 	_, err := s.docker.Info(ctx)
 	return err == nil
 }
-
-// GetDockerService 返回底层 pkgs/docker.DockerService（供 WebSocket exec 使用）
-func (s *Service) GetDockerService() *pkgdocker.DockerService {
-	return s.docker
-}

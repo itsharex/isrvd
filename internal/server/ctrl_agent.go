@@ -82,7 +82,9 @@ func (app *App) agentProxy(c *gin.Context) {
 		}
 	}
 	c.Status(resp.StatusCode)
-	io.Copy(c.Writer, resp.Body)
+	if _, err := io.Copy(c.Writer, resp.Body); err != nil {
+		logman.Error("agent proxy: stream copy failed", "err", err)
+	}
 }
 
 func agentRewriteBody(body []byte, model string) []byte {

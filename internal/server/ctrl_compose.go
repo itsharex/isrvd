@@ -2,6 +2,7 @@ package server
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 
@@ -13,22 +14,22 @@ import (
 func (app *App) defineComposeRoutes() []Route {
 	return []Route{
 		// Docker Compose
-		{Method: "GET", Path: "/compose/docker/:name", Handler: app.composeGetContent, Module: "compose", Label: "读取 Docker Compose 文件"},
-		{Method: "POST", Path: "/compose/docker/deploy", Handler: app.composeDeployDocker, Module: "compose", Label: "部署 Docker Compose"},
+		{Method: "GET", Path: "/compose/docker/:name", Handler: app.composeContentInspect, Module: "compose", Label: "读取 Docker Compose 文件"},
+		{Method: "POST", Path: "/compose/docker/deploy", Handler: app.composeDockerDeploy, Module: "compose", Label: "部署 Docker Compose"},
 		{Method: "POST", Path: "/compose/docker/:name/redeploy", Handler: app.composeRedeploy, Module: "compose", Label: "重部署 Docker Compose"},
 		// Swarm Compose
-		{Method: "GET", Path: "/compose/swarm/:name", Handler: app.composeGetContent, Module: "compose", Label: "读取 Swarm Compose 文件"},
-		{Method: "POST", Path: "/compose/swarm/deploy", Handler: app.composeDeploySwarm, Module: "compose", Label: "部署 Swarm Compose"},
+		{Method: "GET", Path: "/compose/swarm/:name", Handler: app.composeContentInspect, Module: "compose", Label: "读取 Swarm Compose 文件"},
+		{Method: "POST", Path: "/compose/swarm/deploy", Handler: app.composeSwarmDeploy, Module: "compose", Label: "部署 Swarm Compose"},
 		{Method: "POST", Path: "/compose/swarm/:name/redeploy", Handler: app.composeRedeploy, Module: "compose", Label: "重部署 Swarm Compose"},
 	}
 }
 
-// composeGetContent 获取 compose 文件内容（Docker/Swarm 通用）
-func (app *App) composeGetContent(c *gin.Context) {
+// composeContentInspect 获取 compose 文件内容（Docker/Swarm 通用）
+func (app *App) composeContentInspect(c *gin.Context) {
 	target := parseComposeTarget(c)
 	name := c.Param("name")
 
-	content, err := app.composeSvc.GetContent(c.Request.Context(), target, name)
+	content, err := app.composeSvc.ContentInspect(c.Request.Context(), target, name)
 	if err != nil {
 		helper.RespondError(c, http.StatusInternalServerError, err.Error())
 		return
@@ -36,8 +37,8 @@ func (app *App) composeGetContent(c *gin.Context) {
 	helper.RespondSuccess(c, "获取 compose 文件成功", gin.H{"content": content})
 }
 
-// composeDeployDocker Docker 部署（multipart form，支持文件上传）
-func (app *App) composeDeployDocker(c *gin.Context) {
+// composeDockerDeploy Docker 部署（multipart form，支持文件上传）
+func (app *App) composeDockerDeploy(c *gin.Context) {
 	req := svcCompose.DeployRequest{
 		Content:     c.PostForm("content"),
 		ProjectName: c.PostForm("projectName"),
@@ -67,8 +68,8 @@ func (app *App) composeDeployDocker(c *gin.Context) {
 	helper.RespondSuccess(c, "部署成功", result)
 }
 
-// composeDeploySwarm Swarm 部署（JSON body）
-func (app *App) composeDeploySwarm(c *gin.Context) {
+// composeSwarmDeploy Swarm 部署（JSON body）
+func (app *App) composeSwarmDeploy(c *gin.Context) {
 	var req svcCompose.DeployRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		helper.RespondError(c, http.StatusBadRequest, err.Error())
@@ -104,8 +105,7 @@ func (app *App) composeRedeploy(c *gin.Context) {
 
 // parseComposeTarget 从路由路径解析部署目标
 func parseComposeTarget(c *gin.Context) svcCompose.Target {
-	path := c.FullPath()
-	if len(path) >= 18 && path[8:18] == "/compose/sw" {
+	if strings.HasPrefix(c.FullPath(), "/api/compose/swarm") {
 		return svcCompose.TargetSwarm
 	}
 	return svcCompose.TargetDocker

@@ -88,9 +88,9 @@ func (s *AuditService) Add(entry AuditLog) {
 	}
 }
 
-// GetLogs 返回内存缓冲中的审计日志，按时间倒序排列。
+// LogList 返回内存缓冲中的审计日志，按时间倒序排列。
 // username 非空时仅返回该用户的记录；limit <= 0 时返回全部。
-func (s *AuditService) GetLogs(username string, limit int) []AuditLog {
+func (s *AuditService) LogList(username string, limit int) []AuditLog {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
@@ -108,9 +108,9 @@ func (s *AuditService) GetLogs(username string, limit int) []AuditLog {
 	return result
 }
 
-// RecordRequest 根据请求类型记录审计日志，供中间件在 c.Next() 后调用。
+// RequestRecord 根据请求类型记录审计日志，供中间件在 c.Next() 后调用。
 // WebSocket 升级请求记录 "WS" 方法；其余记录方法、URI、请求体、状态码。
-func (s *AuditService) RecordRequest(c *gin.Context, startTime time.Time, body string) {
+func (s *AuditService) RequestRecord(c *gin.Context, startTime time.Time, body string) {
 	// WebSocket
 	if strings.EqualFold(c.GetHeader("Upgrade"), "websocket") {
 		statusCode := c.Writer.Status()
@@ -147,11 +147,11 @@ func (s *AuditService) RecordRequest(c *gin.Context, startTime time.Time, body s
 	})
 }
 
-// ReadRequestBody 读取请求体，按 Content-Type 差异化处理：
+// RequestBodyRead 读取请求体，按 Content-Type 差异化处理：
 //   - application/octet-stream：返回占位符
 //   - multipart/form-data：保留文本字段，文件字段替换为占位符，敏感字段脱敏
 //   - 其他：读取全部内容并回填 Body，敏感字段脱敏
-func (s *AuditService) ReadRequestBody(c *gin.Context) string {
+func (s *AuditService) RequestBodyRead(c *gin.Context) string {
 	switch {
 	case strings.HasPrefix(c.ContentType(), "application/octet-stream"):
 		return "[Binary Omitted]"

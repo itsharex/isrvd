@@ -19,7 +19,7 @@ func AuthMiddleware(routePerms map[string]svcAccount.RouteInfo, svc *svcAccount.
 	return func(c *gin.Context) {
 		key := c.Request.Method + " " + c.FullPath()
 		if info, ok := routePerms[key]; ok && info.Access == svcAccount.AccessAnon {
-			if username := svc.MixAuth(c); username != "" {
+			if username := svc.AuthMix(c); username != "" {
 				c.Set("username", username)
 			}
 			c.Next()
@@ -48,7 +48,7 @@ func PermMiddleware(routePerms map[string]svcAccount.RouteInfo, svc *svcAccount.
 			return
 		}
 
-		found, err := svc.CheckRoutePerm(routePerms, c.Request.Method, path, c.GetString("username"))
+		found, err := svc.RoutePermCheck(routePerms, c.Request.Method, path, c.GetString("username"))
 		if !found || err != nil {
 			msg := "未授权的访问路径"
 			if err != nil {
@@ -76,9 +76,9 @@ func AuditMiddleware(svc *svcSystem.AuditService) gin.HandlerFunc {
 		startTime := time.Now()
 		var body string
 		if !isWS {
-			body = svc.ReadRequestBody(c)
+			body = svc.RequestBodyRead(c)
 		}
 		c.Next()
-		svc.RecordRequest(c, startTime, body)
+		svc.RequestRecord(c, startTime, body)
 	}
 }

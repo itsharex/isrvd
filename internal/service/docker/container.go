@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/gorilla/websocket"
+
 	pkgdocker "isrvd/pkgs/docker"
 )
 
@@ -56,6 +58,11 @@ func (s *Service) ContainerLogs(ctx context.Context, req pkgdocker.ContainerLogs
 		return nil, err
 	}
 	return &ContainerLogsResult{ID: req.ID, Logs: logs}, nil
+}
+
+// ContainerExec 容器终端 WebSocket（代理到 pkgs 层）
+func (s *Service) ContainerExec(ctx context.Context, conn *websocket.Conn, containerID, shell string) {
+	s.docker.ContainerExec(ctx, conn, containerID, shell)
 }
 
 // Info 获取 Docker 概览信息

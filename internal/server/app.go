@@ -9,6 +9,7 @@ import (
 	svcApisix "isrvd/internal/service/apisix"
 	svcCompose "isrvd/internal/service/compose"
 	svcDocker "isrvd/internal/service/docker"
+	svcFiler "isrvd/internal/service/filer"
 	svcOverview "isrvd/internal/service/overview"
 	svcSwarm "isrvd/internal/service/swarm"
 	svcSystem "isrvd/internal/service/system"
@@ -26,6 +27,7 @@ type App struct {
 	configSvc   *svcSystem.ConfigService
 	auditSvc    *svcSystem.AuditService
 	accountSvc  *svcAccount.Service
+	filerSvc    *svcFiler.Service
 	apisixSvc   *svcApisix.Service
 	dockerSvc   *svcDocker.Service
 	swarmSvc    *svcSwarm.Service
@@ -41,6 +43,7 @@ func StartApp() {
 	app.configSvc = svcSystem.NewConfigService()
 	app.auditSvc = svcSystem.NewAuditService()
 	app.accountSvc = svcAccount.NewService()
+	app.filerSvc = svcFiler.NewService()
 
 	if apisixSvc, err := svcApisix.NewService(); err != nil {
 		logman.Warn("Apisix service unavailable", "error", err)

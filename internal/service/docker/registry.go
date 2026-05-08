@@ -22,8 +22,8 @@ func (s *Service) RegistryList() any {
 	return s.docker.RegistryList()
 }
 
-// syncRegistriesToConfig 将当前 DockerService 的仓库同步到全局 config 并落盘
-func (s *Service) syncRegistriesToConfig() error {
+// registriesConfigSync 将当前 DockerService 的仓库同步到全局 config 并落盘
+func (s *Service) registriesConfigSync() error {
 	regs := s.docker.Registries()
 	cfgRegs := make([]*config.DockerRegistry, 0, len(regs))
 	for _, r := range regs {
@@ -51,7 +51,7 @@ func (s *Service) RegistryCreate(req RegistryUpsertRequest) error {
 	if err := s.docker.RegistryCreate(reg); err != nil {
 		return err
 	}
-	return s.syncRegistriesToConfig()
+	return s.registriesConfigSync()
 }
 
 // RegistryUpdate 更新镜像仓库
@@ -69,7 +69,7 @@ func (s *Service) RegistryUpdate(originalURL string, req RegistryUpsertRequest) 
 	if err := s.docker.RegistryUpdate(originalURL, reg); err != nil {
 		return err
 	}
-	return s.syncRegistriesToConfig()
+	return s.registriesConfigSync()
 }
 
 // RegistryDelete 删除镜像仓库
@@ -80,7 +80,7 @@ func (s *Service) RegistryDelete(url string) error {
 	if err := s.docker.RegistryDelete(url); err != nil {
 		return err
 	}
-	return s.syncRegistriesToConfig()
+	return s.registriesConfigSync()
 }
 
 // ImagePush 推送镜像到仓库

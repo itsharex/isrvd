@@ -105,8 +105,8 @@ func (s *Service) Deploy(ctx context.Context, target Target, req DeployRequest) 
 	}
 }
 
-// GetContent 获取 compose 文件内容
-func (s *Service) GetContent(ctx context.Context, target Target, name string) (string, error) {
+// ContentInspect 获取 compose 文件内容
+func (s *Service) ContentInspect(ctx context.Context, target Target, name string) (string, error) {
 	if name == "" {
 		return "", fmt.Errorf("名称不能为空")
 	}

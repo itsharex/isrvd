@@ -35,20 +35,20 @@ type RouteInfo struct {
 // 供中间件统一调用，避免在 server 层判断认证模式。
 func (s *Service) Auth(c *gin.Context) (username, errMsg string) {
 	if config.ProxyHeaderName != "" {
-		return s.CheckHeaderToken(c)
+		return s.HeaderTokenCheck(c)
 	}
-	return s.CheckJwtToken(c)
+	return s.JwtTokenCheck(c)
 }
 
-// MixAuth 可选认证：成功返回用户名，失败返回空字符串（不中断请求）。
-func (s *Service) MixAuth(c *gin.Context) string {
+// AuthMix 可选认证：成功返回用户名，失败返回空字符串（不中断请求）。
+func (s *Service) AuthMix(c *gin.Context) string {
 	username, _ := s.Auth(c)
 	return username
 }
 
-// CheckRoutePerm 在路由权限表中查找当前请求对应的路由，并校验用户权限。
+// RoutePermCheck 在路由权限表中查找当前请求对应的路由，并校验用户权限。
 // 返回 (found bool, err error)：found=false 表示路由未注册，err 非 nil 表示权限不足。
-func (s *Service) CheckRoutePerm(routePerms map[string]RouteInfo, method, path, username string) (found bool, err error) {
+func (s *Service) RoutePermCheck(routePerms map[string]RouteInfo, method, path, username string) (found bool, err error) {
 	route, exists := routePerms[method+" "+path]
 	if !exists {
 		route, exists = routePerms["ANY "+path]
@@ -67,11 +67,11 @@ func (s *Service) CheckRoutePerm(routePerms map[string]RouteInfo, method, path, 
 		}
 		return true, nil
 	}
-	return true, s.CheckPerm(username, route.Label, method, path)
+	return true, s.PermCheck(username, route.Label, method, path)
 }
 
-// GetAuthInfo 返回当前认证模式及已登录用户信息
-func (s *Service) GetAuthInfo(username string) *AuthInfoResponse {
+// AuthInfo 返回当前认证模式及已登录用户信息
+func (s *Service) AuthInfo(username string) *AuthInfoResponse {
 	mode := "jwt"
 	if config.ProxyHeaderName != "" {
 		mode = "header"
@@ -79,7 +79,7 @@ func (s *Service) GetAuthInfo(username string) *AuthInfoResponse {
 	return &AuthInfoResponse{
 		Mode:     mode,
 		Username: username,
-		Member:   s.GetMember(username),
+		Member:   s.MemberInspect(username),
 	}
 }
 
@@ -144,8 +144,8 @@ type CreateApiTokenResponse struct {
 	Name  string `json:"name"`
 }
 
-// CreateApiToken 为已认证用户创建长效 API Token
-func (s *Service) CreateApiToken(username string, req CreateApiTokenRequest) (*CreateApiTokenResponse, error) {
+// ApiTokenCreate 为已认证用户创建长效 API Token
+func (s *Service) ApiTokenCreate(username string, req CreateApiTokenRequest) (*CreateApiTokenResponse, error) {
 	member, exists := config.Members[username]
 	if !exists {
 		return nil, fmt.Errorf("用户不存在")
@@ -179,9 +179,9 @@ func (s *Service) CreateApiToken(username string, req CreateApiTokenRequest) (*C
 	return &CreateApiTokenResponse{Token: tokenString, Name: req.Name}, nil
 }
 
-// ExtractJwtUsername 从 Authorization Header（或 WebSocket query）中解析 JWT，
+// JwtUsernameExtract 从 Authorization Header（或 WebSocket query）中解析 JWT，
 // 返回有效且存在于成员列表中的用户名；否则返回空字符串
-func (s *Service) ExtractJwtUsername(c *gin.Context) string {
+func (s *Service) JwtUsernameExtract(c *gin.Context) string {
 	authHeader := c.GetHeader("Authorization")
 	tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
 
@@ -194,6 +194,9 @@ func (s *Service) ExtractJwtUsername(c *gin.Context) string {
 	}
 
 	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (any, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
 		return []byte(config.JWTSecret), nil
 	})
 	if err != nil || !token.Valid {
@@ -222,9 +225,9 @@ func (s *Service) ExtractJwtUsername(c *gin.Context) string {
 	return sub
 }
 
-// ExtractHeaderUsername 从代理 Header 中读取用户名，
+// HeaderUsernameExtract 从代理 Header 中读取用户名，
 // 返回存在于成员列表中的用户名；否则返回空字符串
-func (s *Service) ExtractHeaderUsername(c *gin.Context) string {
+func (s *Service) HeaderUsernameExtract(c *gin.Context) string {
 	username := c.GetHeader(config.ProxyHeaderName)
 	if username == "" {
 		return ""
@@ -235,14 +238,14 @@ func (s *Service) ExtractHeaderUsername(c *gin.Context) string {
 	return username
 }
 
-// CheckJwtToken 解析 JWT 并返回用户名；失败时返回空用户名和具体错误原因。
+// JwtTokenCheck 解析 JWT 并返回用户名；失败时返回空用户名和具体错误原因。
 // errMsg 区分"未提供令牌"与"令牌无效"两种情况。
-func (s *Service) CheckJwtToken(c *gin.Context) (username, errMsg string) {
+func (s *Service) JwtTokenCheck(c *gin.Context) (username, errMsg string) {
 	tokenStr := s.extractJwtToken(c)
 	if tokenStr == "" {
 		return "", "未提供认证令牌"
 	}
-	username = s.ExtractJwtUsername(c)
+	username = s.JwtUsernameExtract(c)
 	if username == "" {
 		return "", "认证令牌无效"
 	}
@@ -258,23 +261,23 @@ func (s *Service) extractJwtToken(c *gin.Context) string {
 	return tokenStr
 }
 
-// CheckHeaderToken 从代理 Header 读取用户名；失败时返回空用户名和具体错误原因。
+// HeaderTokenCheck 从代理 Header 读取用户名；失败时返回空用户名和具体错误原因。
 // errMsg 区分"Header 缺失"与"用户不存在"两种情况。
-func (s *Service) CheckHeaderToken(c *gin.Context) (username, errMsg string) {
+func (s *Service) HeaderTokenCheck(c *gin.Context) (username, errMsg string) {
 	raw := c.GetHeader(config.ProxyHeaderName)
 	if raw == "" {
 		return "", "代理 Header 缺失"
 	}
-	username = s.ExtractHeaderUsername(c)
+	username = s.HeaderUsernameExtract(c)
 	if username == "" {
 		return "", "用户不存在"
 	}
 	return username, ""
 }
 
-// CheckPerm 校验用户是否有权访问指定路由（"METHOD /api/path"）。
+// PermCheck 校验用户是否有权访问指定路由（"METHOD /api/path"）。
 // label 用于错误提示。返回 nil 表示有权限，否则返回描述错误原因的 error。
-func (s *Service) CheckPerm(username, label, method, path string) error {
+func (s *Service) PermCheck(username, label, method, path string) error {
 	member, exists := config.Members[username]
 	if !exists {
 		return fmt.Errorf("用户不存在")

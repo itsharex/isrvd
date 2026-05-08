@@ -44,8 +44,8 @@ func pickSecret(newVal, oldVal string) string {
 	return newVal
 }
 
-// GetAll 获取全部配置
-func (s *ConfigService) GetAll() *AllConfigResponse {
+// ConfigAll 获取全部配置
+func (s *ConfigService) ConfigAll() *AllConfigResponse {
 	// 构造响应结构（敏感字段 json:"-" 会自动排除）
 	resp := &AllConfigResponse{
 		Server: &config.Server{
@@ -76,8 +76,8 @@ func (s *ConfigService) GetAll() *AllConfigResponse {
 	return &result
 }
 
-// UpdateAll 一次性更新全部配置（任何 nil 分区将跳过）
-func (s *ConfigService) UpdateAll(req UpdateAllConfigRequest) error {
+// ConfigUpdateAll 一次性更新全部配置（任何 nil 分区将跳过）
+func (s *ConfigService) ConfigUpdateAll(req UpdateAllConfigRequest) error {
 	if req.Server != nil {
 		config.Debug = req.Server.Debug
 		config.ListenAddr = req.Server.ListenAddr

@@ -119,7 +119,9 @@ func shellHandleIO(conn *websocket.Conn, stdin io.Writer, stdout io.Reader, cmd 
 }
 
 func shellSendMsg(conn *websocket.Conn, msg string) {
-	conn.WriteMessage(websocket.TextMessage, []byte(msg))
+	if err := conn.WriteMessage(websocket.TextMessage, []byte(msg)); err != nil {
+		logman.Error("shellSendMsg: write error", "error", err)
+	}
 }
 
 func shellResolve(shell string) string {
