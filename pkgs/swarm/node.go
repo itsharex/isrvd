@@ -82,8 +82,8 @@ func (m *SwarmService) NodeAction(ctx context.Context, id, action string) error 
 	return nil
 }
 
-// NodeInspect 节点详情
-type NodeInspect struct {
+// NodeDetail 节点详情
+type NodeDetail struct {
 	ID            string            `json:"id"`
 	Hostname      string            `json:"hostname"`
 	Role          string            `json:"role"`
@@ -102,14 +102,14 @@ type NodeInspect struct {
 }
 
 // NodeInspect 获取节点详情
-func (m *SwarmService) NodeInspect(ctx context.Context, id string) (*NodeInspect, error) {
+func (m *SwarmService) NodeInspect(ctx context.Context, id string) (*NodeDetail, error) {
 	node, _, err := m.client.NodeInspectWithRaw(ctx, id)
 	if err != nil {
 		logman.Error("NodeInspect failed", "id", id, "error", err)
 		return nil, err
 	}
 
-	result := &NodeInspect{
+	result := &NodeDetail{
 		ID:            node.ID,
 		Hostname:      node.Description.Hostname,
 		Role:          string(node.Spec.Role),

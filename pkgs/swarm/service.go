@@ -68,7 +68,10 @@ func (m *SwarmService) ServiceList(ctx context.Context) ([]ServiceInfo, error) {
 	}
 
 	// 统计各服务运行中的任务数
-	tasks, _ := m.client.TaskList(ctx, swarm.TaskListOptions{})
+	tasks, err := m.client.TaskList(ctx, swarm.TaskListOptions{})
+	if err != nil {
+		logman.Warn("TaskList failed in ServiceList", "error", err)
+	}
 	runningMap := map[string]int{}
 	for _, t := range tasks {
 		if t.Status.State == swarm.TaskStateRunning {

@@ -49,7 +49,7 @@ func (s *Service) NodeAction(ctx context.Context, id, action string) error {
 }
 
 // NodeInspect 获取节点详情
-func (s *Service) NodeInspect(ctx context.Context, id string) (*pkgswarm.NodeInspect, error) {
+func (s *Service) NodeInspect(ctx context.Context, id string) (*pkgswarm.NodeDetail, error) {
 	if id == "" {
 		return nil, fmt.Errorf("缺少节点 ID")
 	}

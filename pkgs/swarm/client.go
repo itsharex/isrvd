@@ -45,9 +45,18 @@ func (m *SwarmService) Info(ctx context.Context) (map[string]any, error) {
 		return nil, err
 	}
 
-	nodes, _ := m.client.NodeList(ctx, swarm.NodeListOptions{})
-	services, _ := m.client.ServiceList(ctx, swarm.ServiceListOptions{})
-	tasks, _ := m.client.TaskList(ctx, swarm.TaskListOptions{})
+	nodes, err := m.client.NodeList(ctx, swarm.NodeListOptions{})
+	if err != nil {
+		logman.Warn("NodeList failed in Info", "error", err)
+	}
+	services, err := m.client.ServiceList(ctx, swarm.ServiceListOptions{})
+	if err != nil {
+		logman.Warn("ServiceList failed in Info", "error", err)
+	}
+	tasks, err := m.client.TaskList(ctx, swarm.TaskListOptions{})
+	if err != nil {
+		logman.Warn("TaskList failed in Info", "error", err)
+	}
 
 	var managers, workers int
 	for _, n := range nodes {

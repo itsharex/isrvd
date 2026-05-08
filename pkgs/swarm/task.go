@@ -40,14 +40,20 @@ func (m *SwarmService) TaskList(ctx context.Context, serviceID string) ([]Task, 
 	}
 
 	// 建立服务 ID→名称 映射
-	services, _ := m.client.ServiceList(ctx, swarm.ServiceListOptions{})
+	services, err := m.client.ServiceList(ctx, swarm.ServiceListOptions{})
+	if err != nil {
+		logman.Warn("ServiceList failed in TaskList", "error", err)
+	}
 	svcNameMap := map[string]string{}
 	for _, s := range services {
 		svcNameMap[s.ID] = s.Spec.Name
 	}
 
 	// 建立节点 ID→主机名 映射
-	nodes, _ := m.client.NodeList(ctx, swarm.NodeListOptions{})
+	nodes, err := m.client.NodeList(ctx, swarm.NodeListOptions{})
+	if err != nil {
+		logman.Warn("NodeList failed in TaskList", "error", err)
+	}
 	nodeNameMap := map[string]string{}
 	for _, n := range nodes {
 		nodeNameMap[n.ID] = n.Description.Hostname
