@@ -9,13 +9,16 @@ import (
 	"strings"
 
 	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/go-connections/nat"
 	"github.com/rehiy/pango/logman"
 )
 
-// VolumeMapping 目录映射
+// VolumeMapping 挂载映射
 type VolumeMapping struct {
-	HostPath      string `json:"hostPath"`
+	Type          string `json:"type,omitempty"`
+	Source        string `json:"source,omitempty"`
+	HostPath      string `json:"hostPath,omitempty"`
 	ContainerPath string `json:"containerPath"`
 	ReadOnly      bool   `json:"readOnly"`
 }
@@ -226,22 +229,15 @@ func (s *DockerService) ContainerCreate(ctx context.Context, req ContainerCreate
 		}
 	}
 
-	// 处理目录映射
+	// 处理挂载映射
 	if len(req.Volumes) > 0 {
-		hostConfig.Binds = make([]string, 0, len(req.Volumes))
+		hostConfig.Mounts = make([]mount.Mount, 0, len(req.Volumes))
 		for _, vol := range req.Volumes {
-			hostPath := vol.HostPath
-			if s.config.ContainerRoot != "" && !filepath.IsAbs(hostPath) {
-				hostPath = filepath.Join(s.config.ContainerRoot, req.Name, hostPath)
-				if err := os.MkdirAll(hostPath, 0755); err != nil {
-					return "", fmt.Errorf("创建卷目录失败: %w", err)
-				}
+			m, err := s.buildMount(req.Name, vol)
+			if err != nil {
+				return "", err
 			}
-			bind := hostPath + ":" + vol.ContainerPath
-			if vol.ReadOnly {
-				bind += ":ro"
-			}
-			hostConfig.Binds = append(hostConfig.Binds, bind)
+			hostConfig.Mounts = append(hostConfig.Mounts, m)
 		}
 	}
 
@@ -343,4 +339,74 @@ func (s *DockerService) ContainerUpdate(ctx context.Context, req ContainerUpdate
 	}
 
 	return s.ContainerCreate(ctx, req.ToCreateRequest())
+}
+
+func (s *DockerService) buildMount(containerName string, vol VolumeMapping) (mount.Mount, error) {
+	mountType := strings.ToLower(strings.TrimSpace(vol.Type))
+	source := firstNonEmpty(vol.Source, vol.HostPath)
+	if source == "" {
+		return mount.Mount{}, fmt.Errorf("挂载源不能为空")
+	}
+	if vol.ContainerPath == "" {
+		return mount.Mount{}, fmt.Errorf("挂载目标不能为空")
+	}
+	if mountType == "" {
+		if vol.HostPath != "" && vol.Source == "" {
+			mountType = string(mount.TypeBind)
+		} else {
+			mountType = inferMountType(source)
+		}
+	}
+
+	switch mountType {
+	case string(mount.TypeVolume):
+		return mount.Mount{
+			Type:     mount.TypeVolume,
+			Source:   source,
+			Target:   vol.ContainerPath,
+			ReadOnly: vol.ReadOnly,
+		}, nil
+	case string(mount.TypeBind):
+		bindSource, err := s.resolveBindSource(containerName, source)
+		if err != nil {
+			return mount.Mount{}, err
+		}
+		return mount.Mount{
+			Type:        mount.TypeBind,
+			Source:      bindSource,
+			Target:      vol.ContainerPath,
+			ReadOnly:    vol.ReadOnly,
+			BindOptions: &mount.BindOptions{CreateMountpoint: true},
+		}, nil
+	default:
+		return mount.Mount{}, fmt.Errorf("不支持的挂载类型: %s", mountType)
+	}
+}
+
+func (s *DockerService) resolveBindSource(containerName string, source string) (string, error) {
+	bindSource := source
+	if s.config.ContainerRoot != "" && !filepath.IsAbs(bindSource) {
+		bindSource = filepath.Join(s.config.ContainerRoot, containerName, bindSource)
+	}
+
+	if _, err := os.Stat(bindSource); err != nil && !os.IsNotExist(err) {
+		return "", fmt.Errorf("检查挂载源失败: %w", err)
+	}
+	return bindSource, nil
+}
+
+func inferMountType(source string) string {
+	if filepath.IsAbs(source) || strings.HasPrefix(source, ".") {
+		return string(mount.TypeBind)
+	}
+	return string(mount.TypeVolume)
+}
+
+func firstNonEmpty(values ...string) string {
+	for _, v := range values {
+		if v != "" {
+			return v
+		}
+	}
+	return ""
 }

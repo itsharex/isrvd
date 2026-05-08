@@ -1,6 +1,9 @@
 <script lang="ts">
 import * as yaml from 'js-yaml'
-import { Component, Vue, toNative } from 'vue-facing-decorator'
+import { Component, Inject, Vue, toNative } from 'vue-facing-decorator'
+
+import type { AppActions } from '@/store/state'
+import { APP_ACTIONS_KEY } from '@/store/state'
 
 import api from '@/service/api'
 import type { DockerImageInfo, DockerNetworkInfo } from '@/service/types'
@@ -196,11 +199,11 @@ export default toNative(ContainerCreateModal)
         <p class="mt-1 text-xs text-slate-400">主机端口:容器端口，每行一条</p>
       </div>
 
-      <!-- 目录映射 -->
+      <!-- 挂载映射 -->
       <div>
-        <label class="block text-sm font-medium text-slate-700 mb-2">目录映射</label>
-        <textarea v-model="formData.volumesStr" rows="2" placeholder="data:/app/data:ro" class="input font-mono text-sm"></textarea>
-        <p class="mt-1 text-xs text-slate-400">主机路径:容器路径[:ro]，每行一条</p>
+        <label class="block text-sm font-medium text-slate-700 mb-2">挂载映射</label>
+        <textarea v-model="formData.volumesStr" rows="3" placeholder="./data:/app/data:ro&#10;./config.yaml:/app/config.yaml:ro&#10;volume-name:/data" class="input font-mono text-sm"></textarea>
+        <p class="mt-1 text-xs text-slate-400">支持宿主机文件/目录或 Docker 卷：来源:容器路径[:ro]，每行一条</p>
       </div>
 
       <!-- 环境变量 -->
