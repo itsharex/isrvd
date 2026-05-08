@@ -191,8 +191,7 @@
   /* 按钮样式 */
   .btn {
     @apply inline-flex items-center justify-center gap-1.5 px-4 py-2.5 text-sm font-medium rounded-lg transition-colors;
-    @apply focus:outline-none;
-    @apply disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
   .btn-primary {
@@ -246,8 +245,8 @@
 
   /* 下拉框样式：防止文本与三角箭头重叠 */
   select.input {
-    @apply pr-8 truncate;
-    background-position: right 0.5rem center;
+    @apply pr-10 truncate;
+    background-position: right 0.75rem center;
   }
 
   /* 徽章样式 */

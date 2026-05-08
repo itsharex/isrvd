@@ -157,7 +157,7 @@ export default toNative(ImagePullModal)
               class="input flex-1"
               @keydown.enter.prevent="handleSearchImage"
             />
-            <button type="button" :disabled="searchLoading" class="px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-800 text-white text-xs font-medium flex items-center gap-1.5 transition-colors disabled:opacity-50" @click="handleSearchImage">
+            <button type="button" :disabled="searchLoading" class="btn h-[46px] btn-secondary" @click="handleSearchImage">
               <i :class="['fas', searchLoading ? 'fa-spinner fa-spin' : 'fa-search']"></i>
               {{ searchLoading ? '搜索中' : '搜索' }}
             </button>
