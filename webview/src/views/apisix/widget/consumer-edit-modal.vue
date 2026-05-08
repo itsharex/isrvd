@@ -103,6 +103,7 @@ export default toNative(ConsumerEditModal)
     :title="isEditMode ? '编辑消费者' : '创建消费者'"
     :loading="modalLoading"
     confirm-class="btn-violet"
+    @confirm="handleConfirm"
   >
     <div class="max-w-3xl space-y-4 p-1">
       <div class="space-y-3">
@@ -125,8 +126,7 @@ export default toNative(ConsumerEditModal)
     </div>
 
     <template #confirm-text>
-      <i v-if="modalLoading" class="fas fa-spinner fa-spin"></i>
-      {{ isEditMode ? '保存' : '创建' }}
+      确认{{ isEditMode ? '更新' : '创建' }}
     </template>
   </BaseModal>
 </template>

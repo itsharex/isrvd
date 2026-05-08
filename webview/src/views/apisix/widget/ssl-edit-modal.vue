@@ -107,6 +107,7 @@ export default toNative(SSLEditModal)
     :title="isEditMode ? '编辑证书' : '创建证书'"
     :loading="modalLoading"
     confirm-class="btn-cyan"
+    @confirm="handleConfirm"
   >
     <div class="max-w-3xl space-y-4 p-1">
       <div>
@@ -139,8 +140,7 @@ export default toNative(SSLEditModal)
     </div>
 
     <template #confirm-text>
-      <i v-if="modalLoading" class="fas fa-spinner fa-spin"></i>
-      {{ isEditMode ? '保存' : '创建' }}
+      确认{{ isEditMode ? '更新' : '创建' }}
     </template>
   </BaseModal>
 </template>

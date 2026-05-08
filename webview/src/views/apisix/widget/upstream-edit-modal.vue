@@ -199,6 +199,7 @@ export default toNative(UpstreamEditModal)
     :title="isEditMode ? '编辑上游' : '创建上游'"
     :loading="modalLoading"
     confirm-class="btn-success"
+    @confirm="handleConfirm"
   >
     <div class="max-w-3xl space-y-4 p-1">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -278,8 +279,7 @@ export default toNative(UpstreamEditModal)
     </div>
 
     <template #confirm-text>
-      <i v-if="modalLoading" class="fas fa-spinner fa-spin"></i>
-      {{ isEditMode ? '保存' : '创建' }}
+      确认{{ isEditMode ? '更新' : '创建' }}
     </template>
   </BaseModal>
 </template>

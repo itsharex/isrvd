@@ -117,6 +117,7 @@ export default toNative(PluginConfigEditModal)
     :title="isEditMode ? '编辑插件配置' : '创建插件配置'"
     :loading="modalLoading"
     confirm-class="btn-rose"
+    @confirm="handleConfirm"
   >
     <div class="max-w-3xl space-y-4 p-1">
       <div>
@@ -139,8 +140,7 @@ export default toNative(PluginConfigEditModal)
     </div>
 
     <template #confirm-text>
-      <i v-if="modalLoading" class="fas fa-spinner fa-spin"></i>
-      {{ isEditMode ? '保存' : '创建' }}
+      确认{{ isEditMode ? '更新' : '创建' }}
     </template>
   </BaseModal>
 </template>

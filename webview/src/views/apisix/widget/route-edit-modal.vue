@@ -266,7 +266,7 @@ export default toNative(RouteEditModal)
 </script>
 
 <template>
-  <BaseModal v-model="isOpen" :title="isEditMode ? '编辑路由' : '创建路由'" :loading="modalLoading" confirm-class="btn-indigo">
+  <BaseModal v-model="isOpen" :title="isEditMode ? '编辑路由' : '创建路由'" :loading="modalLoading" confirm-class="btn-indigo" @confirm="handleConfirm">
     <div class="space-y-4 p-1">
       <div class="grid grid-cols-2 gap-3">
         <div><label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">名称 <span class="text-red-500">*</span></label><input v-model="formData.name" type="text" class="input" placeholder="路由名称" /></div>
@@ -351,8 +351,7 @@ export default toNative(RouteEditModal)
     </div>
 
     <template #confirm-text>
-      <i v-if="modalLoading" class="fas fa-spinner fa-spin"></i>
-      {{ isEditMode ? '确认更新' : '确认创建' }}
+      确认{{ isEditMode ? '更新' : '创建' }}
     </template>
   </BaseModal>
 </template>
