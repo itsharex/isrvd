@@ -78,7 +78,6 @@ type ContainerStatsResponse struct {
 	ProcessList   *ContainerProcessList `json:"processList"`
 }
 
-// GetContainerStats 获取容器统计信息
 // ContainerStats 获取容器统计信息
 func (s *DockerService) ContainerStats(ctx context.Context, id string) (*ContainerStatsResponse, error) {
 	stats, err := s.client.ContainerStats(ctx, id, false)

@@ -142,7 +142,7 @@ func (app *App) dockerContainerExec(c *gin.Context) {
 		conn.WriteMessage(1, []byte("[错误: 缺少容器ID]\r\n"))
 		return
 	}
-	app.dockerSvc.GetDockerService().ContainerExec(conn, containerID, shell)
+	app.dockerSvc.GetDockerService().ContainerExec(c.Request.Context(), conn, containerID, shell)
 }
 
 // ─── 镜像 ───

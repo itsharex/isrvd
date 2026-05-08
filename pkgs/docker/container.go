@@ -213,19 +213,29 @@ func (s *DockerService) ContainerCreate(ctx context.Context, req ContainerCreate
 		hostConfig.NanoCPUs = int64(req.Cpus * 1e9)
 	}
 
-	// 处理端口映射
+	// 处理端口映射，key 格式：hostPort 或 hostPort/proto（如 "8080" 或 "53/udp"）
 	if len(req.Ports) > 0 {
 		portBindings := make(nat.PortMap)
-		for hostPort, containerPort := range req.Ports {
-			port := nat.Port(containerPort + "/tcp")
+		for hostPortSpec, containerPort := range req.Ports {
+			hostPort := hostPortSpec
+			proto := "tcp"
+			if idx := strings.LastIndex(hostPortSpec, "/"); idx >= 0 {
+				hostPort = hostPortSpec[:idx]
+				proto = hostPortSpec[idx+1:]
+			}
+			port := nat.Port(containerPort + "/" + proto)
 			portBindings[port] = []nat.PortBinding{
 				{HostIP: "0.0.0.0", HostPort: hostPort},
 			}
 		}
 		hostConfig.PortBindings = portBindings
 		containerConfig.ExposedPorts = make(nat.PortSet)
-		for _, containerPort := range req.Ports {
-			containerConfig.ExposedPorts[nat.Port(containerPort+"/tcp")] = struct{}{}
+		for hostPortSpec, containerPort := range req.Ports {
+			proto := "tcp"
+			if idx := strings.LastIndex(hostPortSpec, "/"); idx >= 0 {
+				proto = hostPortSpec[idx+1:]
+			}
+			containerConfig.ExposedPorts[nat.Port(containerPort+"/"+proto)] = struct{}{}
 		}
 	}
 
@@ -261,6 +271,10 @@ func (s *DockerService) ContainerCreate(ctx context.Context, req ContainerCreate
 	// 启动容器
 	if err := s.client.ContainerStart(ctx, resp.ID, container.StartOptions{}); err != nil {
 		logman.Error("Start container failed", "id", ShortID(resp.ID), "name", req.Name, "error", err)
+		// 启动失败时删除已创建的容器，避免同名容器残留导致后续调用失败
+		if rmErr := s.client.ContainerRemove(ctx, resp.ID, container.RemoveOptions{Force: true}); rmErr != nil {
+			logman.Warn("Remove container after start failure", "id", ShortID(resp.ID), "error", rmErr)
+		}
 		return "", fmt.Errorf("启动容器失败: %w", err)
 	}
 
@@ -334,8 +348,12 @@ func (s *DockerService) ContainerUpdate(ctx context.Context, req ContainerUpdate
 	// 停止并删除旧容器
 	if oldContainerID != "" {
 		timeout := 10
-		_ = s.client.ContainerStop(ctx, oldContainerID, container.StopOptions{Timeout: &timeout})
-		_ = s.client.ContainerRemove(ctx, oldContainerID, container.RemoveOptions{Force: true})
+		if err := s.client.ContainerStop(ctx, oldContainerID, container.StopOptions{Timeout: &timeout}); err != nil {
+			logman.Warn("Stop old container failed", "id", ShortID(oldContainerID), "error", err)
+		}
+		if err := s.client.ContainerRemove(ctx, oldContainerID, container.RemoveOptions{Force: true}); err != nil {
+			logman.Warn("Remove old container failed", "id", ShortID(oldContainerID), "error", err)
+		}
 	}
 
 	return s.ContainerCreate(ctx, req.ToCreateRequest())

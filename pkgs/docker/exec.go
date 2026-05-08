@@ -10,12 +10,10 @@ import (
 )
 
 // ContainerExec 容器终端 WebSocket 处理（业务逻辑层）
-func (s *DockerService) ContainerExec(conn *websocket.Conn, containerID, shell string) {
+func (s *DockerService) ContainerExec(ctx context.Context, conn *websocket.Conn, containerID, shell string) {
 	if shell == "" {
 		shell = "/bin/sh"
 	}
-
-	ctx := context.Background()
 
 	// 创建 exec 实例
 	execConfig := container.ExecOptions{
@@ -67,13 +65,18 @@ func (s *DockerService) ContainerExec(conn *websocket.Conn, containerID, shell s
 		_, msg, err := conn.ReadMessage()
 		if err != nil {
 			logman.Error("WebSocket read error", "error", err)
-			return
+			break
 		}
 		if _, err := hijackedResp.Conn.Write(msg); err != nil {
 			logman.Error("Container exec write error", "error", err)
-			return
+			break
 		}
 	}
+
+	// 关闭 hijack 连接触发 reader goroutine 退出，等待其结束后函数返回
+	// defer hijackedResp.Close() 兜底，net.Conn 重复关闭幂等
+	hijackedResp.Close()
+	<-done
 }
 
 // sendWsMessage 发送 WebSocket 消息
