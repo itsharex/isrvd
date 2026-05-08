@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/docker/docker/api/types/build"
 	dockerimage "github.com/docker/docker/api/types/image"
@@ -67,7 +68,7 @@ type ImageActionRequest struct {
 func (s *DockerService) ImageAction(ctx context.Context, id, action string) error {
 	switch action {
 	case "remove":
-		_, err := s.client.ImageRemove(ctx, id, dockerimage.RemoveOptions{
+		deleted, err := s.client.ImageRemove(ctx, id, dockerimage.RemoveOptions{
 			Force:         true,
 			PruneChildren: true,
 		})
@@ -75,11 +76,11 @@ func (s *DockerService) ImageAction(ctx context.Context, id, action string) erro
 			logman.Error("Remove image failed", "id", id, "error", err)
 			return err
 		}
+		logman.Info("Image action performed", "action", action, "id", id, "deleted", len(deleted))
 	default:
 		return fmt.Errorf("不支持的操作: %s", action)
 	}
 
-	logman.Info("Image action performed", "action", action, "id", id)
 	return nil
 }
 
@@ -209,8 +210,8 @@ type ImageInspectResponse struct {
 	LayerDetails []*ImageLayerInfo `json:"layerDetails"`
 }
 
-// ImageEnsure 确保镜像存在；若本地不存在则自动从 daemon 配置的 mirror 拉取。
-// 拉取时不携带认证信息，依赖 daemon 的 mirror/proxy 配置。
+// ImageEnsure 确保镜像存在；若本地不存在则自动拉取。
+// 认证信息从 imageRef 的 host 自动匹配已配置的 registry。
 func (s *DockerService) ImageEnsure(ctx context.Context, ref string) error {
 	if ref == "" {
 		return nil
@@ -227,25 +228,8 @@ func (s *DockerService) ImageEnsure(ctx context.Context, ref string) error {
 	}
 
 	logman.Info("Image not found locally, pulling", "image", imageRef)
-	reader, err := s.client.ImagePull(ctx, imageRef, dockerimage.PullOptions{})
-	if err != nil {
-		return fmt.Errorf("拉取镜像 %s 失败: %w", imageRef, err)
-	}
-	defer reader.Close()
-
-	// 消费响应流，等待拉取完成
-	decoder := json.NewDecoder(reader)
-	for {
-		var msg struct {
-			Status string `json:"status"`
-			Error  string `json:"error"`
-		}
-		if err := decoder.Decode(&msg); err != nil {
-			break
-		}
-		if msg.Error != "" {
-			return fmt.Errorf("拉取镜像 %s 失败: %s", imageRef, msg.Error)
-		}
+	if _, err := s.imagePull(ctx, imageRef); err != nil {
+		return err
 	}
 
 	logman.Info("Image pulled successfully", "image", imageRef)
@@ -306,7 +290,7 @@ func (s *DockerService) ImageInspect(ctx context.Context, id string) (*ImageInsp
 		isEmpty := h.Size == 0 && strings.Contains(h.CreatedBy, "#(nop)")
 		info := &ImageLayerInfo{
 			CreatedBy: cmd,
-			Created:   formatUnixTime(h.Created),
+			Created:   time.Unix(h.Created, 0).UTC().Format(time.RFC3339),
 			Empty:     isEmpty,
 			Size:      h.Size,
 		}

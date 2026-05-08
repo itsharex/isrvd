@@ -3,21 +3,39 @@ package docker
 import (
 	"archive/tar"
 	"bytes"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/docker/docker/api/types/container"
 )
 
-// isWildcardIP 判断 IP 是否为通配地址（0.0.0.0 或 ::）
-func isWildcardIP(ip string) bool {
-	return ip == "" || ip == "0.0.0.0" || ip == "::"
+// ShortID 返回 ID 的前 12 字符，不足 12 则返回原值
+func ShortID(id string) string {
+	if len(id) > 12 {
+		return id[:12]
+	}
+	return id
 }
 
-// formatUnixTime 将 Unix 时间戳格式化为 RFC3339 字符串
-func formatUnixTime(ts int64) string {
-	return time.Unix(ts, 0).UTC().Format(time.RFC3339)
+// ParseDockerLogs 解析 Docker multiplexed stream 格式的日志数据
+// 移除每帧前 8 字节的头部，返回纯文本行列表
+func ParseDockerLogs(data []byte) []string {
+	var logs []string
+	for i := 0; i < len(data); {
+		if i+8 > len(data) {
+			break
+		}
+		size := int(data[i+4])<<24 | int(data[i+5])<<16 | int(data[i+6])<<8 | int(data[i+7])
+		i += 8
+		if i+size > len(data) || size <= 0 {
+			break
+		}
+		logs = append(logs, string(data[i:i+size]))
+		i += size
+	}
+	return logs
 }
 
 // formatPorts 格式化端口列表：IPv4 优先、去重、通配地址省略 IP
@@ -38,7 +56,7 @@ func formatPorts(ports []container.Port) []string {
 			if isIPv6 && seen[key] {
 				continue
 			}
-			if isWildcardIP(p.IP) {
+			if p.IP == "" || p.IP == "0.0.0.0" || p.IP == "::" {
 				entry = fmt.Sprintf("%d:%d/%s", p.PublicPort, p.PrivatePort, p.Type)
 			} else {
 				entry = fmt.Sprintf("%s:%d:%d/%s", p.IP, p.PublicPort, p.PrivatePort, p.Type)
@@ -75,25 +93,6 @@ func buildDockerfileTar(dockerfile string) (*bytes.Buffer, error) {
 	return tarBuf, nil
 }
 
-// ParseDockerLogs 解析 Docker multiplexed stream 格式的日志数据
-// 移除每帧前 8 字节的头部，返回纯文本行列表
-func ParseDockerLogs(data []byte) []string {
-	var logs []string
-	for i := 0; i < len(data); {
-		if i+8 > len(data) {
-			break
-		}
-		size := int(data[i+4])<<24 | int(data[i+5])<<16 | int(data[i+6])<<8 | int(data[i+7])
-		i += 8
-		if i+size > len(data) || size <= 0 {
-			break
-		}
-		logs = append(logs, string(data[i:i+size]))
-		i += size
-	}
-	return logs
-}
-
 // registryHost 从仓库 URL 中提取 host 部分（去掉协议前缀和路径），用于拼接镜像引用
 // 例如：https://csighub.tencentyun.com -> csighub.tencentyun.com
 func registryHost(registryURL string) string {
@@ -105,10 +104,24 @@ func registryHost(registryURL string) string {
 	return host
 }
 
-// ShortID 返回 ID 的前 12 字符，不足 12 则返回原值
-func ShortID(id string) string {
-	if len(id) > 12 {
-		return id[:12]
+// consumeImageStream 消费 Docker 镜像操作的 JSON 流，返回最后一条 status 消息。
+// 遇到流中 error 字段时立即返回错误。
+func consumeImageStream(dec *json.Decoder) (string, error) {
+	var lastMessage string
+	for {
+		var msg struct {
+			Status string `json:"status"`
+			Error  string `json:"error"`
+		}
+		if err := dec.Decode(&msg); err != nil {
+			break
+		}
+		if msg.Error != "" {
+			return "", errors.New(msg.Error)
+		}
+		if msg.Status != "" {
+			lastMessage = msg.Status
+		}
 	}
-	return id
+	return lastMessage, nil
 }
