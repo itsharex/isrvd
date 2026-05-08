@@ -1,0 +1,98 @@
+@layer base {
+  * {
+    @apply antialiased;
+  }
+
+  body {
+    @apply bg-slate-50 min-h-screen;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  /* 移动端优化：防止文本选择 */
+  @media (max-width: 768px) {
+    body {
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      -khtml-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+    }
+
+    /* 允许输入框和按钮文本选择 */
+    input, textarea, button {
+      -webkit-user-select: text;
+      -khtml-user-select: text;
+      -moz-user-select: text;
+      -ms-user-select: text;
+      user-select: text;
+    }
+  }
+
+  /* 自定义滚动条 */
+  ::-webkit-scrollbar {
+    @apply w-2 h-2;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-slate-300 rounded-full transition-colors;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-slate-400;
+  }
+
+  /* 移动端优化 */
+  @media (max-width: 768px) {
+    ::-webkit-scrollbar {
+      @apply w-1 h-1;
+    }
+  }
+
+  /* 表单样式 */
+  input,
+  textarea,
+  select {
+    @apply transition-all duration-200;
+  }
+
+  input:focus,
+  textarea:focus,
+  select:focus {
+    @apply outline-none ring-2 ring-primary-500/50 border-primary-400;
+    box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.1);
+  }
+
+  /* 移动端优化：防止 iOS 缩放 */
+  @media (max-width: 768px) {
+    input, textarea, select {
+      @apply text-base;
+    }
+
+    input[type="text"],
+    input[type="password"],
+    input[type="email"],
+    input[type="number"],
+    input[type="tel"],
+    textarea {
+      font-size: 16px !important;
+    }
+  }
+
+  /* 应用加载状态 */
+  .app-wait {
+    @apply fixed inset-0 z-[9999] flex flex-col items-center justify-center;
+    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+  }
+
+  .app-wait::before {
+    content: '';
+    @apply absolute inset-0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    opacity: 0.3;
+  }
+}

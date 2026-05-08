@@ -1,0 +1,110 @@
+@layer components {
+  /* 卡片样式 */
+  .card {
+    @apply bg-white rounded-2xl shadow-soft border border-slate-200/60;
+  }
+
+  /* 移动端优化 */
+  @media (max-width: 768px) {
+    .card {
+      @apply rounded-xl; /* 移动端圆角稍小 */
+    }
+  }
+
+  /* 模态框样式 */
+  .modal-card {
+    @apply bg-white rounded-2xl shadow-2xl border border-slate-200;
+  }
+
+  /* 按钮样式 */
+  .btn {
+    @apply inline-flex items-center justify-center gap-1.5 px-4 py-2.5 text-sm font-medium rounded-lg transition-colors;
+    @apply focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-primary {
+    @apply bg-primary-500 text-white hover:bg-primary-600;
+  }
+
+  .btn-secondary {
+    @apply bg-white border border-slate-200 text-slate-700 hover:bg-slate-50;
+  }
+
+  .btn-success {
+    @apply bg-emerald-500 text-white hover:bg-emerald-600;
+  }
+
+  .btn-danger {
+    @apply bg-red-500 text-white hover:bg-red-600;
+  }
+
+  .btn-cyan {
+    @apply bg-cyan-500 text-white hover:bg-cyan-600;
+  }
+
+  .btn-indigo {
+    @apply bg-indigo-500 text-white hover:bg-indigo-600;
+  }
+
+  .btn-rose {
+    @apply bg-rose-500 text-white hover:bg-rose-600;
+  }
+
+  .btn-violet {
+    @apply bg-violet-500 text-white hover:bg-violet-600;
+  }
+
+  .btn-ghost {
+    @apply bg-transparent hover:bg-slate-100 text-slate-700;
+    @apply focus:ring-0 focus:ring-offset-0;
+  }
+
+  .btn-icon {
+    @apply inline-flex items-center justify-center p-2 rounded-lg hover:bg-slate-100 transition-all duration-200;
+    @apply focus:outline-none focus:ring-2 focus:ring-primary-500;
+  }
+
+  /* 输入框样式 */
+  .input {
+    @apply w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl;
+    @apply placeholder:text-slate-400 text-slate-700;
+    @apply hover:border-slate-300;
+  }
+
+  /* 下拉框样式：防止文本与三角箭头重叠 */
+  select.input {
+    @apply pr-10 truncate appearance-none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2394a3b8' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1.25rem;
+    height: 46px;
+  }
+
+  /* 徽章样式 */
+  .badge {
+    @apply inline-flex items-center px-3 py-1 rounded-lg text-xs font-medium;
+  }
+
+  .badge-primary {
+    @apply bg-primary-100 text-primary-700;
+  }
+
+  .badge-warning {
+    @apply bg-amber-100 text-amber-700;
+  }
+
+  /* 品牌文字 */
+  .gradient-text {
+    @apply font-semibold;
+    background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* 加载动画 */
+  .spinner {
+    @apply animate-spin rounded-full border-4 border-slate-200 border-t-primary-500;
+  }
+}
