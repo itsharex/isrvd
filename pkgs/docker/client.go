@@ -2,6 +2,7 @@ package docker
 
 import (
 	"context"
+	"sync"
 
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/image"
@@ -13,8 +14,9 @@ import (
 
 // DockerService Docker 服务
 type DockerService struct {
-	client *client.Client
-	config *DockerConfig
+	client      *client.Client
+	config      *DockerConfig
+	registryMu  sync.RWMutex // 保护 config.Registries 的并发读写
 }
 
 // DockerConfig Docker 配置（由外部注入，解除对 config 的依赖）
@@ -66,6 +68,8 @@ func (s *DockerService) ContainerRoot() string {
 
 // Registries 返回全量仓库配置（包含密码），仅供上层持久化使用
 func (s *DockerService) Registries() []*RegistryConfig {
+	s.registryMu.RLock()
+	defer s.registryMu.RUnlock()
 	return s.config.Registries
 }
 
@@ -81,8 +85,7 @@ type DockerInfo struct {
 	IndexServerAddress string   `json:"indexServerAddress"`
 }
 
-// GetInfo 获取 Docker 概览信息
-// Info 获取 Docker 信息
+// Info 获取 Docker 概览信息
 func (s *DockerService) Info(ctx context.Context) (*DockerInfo, error) {
 	daemonInfo, err := s.client.Info(ctx)
 	if err != nil {
@@ -108,9 +111,18 @@ func (s *DockerService) Info(ctx context.Context) (*DockerInfo, error) {
 		}
 	}
 
-	images, _ := s.client.ImageList(ctx, image.ListOptions{All: true})
-	volList, _ := s.client.VolumeList(ctx, volume.ListOptions{})
-	networks, _ := s.client.NetworkList(ctx, network.ListOptions{})
+	images, err := s.client.ImageList(ctx, image.ListOptions{All: true})
+	if err != nil {
+		logman.Warn("ImageList failed", "error", err)
+	}
+	volList, err := s.client.VolumeList(ctx, volume.ListOptions{})
+	if err != nil {
+		logman.Warn("VolumeList failed", "error", err)
+	}
+	networks, err := s.client.NetworkList(ctx, network.ListOptions{})
+	if err != nil {
+		logman.Warn("NetworkList failed", "error", err)
+	}
 
 	// 读取镜像加速器配置
 	var mirrors []string

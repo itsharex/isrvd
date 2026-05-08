@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"strings"
 
@@ -23,6 +22,8 @@ type RegistryInfo struct {
 
 // RegistryList 列出已配置的镜像仓库
 func (s *DockerService) RegistryList() []*RegistryInfo {
+	s.registryMu.RLock()
+	defer s.registryMu.RUnlock()
 	var registries []*RegistryInfo
 	for _, r := range s.config.Registries {
 		registries = append(registries, &RegistryInfo{
@@ -43,7 +44,9 @@ func (s *DockerService) RegistryCreate(reg *RegistryConfig) error {
 	if reg.Name == "" || reg.URL == "" {
 		return fmt.Errorf("仓库名称和地址不能为空")
 	}
-	if s.findRegistryIndex(reg.URL) >= 0 {
+	s.registryMu.Lock()
+	defer s.registryMu.Unlock()
+	if s.indexOfRegistry(reg.URL) >= 0 {
 		return fmt.Errorf("仓库地址已存在: %s", reg.URL)
 	}
 	s.config.Registries = append(s.config.Registries, reg)
@@ -58,13 +61,15 @@ func (s *DockerService) RegistryUpdate(originalURL string, reg *RegistryConfig) 
 	if reg.Name == "" || reg.URL == "" {
 		return fmt.Errorf("仓库名称和地址不能为空")
 	}
-	idx := s.findRegistryIndex(originalURL)
+	s.registryMu.Lock()
+	defer s.registryMu.Unlock()
+	idx := s.indexOfRegistry(originalURL)
 	if idx < 0 {
 		return fmt.Errorf("仓库不存在: %s", originalURL)
 	}
 	// URL 变更时需检查新 URL 冲突
 	if reg.URL != originalURL {
-		if s.findRegistryIndex(reg.URL) >= 0 {
+		if s.indexOfRegistry(reg.URL) >= 0 {
 			return fmt.Errorf("仓库地址已存在: %s", reg.URL)
 		}
 	}
@@ -78,7 +83,9 @@ func (s *DockerService) RegistryUpdate(originalURL string, reg *RegistryConfig) 
 
 // RegistryDelete 删除仓库
 func (s *DockerService) RegistryDelete(url string) error {
-	idx := s.findRegistryIndex(url)
+	s.registryMu.Lock()
+	defer s.registryMu.Unlock()
+	idx := s.indexOfRegistry(url)
 	if idx < 0 {
 		return fmt.Errorf("仓库不存在: %s", url)
 	}
@@ -195,6 +202,8 @@ func (s *DockerService) getRegistryAuth(imageRef string) string {
 	if !strings.Contains(host, ".") && !strings.Contains(host, ":") {
 		return ""
 	}
+	s.registryMu.RLock()
+	defer s.registryMu.RUnlock()
 	for _, r := range s.config.Registries {
 		if registryHost(r.URL) == host {
 			if r.Username != "" && r.Password != "" {
@@ -204,7 +213,7 @@ func (s *DockerService) getRegistryAuth(imageRef string) string {
 					ServerAddress: r.URL,
 				}
 				authJSON, _ := json.Marshal(authConfig)
-				return base64.URLEncoding.EncodeToString(authJSON)
+				return base64.StdEncoding.EncodeToString(authJSON)
 			}
 			break
 		}
@@ -231,8 +240,8 @@ func (s *DockerService) imagePull(ctx context.Context, imageRef string) (string,
 	return msg, nil
 }
 
-// findRegistryIndex 查找仓库索引
-func (s *DockerService) findRegistryIndex(url string) int {
+// indexOfRegistry 查找仓库索引（调用方负责持锁）
+func (s *DockerService) indexOfRegistry(url string) int {
 	for i, r := range s.config.Registries {
 		if r.URL == url {
 			return i
