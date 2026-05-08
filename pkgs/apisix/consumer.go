@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/rehiy/pango/strutil"
@@ -44,7 +45,7 @@ func (c *Client) ConsumerList() ([]Consumer, error) {
 
 // ConsumerRaw 获取指定 Consumer 的完整（未脱敏）数据
 func (c *Client) ConsumerRaw(username string) (*Consumer, error) {
-	data, err := c.doRequest(http.MethodGet, "/consumers/"+username, nil)
+	data, err := c.doRequest(http.MethodGet, "/consumers/"+url.PathEscape(username), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +77,7 @@ func (c *Client) ConsumerUpdate(username, desc string, plugins map[string]any) e
 		"desc":     desc,
 		"plugins":  plugins,
 	}
-	_, err = c.doRequest(http.MethodPut, "/consumers/"+username, body)
+	_, err = c.doRequest(http.MethodPut, "/consumers/"+url.PathEscape(username), body)
 	return err
 }
 
@@ -94,7 +95,7 @@ func (c *Client) ConsumerCreate(username, desc string, plugins map[string]any) (
 		"desc":     desc,
 		"plugins":  plugins,
 	}
-	_, err := c.doRequest(http.MethodPut, "/consumers/"+username, body)
+	_, err := c.doRequest(http.MethodPut, "/consumers/"+url.PathEscape(username), body)
 	if err != nil {
 		return nil, err
 	}
@@ -104,7 +105,7 @@ func (c *Client) ConsumerCreate(username, desc string, plugins map[string]any) (
 
 // ConsumerDelete 删除指定 Consumer
 func (c *Client) ConsumerDelete(username string) error {
-	_, err := c.doRequest(http.MethodDelete, "/consumers/"+username, nil)
+	_, err := c.doRequest(http.MethodDelete, "/consumers/"+url.PathEscape(username), nil)
 	if err != nil {
 		return err
 	}
@@ -154,6 +155,7 @@ func unmaskPlugins(plugins, rawPlugins map[string]any) {
 // maskConsumerPlugins 对 plugins 中的敏感字段（key、password 等）进行脱敏：
 // - 长度 > 10：保留前 5 位 + ****** + 后 3 位
 // - 长度 <= 10：保留首尾各 1 位，中间替换为 ******
+// 按 rune 处理，正确支持 UTF-8 多字节字符。
 func maskConsumerPlugins(plugins map[string]any) {
 	for _, plugin := range plugins {
 		p, ok := plugin.(map[string]any)
@@ -165,11 +167,12 @@ func maskConsumerPlugins(plugins map[string]any) {
 			if !ok || len(s) == 0 {
 				continue
 			}
-			n := len(s)
+			runes := []rune(s)
+			n := len(runes)
 			if n > 10 {
-				p[field] = s[:5] + "******" + s[n-3:]
+				p[field] = string(runes[:5]) + "******" + string(runes[n-3:])
 			} else if n > 2 {
-				p[field] = s[:1] + "******" + s[n-1:]
+				p[field] = string(runes[:1]) + "******" + string(runes[n-1:])
 			} else {
 				p[field] = "******"
 			}

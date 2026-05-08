@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 )
 
 // RouteTimeout Apisix 路由超时配置
@@ -41,22 +42,12 @@ func (c *Client) RouteList() ([]Route, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	routes, err := parseRouteList(data)
-	if err != nil {
-		return nil, err
-	}
-
-	result := make([]Route, 0, len(routes))
-	for _, v := range routes {
-		result = append(result, v)
-	}
-	return result, nil
+	return parseRouteList(data)
 }
 
 // RouteInspect 获取单条路由详情
 func (c *Client) RouteInspect(routeID string) (*Route, error) {
-	data, err := c.doRequest(http.MethodGet, "/routes/"+routeID, nil)
+	data, err := c.doRequest(http.MethodGet, "/routes/"+url.PathEscape(routeID), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +65,7 @@ func (c *Client) RouteCreate(req Route) (*Route, error) {
 
 // RouteUpdate 更新路由
 func (c *Client) RouteUpdate(routeID string, req Route) (*Route, error) {
-	data, err := c.doRequest(http.MethodPut, "/routes/"+routeID, buildRouteBody(req))
+	data, err := c.doRequest(http.MethodPut, "/routes/"+url.PathEscape(routeID), buildRouteBody(req))
 	if err != nil {
 		return nil, err
 	}
@@ -84,7 +75,7 @@ func (c *Client) RouteUpdate(routeID string, req Route) (*Route, error) {
 // RouteStatusPatch 仅更新路由的启用/禁用状态（1=启用 0=禁用）
 func (c *Client) RouteStatusPatch(routeID string, status int) error {
 	body := map[string]any{"status": status}
-	_, err := c.doRequest(http.MethodPatch, "/routes/"+routeID, body)
+	_, err := c.doRequest(http.MethodPatch, "/routes/"+url.PathEscape(routeID), body)
 	if err != nil {
 		return err
 	}
@@ -93,7 +84,7 @@ func (c *Client) RouteStatusPatch(routeID string, status int) error {
 
 // RouteDelete 删除路由
 func (c *Client) RouteDelete(routeID string) error {
-	_, err := c.doRequest(http.MethodDelete, "/routes/"+routeID, nil)
+	_, err := c.doRequest(http.MethodDelete, "/routes/"+url.PathEscape(routeID), nil)
 	if err != nil {
 		return err
 	}
@@ -102,12 +93,7 @@ func (c *Client) RouteDelete(routeID string) error {
 
 // RouteWhitelistList 获取管控路由列表（仅返回同时配置了 key-auth 和 consumer-restriction 的路由）
 func (c *Client) RouteWhitelistList() ([]Route, error) {
-	data, err := c.doRequest(http.MethodGet, "/routes", nil)
-	if err != nil {
-		return nil, err
-	}
-
-	routes, err := parseRouteList(data)
+	routes, err := c.fetchRoutes()
 	if err != nil {
 		return nil, err
 	}
@@ -124,12 +110,7 @@ func (c *Client) RouteWhitelistList() ([]Route, error) {
 
 // RouteWhitelist 获取所有路由的 consumer-restriction 白名单
 func (c *Client) RouteWhitelist() ([]Route, error) {
-	data, err := c.doRequest(http.MethodGet, "/routes", nil)
-	if err != nil {
-		return nil, err
-	}
-
-	routes, err := parseRouteList(data)
+	routes, err := c.fetchRoutes()
 	if err != nil {
 		return nil, err
 	}
@@ -185,7 +166,7 @@ func (c *Client) RouteWhitelistRevoke(routeID, consumerName string) error {
 
 // RouteConsumerRestrictionUpdate 更新路由的 consumer-restriction 白名单
 func (c *Client) RouteConsumerRestrictionUpdate(routeID string, consumers []string) error {
-	routeData, err := c.doRequest(http.MethodGet, "/routes/"+routeID, nil)
+	routeData, err := c.doRequest(http.MethodGet, "/routes/"+url.PathEscape(routeID), nil)
 	if err != nil {
 		return err
 	}
@@ -213,11 +194,20 @@ func (c *Client) RouteConsumerRestrictionUpdate(routeID string, consumers []stri
 	delete(route, "create_time")
 	delete(route, "update_time")
 
-	_, err = c.doRequest(http.MethodPut, "/routes/"+routeID, route)
+	_, err = c.doRequest(http.MethodPut, "/routes/"+url.PathEscape(routeID), route)
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+// fetchRoutes 拉取全量路由（内部复用，避免重复 HTTP 调用）
+func (c *Client) fetchRoutes() ([]Route, error) {
+	data, err := c.doRequest(http.MethodGet, "/routes", nil)
+	if err != nil {
+		return nil, err
+	}
+	return parseRouteList(data)
 }
 
 // --- 辅助函数 ---

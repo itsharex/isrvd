@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 )
 
 // PluginConfig Apisix Plugin Config 信息
@@ -26,7 +27,7 @@ func (c *Client) PluginConfigList() ([]PluginConfig, error) {
 
 // PluginConfigInspect 获取单个 Plugin Config 详情
 func (c *Client) PluginConfigInspect(configID string) (*PluginConfig, error) {
-	data, err := c.doRequest(http.MethodGet, "/plugin_configs/"+configID, nil)
+	data, err := c.doRequest(http.MethodGet, "/plugin_configs/"+url.PathEscape(configID), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -38,7 +39,7 @@ func (c *Client) PluginConfigCreate(req PluginConfig) (*PluginConfig, error) {
 	path := "/plugin_configs"
 	method := http.MethodPost
 	if req.ID != "" {
-		path = "/plugin_configs/" + req.ID
+		path = "/plugin_configs/" + url.PathEscape(req.ID)
 		method = http.MethodPut
 	}
 	data, err := c.doRequest(method, path, buildPluginConfigBody(req))
@@ -50,7 +51,7 @@ func (c *Client) PluginConfigCreate(req PluginConfig) (*PluginConfig, error) {
 
 // PluginConfigUpdate 更新 Plugin Config
 func (c *Client) PluginConfigUpdate(configID string, req PluginConfig) (*PluginConfig, error) {
-	data, err := c.doRequest(http.MethodPut, "/plugin_configs/"+configID, buildPluginConfigBody(req))
+	data, err := c.doRequest(http.MethodPut, "/plugin_configs/"+url.PathEscape(configID), buildPluginConfigBody(req))
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +60,7 @@ func (c *Client) PluginConfigUpdate(configID string, req PluginConfig) (*PluginC
 
 // PluginConfigDelete 删除 Plugin Config
 func (c *Client) PluginConfigDelete(configID string) error {
-	_, err := c.doRequest(http.MethodDelete, "/plugin_configs/"+configID, nil)
+	_, err := c.doRequest(http.MethodDelete, "/plugin_configs/"+url.PathEscape(configID), nil)
 	if err != nil {
 		return err
 	}

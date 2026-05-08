@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 )
 
 // Upstream Apisix Upstream 信息
@@ -36,7 +37,7 @@ func (c *Client) UpstreamList() ([]Upstream, error) {
 
 // UpstreamInspect 获取单条 Upstream 详情
 func (c *Client) UpstreamInspect(upstreamID string) (*Upstream, error) {
-	data, err := c.doRequest(http.MethodGet, "/upstreams/"+upstreamID, nil)
+	data, err := c.doRequest(http.MethodGet, "/upstreams/"+url.PathEscape(upstreamID), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -54,7 +55,7 @@ func (c *Client) UpstreamCreate(req Upstream) (*Upstream, error) {
 
 // UpstreamUpdate 更新 Upstream
 func (c *Client) UpstreamUpdate(upstreamID string, req Upstream) (*Upstream, error) {
-	data, err := c.doRequest(http.MethodPut, "/upstreams/"+upstreamID, buildUpstreamBody(req))
+	data, err := c.doRequest(http.MethodPut, "/upstreams/"+url.PathEscape(upstreamID), buildUpstreamBody(req))
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +64,7 @@ func (c *Client) UpstreamUpdate(upstreamID string, req Upstream) (*Upstream, err
 
 // UpstreamDelete 删除 Upstream
 func (c *Client) UpstreamDelete(upstreamID string) error {
-	_, err := c.doRequest(http.MethodDelete, "/upstreams/"+upstreamID, nil)
+	_, err := c.doRequest(http.MethodDelete, "/upstreams/"+url.PathEscape(upstreamID), nil)
 	if err != nil {
 		return err
 	}

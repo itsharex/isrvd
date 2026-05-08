@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 )
 
 // SSL Apisix SSL 证书信息
@@ -28,7 +29,7 @@ func (c *Client) SSLList() ([]SSL, error) {
 
 // SSLInspect 获取单个 SSL 证书详情
 func (c *Client) SSLInspect(sslID string) (*SSL, error) {
-	data, err := c.doRequest(http.MethodGet, "/ssls/"+sslID, nil)
+	data, err := c.doRequest(http.MethodGet, "/ssls/"+url.PathEscape(sslID), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +47,7 @@ func (c *Client) SSLCreate(req SSL) (*SSL, error) {
 
 // SSLUpdate 更新 SSL 证书
 func (c *Client) SSLUpdate(sslID string, req SSL) (*SSL, error) {
-	data, err := c.doRequest(http.MethodPatch, "/ssls/"+sslID, buildSSLBody(req, true))
+	data, err := c.doRequest(http.MethodPatch, "/ssls/"+url.PathEscape(sslID), buildSSLBody(req, true))
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +56,7 @@ func (c *Client) SSLUpdate(sslID string, req SSL) (*SSL, error) {
 
 // SSLDelete 删除 SSL 证书
 func (c *Client) SSLDelete(sslID string) error {
-	_, err := c.doRequest(http.MethodDelete, "/ssls/"+sslID, nil)
+	_, err := c.doRequest(http.MethodDelete, "/ssls/"+url.PathEscape(sslID), nil)
 	if err != nil {
 		return err
 	}
