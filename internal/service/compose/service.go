@@ -97,9 +97,9 @@ func (s *Service) Deploy(ctx context.Context, target Target, req DeployRequest) 
 	}
 	switch target {
 	case TargetDocker:
-		return s.deployDocker(ctx, req)
+		return s.dockerDeploy(ctx, req)
 	case TargetSwarm:
-		return s.deploySwarm(ctx, req)
+		return s.swarmDeploy(ctx, req)
 	default:
 		return nil, fmt.Errorf("不支持的目标: %s", target)
 	}
@@ -115,9 +115,9 @@ func (s *Service) GetContent(ctx context.Context, target Target, name string) (s
 	}
 	switch target {
 	case TargetDocker:
-		return s.getDockerContent(ctx, name)
+		return s.dockerContentGet(ctx, name)
 	case TargetSwarm:
-		return s.getSwarmContent(ctx, name)
+		return s.swarmContentGet(ctx, name)
 	default:
 		return "", fmt.Errorf("不支持的目标: %s", target)
 	}
@@ -133,9 +133,9 @@ func (s *Service) Redeploy(ctx context.Context, target Target, name string, req 
 	}
 	switch target {
 	case TargetDocker:
-		return s.redeployDocker(ctx, name, req.Content)
+		return s.dockerRedeploy(ctx, name, req.Content)
 	case TargetSwarm:
-		return s.redeploySwarm(ctx, name, req.Content)
+		return s.swarmRedeploy(ctx, name, req.Content)
 	default:
 		return nil, fmt.Errorf("不支持的目标: %s", target)
 	}

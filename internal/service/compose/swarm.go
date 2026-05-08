@@ -3,6 +3,8 @@ package compose
 import (
 	"context"
 	"fmt"
+	"os"
+	"path/filepath"
 
 	"github.com/compose-spec/compose-go/v2/types"
 	"github.com/rehiy/pango/logman"
@@ -11,16 +13,11 @@ import (
 	"isrvd/pkgs/compose"
 )
 
-// ==================== Swarm 部署 ====================
+// ==================== 部署 ====================
 
-func (s *Service) deploySwarm(ctx context.Context, req DeployRequest) (*DeployResult, error) {
+func (s *Service) swarmDeploy(ctx context.Context, req DeployRequest) (*DeployResult, error) {
 	if s.swarm == nil {
 		return nil, fmt.Errorf("swarm 服务未初始化")
-	}
-
-	// 检查服务是否已存在
-	if _, err := s.swarm.ServiceInspect(ctx, req.ProjectName); err == nil {
-		return nil, fmt.Errorf("实例 %s 已存在，请使用重建功能", req.ProjectName)
 	}
 
 	project, err := compose.LoadProjectFromContent(ctx, req.Content, req.ProjectName)
@@ -31,21 +28,35 @@ func (s *Service) deploySwarm(ctx context.Context, req DeployRequest) (*DeployRe
 		return nil, fmt.Errorf("compose 文件中没有定义服务")
 	}
 
-	items, err := s.deploySwarmProject(ctx, project)
+	for _, svc := range project.Services {
+		if _, err := s.swarm.ServiceInspect(ctx, svc.Name); err == nil {
+			return nil, fmt.Errorf("服务 %s 已存在，请先移除或使用其它实例名", svc.Name)
+		}
+	}
+
+	items, err := s.swarmProjectDeploy(ctx, project)
 	if err != nil {
 		return nil, err
 	}
 
+	s.swarmContentSave(req.ProjectName, req.Content, "")
+
 	return &DeployResult{Target: TargetSwarm, Items: items}, nil
 }
 
-// ==================== Swarm 获取内容 ====================
+// ==================== 获取内容 ====================
 
-func (s *Service) getSwarmContent(ctx context.Context, name string) (string, error) {
+func (s *Service) swarmContentGet(ctx context.Context, name string) (string, error) {
 	if s.swarm == nil {
 		return "", fmt.Errorf("swarm 服务未初始化")
 	}
 
+	// 优先读持久化文件
+	if content := s.swarmContentLoad(name); content != "" {
+		return content, nil
+	}
+
+	// 文件不存在，从运行态反推（仅能反推单服务）
 	info, err := s.swarm.ServiceInspect(ctx, name)
 	if err != nil {
 		return "", err
@@ -60,68 +71,141 @@ func (s *Service) getSwarmContent(ctx context.Context, name string) (string, err
 	return string(data), err
 }
 
-// ==================== Swarm 重建 ====================
+// ==================== 重建 ====================
 
-func (s *Service) redeploySwarm(ctx context.Context, name, content string) (*DeployResult, error) {
+func (s *Service) swarmRedeploy(ctx context.Context, name, content string) (*DeployResult, error) {
 	if s.swarm == nil {
 		return nil, fmt.Errorf("swarm 服务未初始化")
 	}
 
-	// 删除所有旧服务
-	s.removeSwarmServices(ctx, name)
+	oldContent, _ := s.swarmContentGet(ctx, name)
+
+	s.swarmServicesRemove(ctx, name, oldContent)
+
+	rollback := func() {
+		s.swarmRollback(ctx, name, oldContent)
+		s.swarmContentSave(name, oldContent, "")
+	}
 
 	project, err := compose.LoadProjectFromContent(ctx, content, name)
 	if err != nil {
+		rollback()
 		return nil, err
 	}
 	if len(project.Services) == 0 {
+		rollback()
 		return nil, fmt.Errorf("compose 文件中没有定义服务")
 	}
 
-	items, err := s.deploySwarmProject(ctx, project)
+	items, err := s.swarmProjectDeploy(ctx, project)
 	if err != nil {
+		rollback()
 		return nil, err
 	}
+
+	s.swarmContentSave(name, content, oldContent)
 
 	logman.Info("Swarm compose redeployed", "name", name)
 	return &DeployResult{Target: TargetSwarm, Items: items}, nil
 }
 
-// removeSwarmServices 删除指定实例的所有服务
-func (s *Service) removeSwarmServices(ctx context.Context, name string) {
-	if s.swarm == nil {
-		return
-	}
-	oldContent, err := s.getSwarmContent(ctx, name)
-	if err != nil {
-		return
-	}
-	oldProject, err := compose.LoadProjectFromContent(ctx, oldContent, name)
-	if err != nil {
-		return
-	}
-	for _, svc := range oldProject.Services {
-		_ = s.swarm.ServiceAction(ctx, svc.Name, "remove", nil)
-	}
-}
+// ==================== 辅助函数 ====================
 
-// ==================== Swarm 辅助 ====================
-
-func (s *Service) deploySwarmProject(ctx context.Context, project *types.Project) ([]string, error) {
+// swarmProjectDeploy 部署 compose project 中的所有服务，失败时回滚已创建的服务
+func (s *Service) swarmProjectDeploy(ctx context.Context, project *types.Project) ([]string, error) {
+	var createdIDs []string
 	var items []string
+
+	rollback := func() {
+		for _, id := range createdIDs {
+			if err := s.swarm.ServiceAction(ctx, id, "remove", nil); err != nil {
+				logman.Warn("Rollback remove service failed", "id", id, "error", err)
+			}
+		}
+	}
+
 	for _, svc := range project.Services {
 		req, err := compose.ServiceToSwarmRequest(project, svc)
 		if err != nil {
-			return items, err
+			rollback()
+			return nil, err
 		}
 
 		id, err := s.swarm.ServiceCreate(ctx, req)
 		if err != nil {
-			return items, fmt.Errorf("创建服务 %s 失败: %w", req.Name, err)
+			rollback()
+			return nil, fmt.Errorf("创建服务 %s 失败: %w", req.Name, err)
 		}
 
+		createdIDs = append(createdIDs, id)
 		items = append(items, fmt.Sprintf("%s (%s)", req.Name, pkgdocker.ShortID(id)))
 		logman.Info("Swarm service deployed", "service", svc.Name, "id", pkgdocker.ShortID(id))
 	}
 	return items, nil
+}
+
+// swarmServicesRemove 删除实例的所有服务
+func (s *Service) swarmServicesRemove(ctx context.Context, name, content string) {
+	if s.swarm == nil {
+		return
+	}
+	if content == "" {
+		content, _ = s.swarmContentGet(ctx, name)
+	}
+	if content == "" {
+		return
+	}
+	project, err := compose.LoadProjectFromContent(ctx, content, name)
+	if err != nil {
+		return
+	}
+	for _, svc := range project.Services {
+		_ = s.swarm.ServiceAction(ctx, svc.Name, "remove", nil)
+	}
+}
+
+// swarmRollback 用指定配置内容重建服务（回滚用）
+func (s *Service) swarmRollback(ctx context.Context, name, content string) {
+	if content == "" {
+		return
+	}
+	project, err := compose.LoadProjectFromContent(ctx, content, name)
+	if err != nil {
+		logman.Warn("Rollback load project failed", "name", name, "error", err)
+		return
+	}
+	if _, err := s.swarmProjectDeploy(ctx, project); err != nil {
+		logman.Warn("Rollback deploy failed", "name", name, "error", err)
+	}
+}
+
+// swarmContentSave 持久化 swarm compose 文件，bak 非空时同时写 .bak
+func (s *Service) swarmContentSave(name, content, bak string) {
+	root := s.docker.ContainerRoot()
+	if root == "" {
+		return
+	}
+	dir := filepath.Join(root, ".swarm", name)
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return
+	}
+	if content != "" {
+		_ = os.WriteFile(filepath.Join(dir, "compose.yml"), []byte(content), 0644)
+	}
+	if bak != "" {
+		_ = os.WriteFile(filepath.Join(dir, "compose.yml.bak"), []byte(bak), 0644)
+	}
+}
+
+// swarmContentLoad 读取持久化的 swarm compose 文件
+func (s *Service) swarmContentLoad(name string) string {
+	root := s.docker.ContainerRoot()
+	if root == "" {
+		return ""
+	}
+	data, err := os.ReadFile(filepath.Join(root, ".swarm", name, "compose.yml"))
+	if err != nil {
+		return ""
+	}
+	return string(data)
 }

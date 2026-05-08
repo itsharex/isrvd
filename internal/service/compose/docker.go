@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/compose-spec/compose-go/v2/types"
 	"github.com/rehiy/pango/logman"
 	"github.com/rehiy/pango/request"
 
@@ -14,29 +15,26 @@ import (
 	"isrvd/pkgs/compose"
 )
 
-// ==================== Docker 部署 ====================
+// ==================== 部署 ====================
 
-func (s *Service) deployDocker(ctx context.Context, req DeployRequest) (*DeployResult, error) {
+func (s *Service) dockerDeploy(ctx context.Context, req DeployRequest) (*DeployResult, error) {
 	root := s.docker.ContainerRoot()
 	if root == "" {
 		return nil, fmt.Errorf("未配置容器数据根目录")
 	}
 
-	// 目录已存在且有 compose 文件，拒绝部署
 	installDir := filepath.Join(root, req.ProjectName)
 	composeFile := filepath.Join(installDir, "compose.yml")
 	if _, err := os.Stat(composeFile); err == nil {
 		return nil, fmt.Errorf("目录 %s 已包含 compose 配置，请先移除或使用其它实例名", installDir)
 	}
 
-	// 判断目录是否已存在（用于异常清理）
 	_, err := os.Stat(installDir)
 	installDirExists := err == nil
 	if err := os.MkdirAll(installDir, 0755); err != nil {
 		return nil, fmt.Errorf("创建安装目录失败: %w", err)
 	}
 
-	// 失败时清理本次新建的目录
 	deployed := false
 	defer func() {
 		if !deployed && !installDirExists {
@@ -44,17 +42,14 @@ func (s *Service) deployDocker(ctx context.Context, req DeployRequest) (*DeployR
 		}
 	}()
 
-	// 处理附加运行文件
-	if err := s.handleInitFile(installDir, req); err != nil {
+	if err := s.dockerInitFileHandle(installDir, req); err != nil {
 		return nil, err
 	}
 
-	// 写入 compose 文件
 	if err := os.WriteFile(composeFile, []byte(req.Content), 0644); err != nil {
 		return nil, fmt.Errorf("写入 compose 文件失败: %w", err)
 	}
 
-	// 加载 compose 项目
 	project, err := compose.LoadProject(ctx, compose.LoadOptions{
 		WorkingDir:  installDir,
 		ProjectName: req.ProjectName,
@@ -62,19 +57,17 @@ func (s *Service) deployDocker(ctx context.Context, req DeployRequest) (*DeployR
 	if err != nil {
 		return nil, err
 	}
+	if len(project.Services) == 0 {
+		return nil, fmt.Errorf("compose 文件中没有定义服务")
+	}
 
-	// 提前检查容器名冲突
 	for _, svc := range project.Services {
-		name := svc.ContainerName
-		if name == "" {
-			name = svc.Name
-		}
-		if _, err := s.docker.ContainerInspect(ctx, name); err == nil {
-			return nil, fmt.Errorf("容器 %s 已存在，请先移除或使用其它实例名", name)
+		cname := dockerContainerNameOf(svc)
+		if _, err := s.docker.ContainerInspect(ctx, cname); err == nil {
+			return nil, fmt.Errorf("容器 %s 已存在，请先移除或使用其它实例名", cname)
 		}
 	}
 
-	// 部署
 	items, err := s.compose.DeployProject(ctx, project)
 	if err != nil {
 		return nil, err
@@ -85,14 +78,12 @@ func (s *Service) deployDocker(ctx context.Context, req DeployRequest) (*DeployR
 	return &DeployResult{Target: TargetDocker, Items: items, InstallDir: installDir}, nil
 }
 
-func (s *Service) handleInitFile(installDir string, req DeployRequest) error {
+// dockerInitFileHandle 处理附加运行文件（支持 URL 下载或直接上传）
+func (s *Service) dockerInitFileHandle(installDir string, req DeployRequest) error {
 	zipPath := filepath.Join(installDir, "init.zip")
 
 	if req.InitFile != nil {
-		if err := writeAndUnzip(zipPath, req.InitFile); err != nil {
-			return err
-		}
-		return nil
+		return writeAndUnzip(zipPath, req.InitFile)
 	}
 
 	if req.InitURL != "" {
@@ -107,17 +98,16 @@ func (s *Service) handleInitFile(installDir string, req DeployRequest) error {
 	return nil
 }
 
-// ==================== Docker 获取内容 ====================
+// ==================== 获取内容 ====================
 
-func (s *Service) getDockerContent(ctx context.Context, name string) (string, error) {
+func (s *Service) dockerContentGet(ctx context.Context, name string) (string, error) {
 	root := s.docker.ContainerRoot()
 	if root == "" {
 		return "", fmt.Errorf("未配置容器数据根目录")
 	}
 
 	path := filepath.Join(root, name, "compose.yml")
-	data, err := os.ReadFile(path)
-	if err == nil {
+	if data, err := os.ReadFile(path); err == nil {
 		return string(data), nil
 	}
 
@@ -133,83 +123,136 @@ func (s *Service) getDockerContent(ctx context.Context, name string) (string, er
 		return "", err
 	}
 
-	data, err = compose.ProjectToYAML(project)
+	data, err := compose.ProjectToYAML(project)
 	if err != nil {
 		return "", err
 	}
 
-	// 写入快照
-	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
-		return "", fmt.Errorf("创建目录失败: %w", err)
-	}
-	if err := os.WriteFile(path, data, 0644); err != nil {
-		return "", fmt.Errorf("写入 compose 文件失败: %w", err)
-	}
+	// 写入快照（失败不影响返回结果）
+	_ = os.MkdirAll(filepath.Dir(path), 0755)
+	_ = os.WriteFile(path, data, 0644)
 
 	return string(data), nil
 }
 
-// ==================== Docker 重建 ====================
+// ==================== 重建 ====================
 
-func (s *Service) redeployDocker(ctx context.Context, name, content string) (*DeployResult, error) {
+func (s *Service) dockerRedeploy(ctx context.Context, name, content string) (*DeployResult, error) {
 	root := s.docker.ContainerRoot()
 	installDir := ""
 	if root != "" {
 		installDir = filepath.Join(root, name)
 	}
 
-	// 删除所有旧容器
-	s.removeDockerContainers(ctx, name)
+	oldContent, _ := s.dockerContentGet(ctx, name)
 
-	// 更新 compose 文件
-	if installDir != "" {
-		if err := os.MkdirAll(installDir, 0755); err != nil {
-			return nil, fmt.Errorf("创建安装目录失败: %w", err)
-		}
-		composeFile := filepath.Join(installDir, "compose.yml")
-		if err := os.WriteFile(composeFile, []byte(content), 0644); err != nil {
-			return nil, fmt.Errorf("写入 compose 文件失败: %w", err)
-		}
+	s.dockerContainersRemove(ctx, name, oldContent)
+
+	rollback := func() {
+		s.dockerRollback(ctx, name, oldContent)
+		s.dockerContentSave(installDir, oldContent, "")
 	}
 
-	// 重新部署
-	project, err := compose.LoadProjectFromContent(ctx, content, name)
+	project, err := s.dockerProjectLoad(ctx, name, content, installDir)
 	if err != nil {
+		rollback()
 		return nil, err
+	}
+	if len(project.Services) == 0 {
+		rollback()
+		return nil, fmt.Errorf("compose 文件中没有定义服务")
 	}
 
 	items, err := s.compose.DeployProject(ctx, project)
 	if err != nil {
+		rollback()
 		return nil, err
 	}
+
+	s.dockerContentSave(installDir, content, oldContent)
 
 	logman.Info("Compose redeployed", "name", name)
 	return &DeployResult{Target: TargetDocker, Items: items, InstallDir: installDir}, nil
 }
 
-// removeDockerContainers 删除指定实例的所有容器
-func (s *Service) removeDockerContainers(ctx context.Context, name string) {
-	oldContent, err := s.getDockerContent(ctx, name)
+// ==================== 辅助函数 ====================
+
+// dockerProjectLoad 写入 compose.yml 后用 LoadProject 加载，确保相对路径基于 installDir 展开
+func (s *Service) dockerProjectLoad(ctx context.Context, name, content, installDir string) (*types.Project, error) {
+	if installDir == "" {
+		return compose.LoadProjectFromContent(ctx, content, name)
+	}
+	if err := os.MkdirAll(installDir, 0755); err != nil {
+		return nil, fmt.Errorf("创建安装目录失败: %w", err)
+	}
+	if err := os.WriteFile(filepath.Join(installDir, "compose.yml"), []byte(content), 0644); err != nil {
+		return nil, fmt.Errorf("写入 compose 文件失败: %w", err)
+	}
+	return compose.LoadProject(ctx, compose.LoadOptions{
+		WorkingDir:  installDir,
+		ProjectName: name,
+	})
+}
+
+// dockerContainersRemove 停止并删除实例的所有容器
+func (s *Service) dockerContainersRemove(ctx context.Context, name, content string) {
+	if content == "" {
+		content, _ = s.dockerContentGet(ctx, name)
+	}
+	if content == "" {
+		return
+	}
+	project, err := compose.LoadProjectFromContent(ctx, content, name)
 	if err != nil {
 		return
 	}
-	oldProject, err := compose.LoadProjectFromContent(ctx, oldContent, name)
-	if err != nil {
+	for _, svc := range project.Services {
+		cname := dockerContainerNameOf(svc)
+		_ = s.docker.ContainerAction(ctx, cname, "stop")
+		_ = s.docker.ContainerAction(ctx, cname, "remove")
+	}
+}
+
+// dockerRollback 用指定配置内容重建容器（回滚用）
+func (s *Service) dockerRollback(ctx context.Context, name, content string) {
+	if content == "" {
 		return
 	}
-	for _, svc := range oldProject.Services {
-		// 容器名：优先 ContainerName，否则用服务名
-		containerName := svc.Name
-		if svc.ContainerName != "" {
-			containerName = svc.ContainerName
-		}
-		_ = s.docker.ContainerAction(ctx, containerName, "stop")
-		_ = s.docker.ContainerAction(ctx, containerName, "remove")
+	project, err := compose.LoadProjectFromContent(ctx, content, name)
+	if err != nil {
+		logman.Warn("Rollback load project failed", "name", name, "error", err)
+		return
 	}
+	if _, err := s.compose.DeployProject(ctx, project); err != nil {
+		logman.Warn("Rollback deploy failed", "name", name, "error", err)
+	}
+}
+
+// dockerContentSave 持久化 compose.yml，bak 非空时同时写 .bak
+func (s *Service) dockerContentSave(installDir, content, bak string) {
+	if installDir == "" {
+		return
+	}
+	_ = os.MkdirAll(installDir, 0755)
+	if content != "" {
+		_ = os.WriteFile(filepath.Join(installDir, "compose.yml"), []byte(content), 0644)
+	}
+	if bak != "" {
+		_ = os.WriteFile(filepath.Join(installDir, "compose.yml.bak"), []byte(bak), 0644)
+	}
+}
+
+// dockerContainerNameOf 返回 compose service 对应的容器名
+func dockerContainerNameOf(svc types.ServiceConfig) string {
+	if svc.ContainerName != "" {
+		return svc.ContainerName
+	}
+	return svc.Name
 }
 
 // ==================== 工具函数 ====================
 
+// writeAndUnzip 将 reader 内容写入 zip 文件并解压
 func writeAndUnzip(zipPath string, r io.Reader) error {
 	f, err := os.Create(zipPath)
 	if err != nil {
