@@ -1,8 +1,5 @@
 <script lang="ts">
-import { Component, Inject, Vue, toNative } from 'vue-facing-decorator'
-
-import { APP_ACTIONS_KEY } from '@/store/state'
-import type { AppActions } from '@/store/state'
+import { Component, Vue, toNative } from 'vue-facing-decorator'
 
 import api from '@/service/api'
 import type { SwarmNodeInfo } from '@/service/types'
@@ -11,9 +8,11 @@ import { copyToClipboard } from '@/helper/utils'
 
 import BaseModal from '@/component/modal.vue'
 
+import { usePortal } from '@/stores'
+
 @Component({ components: { BaseModal } })
 class Nodes extends Vue {
-    @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
+    portal = usePortal()
 
     // ─── 数据属性 ───
     nodes: SwarmNodeInfo[] = []
@@ -47,7 +46,7 @@ class Nodes extends Vue {
             // leader 节点排最前
             this.nodes = list.sort((a: SwarmNodeInfo, b: SwarmNodeInfo) => (b.leader ? 1 : 0) - (a.leader ? 1 : 0))
         } catch {
-            this.actions.showNotification('error', '获取节点列表失败')
+            this.portal.showNotification('error', '获取节点列表失败')
         }
         this.nodesLoading = false
     }
@@ -55,7 +54,7 @@ class Nodes extends Vue {
     handleNodeAction(node: SwarmNodeInfo, action: string) {
         const labels: Record<string, string> = { drain: '排空', active: '激活', pause: '暂停', remove: '移除' }
         const label = labels[action] || action
-        this.actions.showConfirm({
+        this.portal.showConfirm({
             title: `${label}节点`,
             message: `确定要${label}节点 <strong class="text-slate-900">${node.hostname}</strong> 吗？`,
             icon: action === 'remove' ? 'fa-trash' : 'fa-server',
@@ -64,7 +63,7 @@ class Nodes extends Vue {
             danger: action === 'remove',
             onConfirm: async () => {
                 await api.swarmNodeAction(node.id, action)
-                this.actions.showNotification('success', `节点${label}成功`)
+                this.portal.showNotification('success', `节点${label}成功`)
                 this.loadNodes()
             }
         })
@@ -79,7 +78,7 @@ class Nodes extends Vue {
             const res = await api.swarmJoinToken()
             this.joinTokens = res.payload || null
         } catch {
-            this.actions.showNotification('error', '获取加入令牌失败')
+            this.portal.showNotification('error', '获取加入令牌失败')
             this.showJoinModal = false
         }
         this.joinTokensLoading = false
@@ -104,7 +103,7 @@ class Nodes extends Vue {
             this.copied = true
             setTimeout(() => { this.copied = false }, 2000)
         } else {
-            this.actions.showNotification('error', '复制失败，请手动复制')
+            this.portal.showNotification('error', '复制失败，请手动复制')
         }
     }
 
@@ -136,7 +135,7 @@ export default toNative(Nodes)
             <button class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors" @click="loadNodes">
               <i class="fas fa-rotate"></i>刷新
             </button>
-            <button v-if="actions.hasPerm('GET /api/swarm/token')" class="px-3 py-1.5 rounded-lg bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium flex items-center gap-1.5 transition-colors" @click="openJoinModal">
+            <button v-if="portal.hasPerm('GET /api/swarm/token')" class="px-3 py-1.5 rounded-lg bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium flex items-center gap-1.5 transition-colors" @click="openJoinModal">
               <i class="fas fa-plus"></i>加入
             </button>
           </div>
@@ -156,7 +155,7 @@ export default toNative(Nodes)
             <button class="w-9 h-9 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-600 transition-colors" title="刷新" @click="loadNodes">
               <i class="fas fa-rotate text-sm"></i>
             </button>
-            <button v-if="actions.hasPerm('GET /api/swarm/token')" class="w-9 h-9 rounded-lg bg-blue-500 hover:bg-blue-600 flex items-center justify-center text-white transition-colors" title="加入集群" @click="openJoinModal">
+            <button v-if="portal.hasPerm('GET /api/swarm/token')" class="w-9 h-9 rounded-lg bg-blue-500 hover:bg-blue-600 flex items-center justify-center text-white transition-colors" title="加入集群" @click="openJoinModal">
               <i class="fas fa-plus text-sm"></i>
             </button>
           </div>
@@ -208,11 +207,11 @@ export default toNative(Nodes)
                 <td class="px-4 py-3 text-xs text-slate-500">{{ n.engineVersion || '-' }}</td>
                 <td class="px-4 py-3">
                   <div class="flex justify-end items-center gap-1">
-                    <button v-if="actions.hasPerm('GET /api/swarm/node/:id')" class="btn-icon text-slate-600 hover:bg-slate-50" title="查看详情" @click="$router.push(`/swarm/node/${n.id}`)"><i class="fas fa-circle-info text-xs"></i></button>
-                    <button v-if="n.availability !== 'active' && actions.hasPerm('POST /api/swarm/node/:id/action')" class="btn-icon text-emerald-600 hover:bg-emerald-50" title="激活" @click="handleNodeAction(n, 'active')"><i class="fas fa-play text-xs"></i></button>
-                    <button v-if="n.availability !== 'drain' && actions.hasPerm('POST /api/swarm/node/:id/action')" class="btn-icon text-amber-600 hover:bg-amber-50" title="排空" @click="handleNodeAction(n, 'drain')"><i class="fas fa-arrow-down text-xs"></i></button>
-                    <button v-if="n.availability !== 'pause' && actions.hasPerm('POST /api/swarm/node/:id/action')" class="btn-icon text-slate-600 hover:bg-slate-50" title="暂停" @click="handleNodeAction(n, 'pause')"><i class="fas fa-pause text-xs"></i></button>
-                    <button v-if="actions.hasPerm('POST /api/swarm/node/:id/action')" :disabled="n.leader" :class="n.leader ? 'btn-icon text-slate-300 cursor-not-allowed' : 'btn-icon text-red-600 hover:bg-red-50'" :title="n.leader ? '不能移除 Leader 节点' : '移除'" @click="n.leader ? null : handleNodeAction(n, 'remove')"><i class="fas fa-trash text-xs"></i></button>
+                    <button v-if="portal.hasPerm('GET /api/swarm/node/:id')" class="btn-icon text-slate-600 hover:bg-slate-50" title="查看详情" @click="$router.push(`/swarm/node/${n.id}`)"><i class="fas fa-circle-info text-xs"></i></button>
+                    <button v-if="n.availability !== 'active' && portal.hasPerm('POST /api/swarm/node/:id/action')" class="btn-icon text-emerald-600 hover:bg-emerald-50" title="激活" @click="handleNodeAction(n, 'active')"><i class="fas fa-play text-xs"></i></button>
+                    <button v-if="n.availability !== 'drain' && portal.hasPerm('POST /api/swarm/node/:id/action')" class="btn-icon text-amber-600 hover:bg-amber-50" title="排空" @click="handleNodeAction(n, 'drain')"><i class="fas fa-arrow-down text-xs"></i></button>
+                    <button v-if="n.availability !== 'pause' && portal.hasPerm('POST /api/swarm/node/:id/action')" class="btn-icon text-slate-600 hover:bg-slate-50" title="暂停" @click="handleNodeAction(n, 'pause')"><i class="fas fa-pause text-xs"></i></button>
+                    <button v-if="portal.hasPerm('POST /api/swarm/node/:id/action')" :disabled="n.leader" :class="n.leader ? 'btn-icon text-slate-300 cursor-not-allowed' : 'btn-icon text-red-600 hover:bg-red-50'" :title="n.leader ? '不能移除 Leader 节点' : '移除'" @click="n.leader ? null : handleNodeAction(n, 'remove')"><i class="fas fa-trash text-xs"></i></button>
                   </div>
                 </td>
               </tr>
@@ -254,7 +253,7 @@ export default toNative(Nodes)
             <!-- IP 地址（独立） -->
             <div class="flex items-center gap-2 mb-3">
               <span class="text-xs text-slate-400 flex-shrink-0">IP 地址</span>
-              <span class="text-xs text-slate-500 font-mono">{{ n.addr || '-' }}</span>
+              <span class="text-xs text-slate-600 font-mono">{{ n.addr || '-' }}</span>
             </div>
             <!-- 引擎版本（独立） -->
             <div class="flex items-center gap-2 mb-3">
@@ -264,19 +263,19 @@ export default toNative(Nodes)
             
             <!-- 底部：操作按钮 -->
             <div class="flex flex-wrap gap-1.5 pt-2 border-t border-slate-100">
-              <button v-if="actions.hasPerm('GET /api/swarm/node/:id')" class="btn-icon text-slate-600 hover:bg-slate-50" title="查看详情" @click="$router.push(`/swarm/node/${n.id}`)">
+              <button v-if="portal.hasPerm('GET /api/swarm/node/:id')" class="btn-icon text-slate-600 hover:bg-slate-50" title="查看详情" @click="$router.push(`/swarm/node/${n.id}`)">
                 <i class="fas fa-circle-info text-xs"></i><span class="text-xs ml-1">详情</span>
               </button>
-              <button v-if="n.availability !== 'active' && actions.hasPerm('POST /api/swarm/node/:id/action')" class="btn-icon text-emerald-600 hover:bg-emerald-50" title="激活" @click="handleNodeAction(n, 'active')">
+              <button v-if="n.availability !== 'active' && portal.hasPerm('POST /api/swarm/node/:id/action')" class="btn-icon text-emerald-600 hover:bg-emerald-50" title="激活" @click="handleNodeAction(n, 'active')">
                 <i class="fas fa-play text-xs"></i><span class="text-xs ml-1">激活</span>
               </button>
-              <button v-if="n.availability !== 'drain' && actions.hasPerm('POST /api/swarm/node/:id/action')" class="btn-icon text-amber-600 hover:bg-amber-50" title="排空" @click="handleNodeAction(n, 'drain')">
+              <button v-if="n.availability !== 'drain' && portal.hasPerm('POST /api/swarm/node/:id/action')" class="btn-icon text-amber-600 hover:bg-amber-50" title="排空" @click="handleNodeAction(n, 'drain')">
                 <i class="fas fa-arrow-down text-xs"></i><span class="text-xs ml-1">排空</span>
               </button>
-              <button v-if="n.availability !== 'pause' && actions.hasPerm('POST /api/swarm/node/:id/action')" class="btn-icon text-slate-600 hover:bg-slate-50" title="暂停" @click="handleNodeAction(n, 'pause')">
+              <button v-if="n.availability !== 'pause' && portal.hasPerm('POST /api/swarm/node/:id/action')" class="btn-icon text-slate-600 hover:bg-slate-50" title="暂停" @click="handleNodeAction(n, 'pause')">
                 <i class="fas fa-pause text-xs"></i><span class="text-xs ml-1">暂停</span>
               </button>
-              <button v-if="actions.hasPerm('POST /api/swarm/node/:id/action')" :disabled="n.leader" :class="n.leader ? 'btn-icon text-slate-300 cursor-not-allowed' : 'btn-icon text-red-600 hover:bg-red-50'" :title="n.leader ? '不能移除 Leader 节点' : '移除'" @click="n.leader ? null : handleNodeAction(n, 'remove')">
+              <button v-if="portal.hasPerm('POST /api/swarm/node/:id/action')" :disabled="n.leader" :class="n.leader ? 'btn-icon text-slate-300 cursor-not-allowed' : 'btn-icon text-red-600 hover:bg-red-50'" :title="n.leader ? '不能移除 Leader 节点' : '移除'" @click="n.leader ? null : handleNodeAction(n, 'remove')">
                 <i class="fas fa-trash text-xs"></i><span class="text-xs ml-1">移除</span>
               </button>
             </div>
@@ -284,7 +283,7 @@ export default toNative(Nodes)
         </div>
       </div>
       <div v-else class="flex flex-col items-center justify-center py-20">
-        <div class="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center mb-4">
+        <div class="w-16 h-16 rounded-lg bg-slate-100 flex items-center justify-center mb-4">
           <i class="fas fa-server text-4xl text-slate-300"></i>
         </div>
         <p class="text-slate-600 font-medium mb-1">暂无节点</p>
@@ -294,11 +293,7 @@ export default toNative(Nodes)
   </div>
 
   <!-- 加入集群弹窗 -->
-  <BaseModal v-model="showJoinModal" title="加入集群" :loading="joinTokensLoading" :show-footer="!joinTokensLoading">
-    <template #confirm-text>关闭</template>
-    <template #footer>
-      <button type="button" class="btn-secondary" @click="showJoinModal = false">关闭</button>
-    </template>
+  <BaseModal v-model="showJoinModal" title="加入集群" :loading="joinTokensLoading" :show-confirm="false">
     <div v-if="joinTokensLoading" class="flex flex-col items-center justify-center py-8">
       <div class="w-10 h-10 spinner mb-3"></div>
       <p class="text-slate-500 text-sm">加载中...</p>

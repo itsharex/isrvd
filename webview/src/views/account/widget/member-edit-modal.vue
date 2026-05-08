@@ -1,14 +1,13 @@
 <script lang="ts">
-import { Component, Inject, Vue, toNative } from 'vue-facing-decorator'
-
-import { APP_ACTIONS_KEY } from '@/store/state'
-import type { AppActions } from '@/store/state'
+import { Component, Vue, toNative } from 'vue-facing-decorator'
 
 import api from '@/service/api'
 import { RouteAccessPerm } from '@/service/types'
 import type { MemberInfo, MemberUpsert, RouteInfo } from '@/service/types'
 
 import BaseModal from '@/component/modal.vue'
+
+import { usePortal } from '@/stores'
 
 // 方法颜色映射
 const METHOD_COLOR: Record<string, string> = {
@@ -53,7 +52,7 @@ interface RouteGroup {
     emits: ['success']
 })
 class MemberEditModal extends Vue {
-    @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
+    portal = usePortal()
 
     // ─── 数据属性 ───
     isOpen = false
@@ -119,7 +118,7 @@ class MemberEditModal extends Vue {
             }
             this.routeGroups = ordered
         } catch {
-            this.actions.showNotification('error', '加载路由列表失败')
+            this.portal.showNotification('error', '加载路由列表失败')
         }
         this.routesLoading = false
     }
@@ -236,17 +235,17 @@ class MemberEditModal extends Vue {
     async handleConfirm() {
         if (!this.formData.username?.trim()) return
         if (!this.isEdit && !this.formData.password?.trim()) {
-            this.actions.showNotification('warning', '请填写登录密码')
+            this.portal.showNotification('warning', '请填写登录密码')
             return
         }
         this.modalLoading = true
         try {
             if (this.isEdit) {
                 await api.accountMemberUpdate(this.originalUsername, this.formData)
-                this.actions.showNotification('success', '成员更新成功')
+                this.portal.showNotification('success', '成员更新成功')
             } else {
                 await api.accountMemberCreate(this.formData)
-                this.actions.showNotification('success', '成员添加成功')
+                this.portal.showNotification('success', '成员添加成功')
             }
             this.isOpen = false
             this.$emit('success')
@@ -295,9 +294,9 @@ export default toNative(MemberEditModal)
         <div class="flex items-center gap-2 mb-2">
           <label class="block text-sm font-medium text-slate-700">路由权限</label>
           <div class="ml-auto flex items-center gap-1">
-            <button type="button" class="px-2 py-1 rounded-md bg-blue-50 text-blue-600 hover:bg-blue-100 text-xs font-medium transition-colors" @click="selectAllRoutes">全选</button>
-            <button type="button" class="px-2 py-1 rounded-md bg-slate-50 text-slate-600 hover:bg-slate-100 text-xs font-medium transition-colors" @click="selectReadOnlyRoutes">只读</button>
-            <button type="button" class="px-2 py-1 rounded-md bg-red-50 text-red-600 hover:bg-red-100 text-xs font-medium transition-colors" @click="clearRoutes">清空</button>
+            <button type="button" class="px-2 py-0.5 rounded-md bg-blue-50 text-blue-600 hover:bg-blue-100 text-xs font-medium transition-colors" @click="selectAllRoutes">全选</button>
+            <button type="button" class="px-2 py-0.5 rounded-md bg-slate-50 text-slate-600 hover:bg-slate-100 text-xs font-medium transition-colors" @click="selectReadOnlyRoutes">只读</button>
+            <button type="button" class="px-2 py-0.5 rounded-md bg-red-50 text-red-600 hover:bg-red-100 text-xs font-medium transition-colors" @click="clearRoutes">清空</button>
           </div>
         </div>
         <div class="space-y-2">

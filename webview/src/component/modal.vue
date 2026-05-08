@@ -11,6 +11,8 @@ class BaseModal extends Vue {
     @Prop({ type: Boolean, default: false }) readonly loading!: boolean
     @Prop({ type: Boolean, default: true }) readonly showFooter!: boolean
     @Prop({ type: Boolean, default: false }) readonly confirmDisabled!: boolean
+    @Prop({ type: String, default: 'btn-primary' }) readonly confirmClass!: string
+    @Prop({ type: Boolean, default: true }) readonly showConfirm!: boolean
 
     // ─── Refs ───
     @Ref readonly modalRef!: HTMLDivElement
@@ -97,9 +99,9 @@ export default toNative(BaseModal)
         <div :class="['w-full max-h-[calc(100vh-2rem)] modal-card animate-scale-in flex flex-col overflow-hidden', 'max-w-3xl']">
           <!-- Header -->
           <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200/50 flex-shrink-0">
-            <h3 class="text-lg font-semibold text-slate-800 min-w-0 pr-4">
+            <h1 class="text-lg font-semibold text-slate-800 min-w-0 pr-4">
               <slot name="title">{{ title }}</slot>
-            </h3>
+            </h1>
             <button 
               type="button" 
               class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all duration-200 flex-shrink-0"
@@ -120,20 +122,22 @@ export default toNative(BaseModal)
             <slot name="footer">
               <button 
                 type="button" 
-                class="btn-secondary"
+                class="btn btn-secondary"
                 :disabled="loading"
                 @click="handleCancel"
               >
-                <slot name="cancel-text">取消</slot>
+                <span><slot name="cancel-text">取消</slot></span>
               </button>
               <button 
+                v-if="showConfirm"
                 type="button" 
-                class="btn-primary"
+                class="btn"
+                :class="confirmClass"
                 :disabled="loading || confirmDisabled"
                 @click="handleConfirm"
               >
-                <i v-if="loading" class="fas fa-spinner fa-spin mr-2"></i>
-                <slot name="confirm-text">确认</slot>
+                <i v-if="loading" class="fas fa-spinner fa-spin"></i>
+                <span><slot name="confirm-text">确认</slot></span>
               </button>
             </slot>
           </div>

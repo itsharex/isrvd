@@ -1,8 +1,5 @@
 <script lang="ts">
-import { Component, Inject, Vue, toNative } from 'vue-facing-decorator'
-
-import { APP_ACTIONS_KEY } from '@/store/state'
-import type { AppActions } from '@/store/state'
+import { Component, Vue, toNative } from 'vue-facing-decorator'
 
 import api from '@/service/api'
 import type {
@@ -23,6 +20,8 @@ import {
 } from '@/helper/apisix'
 
 import BaseModal from '@/component/modal.vue'
+
+import { usePortal } from '@/stores'
 
 import HostSelect from './host-select.vue'
 import PluginConfigPanel from './plugin-config-panel.vue'
@@ -67,7 +66,7 @@ const defaultFormData = () => ({
     emits: ['success']
 })
 class RouteEditModal extends Vue {
-    @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
+    portal = usePortal()
 
     // ─── 数据属性 ───
     isOpen = false
@@ -198,7 +197,7 @@ class RouteEditModal extends Vue {
             try {
               const r = (await api.apisixRoute(route.id)).payload
                 if (!r) {
-                    this.actions.showNotification('error', '加载路由详情失败')
+                    this.portal.showNotification('error', '加载路由详情失败')
                     this.isOpen = false
                     this.modalLoading = false
                     return
@@ -223,7 +222,7 @@ class RouteEditModal extends Vue {
                     timeout_read: r.upstream?.timeout?.read ?? '',
                 })
             } catch {
-                this.actions.showNotification('error', '加载路由详情失败')
+                this.portal.showNotification('error', '加载路由详情失败')
                 this.isOpen = false
             }
             this.modalLoading = false
@@ -239,25 +238,25 @@ class RouteEditModal extends Vue {
     }
 
     async handleConfirm() {
-        if (!this.formData.name.trim()) return this.actions.showNotification('error', '路由名称不能为空')
-        if (!this.formData.uris.split('\n').map(s => s.trim()).filter(Boolean).length) return this.actions.showNotification('error', 'URI 不能为空')
-        if (this.$refs.pluginPanel?.pluginsJsonError) return this.actions.showNotification('error', '请修正 Plugin JSON 格式错误')
-        if (this.routeValidationMessage) return this.actions.showNotification('error', this.routeValidationMessage)
+        if (!this.formData.name.trim()) return this.portal.showNotification('error', '路由名称不能为空')
+        if (!this.formData.uris.split('\n').map(s => s.trim()).filter(Boolean).length) return this.portal.showNotification('error', 'URI 不能为空')
+        if (this.$refs.pluginPanel?.pluginsJsonError) return this.portal.showNotification('error', '请修正 Plugin JSON 格式错误')
+        if (this.routeValidationMessage) return this.portal.showNotification('error', this.routeValidationMessage)
 
         this.modalLoading = true
         try {
             const payload = buildRoutePayload(this.formData, this.originalUpstream)
           if (this.isEditMode) {
                 await api.apisixRouteUpdate(this.editingRouteId, payload)
-                this.actions.showNotification('success', '路由更新成功')
+                this.portal.showNotification('success', '路由更新成功')
           } else {
                 await api.apisixRouteCreate(payload)
-                this.actions.showNotification('success', '路由创建成功')
+                this.portal.showNotification('success', '路由创建成功')
             }
             this.isOpen = false
             this.$emit('success')
         } catch (e: unknown) {
-            this.actions.showNotification('error', (e instanceof Error ? e.message : '') || '操作失败')
+            this.portal.showNotification('error', (e instanceof Error ? e.message : '') || '操作失败')
         }
         this.modalLoading = false
     }
@@ -267,7 +266,7 @@ export default toNative(RouteEditModal)
 </script>
 
 <template>
-  <BaseModal v-model="isOpen" :title="isEditMode ? '编辑路由' : '创建路由'" :loading="modalLoading">
+  <BaseModal v-model="isOpen" :title="isEditMode ? '编辑路由' : '创建路由'" :loading="modalLoading" confirm-class="btn-indigo" @confirm="handleConfirm">
     <div class="space-y-4 p-1">
       <div class="grid grid-cols-2 gap-3">
         <div><label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">名称 <span class="text-red-500">*</span></label><input v-model="formData.name" type="text" class="input" placeholder="路由名称" /></div>
@@ -351,13 +350,8 @@ export default toNative(RouteEditModal)
       </div>
     </div>
 
-    <template #footer>
-      <div class="flex justify-end gap-2">
-        <button class="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50" @click="isOpen = false">取消</button>
-        <button :disabled="modalLoading" class="px-4 py-2 text-sm font-medium text-white bg-indigo-500 rounded-lg hover:bg-indigo-600 disabled:opacity-50 shadow-sm" @click="handleConfirm()">
-          <i v-if="modalLoading" class="fas fa-spinner fa-spin mr-1"></i>{{ isEditMode ? '保存' : '创建' }}
-        </button>
-      </div>
+    <template #confirm-text>
+      确认{{ isEditMode ? '更新' : '创建' }}
     </template>
   </BaseModal>
 </template>

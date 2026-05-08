@@ -39,9 +39,9 @@ type RedeployRequest struct {
 
 // DeployResult 部署结果
 type DeployResult struct {
-	Target     Target `json:"target"`
-	Items      []string
-	InstallDir string `json:"installDir,omitempty"`
+	Target     Target   `json:"target"`
+	Items      []string `json:"items"`
+	InstallDir string   `json:"installDir,omitempty"`
 }
 
 // ==================== 服务定义 ====================

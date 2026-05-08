@@ -1,17 +1,16 @@
 <script lang="ts">
-import { Component, Inject, Vue, toNative } from 'vue-facing-decorator'
-
-import { APP_ACTIONS_KEY } from '@/store/state'
-import type { AppActions } from '@/store/state'
+import { Component, Vue, toNative } from 'vue-facing-decorator'
 
 import api from '@/service/api'
 import type { AllConfig, ServerConfig, AgentConfig, ApisixConfig, DockerConfig, MarketplaceConfig, LinkConfig } from '@/service/types'
 
 import IconSelect from '@/component/icon-select.vue'
 
+import { usePortal } from '@/stores'
+
 @Component({ components: { IconSelect } })
 class Config extends Vue {
-  @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
+  portal = usePortal()
 
   // ─── 数据属性 ───
   loading = false
@@ -38,10 +37,10 @@ class Config extends Vue {
       this.marketplace = { ...(payload.marketplace || { url: '' }) }
       this.links = payload.links ? payload.links.map(l => ({ ...l })) : []
       if (reload) {
-        this.actions.showNotification('success', '配置已从文件重新加载')
+        this.portal.showNotification('success', '配置已从文件重新加载')
       }
     } catch {
-      this.actions.showNotification('error', reload ? '重载配置失败' : '加载配置失败')
+      this.portal.showNotification('error', reload ? '重载配置失败' : '加载配置失败')
     }
     this.loading = false
   }
@@ -57,7 +56,7 @@ class Config extends Vue {
         marketplace: this.marketplace,
         links: this.links,
       })
-      this.actions.showNotification('success', '全部配置已保存，部分项需重启生效')
+      this.portal.showNotification('success', '全部配置已保存，部分项需重启生效')
       this.loadConfig()
     } catch { }
     this.saving = false
@@ -134,16 +133,16 @@ export default toNative(Config)
         </div>
         <!-- 移动端 Tab -->
         <div class="flex md:hidden mt-3 bg-slate-100 p-1 rounded-lg gap-0.5 overflow-x-auto">
-          <button type="button" :class="['flex-1 min-w-0 px-2 py-1 rounded-md text-xs font-medium transition-colors whitespace-nowrap', activeTab === 'server' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500']" @click="activeTab = 'server'">
+          <button type="button" :class="['flex-1 min-w-0 px-2 py-0.5 rounded-md text-xs font-medium transition-colors whitespace-nowrap', activeTab === 'server' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500']" @click="activeTab = 'server'">
             <i class="fas fa-server mr-1"></i>全局
           </button>
-          <button type="button" :class="['flex-1 min-w-0 px-2 py-1 rounded-md text-xs font-medium transition-colors whitespace-nowrap', activeTab === 'agent' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500']" @click="activeTab = 'agent'">
+          <button type="button" :class="['flex-1 min-w-0 px-2 py-0.5 rounded-md text-xs font-medium transition-colors whitespace-nowrap', activeTab === 'agent' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500']" @click="activeTab = 'agent'">
             <i class="fas fa-robot mr-1"></i>Agent
           </button>
-          <button type="button" :class="['flex-1 min-w-0 px-2 py-1 rounded-md text-xs font-medium transition-colors whitespace-nowrap', activeTab === 'app' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500']" @click="activeTab = 'app'">
+          <button type="button" :class="['flex-1 min-w-0 px-2 py-0.5 rounded-md text-xs font-medium transition-colors whitespace-nowrap', activeTab === 'app' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500']" @click="activeTab = 'app'">
             <i class="fas fa-layer-group mr-1"></i>应用
           </button>
-          <button type="button" :class="['flex-1 min-w-0 px-2 py-1 rounded-md text-xs font-medium transition-colors whitespace-nowrap', activeTab === 'links' ? 'bg-white text-orange-600 shadow-sm' : 'text-slate-500']" @click="activeTab = 'links'">
+          <button type="button" :class="['flex-1 min-w-0 px-2 py-0.5 rounded-md text-xs font-medium transition-colors whitespace-nowrap', activeTab === 'links' ? 'bg-white text-orange-600 shadow-sm' : 'text-slate-500']" @click="activeTab = 'links'">
             <i class="fas fa-link mr-1"></i>导航
           </button>
         </div>
@@ -272,8 +271,10 @@ export default toNative(Config)
 
         <!-- 统一保存 -->
         <div class="max-w-3xl mt-6 pt-4 border-t border-slate-200 flex flex-col sm:flex-row sm:items-center gap-3">
-          <button type="submit" :disabled="saving" class="btn-primary self-start text-sm flex-shrink-0">
-            <i :class="['fas mr-1.5', saving ? 'fa-spinner fa-spin' : 'fa-save']"></i>{{ saving ? '保存中...' : '保存配置' }}
+          <button type="submit" :disabled="saving" class="btn btn-primary whitespace-nowrap flex-shrink-0 self-start">
+            <i v-if="saving" class="fas fa-spinner fa-spin"></i>
+            <i v-else class="fas fa-save"></i>
+            <span>{{ saving ? '保存中...' : '保存配置' }}</span>
           </button>
           <p class="text-xs text-slate-400 flex items-start gap-1">
             <i class="fas fa-circle-info mt-0.5 flex-shrink-0"></i>

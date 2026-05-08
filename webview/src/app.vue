@@ -1,31 +1,22 @@
 <script lang="ts">
-import { Component, Provide, Ref, Vue, toNative } from 'vue-facing-decorator'
-
-import { APP_ACTIONS_KEY, APP_STATE_KEY, initProvider } from '@/store/state'
-import { FILER_ACTIONS_KEY, FILER_STATE_KEY, initFilerProvider } from '@/store/filer'
-
-import { setRouterGuard } from '@/router'
+import { Component, Ref, Vue, toNative } from 'vue-facing-decorator'
 
 import ConfirmModal from '@/component/confirm.vue'
 import NavigationBar from '@/component/navigation.vue'
 import NotificationManager from '@/component/notification.vue'
 import PageAgent from '@/component/page-agent.vue'
+import ToolbarLinks from '@/component/toolbar-links.vue'
 import UserMenu from '@/component/user-menu.vue'
 
 import AuthLogin from '@/views/account/login.vue'
 
-const { state, actions } = initProvider()
-const { state: filerState, actions: filerActions } = initFilerProvider()
-setRouterGuard(actions.hasPerm, () => state.permissionsLoaded, actions.isAuthenticated)
+import { usePortal } from '@/stores'
 
 @Component({
-    components: { ConfirmModal, NavigationBar, NotificationManager, PageAgent, UserMenu, AuthLogin }
+    components: { ConfirmModal, NavigationBar, NotificationManager, PageAgent, ToolbarLinks, UserMenu, AuthLogin }
 })
 class App extends Vue {
-    @Provide(APP_STATE_KEY) state = state
-    @Provide(APP_ACTIONS_KEY) actions = actions
-    @Provide(FILER_STATE_KEY) filerState = filerState
-    @Provide(FILER_ACTIONS_KEY) filerActions = filerActions
+    portal = usePortal()
     sidebarCollapsed = false
 
     @Ref readonly navigationRef!: InstanceType<typeof NavigationBar>
@@ -35,7 +26,7 @@ class App extends Vue {
     }
 
     async mounted() {
-        await this.actions.initialize()
+        await this.portal.initialize()
     }
 }
 
@@ -45,7 +36,7 @@ export default toNative(App)
 <template>
   <div class="min-h-screen bg-slate-50">
     <!-- 初始化加载状态 -->
-    <div v-if="!state.initialized" class="flex items-center justify-center min-h-screen">
+    <div v-if="!portal.initialized" class="flex items-center justify-center min-h-screen">
       <div class="flex flex-col items-center gap-4">
         <div class="w-12 h-12 border-4 border-slate-200 border-t-blue-500 rounded-full animate-spin"></div>
         <span class="text-slate-500 text-sm">正在初始化...</span>
@@ -53,7 +44,7 @@ export default toNative(App)
     </div>
 
     <!-- 主内容 -->
-    <template v-else-if="state.username">
+    <template v-else-if="portal.username">
       <!-- 移动端顶部菜单栏 -->
       <header
         class="fixed top-0 left-0 right-0 h-16 bg-white/80 backdrop-blur-xl border-b border-slate-200/50 z-40 flex items-center justify-between px-4 transition-all duration-300"
@@ -68,24 +59,12 @@ export default toNative(App)
         </button>
 
         <!-- 工具栏按钮区域 -->
-        <div class="flex items-center gap-2 overflow-x-auto ml-auto">
-          <a
-            v-for="link in state.toolbarLinks"
-            :key="link.url"
-            :href="link.url"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="flex items-center gap-2 px-2 py-2 rounded-lg text-sm font-medium text-slate-500 hover:bg-slate-100 transition-colors whitespace-nowrap flex-shrink-0"
-          >
-            <i v-if="link.icon" :class="link.icon.includes(' ') ? link.icon : `fas ${link.icon}`"></i>
-            <span>{{ link.label }}</span>
-          </a>
-        </div>
+        <ToolbarLinks />
 
         <!-- 用户信息 -->
         <div class="flex items-center gap-1">
-          <PageAgent v-if="actions.hasPerm('agent')" />
-          <div v-if="actions.hasPerm('agent')" class="hidden sm:block w-px h-5 bg-slate-200 mx-1"></div>
+          <PageAgent v-if="portal.hasPerm('agent')" />
+          <div v-if="portal.hasPerm('agent')" class="hidden sm:block w-px h-5 bg-slate-200 mx-1"></div>
           <UserMenu />
         </div>
       </header>

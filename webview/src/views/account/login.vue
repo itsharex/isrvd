@@ -1,15 +1,13 @@
 <script lang="ts">
-import { Component, Inject, Vue, toNative } from 'vue-facing-decorator'
-
-import { APP_STATE_KEY, APP_ACTIONS_KEY } from '@/store/state'
-import type { AppActions, AppState } from '@/store/state'
+import { Component, Vue, toNative } from 'vue-facing-decorator'
 
 import api from '@/service/api'
 
+import { usePortal } from '@/stores'
+
 @Component
 class Login extends Vue {
-    @Inject({ from: APP_STATE_KEY }) readonly state!: AppState
-    @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
+    portal = usePortal()
 
     // ─── 数据属性 ───
     loginForm = {
@@ -22,8 +20,8 @@ class Login extends Vue {
         const { payload } = await api.accountLogin(this.loginForm)
         if (!payload) return
 
-        this.actions.setAuth({ authMode: 'jwt', ...payload })
-        await this.actions.initialize()
+        this.portal.setAuth({ authMode: 'jwt', ...payload })
+        await this.portal.initialize()
         this.loginForm.username = ''
         this.loginForm.password = ''
     }
@@ -33,11 +31,11 @@ export default toNative(Login)
 </script>
 
 <template>
-  <div class="min-h-screen flex items-center justify-center p-6">
+  <div class="min-h-screen flex items-center justify-center p-6 bg-gradient-to-br from-slate-50 to-slate-100">
     <!-- Background Decoration -->
     <div class="fixed inset-0 overflow-hidden pointer-events-none">
-      <div class="absolute -top-40 -right-40 w-80 h-80 rounded-full bg-primary-300/20 blur-3xl"></div>
-      <div class="absolute -bottom-40 -left-40 w-80 h-80 rounded-full bg-primary-300/20 blur-3xl"></div>
+      <div class="absolute -top-40 -right-40 w-80 h-80 rounded-3xl bg-primary-300/20 blur-3xl"></div>
+      <div class="absolute -bottom-40 -left-40 w-80 h-80 rounded-3xl bg-primary-300/20 blur-3xl"></div>
     </div>
 
     <!-- Login Card -->
@@ -45,7 +43,7 @@ export default toNative(Login)
       <div class="card p-8">
         <!-- Header -->
         <div class="text-center mb-8">
-          <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary-500 mb-4 shadow-glow">
+          <div class="inline-flex items-center justify-center w-16 h-16 rounded-lg bg-primary-500 mb-4 shadow-glow transform hover:scale-105 transition-transform duration-300">
             <i class="fas fa-server text-white text-2xl"></i>
           </div>
           <h1 class="text-2xl font-bold text-slate-800 mb-2">欢迎回来</h1>
@@ -63,12 +61,8 @@ export default toNative(Login)
                 <i class="fas fa-user text-slate-400"></i>
               </div>
               <input 
-                id="username" 
-                v-model="loginForm.username" 
-                type="text" 
-                required
-                class="input pl-11"
-                placeholder="请输入用户名"
+                id="username" v-model="loginForm.username" 
+                type="text" required class="input pl-11" placeholder="请输入用户名"
               >
             </div>
           </div>
@@ -82,24 +76,20 @@ export default toNative(Login)
                 <i class="fas fa-lock text-slate-400"></i>
               </div>
               <input 
-                id="password" 
-                v-model="loginForm.password" 
-                type="password" 
-                required
-                class="input pl-11"
-                placeholder="请输入密码"
+                id="password" v-model="loginForm.password" 
+                type="password" required class="input pl-11" placeholder="请输入密码"
               >
             </div>
           </div>
 
           <button 
             type="submit" 
-            :disabled="state.loading"
-            class="btn-primary w-full py-3 text-base font-semibold mt-6"
+            :disabled="portal.loading"
+            class="btn btn-primary w-full py-3 text-base font-semibold mt-6"
           >
-            <i v-if="state.loading" class="fas fa-spinner fa-spin mr-2"></i>
+            <i v-if="portal.loading" class="fas fa-spinner fa-spin mr-2"></i>
             <i v-else class="fas fa-sign-in-alt mr-2"></i>
-            {{ state.loading ? '登录中...' : '登录' }}
+            {{ portal.loading ? '登录中...' : '登录' }}
           </button>
         </form>
       </div>
@@ -107,15 +97,6 @@ export default toNative(Login)
       <!-- Footer -->
       <p class="text-center text-sm text-slate-400 mt-6 flex items-center justify-center gap-2">
         <span>© 2024 - {{ new Date().getFullYear() }} Isrvd. All rights reserved.</span>
-        <a
-          href="https://github.com/rehiy/isrvd"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="inline-flex items-center text-slate-400 hover:text-slate-600 transition-colors"
-          title="GitHub"
-        >
-          <i class="fab fa-github"></i>
-        </a>
       </p>
     </div>
   </div>

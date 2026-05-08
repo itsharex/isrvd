@@ -1,8 +1,5 @@
 <script lang="ts">
-import { Component, Inject, Vue, toNative } from 'vue-facing-decorator'
-
-import { APP_ACTIONS_KEY } from '@/store/state'
-import type { AppActions } from '@/store/state'
+import { Component, Vue, toNative } from 'vue-facing-decorator'
 
 import api from '@/service/api'
 import type {
@@ -13,6 +10,8 @@ import type {
 } from '@/service/types'
 
 import BaseModal from '@/component/modal.vue'
+
+import { usePortal } from '@/stores'
 
 import PluginConfigPanel from './plugin-config-panel.vue'
 
@@ -28,8 +27,7 @@ const defaultFormData = () => ({
     emits: ['success']
 })
 class PluginConfigEditModal extends Vue {
-    @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
-
+    portal = usePortal()
     isOpen = false
     modalLoading = false
     isEditMode = false
@@ -89,7 +87,7 @@ class PluginConfigEditModal extends Vue {
 
     async handleConfirm() {
         if (Object.keys(this.formData.plugins || {}).length === 0) {
-            this.actions.showNotification('error', '至少需要配置一个插件')
+            this.portal.showNotification('error', '至少需要配置一个插件')
             return
         }
 
@@ -104,7 +102,7 @@ class PluginConfigEditModal extends Vue {
             this.isOpen = false
             this.$emit('success')
         } catch (e: unknown) {
-            this.actions.showNotification('error', (e instanceof Error ? e.message : '') || '操作失败')
+            this.portal.showNotification('error', (e instanceof Error ? e.message : '') || '操作失败')
         }
         this.modalLoading = false
     }
@@ -118,6 +116,8 @@ export default toNative(PluginConfigEditModal)
     v-model="isOpen"
     :title="isEditMode ? '编辑插件配置' : '创建插件配置'"
     :loading="modalLoading"
+    confirm-class="btn-rose"
+    @confirm="handleConfirm"
   >
     <div class="max-w-3xl space-y-4 p-1">
       <div>
@@ -139,13 +139,8 @@ export default toNative(PluginConfigEditModal)
       />
     </div>
 
-    <template #footer>
-      <div class="flex justify-end gap-2">
-        <button class="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50" @click="isOpen = false">取消</button>
-        <button :disabled="modalLoading" class="px-4 py-2 text-sm font-medium text-white bg-rose-500 rounded-lg hover:bg-rose-600 disabled:opacity-50 shadow-sm" @click="handleConfirm()">
-          <i v-if="modalLoading" class="fas fa-spinner fa-spin mr-1"></i>{{ isEditMode ? '保存' : '创建' }}
-        </button>
-      </div>
+    <template #confirm-text>
+      确认{{ isEditMode ? '更新' : '创建' }}
     </template>
   </BaseModal>
 </template>

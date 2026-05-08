@@ -1,13 +1,12 @@
 <script lang="ts">
-import { Component, Inject, Vue, toNative } from 'vue-facing-decorator'
-
-import { APP_ACTIONS_KEY } from '@/store/state'
-import type { AppActions } from '@/store/state'
+import { Component, Vue, toNative } from 'vue-facing-decorator'
 
 import api from '@/service/api'
 import type { DockerImageSearchResult, DockerRegistryInfo } from '@/service/types'
 
 import BaseModal from '@/component/modal.vue'
+
+import { usePortal } from '@/stores'
 
 @Component({
     expose: ['show'],
@@ -15,7 +14,7 @@ import BaseModal from '@/component/modal.vue'
     emits: ['success']
 })
 class ImagePullModal extends Vue {
-    @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
+    portal = usePortal()
 
     // ─── 数据属性 ───
     isOpen = false
@@ -72,7 +71,7 @@ class ImagePullModal extends Vue {
         this.modalLoading = true
         try {
             await api.dockerImagePull(imageRef, this.formData.source, '')
-            this.actions.showNotification('success', '镜像拉取成功')
+            this.portal.showNotification('success', '镜像拉取成功')
             this.isOpen = false
             this.$emit('success')
         } catch {
@@ -92,7 +91,7 @@ class ImagePullModal extends Vue {
             const res = await api.dockerImageSearch(keyword)
             this.searchResults = res.payload || []
         } catch {
-            this.actions.showNotification('error', '搜索镜像失败')
+            this.portal.showNotification('error', '搜索镜像失败')
         } finally {
             this.searchLoading = false
         }
@@ -158,7 +157,7 @@ export default toNative(ImagePullModal)
               class="input flex-1"
               @keydown.enter.prevent="handleSearchImage"
             />
-            <button type="button" :disabled="searchLoading" class="px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-800 text-white text-xs font-medium flex items-center gap-1.5 transition-colors disabled:opacity-50" @click="handleSearchImage">
+            <button type="button" :disabled="searchLoading" class="btn h-[46px] btn-secondary" @click="handleSearchImage">
               <i :class="['fas', searchLoading ? 'fa-spinner fa-spin' : 'fa-search']"></i>
               {{ searchLoading ? '搜索中' : '搜索' }}
             </button>

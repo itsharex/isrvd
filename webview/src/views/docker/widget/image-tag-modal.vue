@@ -1,13 +1,12 @@
 <script lang="ts">
-import { Component, Inject, Vue, toNative } from 'vue-facing-decorator'
-
-import { APP_ACTIONS_KEY } from '@/store/state'
-import type { AppActions } from '@/store/state'
+import { Component, Vue, toNative } from 'vue-facing-decorator'
 
 import api from '@/service/api'
 import type { DockerImageInfo } from '@/service/types'
 
 import BaseModal from '@/component/modal.vue'
+
+import { usePortal } from '@/stores'
 
 @Component({
     expose: ['show'],
@@ -15,7 +14,7 @@ import BaseModal from '@/component/modal.vue'
     emits: ['success']
 })
 class ImageTagModal extends Vue {
-    @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
+    portal = usePortal()
 
     // ─── 数据属性 ───
     isOpen = false
@@ -35,7 +34,7 @@ class ImageTagModal extends Vue {
         this.modalLoading = true
         try {
             await api.dockerImageTag(this.tagImage.id, this.tagRepoTag.trim())
-            this.actions.showNotification('success', '镜像标签添加成功')
+            this.portal.showNotification('success', '镜像标签添加成功')
             this.isOpen = false
             this.$emit('success')
         } catch {}
@@ -54,7 +53,6 @@ export default toNative(ImageTagModal)
     show-footer
     @confirm="handleConfirm"
   >
-    <template #confirm-text>确认添加</template>
     <div v-if="tagImage" class="space-y-4">
       <div>
         <label class="block text-sm font-medium text-slate-700 mb-2">当前镜像</label>
@@ -63,7 +61,7 @@ export default toNative(ImageTagModal)
       <div v-if="tagImage.repoTags.length > 1">
         <label class="block text-sm font-medium text-slate-700 mb-2">已有标签</label>
         <div class="flex flex-wrap gap-1.5">
-          <span v-for="tag in tagImage.repoTags" :key="tag" class="inline-flex items-center px-2 py-1 rounded-lg text-xs font-medium bg-blue-50 text-blue-700">
+          <span v-for="tag in tagImage.repoTags" :key="tag" class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-medium bg-blue-50 text-blue-700">
             {{ tag }}
           </span>
         </div>
@@ -74,5 +72,7 @@ export default toNative(ImageTagModal)
         <p class="mt-1 text-xs text-slate-400">格式: 仓库路径:标签，如 myapp:v1.0</p>
       </div>
     </div>
+
+    <template #confirm-text>确认添加</template>
   </BaseModal>
 </template>

@@ -113,8 +113,16 @@ func (c *Client) ConsumerDelete(username string) error {
 
 // --- 辅助函数 ---
 
-// sensitivePluginFields 各 auth 插件中需要脱敏/还原的敏感字段名
-var sensitivePluginFields = []string{"key", "password", "secret", "private_key", "secret_key", "appSecret"}
+// sensitiveFields 各 auth 插件中需要脱敏/还原的敏感字段名
+var sensitiveFields = []string{
+	"key",        // key-auth + SSL 证书私钥
+	"username",   // basic-auth
+	"password",   // basic-auth
+	"secret",     // jwt-auth
+	"public_key", // jwt-auth
+	"key_id",     // hmac-auth
+	"secret_key", // hmac-auth
+}
 
 // unmaskPlugins 将 plugins 中的脱敏值（包含 ******）替换为原始值
 func unmaskPlugins(plugins, rawPlugins map[string]any) {
@@ -131,7 +139,7 @@ func unmaskPlugins(plugins, rawPlugins map[string]any) {
 		if !ok {
 			continue
 		}
-		for _, field := range sensitivePluginFields {
+		for _, field := range sensitiveFields {
 			val, ok := p[field].(string)
 			if !ok || !strings.Contains(val, "******") {
 				continue
@@ -152,7 +160,7 @@ func maskConsumerPlugins(plugins map[string]any) {
 		if !ok {
 			continue
 		}
-		for _, field := range sensitivePluginFields {
+		for _, field := range sensitiveFields {
 			s, ok := p[field].(string)
 			if !ok || len(s) == 0 {
 				continue

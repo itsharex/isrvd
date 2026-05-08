@@ -1,7 +1,7 @@
 <script lang="ts">
+import type { ChartOptions } from 'chart.js'
 import { markRaw } from 'vue'
 import { Component, Ref, Vue, toNative } from 'vue-facing-decorator'
-import type { ChartOptions } from 'chart.js'
 
 import type { SystemStat, SystemDiskIO } from '@/service/types'
 
@@ -197,7 +197,7 @@ export default toNative(SystemDisk)
         总计 {{ fmtBytes(current.DiskTotal) }}，已用 {{ fmtBytes(current.DiskUsed) }}
       </span>
     </div>
-    <div ref="diskIOContainerRef" class="divide-y divide-slate-50">
+    <div ref="diskIOContainerRef" class="divide-y divide-slate-100">
       <div v-for="dp in current.DiskPartition" :key="dp.Mountpoint" class="px-4 py-3">
         <div class="flex flex-col gap-2">
           <div class="flex items-center justify-between gap-2">
@@ -205,7 +205,7 @@ export default toNative(SystemDisk)
               <p class="text-xs font-semibold text-slate-700 truncate">{{ dp.Mountpoint }}</p>
               <p class="text-xs text-slate-400 shrink-0">{{ dp.Device }} · {{ dp.Fstype }}</p>
             </div>
-            <p class="text-xs text-slate-500 font-mono shrink-0">{{ fmtBytes(dp.Used) }} / {{ fmtBytes(dp.Total) }} ({{ memPercent(dp.Used, dp.Total) }}%)</p>
+            <p class="text-xs text-slate-600 font-mono shrink-0">{{ fmtBytes(dp.Used) }} / {{ fmtBytes(dp.Total) }} ({{ memPercent(dp.Used, dp.Total) }}%)</p>
           </div>
           <div class="h-1 relative bg-slate-100 rounded overflow-hidden">
             <div :class="['absolute inset-y-0 left-0 rounded', barColor(memPercent(dp.Used, dp.Total))]" :style="{ width: memPercent(dp.Used, dp.Total) + '%' }"></div>

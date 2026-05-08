@@ -1,13 +1,12 @@
 <script lang="ts">
-import { Component, Inject, Vue, toNative } from 'vue-facing-decorator'
-
-import { APP_ACTIONS_KEY } from '@/store/state'
-import type { AppActions } from '@/store/state'
+import { Component, Vue, toNative } from 'vue-facing-decorator'
 
 import api from '@/service/api'
 import type { DockerRegistryInfo, DockerImageInfo } from '@/service/types'
 
 import BaseModal from '@/component/modal.vue'
+
+import { usePortal } from '@/stores'
 
 @Component({
     expose: ['show'],
@@ -15,7 +14,7 @@ import BaseModal from '@/component/modal.vue'
     emits: ['success']
 })
 class RegistryPushModal extends Vue {
-    @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
+    portal = usePortal()
 
     // ─── 数据属性 ───
     isOpen = false
@@ -68,7 +67,7 @@ class RegistryPushModal extends Vue {
         this.modalLoading = true
         try {
             await api.dockerImagePush(this.pushForm.image, this.pushForm.registryUrl, this.pushForm.namespace.trim())
-            this.actions.showNotification('success', '镜像推送成功')
+            this.portal.showNotification('success', '镜像推送成功')
             this.isOpen = false
             this.$emit('success')
         } catch {}
@@ -87,7 +86,6 @@ export default toNative(RegistryPushModal)
     show-footer
     @confirm="handleConfirm"
   >
-    <template #confirm-text>开始推送</template>
     <form class="space-y-4" @submit.prevent="handleConfirm">
       <div>
         <label class="block text-sm font-medium text-slate-700 mb-2">本地镜像</label>
@@ -109,5 +107,7 @@ export default toNative(RegistryPushModal)
         <p class="mt-1 text-xs text-slate-400">镜像将被推送为: {{ pushTargetPreview }}</p>
       </div>
     </form>
+
+    <template #confirm-text>开始推送</template>
   </BaseModal>
 </template>

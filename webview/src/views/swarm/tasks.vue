@@ -1,17 +1,16 @@
 <script lang="ts">
-import { Component, Inject, Vue, toNative } from 'vue-facing-decorator'
-
-import { APP_ACTIONS_KEY } from '@/store/state'
-import type { AppActions } from '@/store/state'
+import { Component, Vue, toNative } from 'vue-facing-decorator'
 
 import api from '@/service/api'
 import type { SwarmTask, SwarmServiceInfo } from '@/service/types'
 
 import { formatTime } from '@/helper/utils'
 
+import { usePortal } from '@/stores'
+
 @Component
 class Tasks extends Vue {
-    @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
+    portal = usePortal()
 
     // ─── 数据属性 ───
     tasks: SwarmTask[] = []
@@ -40,7 +39,7 @@ class Tasks extends Vue {
             const res = await api.swarmServiceList()
             this.services = res.payload || []
         } catch {
-            this.actions.showNotification('error', '获取服务列表失败')
+            this.portal.showNotification('error', '获取服务列表失败')
         }
     }
 
@@ -50,7 +49,7 @@ class Tasks extends Vue {
             const res = await api.swarmTaskList()
             this.tasks = res.payload || []
         } catch {
-            this.actions.showNotification('error', '获取任务列表失败')
+            this.portal.showNotification('error', '获取任务列表失败')
         }
         this.tasksLoading = false
     }
@@ -144,7 +143,7 @@ export default toNative(Tasks)
             </thead>
             <tbody class="bg-white divide-y divide-slate-100">
               <tr v-for="t in filteredTasks" :key="t.id" class="hover:bg-slate-50 transition-colors">
-                <td class="px-4 py-3"><code class="text-xs text-slate-500 font-mono">{{ t.id.slice(0, 12) }}</code></td>
+                <td class="px-4 py-3"><code class="text-xs text-slate-600 font-mono">{{ t.id.slice(0, 12) }}</code></td>
                 <td class="px-4 py-3">
                   <button class="text-xs text-emerald-600 hover:text-emerald-700 hover:underline" @click="goServiceDetail(t.serviceID)">
                     {{ t.serviceName || t.serviceID?.slice(0, 12) }}
@@ -205,7 +204,7 @@ export default toNative(Tasks)
             </div>
             <!-- 消息（与状态关联，紧跟） -->
             <div v-if="t.err || t.message" class="flex items-start gap-2 mb-3">
-              <span class="text-xs text-slate-400 flex-shrink-0">消息</span>
+              <span class="text-xs text-slate-400 flex-shrink-0 mt-0.5">消息</span>
               <span class="text-xs break-words" :class="t.err ? 'text-red-500' : 'text-slate-500'">{{ t.err || t.message }}</span>
             </div>
             <!-- 更新时间（最后） -->
@@ -217,7 +216,7 @@ export default toNative(Tasks)
         </div>
       </div>
       <div v-else class="flex flex-col items-center justify-center py-20">
-        <div class="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center mb-4">
+        <div class="w-16 h-16 rounded-lg bg-slate-100 flex items-center justify-center mb-4">
           <i class="fas fa-list-check text-4xl text-slate-300"></i>
         </div>
         <p class="text-slate-600 font-medium mb-1">暂无任务</p>

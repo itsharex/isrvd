@@ -42,7 +42,6 @@ export default toNative(ServiceScaleModal)
 
 <template>
   <BaseModal v-model="isOpen" title="服务扩缩容" :loading="loading" show-footer @confirm="handleConfirm">
-    <template #confirm-text>确认扩缩容</template>
     <div v-if="service" class="space-y-4">
       <div>
         <label class="block text-sm font-medium text-slate-700 mb-2">服务</label>
@@ -54,5 +53,7 @@ export default toNative(ServiceScaleModal)
         <p class="mt-1 text-xs text-slate-400">当前运行中副本：{{ service.runningTasks }} / {{ service.replicas }}</p>
       </div>
     </div>
+
+    <template #confirm-text>确认扩缩容</template>
   </BaseModal>
 </template>

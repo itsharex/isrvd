@@ -1,16 +1,14 @@
 <script lang="ts">
-import { Component, Inject, Prop, Vue, Watch, toNative } from 'vue-facing-decorator'
+import { Component, Prop, Vue, Watch, toNative } from 'vue-facing-decorator'
 
-import { APP_STATE_KEY, APP_ACTIONS_KEY } from '@/store/state'
-import type { AppState, AppActions } from '@/store/state'
+import { usePortal } from '@/stores'
 
 @Component({
     expose: ['toggleMobileSidebar', 'closeMobileSidebar', 'openMobileSidebar'],
     emits: ['update:collapsed']
 })
 class NavigationBar extends Vue {
-    @Inject({ from: APP_STATE_KEY }) readonly state!: AppState
-    @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
+    portal = usePortal()
     @Prop({ type: Boolean, default: false }) readonly collapsed!: boolean
 
     // ─── 数据属性 ───
@@ -34,8 +32,8 @@ class NavigationBar extends Vue {
 
     // Compose 部署菜单可见性
     get composeDeployVisible() {
-        return this.actions.hasPerm('POST /api/compose/docker/deploy') ||
-               this.actions.hasPerm('POST /api/compose/swarm/deploy')
+        return this.portal.hasPerm('POST /api/compose/docker/deploy') ||
+               this.portal.hasPerm('POST /api/compose/swarm/deploy')
     }
 
     // ─── 监听器 ───
@@ -138,7 +136,7 @@ export default toNative(NavigationBar)
     <!-- Logo 区域 -->
     <div class="h-16 flex items-center border-b border-slate-200/50" :class="collapsed ? 'justify-center' : 'px-4'">
       <div class="flex items-center space-x-3 flex-1 min-w-0" :class="collapsed ? 'justify-center flex-none' : ''">
-        <div class="w-10 h-10 rounded-xl bg-primary-500 flex items-center justify-center shadow-glow flex-shrink-0">
+        <div class="w-9 h-9 rounded-lg bg-primary-500 flex items-center justify-center shadow-glow flex-shrink-0">
           <i class="fas fa-server text-white text-lg"></i>
         </div>
         <span v-if="!collapsed" class="text-xl font-bold gradient-text truncate">Isrvd</span>
@@ -154,7 +152,7 @@ export default toNative(NavigationBar)
     </div>
 
     <!-- 导航链接 -->
-    <nav v-if="state.username" class="flex-1 py-4 px-3 space-y-1 overflow-y-auto" @click="closeMobileSidebar">
+    <nav v-if="portal.username" class="flex-1 py-4 px-3 space-y-1 overflow-y-auto" @click="closeMobileSidebar">
       <router-link 
         to="/overview" 
         class="flex items-center gap-3 px-3 py-3 text-sm font-medium text-slate-600 rounded-xl transition-all duration-200 hover:bg-slate-100 hover:text-slate-900"
@@ -165,7 +163,7 @@ export default toNative(NavigationBar)
         <span v-if="!collapsed">概览</span>
       </router-link>
       <router-link 
-        v-if="actions.hasPerm('POST /api/filer/list')"
+        v-if="portal.hasPerm('POST /api/filer/list')"
         to="/filer" 
         class="flex items-center gap-3 px-3 py-3 text-sm font-medium text-slate-600 rounded-xl transition-all duration-200 hover:bg-slate-100 hover:text-slate-900"
         active-class="bg-blue-50 text-blue-700"
@@ -175,7 +173,7 @@ export default toNative(NavigationBar)
         <span v-if="!collapsed">文件管理</span>
       </router-link>
       <router-link 
-        v-if="actions.hasPerm('GET /api/shell')"
+        v-if="portal.hasPerm('GET /api/shell')"
         to="/shell" 
         class="flex items-center gap-3 px-3 py-3 text-sm font-medium text-slate-600 rounded-xl transition-all duration-200 hover:bg-slate-100 hover:text-slate-900"
         active-class="bg-blue-50 text-blue-700"
@@ -186,7 +184,7 @@ export default toNative(NavigationBar)
       </router-link>
 
       <!-- APISIX 折叠子菜单 -->
-      <div v-if="actions.hasPerm('apisix')">
+      <div v-if="portal.hasPerm('apisix')">
         <!-- 折叠状态只显示图标，点击展开侧边栏 -->
         <button
           v-if="collapsed"
@@ -213,7 +211,7 @@ export default toNative(NavigationBar)
           </button>
           <div v-show="apisixExpanded" class="mt-1 ml-4 pl-3 border-l-2 border-slate-200 space-y-1">
             <router-link
-              v-if="actions.hasPerm('GET /api/apisix/routes')"
+              v-if="portal.hasPerm('GET /api/apisix/routes')"
               to="/apisix/routes"
               class="flex items-center gap-3 px-3 py-3 text-sm font-medium text-slate-600 rounded-xl transition-all duration-200 hover:bg-slate-100 hover:text-slate-900"
               :class="{ 'bg-blue-50 text-blue-700 hover:bg-blue-100': isActive('/apisix/route') }"
@@ -222,7 +220,7 @@ export default toNative(NavigationBar)
               <span>路由</span>
             </router-link>
             <router-link
-              v-if="actions.hasPerm('GET /api/apisix/upstreams')"
+              v-if="portal.hasPerm('GET /api/apisix/upstreams')"
               to="/apisix/upstreams"
               class="flex items-center gap-3 px-3 py-3 text-sm font-medium text-slate-600 rounded-xl transition-all duration-200 hover:bg-slate-100 hover:text-slate-900"
               :class="{ 'bg-blue-50 text-blue-700 hover:bg-blue-100': isActive('/apisix/upstream') }"
@@ -231,7 +229,7 @@ export default toNative(NavigationBar)
               <span>上游</span>
             </router-link>
             <router-link
-              v-if="actions.hasPerm('GET /api/apisix/consumers')"
+              v-if="portal.hasPerm('GET /api/apisix/consumers')"
               to="/apisix/consumers"
               class="flex items-center gap-3 px-3 py-3 text-sm font-medium text-slate-600 rounded-xl transition-all duration-200 hover:bg-slate-100 hover:text-slate-900"
               :class="{ 'bg-blue-50 text-blue-700 hover:bg-blue-100': isActive('/apisix/consumer') }"
@@ -240,7 +238,7 @@ export default toNative(NavigationBar)
               <span>消费者</span>
             </router-link>
             <router-link
-              v-if="actions.hasPerm('GET /api/apisix/whitelist')"
+              v-if="portal.hasPerm('GET /api/apisix/whitelist')"
               to="/apisix/whitelist"
               class="flex items-center gap-3 px-3 py-3 text-sm font-medium text-slate-600 rounded-xl transition-all duration-200 hover:bg-slate-100 hover:text-slate-900"
               :class="{ 'bg-blue-50 text-blue-700 hover:bg-blue-100': isActive('/apisix/whitelist') }"
@@ -249,7 +247,7 @@ export default toNative(NavigationBar)
               <span>白名单</span>
             </router-link>
             <router-link
-              v-if="actions.hasPerm('GET /api/apisix/ssls')"
+              v-if="portal.hasPerm('GET /api/apisix/ssls')"
               to="/apisix/ssls"
               class="flex items-center gap-3 px-3 py-3 text-sm font-medium text-slate-600 rounded-xl transition-all duration-200 hover:bg-slate-100 hover:text-slate-900"
               :class="{ 'bg-blue-50 text-blue-700 hover:bg-blue-100': isActive('/apisix/ssl') }"
@@ -258,7 +256,7 @@ export default toNative(NavigationBar)
               <span>SSL 证书</span>
             </router-link>
             <router-link
-              v-if="actions.hasPerm('GET /api/apisix/plugin-configs')"
+              v-if="portal.hasPerm('GET /api/apisix/plugin-configs')"
               to="/apisix/plugin-configs"
               class="flex items-center gap-3 px-3 py-3 text-sm font-medium text-slate-600 rounded-xl transition-all duration-200 hover:bg-slate-100 hover:text-slate-900"
               :class="{ 'bg-blue-50 text-blue-700 hover:bg-blue-100': isActive('/apisix/plugin-config') }"
@@ -271,7 +269,7 @@ export default toNative(NavigationBar)
       </div>
 
       <!-- Docker 折叠子菜单 -->
-      <div v-if="actions.hasPerm('docker')">
+      <div v-if="portal.hasPerm('docker')">
         <!-- 折叠状态只显示图标，点击展开侧边栏 -->
         <button
           v-if="collapsed"
@@ -298,7 +296,7 @@ export default toNative(NavigationBar)
           </button>
           <div v-show="dockerExpanded" class="mt-1 ml-4 pl-3 border-l-2 border-slate-200 space-y-1">
             <router-link
-              v-if="actions.hasPerm('GET /api/docker/containers')"
+              v-if="portal.hasPerm('GET /api/docker/containers')"
               to="/docker/containers"
               class="flex items-center gap-3 px-3 py-3 text-sm font-medium text-slate-600 rounded-xl transition-all duration-200 hover:bg-slate-100 hover:text-slate-900"
               :class="{ 'bg-blue-50 text-blue-700 hover:bg-blue-100': isActive('/docker/container') }"
@@ -307,7 +305,7 @@ export default toNative(NavigationBar)
               <span>容器</span>
             </router-link>
             <router-link
-              v-if="actions.hasPerm('GET /api/docker/networks')"
+              v-if="portal.hasPerm('GET /api/docker/networks')"
               to="/docker/networks"
               class="flex items-center gap-3 px-3 py-3 text-sm font-medium text-slate-600 rounded-xl transition-all duration-200 hover:bg-slate-100 hover:text-slate-900"
               :class="{ 'bg-blue-50 text-blue-700 hover:bg-blue-100': isActive('/docker/network') }"
@@ -316,7 +314,7 @@ export default toNative(NavigationBar)
               <span>网络</span>
             </router-link>
             <router-link
-              v-if="actions.hasPerm('GET /api/docker/volumes')"
+              v-if="portal.hasPerm('GET /api/docker/volumes')"
               to="/docker/volumes"
               class="flex items-center gap-3 px-3 py-3 text-sm font-medium text-slate-600 rounded-xl transition-all duration-200 hover:bg-slate-100 hover:text-slate-900"
               :class="{ 'bg-blue-50 text-blue-700 hover:bg-blue-100': isActive('/docker/volume') }"
@@ -325,7 +323,7 @@ export default toNative(NavigationBar)
               <span>存储</span>
             </router-link>
             <router-link
-              v-if="actions.hasPerm('GET /api/docker/images')"
+              v-if="portal.hasPerm('GET /api/docker/images')"
               to="/docker/images"
               class="flex items-center gap-3 px-3 py-3 text-sm font-medium text-slate-600 rounded-xl transition-all duration-200 hover:bg-slate-100 hover:text-slate-900"
               :class="{ 'bg-blue-50 text-blue-700 hover:bg-blue-100': isActive('/docker/image') }"
@@ -334,7 +332,7 @@ export default toNative(NavigationBar)
               <span>镜像</span>
             </router-link>
             <router-link
-              v-if="actions.hasPerm('GET /api/docker/registries')"
+              v-if="portal.hasPerm('GET /api/docker/registries')"
               to="/docker/registries"
               class="flex items-center gap-3 px-3 py-3 text-sm font-medium text-slate-600 rounded-xl transition-all duration-200 hover:bg-slate-100 hover:text-slate-900"
               :class="{ 'bg-blue-50 text-blue-700 hover:bg-blue-100': isActive('/docker/registr') }"
@@ -347,7 +345,7 @@ export default toNative(NavigationBar)
       </div>
 
       <!-- Swarm 折叠子菜单 -->
-      <div v-if="actions.hasPerm('swarm')">
+      <div v-if="portal.hasPerm('swarm')">
         <!-- 折叠状态只显示图标，点击展开侧边栏 -->
         <button
           v-if="collapsed"
@@ -374,7 +372,7 @@ export default toNative(NavigationBar)
           </button>
           <div v-show="swarmExpanded" class="mt-1 ml-4 pl-3 border-l-2 border-slate-200 space-y-1">
             <router-link
-              v-if="actions.hasPerm('GET /api/swarm/nodes')"
+              v-if="portal.hasPerm('GET /api/swarm/nodes')"
               to="/swarm/nodes"
               class="flex items-center gap-3 px-3 py-3 text-sm font-medium text-slate-600 rounded-xl transition-all duration-200 hover:bg-slate-100 hover:text-slate-900"
               :class="{ 'bg-blue-50 text-blue-700 hover:bg-blue-100': isActive('/swarm/node') }"
@@ -383,7 +381,7 @@ export default toNative(NavigationBar)
               <span>节点</span>
             </router-link>
             <router-link
-              v-if="actions.hasPerm('GET /api/swarm/services')"
+              v-if="portal.hasPerm('GET /api/swarm/services')"
               to="/swarm/services"
               class="flex items-center gap-3 px-3 py-3 text-sm font-medium text-slate-600 rounded-xl transition-all duration-200 hover:bg-slate-100 hover:text-slate-900"
               :class="{ 'bg-blue-50 text-blue-700 hover:bg-blue-100': isActive('/swarm/service') }"
@@ -392,7 +390,7 @@ export default toNative(NavigationBar)
               <span>服务</span>
             </router-link>
             <router-link
-              v-if="actions.hasPerm('GET /api/swarm/tasks')"
+              v-if="portal.hasPerm('GET /api/swarm/tasks')"
               to="/swarm/tasks"
               class="flex items-center gap-3 px-3 py-3 text-sm font-medium text-slate-600 rounded-xl transition-all duration-200 hover:bg-slate-100 hover:text-slate-900"
               :class="{ 'bg-blue-50 text-blue-700 hover:bg-blue-100': $route.path === '/swarm/tasks' }"
@@ -418,7 +416,7 @@ export default toNative(NavigationBar)
 
       <!-- 用户管理 -->
       <router-link
-        v-if="actions.hasPerm('GET /api/account/members')"
+        v-if="portal.hasPerm('GET /api/account/members')"
         to="/account/members"
         class="flex items-center gap-3 px-3 py-3 text-sm font-medium text-slate-600 rounded-xl transition-all duration-200 hover:bg-slate-100 hover:text-slate-900"
         active-class="bg-blue-50 text-blue-700"
@@ -430,7 +428,7 @@ export default toNative(NavigationBar)
 
       <!-- 操作审计 -->
       <router-link
-        v-if="actions.hasPerm('GET /api/system/audit/logs')"
+        v-if="portal.hasPerm('GET /api/system/audit/logs')"
         to="/system/audit/logs"
         class="flex items-center gap-3 px-3 py-3 text-sm font-medium text-slate-600 rounded-xl transition-all duration-200 hover:bg-slate-100 hover:text-slate-900"
         active-class="bg-blue-50 text-blue-700"
@@ -442,7 +440,7 @@ export default toNative(NavigationBar)
 
       <!-- 系统配置 -->
       <router-link
-        v-if="actions.hasPerm('PUT /api/system/config')"
+        v-if="portal.hasPerm('PUT /api/system/config')"
         to="/system/config"
         class="flex items-center gap-3 px-3 py-3 text-sm font-medium text-slate-600 rounded-xl transition-all duration-200 hover:bg-slate-100 hover:text-slate-900"
         active-class="bg-blue-50 text-blue-700"

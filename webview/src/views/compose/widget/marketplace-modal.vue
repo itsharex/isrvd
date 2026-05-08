@@ -1,11 +1,10 @@
 <script lang="ts">
-import { Component, Inject, Prop, Ref, Vue, Watch, toNative } from 'vue-facing-decorator'
-
-import { APP_ACTIONS_KEY } from '@/store/state'
-import type { AppActions } from '@/store/state'
+import { Component, Prop, Ref, Vue, Watch, toNative } from 'vue-facing-decorator'
 
 import api from '@/service/api'
 import type { AllConfig, ComposeMarketplacePick } from '@/service/types'
+
+import { usePortal } from '@/stores'
 
 // 应用市场 postMessage 协议：仅本组件使用，故就近定义
 interface MarketplaceInstallPayload {
@@ -34,7 +33,7 @@ function isMarketplaceInstallPayload(data: unknown): data is MarketplaceInstallP
     emits: ['update:modelValue', 'pick']
 })
 class MarketplaceModal extends Vue {
-    @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
+    portal = usePortal()
     @Prop({ type: Boolean, default: false }) readonly modelValue!: boolean
 
     // ─── Refs ───
@@ -83,7 +82,7 @@ class MarketplaceModal extends Vue {
                 this.iframeOrigin = ''
             }
         } catch {
-            this.actions.showNotification('error', '加载应用市场配置失败')
+            this.portal.showNotification('error', '加载应用市场配置失败')
         }
         this.loading = false
     }
@@ -180,7 +179,7 @@ export default toNative(MarketplaceModal)
                   <i class="fas fa-store text-white"></i>
                 </div>
                 <div>
-                  <h3 class="text-lg font-semibold text-slate-800">应用市场</h3>
+                  <h1 class="text-lg font-semibold text-slate-800">应用市场</h1>
                   <p class="text-xs text-slate-500">选择应用后将自动回填到部署表单</p>
                 </div>
               </div>
@@ -200,7 +199,7 @@ export default toNative(MarketplaceModal)
                   <i class="fas fa-store text-white"></i>
                 </div>
                 <div class="min-w-0">
-                  <h3 class="text-lg font-semibold text-slate-800 truncate">应用市场</h3>
+                  <h1 class="text-lg font-semibold text-slate-800 truncate">应用市场</h1>
                   <p class="text-xs text-slate-500 truncate">选择应用后将自动回填到部署表单</p>
                 </div>
               </div>
@@ -225,10 +224,10 @@ export default toNative(MarketplaceModal)
 
             <!-- Empty -->
             <div v-else-if="!iframeUrl" class="h-full flex flex-col items-center justify-center px-4 text-center">
-              <div class="w-16 h-16 rounded-2xl bg-amber-100 flex items-center justify-center mb-4">
+              <div class="w-16 h-16 rounded-lg bg-amber-100 flex items-center justify-center mb-4">
                 <i class="fas fa-store text-amber-500 text-2xl"></i>
               </div>
-              <h2 class="text-base font-semibold text-slate-800 mb-1">尚未配置应用市场</h2>
+              <h1 class="text-lg font-semibold text-slate-800 mb-1">尚未配置应用市场</h1>
               <p class="text-sm text-slate-500 mb-4">请前往「系统设置 → 应用市场」配置站点 URL</p>
               <button type="button" class="px-4 py-2 rounded-lg bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium flex items-center gap-1.5 transition-colors" @click="openConfig()">
                 <i class="fas fa-gear"></i>前往配置

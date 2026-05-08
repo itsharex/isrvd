@@ -1,8 +1,7 @@
 <script lang="ts">
-import { Component, Inject, Ref, Vue, toNative } from 'vue-facing-decorator'
+import { Component, Ref, Vue, toNative } from 'vue-facing-decorator'
 
-import { APP_STATE_KEY, APP_ACTIONS_KEY } from '@/store/state'
-import type { AppState, AppActions } from '@/store/state'
+import { usePortal } from '@/stores'
 
 import ApisixOverview from './widget/apisix.vue'
 import DockerOverview from './widget/docker.vue'
@@ -13,8 +12,7 @@ import SystemOverview from './widget/system.vue'
     components: { ApisixOverview, DockerOverview, SwarmOverview, SystemOverview }
 })
 class Overview extends Vue {
-    @Inject({ from: APP_STATE_KEY }) readonly state!: AppState
-    @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
+    portal = usePortal()
 
     // ─── Refs ───
     @Ref readonly apisixRef!: InstanceType<typeof ApisixOverview>
@@ -25,32 +23,32 @@ class Overview extends Vue {
     // ─── 计算属性 ───
     get hasAnyBlock() {
         return (
-            this.actions.hasPerm('GET /api/apisix/routes') ||
-            this.actions.hasPerm('GET /api/docker/containers') ||
-            this.actions.hasPerm('GET /api/swarm/info') ||
-            this.actions.hasPerm('GET /api/overview/status')
+            this.portal.hasPerm('GET /api/apisix/routes') ||
+            this.portal.hasPerm('GET /api/docker/containers') ||
+            this.portal.hasPerm('GET /api/swarm/info') ||
+            this.portal.hasPerm('GET /api/overview/status')
         )
     }
 
     // ─── 方法 ───
     refreshAll() {
-        if (this.actions.hasPerm('GET /api/apisix/routes')) {
+        if (this.portal.hasPerm('GET /api/apisix/routes')) {
             this.apisixRef?.load()
         }
-        if (this.actions.hasPerm('GET /api/docker/containers')) {
+        if (this.portal.hasPerm('GET /api/docker/containers')) {
             this.dockerRef?.load()
         }
-        if (this.actions.hasPerm('GET /api/swarm/info')) {
+        if (this.portal.hasPerm('GET /api/swarm/info')) {
             this.swarmRef?.load()
         }
-        if (this.actions.hasPerm('GET /api/overview/status')) {
+        if (this.portal.hasPerm('GET /api/overview/status')) {
             this.systemRef?.load()
         }
     }
 
     // ─── 生命周期 ───
     unmounted() {
-        if (this.actions.hasPerm('GET /api/overview/status')) {
+        if (this.portal.hasPerm('GET /api/overview/status')) {
             this.systemRef?.stopPoll()
         }
     }
@@ -97,37 +95,37 @@ export default toNative(Overview)
       </div>
 
       <!-- APISIX 概览区块 -->
-      <div v-if="actions.hasPerm('GET /api/apisix/routes')" class="p-6 border-b border-slate-100">
+      <div v-if="portal.hasPerm('GET /api/apisix/routes')" class="p-6 border-b border-slate-100">
         <div class="flex items-center gap-2 mb-4">
           <i class="fas fa-route text-orange-500 text-lg"></i>
-          <h2 class="text-base font-semibold text-slate-700">APISIX 网关</h2>
+          <h1 class="text-lg font-semibold text-slate-700">APISIX 网关</h1>
         </div>
         <ApisixOverview ref="apisixRef" />
       </div>
 
       <!-- Docker 概览区块 -->
-      <div v-if="actions.hasPerm('GET /api/docker/containers')" class="p-6 border-b border-slate-100">
+      <div v-if="portal.hasPerm('GET /api/docker/containers')" class="p-6 border-b border-slate-100">
         <div class="flex items-center gap-2 mb-4">
           <i class="fab fa-docker text-blue-500 text-lg"></i>
-          <h2 class="text-base font-semibold text-slate-700">Docker 服务</h2>
+          <h1 class="text-lg font-semibold text-slate-700">Docker 服务</h1>
         </div>
         <DockerOverview ref="dockerRef" />
       </div>
 
       <!-- Swarm 概览区块 -->
-      <div v-if="actions.hasPerm('GET /api/swarm/info')" class="p-6 border-b border-slate-100">
+      <div v-if="portal.hasPerm('GET /api/swarm/info')" class="p-6 border-b border-slate-100">
         <div class="flex items-center gap-2 mb-4">
           <i class="fas fa-circle-nodes text-cyan-600 text-lg"></i>
-          <h2 class="text-base font-semibold text-slate-700">Swarm 集群</h2>
+          <h1 class="text-lg font-semibold text-slate-700">Swarm 集群</h1>
         </div>
         <SwarmOverview ref="swarmRef" />
       </div>
 
       <!-- 系统信息区块 -->
-      <div v-if="actions.hasPerm('GET /api/overview/status')" class="p-6 border-b border-slate-100">
+      <div v-if="portal.hasPerm('GET /api/overview/status')" class="p-6 border-b border-slate-100">
         <div class="flex items-center gap-2 mb-4">
           <i class="fas fa-server text-slate-500 text-lg"></i>
-          <h2 class="text-base font-semibold text-slate-700">系统信息</h2>
+          <h1 class="text-lg font-semibold text-slate-700">系统信息</h1>
         </div>
         <SystemOverview ref="systemRef" />
       </div>

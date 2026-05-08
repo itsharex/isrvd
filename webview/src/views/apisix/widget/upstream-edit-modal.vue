@@ -1,8 +1,5 @@
 <script lang="ts">
-import { Component, Inject, Vue, toNative } from 'vue-facing-decorator'
-
-import { APP_ACTIONS_KEY } from '@/store/state'
-import type { AppActions } from '@/store/state'
+import { Component, Vue, toNative } from 'vue-facing-decorator'
 
 import api from '@/service/api'
 import type {
@@ -18,6 +15,8 @@ import type {
 import { normalizeUpstreamFormNodes, normalizeUpstreamType } from '@/helper/apisix'
 
 import BaseModal from '@/component/modal.vue'
+
+import { usePortal } from '@/stores'
 
 import HostSelect from './host-select.vue'
 import PortSelect from './port-select.vue'
@@ -58,8 +57,7 @@ const defaultFormData = () => ({
     emits: ['success']
 })
 class UpstreamEditModal extends Vue {
-    @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
-
+    portal = usePortal()
     isOpen = false
     modalLoading = false
     isEditMode = false
@@ -166,13 +164,13 @@ class UpstreamEditModal extends Vue {
 
     async handleConfirm() {
         if (!this.formData.name.trim()) {
-            this.actions.showNotification('error', '上游名称不能为空')
+            this.portal.showNotification('error', '上游名称不能为空')
             return
         }
         const payload = this.buildPayload()
         const nodes = Array.isArray(payload.nodes) ? payload.nodes : []
         if (nodes.length === 0) {
-            this.actions.showNotification('error', '至少需要配置一个有效节点')
+            this.portal.showNotification('error', '至少需要配置一个有效节点')
             return
         }
 
@@ -186,7 +184,7 @@ class UpstreamEditModal extends Vue {
             this.isOpen = false
             this.$emit('success')
         } catch (e: unknown) {
-            this.actions.showNotification('error', (e instanceof Error ? e.message : '') || '操作失败')
+            this.portal.showNotification('error', (e instanceof Error ? e.message : '') || '操作失败')
         }
         this.modalLoading = false
     }
@@ -200,6 +198,8 @@ export default toNative(UpstreamEditModal)
     v-model="isOpen"
     :title="isEditMode ? '编辑上游' : '创建上游'"
     :loading="modalLoading"
+    confirm-class="btn-success"
+    @confirm="handleConfirm"
   >
     <div class="max-w-3xl space-y-4 p-1">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -278,13 +278,8 @@ export default toNative(UpstreamEditModal)
       </div>
     </div>
 
-    <template #footer>
-      <div class="flex justify-end gap-2">
-        <button class="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50" @click="isOpen = false">取消</button>
-        <button :disabled="modalLoading" class="px-4 py-2 text-sm font-medium text-white bg-emerald-500 rounded-lg hover:bg-emerald-600 disabled:opacity-50 shadow-sm" @click="handleConfirm()">
-          <i v-if="modalLoading" class="fas fa-spinner fa-spin mr-1"></i>{{ isEditMode ? '保存' : '创建' }}
-        </button>
-      </div>
+    <template #confirm-text>
+      确认{{ isEditMode ? '更新' : '创建' }}
     </template>
   </BaseModal>
 </template>

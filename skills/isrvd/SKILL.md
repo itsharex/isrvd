@@ -3,204 +3,208 @@ name: isrvd-ops
 description: 通过 isrvd API 进行容器部署、服务管理、镜像操作、路由配置、文件管理等运维操作。当用户要求"部署服务"、"管理容器"、"拉取/推送镜像"、"配置路由"、"管理 Swarm"、"Compose 部署"、"文件管理"、"Web 终端"等运维任务时使用此 Skill。
 ---
 
-# isrvd 运维操作 Skill
-
-isrvd 是一个集成了 Docker、Swarm、APISIX、Compose 和文件管理的轻量级运维平台。
-
-> **渐进式披露**：本文件只包含概述和决策树。各模块的详细 API 文档在 `docs/` 子目录中，按需读取。
-> **Script Harness**：`scripts/` 目录提供可直接执行的 shell 脚本，封装了认证、调用和常见工作流。
-
----
-
-## 快速开始
-
-### 1. 环境准备
+# isrvd 运维 Skill
 
 ```bash
-# 检测 isrvd 服务状态并获取认证 token
 source ./scripts/api.sh
-isrvd_init "http://localhost:8080" "admin" "password"
+# 认证方式（优先使用环境变量，自动保存到 ~/.config/isrvd/profile.json）
+isrvd_token "$ISRVD_APIURL" "$ISRVD_APITOKEN"
+# 或 isrvd_login "$ISRVD_APIURL" "$ISRVD_USERNAME" "$ISRVD_PASSWORD"
 ```
 
-### 2. 常用快捷脚本
+调用：`isrvd_get "/path"` / `isrvd_post "/path" '{body}'`，输出紧凑 JSON（数组自动转表格）。按需用 jq 自行处理返回值。
 
-| 脚本 | 用途 | 示例 |
-|------|------|------|
-| `scripts/api.sh` | 通用 API 封装（认证、GET/POST/PUT/DELETE） | `source scripts/api.sh && isrvd_get "/docker/containers"` |
-| `scripts/deploy.sh` | 一键部署（Compose/容器/Swarm 服务） | `./scripts/deploy.sh compose my-app ./docker-compose.yml` |
-| `scripts/health-check.sh` | 健康检查与状态报告 | `./scripts/health-check.sh` |
+**⚠️ 操作规范（必须遵守）：**
+1. **禁止硬编码**：不要假设任何 IP、端口、路径、容器名——全部通过 API 查询或环境变量获取
+2. **禁止 base64**：不要用 base64 编码内容写入文件，使用 `isrvd_post "/filer/modify"` 或 `isrvd_upload`
+3. **filer 路径 ≠ 宿主机路径**：volume mount 的 hostPath 必须是宿主机真实路径，先通过 inspect isrvd 容器确认映射关系，见 docs/system/filer.md
+4. **不要重复重建容器**：静态文件更新直接写 filer 即可，容器无需重建；只有初次部署或更换镜像时才需要重建
 
 ---
 
-## 决策树：用户想做什么？
+## API 文档索引（按需读取，勿全部加载）
+
+### Docker
+
+| 文档 | 覆盖内容 |
+|------|----------|
+| [docs/docker/containers.md](docs/docker/containers.md) | 容器列表、创建、操作、日志、stats、终端 |
+| [docs/docker/images.md](docs/docker/images.md) | 镜像列表、详情、搜索、构建、标签、拉取、推送、删除 |
+| [docs/docker/networks.md](docs/docker/networks.md) | 网络列表、详情、创建、删除 |
+| [docs/docker/volumes.md](docs/docker/volumes.md) | 数据卷列表、详情、创建、删除 |
+| [docs/docker/registries.md](docs/docker/registries.md) | 镜像仓库 CRUD |
+
+### Swarm
+
+| 文档 | 覆盖内容 |
+|------|----------|
+| [docs/swarm/info.md](docs/swarm/info.md) | 集群信息、节点列表/详情/操作、加入令牌 |
+| [docs/swarm/services.md](docs/swarm/services.md) | 服务列表、创建、扩缩容、强制更新、日志 |
+| [docs/swarm/tasks.md](docs/swarm/tasks.md) | 任务列表 |
+
+### Compose
+
+| 文档 | 覆盖内容 |
+|------|----------|
+| [docs/compose.md](docs/compose.md) | Docker Compose 部署/重部署、Swarm Stack 部署/重部署 |
+
+### APISIX
+
+| 文档 | 覆盖内容 |
+|------|----------|
+| [docs/apisix/routes.md](docs/apisix/routes.md) | 路由 CRUD、启用/禁用 |
+| [docs/apisix/upstreams.md](docs/apisix/upstreams.md) | 上游 CRUD、负载均衡配置 |
+| [docs/apisix/consumers.md](docs/apisix/consumers.md) | Consumer CRUD、白名单管理 |
+| [docs/apisix/ssl.md](docs/apisix/ssl.md) | SSL 证书、PluginConfig、插件列表 |
+
+### 系统
+
+| 文档 | 覆盖内容 |
+|------|----------|
+| [docs/system/overview.md](docs/system/overview.md) | 服务探测、系统资源统计 |
+| [docs/system/config.md](docs/system/config.md) | 系统配置、审计日志 |
+| [docs/system/account.md](docs/system/account.md) | 登录、成员管理、权限、API Token |
+| [docs/system/filer.md](docs/system/filer.md) | 文件 CRUD、上传下载、压缩解压 |
+
+---
+
+## 决策树
 
 ```
 用户需求
 ├── 部署/创建
-│   ├── 单个容器 → 读 docs/docker.md §2 → 用 POST /api/docker/container
-│   ├── 多容器应用(单机) → 读 docs/compose.md §1 → 用 POST /api/compose/docker/deploy
-│   ├── 集群服务 → 读 docs/swarm.md §3 或 docs/compose.md §2
-│   └── 配置路由 → 读 docs/apisix.md §1-§3
+│   ├── 单个容器        → docs/docker/containers.md
+│   ├── 多容器应用(单机) → docs/compose.md §1
+│   ├── 集群服务(Stack)  → docs/compose.md §2
+│   ├── 集群服务(单服务) → docs/swarm/services.md
+│   └── 配置路由         → docs/apisix/routes.md
 │
 ├── 更新/变更
-│   ├── 更新容器镜像 → docs/docker.md §3.7 拉取 + 重建
-│   ├── 扩缩容 Swarm 服务 → docs/swarm.md §4.1 (action=scale)
-│   ├── 重新部署 Swarm 服务 → docs/swarm.md §4.2 (action=redeploy)
-│   ├── 修改路由规则 → docs/apisix.md §4
-│   └── 修改系统配置 → docs/system.md §2 (PUT /api/system/config)
+│   ├── 更新容器镜像     → docs/docker/images.md (拉取) + docs/docker/containers.md (重建)
+│   ├── 扩缩容           → docs/swarm/services.md
+│   ├── 重新部署         → docs/swarm/services.md (force-update)
+│   ├── 修改路由/上游    → docs/apisix/routes.md 或 docs/apisix/upstreams.md
+│   └── 修改系统配置     → docs/system/config.md
 │
 ├── 查询/监控
-│   ├── 查看容器/镜像/网络/卷 → docs/docker.md §1-§6
-│   ├── 查看集群/服务/任务 → docs/swarm.md §1-§2
-│   ├── 查看路由/上游/插件 → docs/apisix.md §1
-│   ├── 系统状态/健康检查 → docs/system.md §1 → 用 scripts/health-check.sh
-│   ├── 查看日志 → docs/docker.md §2.4 或 docs/swarm.md §4.3
-│   └── 文件管理 → docs/system.md §4
+│   ├── 容器/镜像/网络/卷 → docs/docker/ 下对应文件
+│   ├── 集群/服务/任务    → docs/swarm/ 下对应文件
+│   ├── 路由/上游/插件    → docs/apisix/ 下对应文件
+│   ├── 系统状态          → docs/system/overview.md
+│   ├── 日志             → docs/docker/containers.md 或 docs/swarm/services.md
+│   └── 文件管理         → docs/system/filer.md
 │
 ├── 删除/清理
-│   ├── 删除容器/镜像/网络/卷 → docs/docker.md 各模块 action=remove
-│   ├── 删除 Swarm 服务 → docs/swarm.md §4.1 (action=remove)
-│   └── 删除路由/消费者 → docs/apisix.md §5-§6
+│   ├── 容器/镜像/网络/卷 → docs/docker/ 下对应文件（action=remove）
+│   ├── Swarm 服务        → docs/swarm/services.md（action=remove）
+│   └── 路由/消费者       → docs/apisix/routes.md 或 docs/apisix/consumers.md
 │
 └── 管理
-    ├── 镜像仓库管理 → docs/docker.md §7
-    ├── 成员/权限管理 → docs/system.md §3
-    ├── 文件管理 → docs/system.md §4
-    └── Web 终端 → GET /api/shell (WebSocket)
+    ├── 镜像仓库         → docs/docker/registries.md
+    ├── 成员/权限/Token  → docs/system/account.md
+    ├── 文件管理         → docs/system/filer.md
+    └── Web 终端         → GET /api/shell (WebSocket)
 ```
 
 ---
 
-## 通用约定（所有模块共享）
+## 常见工作流
 
-### 认证
+> 以下示例中的路径、IP、端口、容器名等**仅为格式参考**，实际值必须通过 API 查询获取。
 
-- **JWT**：`Authorization: Bearer <token>`（通过 `POST /api/account/login` 获取）
-- **代理 Header**：反向代理注入用户名（配置项 `proxyHeaderName`）
-- **API Token**：通过 `POST /api/account/token` 创建长效令牌
+### 健康检查
 
-### 统一响应格式
-
-```json
-{ "success": true|false, "message": "描述", "payload": <数据或null> }
+```bash
+isrvd_get "/overview/probe"
+isrvd_get "/overview/status"
+isrvd_get "/docker/containers"
+isrvd_get "/swarm/services"
 ```
 
-### 权限模块
+### 拉取镜像并创建容器
 
-权限基于路由进行细粒度控制，每个用户可以独立授予各模块下具体 API 路由的访问权限。
+```bash
+isrvd_post "/docker/image/pull" '{"image":"<IMAGE>"}'
+isrvd_post "/docker/container" '{"image":"<IMAGE>","name":"<NAME>","ports":{"<HOST_PORT>":"<CONTAINER_PORT>"},"restart":"unless-stopped"}'
+isrvd_get "/docker/containers"
+```
 
-**权限格式**：`METHOD /api/<模块>/<路由>`（具体 HTTP 方法与路径）
+### 更新容器镜像
 
-**访问级别**：
-- `anon`：无需认证（如登录接口）
-- `auth`：需登录但无需额外权限（如获取用户信息）
-- `perm`：需要对应路由权限（默认）
+```bash
+CID=<CONTAINER_ID>  # 从 isrvd_get "/docker/containers" 结果中获取
+isrvd_post "/docker/image/pull" '{"image":"<NEW_IMAGE>"}'
+isrvd_post "/docker/container/$CID/action" '{"action":"stop"}'
+isrvd_post "/docker/container/$CID/action" '{"action":"remove"}'
+isrvd_post "/docker/container" '{"image":"<NEW_IMAGE>","name":"<NAME>","ports":{"<HOST_PORT>":"<CONTAINER_PORT>"},"restart":"unless-stopped"}'
+```
 
-**常用模块与路由示例**：
+### Compose 部署
 
-| 模块 | 路由权限点示例 | 说明 |
-|------|---------------|------|
-| `overview` | `GET /api/overview/probe` | 服务探测 |
-| `overview` | `GET /api/overview/status` | 系统概览统计 |
-| `account` | `POST /api/account/login` | 登录（匿名） |
-| `account` | `GET /api/account/members` | 成员管理 |
-| `system` | `GET /api/system/config` | 系统配置（需认证） |
-| `system` | `PUT /api/system/config` | 更新配置 |
-| `system` | `GET /api/system/audit/logs` | 审计日志 |
-| `filer` | `POST /api/filer/list` | 文件管理（列出） |
-| `filer` | `POST /api/filer/upload` | 文件管理（上传） |
-| `filer` | `POST /api/filer/modify` | 文件管理（修改） |
-| `shell` | `GET /api/shell` | Web 终端（WebSocket） |
-| `agent` | `ANY /api/agent/*path` | LLM 代理 |
-| `apisix` | `GET /api/apisix/routes` | APISIX 管理 |
-| `docker` | `GET /api/docker/containers` | Docker 管理 |
-| `swarm` | `GET /api/swarm/services` | Swarm 管理 |
-| `compose` | `POST /api/compose/docker/deploy` | Compose 管理 |
+```bash
+isrvd_post "/compose/docker/deploy" "{\"projectName\":\"<PROJECT>\",\"content\":$(cat docker-compose.yml | jq -sR)}"
+```
 
-> 留空 = 无权限；具体可用路由见各模块 API 文档
+### 部署 Swarm 服务并验证
 
----
+```bash
+isrvd_post "/swarm/service" '{"name":"<NAME>","image":"<IMAGE>","replicas":<N>,"ports":[{"targetPort":<PORT>,"publishedPort":<PORT>}]}'
+isrvd_get "/swarm/services"
+```
 
-## 详细文档索引
+### 扩缩容
 
-| 文档 | 覆盖模块 | 何时读取 |
-|------|----------|----------|
-| [docs/docker.md](docs/docker.md) | 容器、镜像、网络、数据卷、镜像仓库 | 需要管理 Docker 资源时 |
-| [docs/swarm.md](docs/swarm.md) | Swarm 集群、节点、服务、任务 | 需要管理集群服务时 |
-| [docs/compose.md](docs/compose.md) | Docker Compose、Swarm Stack 部署 | 需要通过 compose 文件部署时 |
-| [docs/apisix.md](docs/apisix.md) | 路由、Consumer、上游、SSL、插件配置、白名单 | 需要配置 API 网关时 |
-| [docs/system.md](docs/system.md) | 系统状态、配置、成员、文件管理、审计日志 | 需要系统管理操作时 |
+```bash
+isrvd_post "/swarm/service/<SVC_ID>/action" '{"action":"scale","replicas":<N>}'
+```
 
-## 脚本索引
+### 滚动更新
 
-| 脚本 | 用途 | 何时使用 |
-|------|------|----------|
-| [scripts/api.sh](scripts/api.sh) | 通用 API 调用封装 | 所有 API 调用的基础，其他脚本依赖此文件 |
-| [scripts/deploy.sh](scripts/deploy.sh) | 部署快捷脚本 | 需要快速部署容器/Compose/Swarm 服务时 |
-| [scripts/health-check.sh](scripts/health-check.sh) | 健康检查与状态报告 | 需要检查系统和服务状态时 |
+```bash
+isrvd_post "/swarm/service/<SVC_ID>/force-update"
+```
 
----
+### 为新服务配置路由
 
-## 实际 API 路由速查表
+```bash
+# 先查现有路由
+isrvd_get "/apisix/routes"
+# 创建（upstream 的 nodes 地址通过查询实际容器/服务获取）
+isrvd_post "/apisix/route" '{"name":"<NAME>","uri":"<URI>","status":1,"upstream":{"type":"roundrobin","nodes":{"<HOST>:<PORT>":1}}}'
+```
 
-### Overview 模块
-- `GET /api/overview/probe` - 探测服务可用性（Docker、Swarm、APISIX）
-- `GET /api/overview/status` - 获取系统资源统计（CPU、内存、磁盘、GPU）
+### 临时禁用/启用路由
 
-### Account 模块
-- `GET /api/account/info` - 获取认证信息（匿名可访问）
-- `POST /api/account/login` - 登录获取 JWT Token（匿名可访问）
-- `GET /api/account/routes` - 列出所有路由及其权限元信息
-- `POST /api/account/token` - 创建长效 API Token
-- `PUT /api/account/password` - 修改当前用户密码
-- `GET /api/account/members` - 列出所有成员
-- `POST /api/account/member` - 创建成员
-- `PUT /api/account/member/:username` - 更新成员
-- `DELETE /api/account/member/:username` - 删除成员
+```bash
+isrvd_patch "/apisix/route/<ROUTE_ID>/status" '{"status":0}'
+isrvd_patch "/apisix/route/<ROUTE_ID>/status" '{"status":1}'
+```
 
-### Filer 模块（文件管理）
-- `POST /api/filer/list` - 列出文件和目录
-- `POST /api/filer/mkdir` - 创建目录
-- `POST /api/filer/create` - 创建文件
-- `POST /api/filer/read` - 读取文件内容
-- `POST /api/filer/modify` - 保存文件内容
-- `POST /api/filer/rename` - 重命名文件/目录
-- `POST /api/filer/delete` - 删除文件/目录
-- `POST /api/filer/chmod` - 修改文件权限
-- `POST /api/filer/upload` - 上传文件（multipart）
-- `POST /api/filer/download` - 下载文件
-- `POST /api/filer/zip` - 压缩文件/目录
-- `POST /api/filer/unzip` - 解压文件
+### 更新静态文件（无需重建容器）
 
-### Shell 模块（Web 终端）
-- `GET /api/shell` - 打开 Web 终端（WebSocket 连接）
+直接写 filer，已挂载该目录的容器立即生效：
 
-### Agent 模块（LLM 代理）
-- `ANY /api/agent/*path` - 代理 LLM API 请求（自动重写 model）
+```bash
+# 先查看 filer 可用目录
+isrvd_post "/filer/list" '{"path":"/"}'
 
-### Docker 模块
-- `GET /api/docker/info` - 获取 Docker 引擎信息
-- **容器**：`GET /api/docker/containers`、`POST /api/docker/container`、`:id/stats`、`:id/action`、`logs`、`exec`
-- **镜像**：`GET /api/docker/images`、`search`、`:id/action`、`tag`、`inspect`、`build`、`pull`、`push`
-- **网络**：`GET /api/docker/networks`、`:id/action`、`POST /api/docker/network`、`:id`
-- **卷**：`GET /api/docker/volumes`、`:name/action`、`POST /api/docker/volume`、`:name`
-- **仓库**：`GET /api/docker/registries`、`POST /api/docker/registry`、`PUT`、`DELETE`
+# 写入小文件
+isrvd_post "/filer/modify" '{"path":"<FILER_PATH>/<FILE>","content":"..."}'
 
-### Swarm 模块
-- `GET /api/swarm/info` - 获取 Swarm 集群信息
-- **节点**：`GET /api/swarm/nodes`、`:id`、`token`、`POST :id/action`
-- **服务**：`GET /api/swarm/services`、`:id`、`POST /api/swarm/service`、`:id/action`、`force-update`、`logs`
-- **任务**：`GET /api/swarm/tasks?serviceID=`
+# 写入大文件：先写到本地再上传（禁止用 base64）
+cat > /tmp/<FILE> << 'EOF'
+...内容...
+EOF
+isrvd_upload "/filer/upload" "file" "/tmp/<FILE>" "path=<FILER_PATH>"
+```
 
-### Compose 模块
-- **Docker Compose**：`GET /api/compose/docker/:name`、`POST /api/compose/docker/deploy`、`redeploy`
-- **Swarm Stack**：`GET /api/compose/swarm/:name`、`POST /api/compose/swarm/deploy`、`redeploy`
+> filer 路径是 isrvd 内部路径，非宿主机路径。初次创建容器挂载卷时，需先查出宿主机真实路径（见 docs/system/filer.md），之后文件更新不再需要重建容器。
 
-### APISIX 模块
-- **路由**：`GET/POST /api/apisix/routes`、`PUT/PATCH/DELETE /api/apisix/route/:id`
-- **Consumer**：`GET/POST /api/apisix/consumers`、`PUT/DELETE /api/apisix/consumer/:username`
-- **白名单**：`GET /api/apisix/whitelist`、`POST /api/apisix/whitelist/revoke`
-- **PluginConfig**：`GET/POST /api/apisix/plugin-configs`、`PUT/DELETE /api/apisix/plugin-config/:id`
-- **Upstream**：`GET/POST /api/apisix/upstreams`、`PUT/DELETE /api/apisix/upstream/:id`
-- **SSL**：`GET/POST /api/apisix/ssls`、`PUT/DELETE /api/apisix/ssl/:id`
-- **插件**：`GET /api/apisix/plugins`
+### 其他文件操作
+
+```bash
+isrvd_post "/filer/list" '{"path":"<DIR>"}'
+isrvd_post "/filer/read" '{"path":"<FILE>"}' '.content'
+isrvd_post "/filer/modify" '{"path":"<FILE>","content":"<CONTENT>"}'
+isrvd_upload "/filer/upload" "file" "<LOCAL_FILE>" "path=<FILER_DIR>"
+```

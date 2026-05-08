@@ -2,21 +2,20 @@
 import { json } from '@codemirror/lang-json'
 import { jsonrepair } from 'jsonrepair'
 import { Codemirror } from 'vue-codemirror'
-import { Component, Inject, toNative, Vue } from 'vue-facing-decorator'
-
-import { APP_ACTIONS_KEY } from '@/store/state'
-import type { AppActions } from '@/store/state'
+import { Component, toNative, Vue } from 'vue-facing-decorator'
 
 import api from '@/service/api'
 import type { AuditLog } from '@/service/types'
 
 import BaseModal from '@/component/modal.vue'
 
+import { usePortal } from '@/stores'
+
 @Component({
     components: { BaseModal, Codemirror }
 })
 class AuditLogs extends Vue {
-    @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
+    portal = usePortal()
 
     // ─── 数据属性 ───
     logs: AuditLog[] = []
@@ -68,7 +67,7 @@ class AuditLogs extends Vue {
             const res = await api.systemAuditLogs()
             this.logs = res.payload || []
         } catch {
-            this.actions.showNotification('error', '获取审计日志失败')
+            this.portal.showNotification('error', '获取审计日志失败')
         } finally {
             this.loading = false
         }
@@ -174,7 +173,7 @@ export default toNative(AuditLogs)
 
       <!-- 空状态 -->
       <div v-else-if="filteredLogs.length === 0" class="flex flex-col items-center justify-center py-20">
-        <div class="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center mb-4">
+        <div class="w-16 h-16 rounded-lg bg-slate-100 flex items-center justify-center mb-4">
           <i class="fas fa-clipboard-list text-4xl text-slate-300"></i>
         </div>
         <p class="text-slate-600 font-medium mb-1">暂无审计日志</p>
@@ -214,7 +213,7 @@ export default toNative(AuditLogs)
                 <!-- 方法 -->
                 <td class="px-4 py-3">
                   <span
-                    class="inline-flex items-center px-2 py-1 rounded text-xs font-medium font-mono"
+                    class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium font-mono"
                     :class="methodClass(log.method)"
                   >{{ log.method }}</span>
                 </td>
@@ -225,7 +224,7 @@ export default toNative(AuditLogs)
                 <!-- Body -->
                 <td class="px-4 py-3 max-w-[200px]">
                   <button v-if="log.body" class="text-left w-full group" @click="showDetail(log)">
-                    <code class="text-xs text-slate-500 font-mono truncate block group-hover:text-primary-600 transition-colors">{{ formatBody(log.body) }}</code>
+                    <code class="text-xs text-slate-600 font-mono truncate block group-hover:text-primary-600 transition-colors">{{ formatBody(log.body) }}</code>
                   </button>
                   <span v-else class="text-xs text-slate-300">-</span>
                 </td>
@@ -270,7 +269,7 @@ export default toNative(AuditLogs)
             <!-- 方法 + URI -->
             <div class="flex items-center gap-2 mb-3">
               <span
-                class="inline-flex items-center px-2 py-1 rounded text-xs font-medium font-mono flex-shrink-0"
+                class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium font-mono flex-shrink-0"
                 :class="methodClass(log.method)"
               >{{ log.method }}</span>
               <code class="text-xs text-slate-700 font-mono truncate">{{ log.uri }}</code>
@@ -280,7 +279,7 @@ export default toNative(AuditLogs)
             <div v-if="log.body" class="flex items-center gap-2 mb-3">
               <span class="text-xs text-slate-400 flex-shrink-0">Body</span>
               <button class="flex items-center gap-1 min-w-0" @click="showDetail(log)">
-                <code class="text-xs text-slate-500 font-mono truncate">{{ formatBody(log.body) }}</code>
+                <code class="text-xs text-slate-600 font-mono truncate">{{ formatBody(log.body) }}</code>
                 <i class="fas fa-arrow-up-right-from-square text-xs text-primary-500 flex-shrink-0"></i>
               </button>
             </div>

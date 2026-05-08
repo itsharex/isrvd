@@ -1,14 +1,14 @@
 <script lang="ts">
 import { PageAgent } from 'page-agent'
-import { Component, Inject, Vue, toNative } from 'vue-facing-decorator'
-
-import { APP_STATE_KEY } from '@/store/state'
+import { Component, Vue, toNative } from 'vue-facing-decorator'
 
 import { systemInstruction, getPageInstruction } from '@/helper/instructions'
 
+import { usePortal } from '@/stores'
+
 @Component
 class PageAgentModal extends Vue {
-    @Inject({ from: APP_STATE_KEY }) readonly state!: { token: string | null }
+    portal = usePortal()
     agent = null as PageAgent | null
     panelVisible = false
 
@@ -59,7 +59,7 @@ class PageAgentModal extends Vue {
         this.destroyAgent()
 
         // 使用本地 JWT token 作为 apiKey，以便请求能通过后端认证中间件
-        const token = this.state.token || ''
+        const token = this.portal.token || ''
         const agent = new PageAgent({
             baseURL: '/api/agent/proxy',
             apiKey: token,

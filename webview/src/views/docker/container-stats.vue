@@ -1,16 +1,15 @@
 <script lang="ts">
 import { Chart, registerables } from 'chart.js'
-import { markRaw, nextTick } from 'vue'
-import { Component, Inject, Ref, Vue, toNative } from 'vue-facing-decorator'
 import type { ChartOptions, TooltipItem } from 'chart.js'
-
-import { APP_ACTIONS_KEY } from '@/store/state'
-import type { AppActions } from '@/store/state'
+import { markRaw, nextTick } from 'vue'
+import { Component, Ref, Vue, toNative } from 'vue-facing-decorator'
 
 import api from '@/service/api'
 import type { DockerContainerInfo, DockerContainerStats } from '@/service/types'
 
 import { formatFileSize, hexToRgba, POLL_INTERVAL } from '@/helper/utils'
+
+import { usePortal } from '@/stores'
 
 import ContainerNav from './widget/container-nav.vue'
 
@@ -25,7 +24,7 @@ type ChartCallbackContext = TooltipItem<'line'>
     components: { ContainerNav }
 } as Record<string, unknown>)
 class ContainerStats extends Vue {
-    @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
+    portal = usePortal()
 
     // ─── Refs ───
     @Ref readonly cpuRef!: HTMLCanvasElement
@@ -462,7 +461,7 @@ export default toNative(ContainerStats)
 
         <!-- 容器未运行提示 -->
         <div v-else-if="container && container.state !== 'running'" class="flex flex-col items-center justify-center py-12 gap-3 text-slate-400 text-sm">
-          <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center">
+          <div class="w-16 h-16 rounded-lg bg-slate-100 flex items-center justify-center">
             <i class="fas fa-stop text-slate-400 text-lg"></i>
           </div>
           <span>容器未运行，无法采集监控数据</span>

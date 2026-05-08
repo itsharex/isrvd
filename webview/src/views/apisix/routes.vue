@@ -1,13 +1,12 @@
 <script lang="ts">
-import { Component, Inject, Ref, Vue, toNative } from 'vue-facing-decorator'
-
-import { APP_ACTIONS_KEY } from '@/store/state'
-import type { AppActions } from '@/store/state'
+import { Component, Ref, Vue, toNative } from 'vue-facing-decorator'
 
 import api from '@/service/api'
 import type { ApisixRoute } from '@/service/types'
 
 import { formatRouteUpstreamSummary, formatRouteUpstreamType, formatRouteUpstreamNodes, normalizeUpstreamNodes } from '@/helper/apisix'
+
+import { usePortal } from '@/stores'
 
 import RouteEditModal from './widget/route-edit-modal.vue'
 
@@ -15,7 +14,7 @@ import RouteEditModal from './widget/route-edit-modal.vue'
     components: { RouteEditModal }
 })
 class Routes extends Vue {
-    @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
+    portal = usePortal()
 
     // ─── Refs ───
     @Ref readonly editModalRef!: InstanceType<typeof RouteEditModal>
@@ -61,7 +60,7 @@ class Routes extends Vue {
         try {
             this.routes = this.sortRoutes((await api.apisixRouteList()).payload || [])
         } catch {
-            this.actions.showNotification('error', '加载路由列表失败')
+            this.portal.showNotification('error', '加载路由列表失败')
         }
         this.loading = false
     }
@@ -105,7 +104,7 @@ class Routes extends Vue {
         if (!id) return
         const ns = route.status === 1 ? 0 : 1
         const label = ns === 1 ? '启用' : '禁用'
-        this.actions.showConfirm({
+        this.portal.showConfirm({
             title: `${label}路由`,
             message: `确定要${label}路由 <strong class="text-slate-900">${route.name}</strong> 吗？`,
             icon: ns === 1 ? 'fa-toggle-on' : 'fa-toggle-off',
@@ -113,7 +112,7 @@ class Routes extends Vue {
             confirmText: `确认${label}`,
             onConfirm: async () => {
                 await api.apisixRouteStatus(id, ns)
-                this.actions.showNotification('success', `路由已${label}`)
+                this.portal.showNotification('success', `路由已${label}`)
                 this.loadRoutes()
             }
         })
@@ -122,7 +121,7 @@ class Routes extends Vue {
     deleteRoute(route: ApisixRoute) {
         const id = route.id
         if (!id) return
-        this.actions.showConfirm({
+        this.portal.showConfirm({
             title: '删除路由',
             message: `确定要删除路由 <strong class="text-slate-900">${route.name || id}</strong> 吗？此操作不可恢复。`,
             icon: 'fa-trash',
@@ -131,7 +130,7 @@ class Routes extends Vue {
             danger: true,
             onConfirm: async () => {
                 await api.apisixRouteDelete(id)
-                this.actions.showNotification('success', '删除成功')
+                this.portal.showNotification('success', '删除成功')
                 this.loadRoutes()
             }
         })
@@ -162,7 +161,7 @@ export default toNative(Routes)
               <i class="fas fa-search absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
             </div>
             <button class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors" @click="loadRoutes()"><i class="fas fa-rotate"></i>刷新</button>
-            <button v-if="actions.hasPerm('POST /api/apisix/route')" class="px-3 py-1.5 rounded-lg bg-indigo-500 hover:bg-indigo-600 text-white text-xs font-medium flex items-center gap-1.5 transition-colors" @click="openCreateModal()"><i class="fas fa-plus"></i>创建</button>
+            <button v-if="portal.hasPerm('POST /api/apisix/route')" class="px-3 py-1.5 rounded-lg bg-indigo-500 hover:bg-indigo-600 text-white text-xs font-medium flex items-center gap-1.5 transition-colors" @click="openCreateModal()"><i class="fas fa-plus"></i>创建</button>
           </div>
         </div>
         <!-- 移动端 -->
@@ -178,7 +177,7 @@ export default toNative(Routes)
             <button class="w-9 h-9 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-600 transition-colors" title="刷新" @click="loadRoutes()">
               <i class="fas fa-rotate text-sm"></i>
             </button>
-            <button v-if="actions.hasPerm('POST /api/apisix/route')" class="w-9 h-9 rounded-lg bg-indigo-500 hover:bg-indigo-600 flex items-center justify-center text-white transition-colors" title="创建" @click="openCreateModal()">
+            <button v-if="portal.hasPerm('POST /api/apisix/route')" class="w-9 h-9 rounded-lg bg-indigo-500 hover:bg-indigo-600 flex items-center justify-center text-white transition-colors" title="创建" @click="openCreateModal()">
               <i class="fas fa-plus text-sm"></i>
             </button>
           </div>
@@ -193,7 +192,7 @@ export default toNative(Routes)
       </div>
       <div v-if="loading" class="flex flex-col items-center justify-center py-20"><div class="w-12 h-12 spinner mb-3"></div><p class="text-slate-500">加载中...</p></div>
       <div v-else-if="filteredRoutes.length === 0" class="flex flex-col items-center justify-center py-20">
-        <div class="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center mb-4"><i class="fas fa-route text-4xl text-slate-300"></i></div>
+        <div class="w-16 h-16 rounded-lg bg-slate-100 flex items-center justify-center mb-4"><i class="fas fa-route text-4xl text-slate-300"></i></div>
         <p class="text-slate-600 font-medium mb-1">暂无路由</p>
         <p class="text-sm text-slate-400">点击「创建」添加新路由</p>
       </div>
@@ -224,17 +223,17 @@ export default toNative(Routes)
                     </div>
                   </div>
                 </td>
-                  <td class="px-4 py-3"><code class="text-xs font-mono text-slate-700 break-all">{{ getRouteUri(route) }}</code></td>
+                <td class="px-4 py-3"><code class="text-xs font-mono text-slate-700 break-all">{{ getRouteUri(route) }}</code></td>
                 <td class="px-4 py-3"><span :class="getRouteHost(route) === '*' ? 'text-slate-400' : 'text-teal-600 font-medium'" class="text-sm break-all">{{ getRouteHost(route) }}</span></td>
                 <td class="px-4 py-3"><span class="text-xs text-slate-600">{{ getRouteUpstreamType(route) || '-' }}</span></td>
-<td class="px-4 py-3"><span :class="getRouteUpstreamTagClass(route)" class="inline-block text-xs px-2 py-0.5 rounded-lg font-mono break-all">{{ getRouteUpstreamNodes(route) }}</span></td>
+                <td class="px-4 py-3"><span :class="getRouteUpstreamTagClass(route)" class="inline-block text-xs px-2 py-0.5 rounded-lg font-mono break-all">{{ getRouteUpstreamNodes(route) }}</span></td>
                 <td class="px-4 py-3">
                   <div class="flex justify-end items-center gap-1">
-                    <button v-if="actions.hasPerm('PATCH /api/apisix/route/:id/status')" :class="['btn-icon', route.status === 1 ? 'text-amber-500 hover:bg-amber-50' : 'text-emerald-600 hover:bg-emerald-50']" :title="route.status === 1 ? '禁用' : '启用'" @click="toggleStatus(route)">
+                    <button v-if="portal.hasPerm('PATCH /api/apisix/route/:id/status')" :class="['btn-icon', route.status === 1 ? 'text-amber-500 hover:bg-amber-50' : 'text-emerald-600 hover:bg-emerald-50']" :title="route.status === 1 ? '禁用' : '启用'" @click="toggleStatus(route)">
                       <i :class="route.status === 1 ? 'fas fa-ban' : 'fas fa-play'" class="text-xs"></i>
                     </button>
-                    <button v-if="actions.hasPerm('PUT /api/apisix/route/:id')" class="btn-icon text-indigo-600 hover:bg-indigo-50" title="编辑" @click="openEditModal(route)"><i class="fas fa-pen text-xs"></i></button>
-                    <button v-if="actions.hasPerm('DELETE /api/apisix/route/:id')" class="btn-icon text-red-600 hover:bg-red-50" title="删除" @click="deleteRoute(route)"><i class="fas fa-trash text-xs"></i></button>
+                    <button v-if="portal.hasPerm('PUT /api/apisix/route/:id')" class="btn-icon text-indigo-600 hover:bg-indigo-50" title="编辑" @click="openEditModal(route)"><i class="fas fa-pen text-xs"></i></button>
+                    <button v-if="portal.hasPerm('DELETE /api/apisix/route/:id')" class="btn-icon text-red-600 hover:bg-red-50" title="删除" @click="deleteRoute(route)"><i class="fas fa-trash text-xs"></i></button>
                   </div>
                 </td>
               </tr>
@@ -263,10 +262,10 @@ export default toNative(Routes)
             </div>
 
             <!-- 中间：URI和Host信息 -->
-              <div class="flex items-center gap-2 mb-3">
-                <span class="text-xs text-slate-400 flex-shrink-0">URI</span>
-                <code class="text-xs font-mono text-slate-700 break-all">{{ getRouteUri(route) }}</code>
-              </div>
+            <div class="flex items-start gap-2 mb-3">
+              <span class="text-xs text-slate-400 flex-shrink-0 mt-0.5">URI</span>
+              <code class="text-xs font-mono text-slate-700 break-all">{{ getRouteUri(route) }}</code>
+            </div>
 
             <div class="flex items-center gap-2 mb-3">
               <span class="text-xs text-slate-400 flex-shrink-0">Host</span>
@@ -277,20 +276,20 @@ export default toNative(Routes)
               <span class="text-xs text-slate-400 flex-shrink-0">策略</span>
               <span class="text-xs text-slate-500">{{ getRouteUpstreamType(route) || '-' }}</span>
             </div>
-              <div class="flex items-start gap-2 mb-3">
-                <span class="text-xs text-slate-400 flex-shrink-0 mt-0.5">上游</span>
-                <span :class="getRouteUpstreamTagClass(route)" class="inline-block text-xs px-2 py-0.5 rounded-lg font-mono break-all">{{ getRouteUpstreamNodes(route) }}</span>
-              </div>
+            <div class="flex items-start gap-2 mb-3">
+              <span class="text-xs text-slate-400 flex-shrink-0 mt-0.5">上游</span>
+              <span :class="getRouteUpstreamTagClass(route)" class="inline-block text-xs px-2 py-0.5 rounded-lg font-mono break-all">{{ getRouteUpstreamNodes(route) }}</span>
+            </div>
 
             <!-- 底部：操作按钮 -->
             <div class="flex flex-wrap gap-1.5 pt-2 border-t border-slate-100">
-              <button v-if="actions.hasPerm('PATCH /api/apisix/route/:id/status')" :class="['btn-icon', route.status === 1 ? 'text-amber-500 hover:bg-amber-50' : 'text-emerald-600 hover:bg-emerald-50']" :title="route.status === 1 ? '禁用' : '启用'" @click="toggleStatus(route)">
+              <button v-if="portal.hasPerm('PATCH /api/apisix/route/:id/status')" :class="['btn-icon', route.status === 1 ? 'text-amber-500 hover:bg-amber-50' : 'text-emerald-600 hover:bg-emerald-50']" :title="route.status === 1 ? '禁用' : '启用'" @click="toggleStatus(route)">
                 <i :class="route.status === 1 ? 'fas fa-ban' : 'fas fa-play'" class="text-xs"></i><span class="text-xs ml-1">{{ route.status === 1 ? '禁用' : '启用' }}</span>
               </button>
-              <button v-if="actions.hasPerm('PUT /api/apisix/route/:id')" class="btn-icon text-indigo-600 hover:bg-indigo-50" title="编辑" @click="openEditModal(route)">
+              <button v-if="portal.hasPerm('PUT /api/apisix/route/:id')" class="btn-icon text-indigo-600 hover:bg-indigo-50" title="编辑" @click="openEditModal(route)">
                 <i class="fas fa-pen text-xs"></i><span class="text-xs ml-1">编辑</span>
               </button>
-              <button v-if="actions.hasPerm('DELETE /api/apisix/route/:id')" class="btn-icon text-red-600 hover:bg-red-50" title="删除" @click="deleteRoute(route)">
+              <button v-if="portal.hasPerm('DELETE /api/apisix/route/:id')" class="btn-icon text-red-600 hover:bg-red-50" title="删除" @click="deleteRoute(route)">
                 <i class="fas fa-trash text-xs"></i><span class="text-xs ml-1">删除</span>
               </button>
             </div>

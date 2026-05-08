@@ -1,7 +1,7 @@
 <script lang="ts">
+import type { ChartOptions } from 'chart.js'
 import { markRaw } from 'vue'
 import { Component, Ref, Vue, toNative } from 'vue-facing-decorator'
-import type { ChartOptions } from 'chart.js'
 
 import type { SystemStat } from '@/service/types'
 

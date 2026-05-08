@@ -1,11 +1,10 @@
 <script lang="ts">
-import { Component, Inject, Prop, Vue, Watch, toNative } from 'vue-facing-decorator'
-
-import { APP_ACTIONS_KEY } from '@/store/state'
-import type { AppActions } from '@/store/state'
+import { Component, Prop, Vue, Watch, toNative } from 'vue-facing-decorator'
 
 import api from '@/service/api'
 import type { ApisixRoute } from '@/service/types'
+
+import { usePortal } from '@/stores'
 
 const TYPE_DEFAULTS: Record<string, string | number | boolean | unknown[] | Record<string, unknown>> = { string: '', integer: 0, number: 0, boolean: false, array: [], object: {} }
 
@@ -14,8 +13,7 @@ const TYPE_DEFAULTS: Record<string, string | number | boolean | unknown[] | Reco
     emits: ['update:plugins']
 })
 class PluginConfigPanel extends Vue {
-    @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
-
+    portal = usePortal()
     @Prop({ type: Object, default: () => ({}) }) plugins!: Record<string, unknown>
     @Prop({ type: Object, default: () => ({}) }) availablePlugins!: Record<string, { schema: Record<string, unknown> }>
     @Prop({ type: Boolean, default: false }) showImport!: boolean
@@ -100,7 +98,7 @@ class PluginConfigPanel extends Vue {
 
     addPresetPlugin(name: string) {
         if (this.plugins[name] !== undefined) {
-            return this.actions.showNotification('warning', `插件 ${name} 已存在`)
+            return this.portal.showNotification('warning', `插件 ${name} 已存在`)
         }
         const p = { ...this.plugins, [name]: this.buildPluginDefault(this.availablePlugins[name]?.schema) }
         this.$emit('update:plugins', p)
@@ -134,7 +132,7 @@ class PluginConfigPanel extends Vue {
             this.importRoutePlugins = src
             this.selectedImportPlugins = new Set(Object.keys(src))
         } catch {
-            this.actions.showNotification('error', '加载路由插件失败')
+            this.portal.showNotification('error', '加载路由插件失败')
         }
         this.importRoutePluginsLoading = false
     }
@@ -146,8 +144,8 @@ class PluginConfigPanel extends Vue {
     }
 
     importPluginsFromRoute() {
-        if (!this.importRouteId) return this.actions.showNotification('warning', '请先选择要导入的路由')
-        if (!this.selectedImportPlugins.size) return this.actions.showNotification('warning', '请至少勾选一个插件')
+        if (!this.importRouteId) return this.portal.showNotification('warning', '请先选择要导入的路由')
+        if (!this.selectedImportPlugins.size) return this.portal.showNotification('warning', '请至少勾选一个插件')
         const toImport = Object.fromEntries(
             [...this.selectedImportPlugins]
                 .filter(n => this.importRoutePlugins[n] !== undefined)
@@ -159,7 +157,7 @@ class PluginConfigPanel extends Vue {
         this.importRouteId = ''
         this.importRoutePlugins = {}
         this.selectedImportPlugins = new Set()
-        this.actions.showNotification('success', `已导入 ${Object.keys(toImport).length} 个插件`)
+        this.portal.showNotification('success', `已导入 ${Object.keys(toImport).length} 个插件`)
     }
 }
 

@@ -1,11 +1,10 @@
 <script lang="ts">
-import { Component, Inject, Ref, Vue, toNative } from 'vue-facing-decorator'
-
-import { APP_ACTIONS_KEY } from '@/store/state'
-import type { AppActions } from '@/store/state'
+import { Component, Ref, Vue, toNative } from 'vue-facing-decorator'
 
 import api from '@/service/api'
 import type { MemberInfo } from '@/service/types'
+
+import { usePortal } from '@/stores'
 
 import MemberEditModal from './widget/member-edit-modal.vue'
 
@@ -13,8 +12,7 @@ import MemberEditModal from './widget/member-edit-modal.vue'
     components: { MemberEditModal }
 })
 class Members extends Vue {
-    @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
-
+    portal = usePortal()
     @Ref readonly memberEditModalRef!: InstanceType<typeof MemberEditModal>
 
     // ─── 数据属性 ───
@@ -28,7 +26,7 @@ class Members extends Vue {
             const res = await api.accountMemberList()
             this.members = res.payload || []
         } catch {
-            this.actions.showNotification('error', '加载成员列表失败')
+            this.portal.showNotification('error', '加载成员列表失败')
         }
         this.membersLoading = false
     }
@@ -42,7 +40,7 @@ class Members extends Vue {
     }
 
     handleDeleteMember(m: MemberInfo) {
-        this.actions.showConfirm({
+        this.portal.showConfirm({
             title: '删除成员',
             message: `确定要删除成员 <strong class="text-slate-900">${m.username}</strong> 吗？此操作仅从配置文件移除，不删除家目录。`,
             icon: 'fa-trash',
@@ -52,7 +50,7 @@ class Members extends Vue {
             onConfirm: async () => {
                 try {
                     await api.accountMemberDelete(m.username)
-                    this.actions.showNotification('success', '成员删除成功')
+                    this.portal.showNotification('success', '成员删除成功')
                     this.loadMembers()
                 } catch {}
             }
@@ -88,7 +86,7 @@ export default toNative(Members)
             <button type="button" class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors" @click="loadMembers">
               <i class="fas fa-rotate"></i>刷新
             </button>
-            <button v-if="actions.hasPerm('POST /api/account/member')" type="button" class="px-3 py-1.5 rounded-lg bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium flex items-center gap-1.5 transition-colors" @click="openAddMember">
+            <button v-if="portal.hasPerm('POST /api/account/member')" type="button" class="px-3 py-1.5 rounded-lg bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium flex items-center gap-1.5 transition-colors" @click="openAddMember">
               <i class="fas fa-plus"></i>添加
             </button>
           </div>
@@ -108,7 +106,7 @@ export default toNative(Members)
             <button type="button" class="w-9 h-9 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-600 transition-colors" title="刷新" @click="loadMembers">
               <i class="fas fa-rotate text-sm"></i>
             </button>
-            <button v-if="actions.hasPerm('POST /api/account/member')" type="button" class="w-9 h-9 rounded-lg bg-blue-500 hover:bg-blue-600 flex items-center justify-center text-white transition-colors" title="添加" @click="openAddMember">
+            <button v-if="portal.hasPerm('POST /api/account/member')" type="button" class="w-9 h-9 rounded-lg bg-blue-500 hover:bg-blue-600 flex items-center justify-center text-white transition-colors" title="添加" @click="openAddMember">
               <i class="fas fa-plus text-sm"></i>
             </button>
           </div>
@@ -123,7 +121,7 @@ export default toNative(Members)
 
       <!-- Empty -->
       <div v-else-if="members.length === 0" class="flex flex-col items-center justify-center py-20">
-        <div class="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center mb-4">
+        <div class="w-16 h-16 rounded-lg bg-slate-100 flex items-center justify-center mb-4">
           <i class="fas fa-users text-4xl text-slate-300"></i>
         </div>
         <p class="text-slate-600 font-medium mb-1">暂无成员</p>
@@ -157,7 +155,7 @@ export default toNative(Members)
                   </div>
                 </td>
                 <td class="px-4 py-3">
-                  <code class="text-xs text-slate-500 font-mono">{{ m.homeDirectory }}</code>
+                  <code class="text-xs text-slate-600 font-mono">{{ m.homeDirectory }}</code>
                 </td>
                 <td class="px-4 py-3 text-sm text-slate-600">
                   <template v-if="m.founder"><i class="fas fa-crown text-violet-400 mr-1"></i>创始人</template>
@@ -167,7 +165,7 @@ export default toNative(Members)
                 <td class="px-4 py-3">
                   <div class="flex justify-end items-center gap-1">
                     <button 
-                      v-if="!m.founder && actions.hasPerm('PUT /api/account/member/:username')"
+                      v-if="!m.founder && portal.hasPerm('PUT /api/account/member/:username')"
                       class="btn-icon text-blue-600 hover:bg-blue-50" 
                       title="编辑" 
                       @click="openEditMember(m)"
@@ -175,7 +173,7 @@ export default toNative(Members)
                       <i class="fas fa-pen text-xs"></i>
                     </button>
                     <button 
-                      v-if="!m.founder && actions.hasPerm('DELETE /api/account/member/:username')"
+                      v-if="!m.founder && portal.hasPerm('DELETE /api/account/member/:username')"
                       class="btn-icon text-red-600 hover:bg-red-50" 
                       title="删除" 
                       @click="handleDeleteMember(m)"
@@ -211,8 +209,8 @@ export default toNative(Members)
             </div>
             <!-- 家目录 -->
             <div class="flex items-start gap-2 mb-3">
-              <span class="text-xs text-slate-400 flex-shrink-0 mt-1">家目录</span>
-              <code class="text-xs bg-slate-100 px-2 py-1 rounded break-all">{{ m.homeDirectory }}</code>
+              <span class="text-xs text-slate-400 flex-shrink-0 mt-0.5">家目录</span>
+              <code class="text-xs bg-slate-100 px-2 py-0.5 rounded break-all">{{ m.homeDirectory }}</code>
             </div>
             <!-- 路由权限 -->
             <div class="flex items-center gap-2 mb-3">
@@ -223,7 +221,7 @@ export default toNative(Members)
             <!-- 底部：操作按鈕 -->
             <div class="flex flex-wrap gap-1.5 pt-2 border-t border-slate-100">
               <button 
-                v-if="!m.founder && actions.hasPerm('PUT /api/account/member/:username')"
+                v-if="!m.founder && portal.hasPerm('PUT /api/account/member/:username')"
                 class="btn-icon text-blue-600 hover:bg-blue-50" 
                 title="编辑" 
                 @click="openEditMember(m)"
@@ -231,7 +229,7 @@ export default toNative(Members)
                 <i class="fas fa-pen text-xs"></i><span class="text-xs ml-1">编辑</span>
               </button>
               <button 
-                v-if="!m.founder && actions.hasPerm('DELETE /api/account/member/:username')"
+                v-if="!m.founder && portal.hasPerm('DELETE /api/account/member/:username')"
                 class="btn-icon text-red-600 hover:bg-red-50" 
                 title="删除" 
                 @click="handleDeleteMember(m)"

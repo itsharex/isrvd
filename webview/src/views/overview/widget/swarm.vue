@@ -1,15 +1,14 @@
 <script lang="ts">
-import { Component, Inject, Vue, toNative } from 'vue-facing-decorator'
-
-import { APP_ACTIONS_KEY } from '@/store/state'
-import type { AppActions } from '@/store/state'
+import { Component, Vue, toNative } from 'vue-facing-decorator'
 
 import api from '@/service/api'
 import type { SwarmInfo } from '@/service/types'
 
+import { usePortal } from '@/stores'
+
 @Component
 class SwarmOverview extends Vue {
-    @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
+    portal = usePortal()
 
     // ─── 数据属性 ───
     swarmInfo: SwarmInfo | null = null
@@ -35,7 +34,7 @@ class SwarmOverview extends Vue {
             const res = await api.swarmInfo()
             this.swarmInfo = res.payload ?? null
         } catch {
-            this.actions.showNotification('error', '获取 Swarm 信息失败，请确认集群已初始化')
+            this.portal.showNotification('error', '获取 Swarm 信息失败，请确认集群已初始化')
             this.swarmInfo = null
         }
         this.loading = false
@@ -58,7 +57,7 @@ export default toNative(SwarmOverview)
           class="rounded-xl border border-slate-200 bg-white p-4 hover:shadow-md transition-shadow"
         >
           <div class="flex flex-col items-center gap-2 text-center">
-            <div :class="['w-10 h-10 rounded-xl flex items-center justify-center', card.bgColor]">
+            <div :class="['w-9 h-9 rounded-lg flex items-center justify-center', card.bgColor]">
               <i :class="['fas', card.icon, 'text-white']"></i>
             </div>
             <p class="text-2xl font-bold text-slate-800">{{ swarmInfo[card.key] ?? 0 }}</p>

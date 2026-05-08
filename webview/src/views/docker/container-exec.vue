@@ -1,12 +1,11 @@
 <script lang="ts">
-import { Component, Inject, Ref, Vue, toNative } from 'vue-facing-decorator'
-
-import { APP_ACTIONS_KEY, APP_STATE_KEY } from '@/store/state'
-import type { AppActions, AppState } from '@/store/state'
+import { Component, Ref, Vue, toNative } from 'vue-facing-decorator'
 
 import type { DockerContainerInfo } from '@/service/types'
 
 import * as ContainerExec from '@/helper/container-exec'
+
+import { usePortal } from '@/stores'
 
 import ContainerNav from './widget/container-nav.vue'
 
@@ -14,8 +13,7 @@ import ContainerNav from './widget/container-nav.vue'
     components: { ContainerNav }
 })
 class ContainerTerminal extends Vue {
-    @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
-    @Inject({ from: APP_STATE_KEY }) readonly state!: AppState
+    portal = usePortal()
 
     // ─── Refs ───
     @Ref readonly xtermRef!: HTMLDivElement
@@ -38,7 +36,7 @@ class ContainerTerminal extends Vue {
     handleTerminalConnect() {
         if (this.terminalConnected || !this.container) return
         this.terminalConnected = true
-        ContainerExec.create(this.xtermRef, this.state.token ?? '', this.containerId, this.terminalShell)
+        ContainerExec.create(this.xtermRef, this.portal.token ?? '', this.containerId, this.terminalShell)
     }
 
     handleTerminalDisconnect() {

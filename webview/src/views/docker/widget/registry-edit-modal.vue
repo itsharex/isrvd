@@ -1,13 +1,12 @@
 <script lang="ts">
-import { Component, Inject, Vue, toNative } from 'vue-facing-decorator'
-
-import { APP_ACTIONS_KEY } from '@/store/state'
-import type { AppActions } from '@/store/state'
+import { Component, Vue, toNative } from 'vue-facing-decorator'
 
 import api from '@/service/api'
 import type { DockerRegistryInfo, DockerRegistryUpsert } from '@/service/types'
 
 import BaseModal from '@/component/modal.vue'
+
+import { usePortal } from '@/stores'
 
 @Component({
     expose: ['show'],
@@ -15,7 +14,7 @@ import BaseModal from '@/component/modal.vue'
     emits: ['success']
 })
 class RegistryEditModal extends Vue {
-    @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
+    portal = usePortal()
 
     // ─── 数据属性 ───
     isOpen = false
@@ -57,10 +56,10 @@ class RegistryEditModal extends Vue {
         try {
             if (this.isEdit) {
                 await api.dockerRegistryUpdate(this.originalUrl, this.formData)
-                this.actions.showNotification('success', '仓库更新成功')
+                this.portal.showNotification('success', '仓库更新成功')
             } else {
                 await api.dockerRegistryCreate(this.formData)
-                this.actions.showNotification('success', '仓库添加成功')
+                this.portal.showNotification('success', '仓库添加成功')
             }
             this.isOpen = false
             this.$emit('success')

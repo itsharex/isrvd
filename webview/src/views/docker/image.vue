@@ -1,17 +1,16 @@
 <script lang="ts">
-import { Component, Inject, Vue, toNative } from 'vue-facing-decorator'
-
-import { APP_ACTIONS_KEY } from '@/store/state'
-import type { AppActions } from '@/store/state'
+import { Component, Vue, toNative } from 'vue-facing-decorator'
 
 import api from '@/service/api'
 import type { DockerImageInspect } from '@/service/types'
 
 import { formatFileSize, formatTime } from '@/helper/utils'
 
+import { usePortal } from '@/stores'
+
 @Component
 class ImageDetail extends Vue {
-    @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
+    portal = usePortal()
 
     // ─── 数据属性 ───
     inspectData: DockerImageInspect | null = null
@@ -30,7 +29,7 @@ class ImageDetail extends Vue {
             const res = await api.dockerImage(this.imageId)
             this.inspectData = res.payload ?? null
         } catch {
-            this.actions.showNotification('error', '获取镜像详情失败')
+            this.portal.showNotification('error', '获取镜像详情失败')
         }
         this.loading = false
     }
@@ -57,7 +56,7 @@ export default toNative(ImageDetail)
             </div>
             <div>
               <h1 class="text-lg font-semibold text-slate-800">镜像详情</h1>
-              <p class="text-xs text-slate-500 font-mono truncate max-w-xs">{{ imageId }}</p>
+              <p class="text-xs text-slate-600 font-mono truncate max-w-xs">{{ imageId }}</p>
             </div>
           </div>
           <div class="flex items-center gap-2">
@@ -74,7 +73,7 @@ export default toNative(ImageDetail)
             </div>
             <div class="min-w-0">
               <h1 class="text-lg font-semibold text-slate-800 truncate">镜像详情</h1>
-              <p class="text-xs text-slate-500 font-mono truncate">{{ imageId }}</p>
+              <p class="text-xs text-slate-600 font-mono truncate">{{ imageId }}</p>
             </div>
           </div>
           <div class="flex items-center gap-1 flex-shrink-0">
@@ -128,13 +127,13 @@ export default toNative(ImageDetail)
           </div>
         </div>
 
-          <!-- 标签 -->
-          <div v-if="inspectData.repoTags && inspectData.repoTags.length > 0">
-            <h2 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">标签</h2>
-            <div class="space-y-1">
-              <div v-for="tag in inspectData.repoTags" :key="tag" class="text-xs font-mono text-slate-700">{{ tag }}</div>
-            </div>
+        <!-- 标签 -->
+        <div v-if="inspectData.repoTags && inspectData.repoTags.length > 0">
+          <h2 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">标签</h2>
+          <div class="space-y-1">
+            <div v-for="tag in inspectData.repoTags" :key="tag" class="text-xs font-mono text-slate-700">{{ tag }}</div>
           </div>
+        </div>
 
         <!-- Digest -->
         <div v-if="inspectData.repoDigests && inspectData.repoDigests.length > 0">
@@ -160,10 +159,10 @@ export default toNative(ImageDetail)
               <label class="block text-xs text-slate-500 mb-1">CMD</label>
               <code class="block px-3 py-2 bg-slate-50 rounded-lg text-xs font-mono text-slate-700">{{ inspectData.cmd.join(' ') }}</code>
             </div>
-              <div v-if="inspectData.exposedPorts && inspectData.exposedPorts.length > 0">
-                <label class="block text-xs text-slate-500 mb-1">暴露端口</label>
-                <div class="text-xs font-mono text-slate-700">{{ inspectData.exposedPorts.join(', ') }}</div>
-              </div>
+            <div v-if="inspectData.exposedPorts && inspectData.exposedPorts.length > 0">
+              <label class="block text-xs text-slate-500 mb-1">暴露端口</label>
+              <div class="text-xs font-mono text-slate-700">{{ inspectData.exposedPorts.join(', ') }}</div>
+            </div>
             <div v-if="!inspectData.workingDir && !inspectData.entrypoint?.length && !inspectData.cmd?.length && !inspectData.exposedPorts?.length" class="text-sm text-slate-400">
               无运行配置
             </div>
@@ -206,14 +205,14 @@ export default toNative(ImageDetail)
             >
               <div class="flex items-start gap-2">
                 <!-- 层序号 + 类型标记 -->
-                  <div class="flex items-center gap-1.5 shrink-0 mt-0.5">
-                    <span
-                      class="w-6 h-6 rounded flex items-center justify-center text-xs font-bold"
-                      :class="layer.empty ? 'bg-slate-100 text-slate-400' : 'bg-blue-50 text-blue-600'"
-                    >{{ inspectData.layerDetails.length - idx }}</span>
-                    <span v-if="!layer.empty" class="text-xs text-slate-500">{{ formatFileSize(layer.size) }}</span>
-                    <span v-else class="text-xs text-slate-400">空层</span>
-                  </div>
+                <div class="flex items-center gap-1.5 shrink-0 mt-0.5">
+                  <span
+                    class="w-6 h-6 rounded flex items-center justify-center text-xs font-bold"
+                    :class="layer.empty ? 'bg-slate-100 text-slate-400' : 'bg-blue-50 text-blue-600'"
+                  >{{ inspectData.layerDetails.length - idx }}</span>
+                  <span v-if="!layer.empty" class="text-xs text-slate-500">{{ formatFileSize(layer.size) }}</span>
+                  <span v-else class="text-xs text-slate-400">空层</span>
+                </div>
                 <!-- 构建命令 -->
                 <div class="flex-1 min-w-0">
                   <code class="text-xs font-mono text-slate-700 break-all leading-relaxed">{{ layer.createdBy || '(无命令)' }}</code>
@@ -229,7 +228,7 @@ export default toNative(ImageDetail)
 
       <!-- Empty -->
       <div v-else class="flex flex-col items-center justify-center py-20">
-        <div class="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center mb-4">
+        <div class="w-16 h-16 rounded-lg bg-slate-100 flex items-center justify-center mb-4">
           <i class="fas fa-compact-disc text-4xl text-slate-300"></i>
         </div>
         <p class="text-slate-600 font-medium">未找到镜像详情</p>

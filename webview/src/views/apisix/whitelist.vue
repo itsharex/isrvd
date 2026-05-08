@@ -1,15 +1,14 @@
 <script lang="ts">
-import { Component, Inject, Vue, toNative } from 'vue-facing-decorator'
-
-import { APP_ACTIONS_KEY } from '@/store/state'
-import type { AppActions } from '@/store/state'
+import { Component, Vue, toNative } from 'vue-facing-decorator'
 
 import api from '@/service/api'
 import type { ApisixRoute } from '@/service/types'
 
+import { usePortal } from '@/stores'
+
 @Component
 class Whitelist extends Vue {
-    @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
+    portal = usePortal()
 
     // ─── 数据属性 ───
     whitelist: ApisixRoute[] = []
@@ -33,7 +32,7 @@ class Whitelist extends Vue {
         try {
             this.whitelist = (await api.apisixWhitelist()).payload || []
         } catch {
-            this.actions.showNotification('error', '加载白名单失败')
+            this.portal.showNotification('error', '加载白名单失败')
         }
         this.loading = false
     }
@@ -49,7 +48,7 @@ class Whitelist extends Vue {
     revokeConsumer(route: ApisixRoute, consumer: string) {
         const routeId = route.id
         if (!routeId) return
-        this.actions.showConfirm({
+        this.portal.showConfirm({
             title: '撤销白名单',
             message: `确定要将用户 <strong class="text-slate-900">${consumer}</strong> 从路由 <strong class="text-slate-900">${route.name || routeId}</strong> 的白名单中移除吗？`,
             icon: 'fa-user-minus',
@@ -58,7 +57,7 @@ class Whitelist extends Vue {
             danger: true,
             onConfirm: async () => {
                 await api.apisixWhitelistRevoke({ routeId, consumer })
-                this.actions.showNotification('success', '撤销成功')
+                this.portal.showNotification('success', '撤销成功')
                 this.loadWhitelist()
             }
         })
@@ -132,7 +131,7 @@ export default toNative(Whitelist)
 
       <!-- Empty -->
       <div v-else-if="filteredWhitelist.length === 0" class="flex flex-col items-center justify-center py-20">
-        <div class="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center mb-4">
+        <div class="w-16 h-16 rounded-lg bg-slate-100 flex items-center justify-center mb-4">
           <i class="fas fa-shield-halved text-4xl text-slate-300"></i>
         </div>
         <p class="text-slate-600 font-medium mb-1">暂无白名单数据</p>
@@ -171,7 +170,7 @@ export default toNative(Whitelist)
                     <span v-for="consumer in (route.consumers || [])" :key="consumer" class="inline-flex items-center gap-1.5 px-2 py-0.5 bg-amber-50 text-amber-800 rounded-lg text-xs group">
                       <i class="fas fa-user text-amber-500 text-[10px]"></i>
                       <span class="break-all">{{ consumer }}</span>
-                      <button v-if="actions.hasPerm('POST /api/apisix/whitelist/revoke')" class="opacity-0 group-hover:opacity-100 hover:text-red-500 transition-all" title="撤销" @click="revokeConsumer(route, consumer)"><i class="fas fa-xmark text-[10px]"></i></button>
+                      <button v-if="portal.hasPerm('POST /api/apisix/whitelist/revoke')" class="opacity-0 group-hover:opacity-100 hover:text-red-500 transition-all" title="撤销" @click="revokeConsumer(route, consumer)"><i class="fas fa-xmark text-[10px]"></i></button>
                     </span>
                   </div>
                 </td>
@@ -210,7 +209,7 @@ export default toNative(Whitelist)
                 <span v-for="consumer in (route.consumers || [])" :key="consumer" class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 text-amber-800 rounded-lg text-xs">
                   <i class="fas fa-user text-amber-500 text-[10px]"></i>
                   <span class="break-all">{{ consumer }}</span>
-                  <button v-if="actions.hasPerm('POST /api/apisix/whitelist/revoke')" class="hover:text-red-500 transition-colors" title="撤销" @click="revokeConsumer(route, consumer)"><i class="fas fa-xmark text-[10px]"></i></button>
+                  <button v-if="portal.hasPerm('POST /api/apisix/whitelist/revoke')" class="hover:text-red-500 transition-colors" title="撤销" @click="revokeConsumer(route, consumer)"><i class="fas fa-xmark text-[10px]"></i></button>
                 </span>
               </div>
             </div>

@@ -1,15 +1,14 @@
 <script lang="ts">
-import { Component, Inject, Vue, toNative } from 'vue-facing-decorator'
-
-import { APP_ACTIONS_KEY } from '@/store/state'
-import type { AppActions } from '@/store/state'
+import { Component, Vue, toNative } from 'vue-facing-decorator'
 
 import api from '@/service/api'
 import type { DockerInfo } from '@/service/types'
 
+import { usePortal } from '@/stores'
+
 @Component
 class DockerOverview extends Vue {
-    @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
+    portal = usePortal()
 
     // ─── 数据属性 ───
     info: DockerInfo | null = null
@@ -36,7 +35,7 @@ class DockerOverview extends Vue {
             const res = await api.dockerInfo()
             this.info = res.payload ?? null
         } catch {
-            this.actions.showNotification('error', '加载 Docker 信息失败')
+            this.portal.showNotification('error', '加载 Docker 信息失败')
             this.info = null
         }
         this.loading = false
@@ -62,7 +61,7 @@ export default toNative(DockerOverview)
         class="rounded-xl border border-slate-200 bg-white p-4 hover:shadow-md transition-shadow"
       >
         <div class="flex flex-col items-center gap-2 text-center">
-          <div :class="['w-10 h-10 rounded-xl flex items-center justify-center', card.bgColor]">
+          <div :class="['w-9 h-9 rounded-lg flex items-center justify-center', card.bgColor]">
             <i :class="['fas', card.icon, 'text-white']"></i>
           </div>
           <p class="text-2xl font-bold text-slate-800">{{ info[card.key] || 0 }}</p>

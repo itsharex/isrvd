@@ -7,6 +7,7 @@ import (
 	"github.com/compose-spec/compose-go/v2/types"
 	"github.com/rehiy/pango/logman"
 
+	pkgdocker "isrvd/pkgs/docker"
 	"isrvd/pkgs/compose"
 )
 
@@ -119,11 +120,8 @@ func (s *Service) deploySwarmProject(ctx context.Context, project *types.Project
 			return items, fmt.Errorf("创建服务 %s 失败: %w", req.Name, err)
 		}
 
-		if len(id) > 12 {
-			id = id[:12]
-		}
-		items = append(items, fmt.Sprintf("%s (%s)", req.Name, id))
-		logman.Info("Swarm service deployed", "service", svc.Name, "id", id)
+		items = append(items, fmt.Sprintf("%s (%s)", req.Name, pkgdocker.ShortID(id)))
+		logman.Info("Swarm service deployed", "service", svc.Name, "id", pkgdocker.ShortID(id))
 	}
 	return items, nil
 }

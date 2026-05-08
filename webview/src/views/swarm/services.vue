@@ -1,11 +1,10 @@
 <script lang="ts">
-import { Component, Inject, Ref, Vue, toNative } from 'vue-facing-decorator'
-
-import { APP_ACTIONS_KEY } from '@/store/state'
-import type { AppActions } from '@/store/state'
+import { Component, Ref, Vue, toNative } from 'vue-facing-decorator'
 
 import api from '@/service/api'
 import type { SwarmServiceInfo } from '@/service/types'
+
+import { usePortal } from '@/stores'
 
 import CreateServiceModal from './widget/service-create-modal.vue'
 import ServiceEditModal from './widget/service-edit-modal.vue'
@@ -15,7 +14,7 @@ import ScaleModal from './widget/service-scale-modal.vue'
     components: { ScaleModal, CreateServiceModal, ServiceEditModal }
 })
 class Services extends Vue {
-    @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
+    portal = usePortal()
 
     // ─── Refs ───
     @Ref readonly scaleModalRef!: InstanceType<typeof ScaleModal>
@@ -45,18 +44,18 @@ class Services extends Vue {
             const res = await api.swarmServiceList()
             this.services = res.payload || []
         } catch {
-            this.actions.showNotification('error', '获取服务列表失败')
+            this.portal.showNotification('error', '获取服务列表失败')
         }
         this.servicesLoading = false
     }
 
     handleScaleSuccess() {
-        this.actions.showNotification('success', '服务扩缩容成功')
+        this.portal.showNotification('success', '服务扩缩容成功')
         this.loadServices()
     }
 
     handleCreateSuccess() {
-        this.actions.showNotification('success', '服务创建成功')
+        this.portal.showNotification('success', '服务创建成功')
         this.loadServices()
     }
 
@@ -65,7 +64,7 @@ class Services extends Vue {
     }
 
     handleServiceRemove(svc: SwarmServiceInfo) {
-        this.actions.showConfirm({
+        this.portal.showConfirm({
             title: '删除服务',
             message: `确定要删除服务 <strong class="text-slate-900">${svc.name}</strong> 吗？`,
             icon: 'fa-trash',
@@ -74,14 +73,14 @@ class Services extends Vue {
             danger: true,
             onConfirm: async () => {
                 await api.swarmServiceAction(svc.id, 'remove')
-                this.actions.showNotification('success', '服务删除成功')
+                this.portal.showNotification('success', '服务删除成功')
                 this.loadServices()
             }
         })
     }
 
     handleRedeploy(svc: SwarmServiceInfo) {
-        this.actions.showConfirm({
+        this.portal.showConfirm({
             title: '强制重部署',
             message: `重新拉取并部署服务 <strong class="text-slate-900">${svc.name}</strong>，正在运行的副本会滚动更新。`,
             icon: 'fa-arrows-rotate',
@@ -89,7 +88,7 @@ class Services extends Vue {
             confirmText: '确认重部署',
             onConfirm: async () => {
                 await api.swarmServiceRedeploy(svc.id)
-                this.actions.showNotification('success', '已触发强制重部署')
+                this.portal.showNotification('success', '已触发强制重部署')
                 this.loadServices()
             }
         })
@@ -123,7 +122,7 @@ export default toNative(Services)
             <button class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors" @click="loadServices">
               <i class="fas fa-rotate"></i>刷新
             </button>
-            <button v-if="actions.hasPerm('POST /api/swarm/service')" class="px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-medium flex items-center gap-1.5 transition-colors" @click="openCreateModal">
+            <button v-if="portal.hasPerm('POST /api/swarm/service')" class="px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-medium flex items-center gap-1.5 transition-colors" @click="openCreateModal">
               <i class="fas fa-plus"></i>创建
             </button>
           </div>
@@ -143,7 +142,7 @@ export default toNative(Services)
             <button class="w-9 h-9 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-600 transition-colors" title="刷新" @click="loadServices">
               <i class="fas fa-rotate text-sm"></i>
             </button>
-            <button v-if="actions.hasPerm('POST /api/swarm/service')" class="w-9 h-9 rounded-lg bg-emerald-500 hover:bg-emerald-600 flex items-center justify-center text-white transition-colors" title="创建" @click="openCreateModal">
+            <button v-if="portal.hasPerm('POST /api/swarm/service')" class="w-9 h-9 rounded-lg bg-emerald-500 hover:bg-emerald-600 flex items-center justify-center text-white transition-colors" title="创建" @click="openCreateModal">
               <i class="fas fa-plus text-sm"></i>
             </button>
           </div>
@@ -195,12 +194,12 @@ export default toNative(Services)
                 <td class="px-4 py-3 text-sm text-slate-600">{{ svc.updatedAt?.slice(0, 16).replace('T', ' ') }}</td>
                 <td class="px-4 py-3">
                   <div class="flex justify-end items-center gap-1">
-                    <button v-if="actions.hasPerm('GET /api/swarm/service/:id')" class="btn-icon text-slate-600 hover:bg-slate-50" title="详情" @click="$router.push({ name: 'swarm-service-info', params: { id: svc.id } })"><i class="fas fa-circle-info text-xs"></i></button>
-                    <button v-if="actions.hasPerm('GET /api/swarm/service/:id/logs')" class="btn-icon text-slate-600 hover:bg-slate-50" title="日志" @click="$router.push({ name: 'swarm-service-logs', params: { id: svc.id } })"><i class="fas fa-file-lines text-xs"></i></button>
-                    <button v-if="svc.mode === 'replicated' && actions.hasPerm('POST /api/swarm/service/:id/action')" class="btn-icon text-indigo-600 hover:bg-indigo-50" title="扩缩容" @click="openScaleModal(svc)"><i class="fas fa-up-right-and-down-left-from-center text-xs"></i></button>
-                    <button v-if="actions.hasPerm('POST /api/swarm/service/:id/force-update')" class="btn-icon text-blue-600 hover:bg-blue-50" title="强制重部署" @click="handleRedeploy(svc)"><i class="fas fa-arrows-rotate text-xs"></i></button>
-                    <button v-if="actions.hasPerm('GET /api/compose/swarm/:name') && actions.hasPerm('POST /api/compose/swarm/:name/redeploy')" class="btn-icon text-blue-600 hover:bg-blue-50" title="编辑" @click="openEditModal(svc)"><i class="fas fa-pen text-xs"></i></button>
-                    <button v-if="actions.hasPerm('POST /api/swarm/service/:id/action')" class="btn-icon text-red-600 hover:bg-red-50" title="删除" @click="handleServiceRemove(svc)"><i class="fas fa-trash text-xs"></i></button>
+                    <button v-if="portal.hasPerm('GET /api/swarm/service/:id')" class="btn-icon text-slate-600 hover:bg-slate-50" title="详情" @click="$router.push({ name: 'swarm-service-info', params: { id: svc.id } })"><i class="fas fa-circle-info text-xs"></i></button>
+                    <button v-if="portal.hasPerm('GET /api/swarm/service/:id/logs')" class="btn-icon text-slate-600 hover:bg-slate-50" title="日志" @click="$router.push({ name: 'swarm-service-logs', params: { id: svc.id } })"><i class="fas fa-file-lines text-xs"></i></button>
+                    <button v-if="svc.mode === 'replicated' && portal.hasPerm('POST /api/swarm/service/:id/action')" class="btn-icon text-indigo-600 hover:bg-indigo-50" title="扩缩容" @click="openScaleModal(svc)"><i class="fas fa-up-right-and-down-left-from-center text-xs"></i></button>
+                    <button v-if="portal.hasPerm('POST /api/swarm/service/:id/force-update')" class="btn-icon text-blue-600 hover:bg-blue-50" title="强制重部署" @click="handleRedeploy(svc)"><i class="fas fa-arrows-rotate text-xs"></i></button>
+                    <button v-if="portal.hasPerm('GET /api/compose/swarm/:name') && portal.hasPerm('POST /api/compose/swarm/:name/redeploy')" class="btn-icon text-blue-600 hover:bg-blue-50" title="编辑" @click="openEditModal(svc)"><i class="fas fa-pen text-xs"></i></button>
+                    <button v-if="portal.hasPerm('POST /api/swarm/service/:id/action')" class="btn-icon text-red-600 hover:bg-red-50" title="删除" @click="handleServiceRemove(svc)"><i class="fas fa-trash text-xs"></i></button>
                   </div>
                 </td>
               </tr>
@@ -245,7 +244,7 @@ export default toNative(Services)
             
             <!-- 端口信息 -->
             <div v-if="svc.ports && svc.ports.length" class="flex items-start gap-2 mb-3">
-              <span class="text-xs text-slate-400 flex-shrink-0">端口</span>
+              <span class="text-xs text-slate-400 flex-shrink-0 mt-0.5">端口</span>
               <div class="font-mono text-xs text-slate-500">
                 <div v-for="p in svc.ports" :key="p.publishedPort">{{ p.publishedPort }}:{{ p.targetPort }}/{{ p.protocol }}</div>
               </div>
@@ -259,22 +258,22 @@ export default toNative(Services)
             
             <!-- 底部：操作按钮 -->
             <div class="flex flex-wrap gap-1.5 pt-2 border-t border-slate-100">
-              <button v-if="actions.hasPerm('GET /api/swarm/service/:id')" class="btn-icon text-slate-600 hover:bg-slate-50" title="详情" @click="$router.push({ name: 'swarm-service-info', params: { id: svc.id } })">
+              <button v-if="portal.hasPerm('GET /api/swarm/service/:id')" class="btn-icon text-slate-600 hover:bg-slate-50" title="详情" @click="$router.push({ name: 'swarm-service-info', params: { id: svc.id } })">
                 <i class="fas fa-circle-info text-xs"></i><span class="text-xs ml-1">详情</span>
               </button>
-              <button v-if="actions.hasPerm('GET /api/swarm/service/:id/logs')" class="btn-icon text-slate-600 hover:bg-slate-50" title="日志" @click="$router.push({ name: 'swarm-service-logs', params: { id: svc.id } })">
+              <button v-if="portal.hasPerm('GET /api/swarm/service/:id/logs')" class="btn-icon text-slate-600 hover:bg-slate-50" title="日志" @click="$router.push({ name: 'swarm-service-logs', params: { id: svc.id } })">
                 <i class="fas fa-file-lines text-xs"></i><span class="text-xs ml-1">日志</span>
               </button>
-              <button v-if="svc.mode === 'replicated' && actions.hasPerm('POST /api/swarm/service/:id/action')" class="btn-icon text-indigo-600 hover:bg-indigo-50" title="扩缩容" @click="openScaleModal(svc)">
+              <button v-if="svc.mode === 'replicated' && portal.hasPerm('POST /api/swarm/service/:id/action')" class="btn-icon text-indigo-600 hover:bg-indigo-50" title="扩缩容" @click="openScaleModal(svc)">
                 <i class="fas fa-up-right-and-down-left-from-center text-xs"></i><span class="text-xs ml-1">扩缩容</span>
               </button>
-              <button v-if="actions.hasPerm('POST /api/swarm/service/:id/force-update')" class="btn-icon text-blue-600 hover:bg-blue-50" title="强制重部署" @click="handleRedeploy(svc)">
+              <button v-if="portal.hasPerm('POST /api/swarm/service/:id/force-update')" class="btn-icon text-blue-600 hover:bg-blue-50" title="强制重部署" @click="handleRedeploy(svc)">
                 <i class="fas fa-arrows-rotate text-xs"></i><span class="text-xs ml-1">重部署</span>
               </button>
-              <button v-if="actions.hasPerm('GET /api/compose/swarm/:name') && actions.hasPerm('POST /api/compose/swarm/:name/redeploy')" class="btn-icon text-blue-600 hover:bg-blue-50" title="编辑" @click="openEditModal(svc)">
+              <button v-if="portal.hasPerm('GET /api/compose/swarm/:name') && portal.hasPerm('POST /api/compose/swarm/:name/redeploy')" class="btn-icon text-blue-600 hover:bg-blue-50" title="编辑" @click="openEditModal(svc)">
                 <i class="fas fa-pen text-xs"></i><span class="text-xs ml-1">编辑</span>
               </button>
-              <button v-if="actions.hasPerm('POST /api/swarm/service/:id/action')" class="btn-icon text-red-600 hover:bg-red-50" title="删除" @click="handleServiceRemove(svc)">
+              <button v-if="portal.hasPerm('POST /api/swarm/service/:id/action')" class="btn-icon text-red-600 hover:bg-red-50" title="删除" @click="handleServiceRemove(svc)">
                 <i class="fas fa-trash text-xs"></i><span class="text-xs ml-1">删除</span>
               </button>
             </div>
@@ -282,7 +281,7 @@ export default toNative(Services)
         </div>
       </div>
       <div v-else class="flex flex-col items-center justify-center py-20">
-        <div class="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center mb-4">
+        <div class="w-16 h-16 rounded-lg bg-slate-100 flex items-center justify-center mb-4">
           <i class="fas fa-cubes text-4xl text-slate-300"></i>
         </div>
         <p class="text-slate-600 font-medium mb-1">暂无服务</p>

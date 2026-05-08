@@ -10,6 +10,8 @@ import type { DockerImageInfo, DockerNetworkInfo } from '@/service/types'
 
 import BaseModal from '@/component/modal.vue'
 
+import { usePortal } from '@/stores'
+
 import CapSelect from './cap-select.vue'
 import ImageSelect from './image-select.vue'
 
@@ -19,7 +21,7 @@ import ImageSelect from './image-select.vue'
     emits: ['success']
 })
 class ContainerCreateModal extends Vue {
-    @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
+    portal = usePortal()
 
     // ─── 数据属性 ───
     isOpen = false
@@ -141,7 +143,7 @@ class ContainerCreateModal extends Vue {
     async handleConfirm() {
         const projectName = this.formData.name.trim()
         if (!projectName) {
-            this.actions.showNotification('error', '请填写容器名称')
+            this.portal.showNotification('error', '请填写容器名称')
             return
         }
 
@@ -151,7 +153,7 @@ class ContainerCreateModal extends Vue {
         this.modalLoading = true
         try {
             await api.composeDockerDeploy({ content, projectName, target: 'docker' })
-            this.actions.showNotification('success', '容器创建成功')
+            this.portal.showNotification('success', '容器创建成功')
             this.isOpen = false
             this.$emit('success')
         } catch {}
@@ -171,8 +173,6 @@ export default toNative(ContainerCreateModal)
     show-footer
     @confirm="handleConfirm"
   >
-    <template #confirm-text>创建</template>
-
     <form class="space-y-4" @submit.prevent="handleConfirm">
       <!-- 基础设置 -->
       <div class="grid grid-cols-2 gap-3">
@@ -263,7 +263,7 @@ export default toNative(ContainerCreateModal)
         <button type="button" class="flex items-center gap-2 text-sm text-slate-600 hover:text-slate-800" @click="showSecurity = !showSecurity">
           <i :class="['fas fa-chevron-down text-xs transition-transform', showSecurity ? 'rotate-180' : '']"></i>
           安全配置
-          <span v-if="formData.privileged || formData.capAdd?.length || formData.capDrop?.length" class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700">
+          <span v-if="formData.privileged || formData.capAdd?.length || formData.capDrop?.length" class="inline-flex items-center px-1.5 py-0.5 rounded-lg text-xs font-medium bg-amber-100 text-amber-700">
             {{ [formData.privileged ? '特权' : '', formData.capAdd?.length ? `+${formData.capAdd.length}` : '', formData.capDrop?.length ? `-${formData.capDrop.length}` : ''].filter(Boolean).join(' ') }}
           </span>
         </button>
@@ -286,5 +286,7 @@ export default toNative(ContainerCreateModal)
         </div>
       </div>
     </form>
+
+    <template #confirm-text>确认创建</template>
   </BaseModal>
 </template>

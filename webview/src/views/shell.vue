@@ -1,14 +1,13 @@
 <script lang="ts">
-import { Component, Inject, Ref, Vue, toNative } from 'vue-facing-decorator'
-
-import { APP_STATE_KEY } from '@/store/state'
-import type { AppState } from '@/store/state'
+import { Component, Ref, Vue, toNative } from 'vue-facing-decorator'
 
 import * as ShellTerminal from '@/helper/shell'
 
+import { usePortal } from '@/stores'
+
 @Component
 class Shell extends Vue {
-    @Inject({ from: APP_STATE_KEY }) readonly state!: AppState
+    portal = usePortal()
 
     // ─── Refs ───
     @Ref readonly xtermRef!: HTMLDivElement
@@ -21,7 +20,7 @@ class Shell extends Vue {
     handleConnect() {
         if (this.connected) return
         this.connected = true
-        ShellTerminal.create(this.xtermRef, this.state.token || '', this.shellType)
+        ShellTerminal.create(this.xtermRef, this.portal.token || '', this.shellType)
     }
 
     handleDisconnect() {
@@ -41,7 +40,7 @@ export default toNative(Shell)
 
 <template>
   <div class="h-[calc(100vh-100px)]">
-    <div class="h-full bg-white rounded-2xl shadow-lg border border-slate-200/60 flex flex-col overflow-hidden">
+    <div class="h-full card flex flex-col overflow-hidden">
       <!-- Toolbar Bar -->
       <div class="bg-slate-50 border-b border-slate-200 px-4 md:px-6 py-3">
         <!-- 桌面端工具栏 -->

@@ -1,11 +1,10 @@
 <script lang="ts">
-import { Component, Inject, Vue, toNative } from 'vue-facing-decorator'
-
-import { APP_ACTIONS_KEY } from '@/store/state'
-import type { AppActions } from '@/store/state'
+import { Component, Vue, toNative } from 'vue-facing-decorator'
 
 import api from '@/service/api'
 import type { DockerContainerInfo } from '@/service/types'
+
+import { usePortal } from '@/stores'
 
 import ContainerNav from './widget/container-nav.vue'
 
@@ -13,7 +12,7 @@ import ContainerNav from './widget/container-nav.vue'
     components: { ContainerNav }
 })
 class ContainerLogs extends Vue {
-    @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
+    portal = usePortal()
 
     // ─── 数据属性 ───
     container: DockerContainerInfo | null = null
@@ -54,7 +53,7 @@ export default toNative(ContainerLogs)
       <ContainerNav :container-id="containerId" @loaded="onContainerLoaded" />
       <!-- 内容区域 -->
       <div class="p-4 md:p-6">
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
+        <div class="flex items-center justify-between gap-3 mb-4">
           <div class="flex items-center gap-3">
             <label class="text-sm text-slate-600">显示行数</label>
             <select v-model="logTail" class="w-28 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs text-slate-700 hover:border-slate-300 focus:outline-none focus:border-slate-400">
@@ -75,7 +74,7 @@ export default toNative(ContainerLogs)
         </div>
         <pre v-else-if="logContent" class="bg-slate-900 text-slate-100 rounded-xl p-3 md:p-4 text-xs font-mono overflow-auto max-h-[600px] whitespace-pre-wrap break-all">{{ logContent }}</pre>
         <div v-else class="flex flex-col items-center justify-center py-16">
-          <div class="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mb-3">
+          <div class="w-16 h-16 rounded-lg bg-slate-100 flex items-center justify-center mb-4">
             <i class="fas fa-file-lines text-2xl text-slate-300"></i>
           </div>
           <p class="text-slate-500 text-sm">暂无日志</p>

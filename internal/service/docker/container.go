@@ -30,11 +30,7 @@ func (s *Service) ContainerCreate(ctx context.Context, req pkgdocker.ContainerCr
 	if err != nil {
 		return nil, err
 	}
-	shortID := id
-	if len(id) > 12 {
-		shortID = id[:12]
-	}
-	return &ContainerCreateResult{ID: shortID, Name: req.Name}, nil
+	return &ContainerCreateResult{ID: pkgdocker.ShortID(id), Name: req.Name}, nil
 }
 
 // ContainerStats 获取容器统计信息

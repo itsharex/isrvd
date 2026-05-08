@@ -1,16 +1,12 @@
 <script lang="ts">
-import { Component, Inject, Ref, Vue, toNative } from 'vue-facing-decorator'
-
-import { APP_ACTIONS_KEY } from '@/store/state'
-import type { AppActions } from '@/store/state'
-
-import { FILER_ACTIONS_KEY, FILER_STATE_KEY } from '@/store/filer'
-import type { FilerActions, FilerState } from '@/store/filer'
+import { Component, Ref, Vue, toNative } from 'vue-facing-decorator'
 
 import api from '@/service/api'
 import type { FilerFileInfo } from '@/service/types'
 
 import { downloadFile, formatFileSize, formatTime, getFileIcon, isEditableFile } from '@/helper/utils'
+
+import { usePortal } from '@/stores'
 
 import ChmodModal from './widget/chmod-modal.vue'
 import CreateModal from './widget/create-modal.vue'
@@ -29,9 +25,8 @@ import ZipModal from './widget/zip-modal.vue'
     }
 })
 class FileExplorer extends Vue {
-    @Inject({ from: APP_ACTIONS_KEY }) readonly appActions!: AppActions
-    @Inject({ from: FILER_STATE_KEY }) readonly filerState!: FilerState
-    @Inject({ from: FILER_ACTIONS_KEY }) readonly filerActions!: FilerActions
+    portal = usePortal()
+    get appActions() { return this.portal }
 
     // ─── Refs ───
     @Ref readonly modifyModalRef!: InstanceType<typeof ModifyModal>
@@ -52,17 +47,17 @@ class FileExplorer extends Vue {
 
     // ─── 计算属性 ───
     get files() {
-        return this.filerState.files
+        return this.portal.files
     }
 
     get paths() {
-        if (!this.filerState.currentPath || this.filerState.currentPath === '/') return []
-        return this.filerState.currentPath.split('/').filter((part: string) => part)
+        if (!this.portal.currentPath || this.portal.currentPath === '/') return []
+        return this.portal.currentPath.split('/').filter((part: string) => part)
     }
 
     // ─── 方法 ───
     navigateTo(path: string) {
-        this.filerActions.loadFiles(path)
+        this.portal.loadFiles(path)
     }
 
     async download(file: FilerFileInfo) {
@@ -71,12 +66,12 @@ class FileExplorer extends Vue {
     }
 
     refreshFiles() {
-        this.filerActions.loadFiles()
+        this.portal.loadFiles()
     }
 
     // ─── 生命周期 ───
     mounted() {
-        this.filerActions.loadFiles('/')
+        this.portal.loadFiles('/')
     }
 }
 
@@ -168,23 +163,23 @@ export default toNative(FileExplorer)
       </div>
 
       <!-- Loading State -->
-      <div v-if="filerState.loading" class="flex flex-col items-center justify-center py-20">
+      <div v-if="portal.filerLoading" class="flex flex-col items-center justify-center py-20">
         <div class="w-12 h-12 spinner mb-3"></div>
         <p class="text-slate-500">加载中...</p>
       </div>
 
       <!-- File List -->
-      <div v-else class="space-y-3">
+      <div v-else>
         <!-- Empty State -->
         <div v-if="files.length === 0" class="flex flex-col items-center justify-center py-20">
-          <div class="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center mb-4">
+          <div class="w-16 h-16 rounded-lg bg-slate-100 flex items-center justify-center mb-4">
             <i class="fas fa-folder-open text-4xl text-slate-300"></i>
           </div>
           <p class="text-slate-600 font-medium mb-1">此目录为空</p>
           <p class="text-sm text-slate-400">上传文件或创建新目录开始使用</p>
         </div>
         <!-- 桌面端表格视图 -->
-        <div class="hidden md:block overflow-x-auto">
+        <div v-else class="hidden md:block overflow-x-auto">
           <table class="w-full border-collapse">
             <thead>
               <tr class="bg-slate-50 border-b border-slate-200">
@@ -345,7 +340,7 @@ export default toNative(FileExplorer)
         </div>
 
         <!-- 移动端卡片视图 -->
-        <div class="md:hidden space-y-3 p-4">
+        <div v-if="files.length > 0" class="md:hidden space-y-3 p-4">
           <div 
             v-for="file in files" 
             :key="file.name"
@@ -388,8 +383,8 @@ export default toNative(FileExplorer)
 
             <!-- 权限 -->
             <div class="flex items-start gap-2 mb-3">
-              <span class="text-xs text-slate-400 flex-shrink-0 mt-1">权限</span>
-              <code class="text-xs bg-slate-100 px-2 py-1 rounded font-mono text-slate-700">{{ file.mode }}</code>
+              <span class="text-xs text-slate-400 flex-shrink-0 mt-0.5">权限</span>
+              <code class="text-xs bg-slate-100 px-2 py-0.5 rounded font-mono text-slate-700">{{ file.mode }}</code>
             </div>
 
             <!-- 底部：操作按钮 -->

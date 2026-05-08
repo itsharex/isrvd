@@ -1,8 +1,5 @@
 <script lang="ts">
-import { Component, Inject, Vue, toNative } from 'vue-facing-decorator'
-
-import { APP_ACTIONS_KEY } from '@/store/state'
-import type { AppActions } from '@/store/state'
+import { Component, Vue, toNative } from 'vue-facing-decorator'
 
 import api from '@/service/api'
 import type { SwarmServiceInfo } from '@/service/types'
@@ -11,13 +8,15 @@ import BaseModal from '@/component/modal.vue'
 
 import ComposeEditor from '@/views/compose/widget/compose-editor.vue'
 
+import { usePortal } from '@/stores'
+
 @Component({
     expose: ['show'],
     components: { BaseModal, ComposeEditor },
     emits: ['success']
 })
 class ServiceEditModal extends Vue {
-    @Inject({ from: APP_ACTIONS_KEY }) readonly actions!: AppActions
+    portal = usePortal()
 
     // ─── 数据属性 ───
     isOpen = false
@@ -46,7 +45,7 @@ class ServiceEditModal extends Vue {
         this.modalLoading = true
         try {
             await api.composeSwarmRedeploy(this.serviceName, { content: this.composeContent })
-            this.actions.showNotification('success', 'Swarm 服务配置更新成功，已重建服务')
+            this.portal.showNotification('success', 'Swarm 服务配置更新成功，已重建服务')
             this.isOpen = false
             this.$emit('success')
         } catch {}
@@ -65,10 +64,10 @@ export default toNative(ServiceEditModal)
     show-footer
     @confirm="handleConfirm"
   >
-    <template #confirm-text>更新并重建</template>
     <ComposeEditor
       v-model="composeContent"
       warning="更新配置后将会删除旧服务并重新创建，期间服务短暂不可用"
     />
+    <template #confirm-text>更新并重建</template>
   </BaseModal>
 </template>
