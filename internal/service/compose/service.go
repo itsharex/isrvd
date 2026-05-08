@@ -54,40 +54,36 @@ type Service struct {
 }
 
 var (
-	instance *Service
-	once     sync.Once
-	safeName = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9_.-]*$`)
+	instance   *Service
+	instanceMu sync.Mutex
+	safeName   = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9_.-]*$`)
 )
 
 // NewService 创建服务（单例，供 server 层调用）
+// 依赖未就绪时返回错误，下次调用可重试，直到依赖初始化完成
 func NewService() (*Service, error) {
-	var err error
-	once.Do(func() {
-		d := registry.DockerService
-		c := registry.ComposeService
-		s := registry.SwarmService
+	instanceMu.Lock()
+	defer instanceMu.Unlock()
 
-		if d == nil {
-			err = fmt.Errorf("docker 服务未初始化")
-			return
-		}
-		if c == nil {
-			err = fmt.Errorf("compose 包服务未初始化")
-			return
-		}
-
-		instance = &Service{
-			compose: c,
-			docker:  d,
-			swarm:   s,
-		}
-	})
-
-	if err != nil {
-		return nil, err
+	if instance != nil {
+		return instance, nil
 	}
-	if instance == nil {
-		return nil, fmt.Errorf("Compose 部署服务未初始化")
+
+	d := registry.DockerService
+	c := registry.ComposeService
+	s := registry.SwarmService
+
+	if d == nil {
+		return nil, fmt.Errorf("docker 服务未初始化")
+	}
+	if c == nil {
+		return nil, fmt.Errorf("compose 包服务未初始化")
+	}
+
+	instance = &Service{
+		compose: c,
+		docker:  d,
+		swarm:   s,
 	}
 	return instance, nil
 }
