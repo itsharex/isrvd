@@ -256,7 +256,7 @@ func (s *AuditService) openFile(date string) {
 
 // auditFilePath 返回指定日期的日志文件绝对路径。
 func auditFilePath(date string) string {
-	return filepath.Join(config.RootDirectory, "audit", date+".log")
+	return filepath.Join(config.Server.RootDirectory, "audit", date+".log")
 }
 
 // maskSensitiveValue 对敏感字段的值进行脱敏

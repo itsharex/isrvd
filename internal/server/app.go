@@ -36,7 +36,10 @@ type App struct {
 }
 
 func StartApp() {
-	app := &App{Engine: httpd.Engine(config.Debug), routePerms: make(map[string]svcAccount.RouteInfo)}
+	app := &App{
+		Engine:     httpd.Engine(config.Server.Debug),
+		routePerms: make(map[string]svcAccount.RouteInfo),
+	}
 
 	// 初始化各业务服务
 	app.overviewSvc = svcOverview.NewService()
@@ -69,7 +72,7 @@ func StartApp() {
 	httpd.StaticEmbed(public.Efs, "", "")
 
 	// 启动 HTTP 服务
-	httpd.Server(config.ListenAddr)
+	httpd.Server(config.Server.ListenAddr)
 }
 
 // Route 定义单个路由的完整信息（同时用于注册和权限验证）

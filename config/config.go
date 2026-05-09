@@ -1,24 +1,22 @@
 package config
 
-import (
-	"path/filepath"
+import "path/filepath"
+
+const (
+	defaultListenAddr    = ":8080"
+	defaultJWTExpiration = 86400
+	defaultMaxUploadSize = 100 << 20
+	defaultRootDirectory = "."
 )
 
 var (
-	// 模式
-	Debug = false
-	// 监听地址
-	ListenAddr = ":8080"
-	// JWT 密钥（由启动脚本配置）
-	JWTSecret = ""
-	// JWT 过期时间（秒），0 表示使用默认值 24小时
-	JWTExpiration int64 = 0
-	// 文件上传最大大小（字节），0 表示使用默认值 100M
-	MaxUploadSize int64 = 0
-	// 内网代理用户名 Header 名（为空则不启用）
-	ProxyHeaderName = ""
-	// 基础目录
-	RootDirectory = "."
+	// Server 服务器配置
+	Server = &ServerConfig{
+		ListenAddr:    defaultListenAddr,
+		JWTExpiration: defaultJWTExpiration,
+		MaxUploadSize: defaultMaxUploadSize,
+		RootDirectory: defaultRootDirectory,
+	}
 	// Agent LLM 配置
 	Agent = &AgentConfig{}
 	// Apisix 配置
@@ -54,15 +52,7 @@ func Save() error {
 	}
 
 	conf := &Config{
-		Server: &ServerConfig{
-			Debug:           Debug,
-			ListenAddr:      ListenAddr,
-			JWTSecret:       JWTSecret,
-			JWTExpiration:   JWTExpiration,
-			MaxUploadSize:   MaxUploadSize,
-			ProxyHeaderName: ProxyHeaderName,
-			RootDirectory:   RootDirectory,
-		},
+		Server:      Server,
 		Agent:       Agent,
 		Apisix:      Apisix,
 		Docker:      Docker,
@@ -76,30 +66,11 @@ func Save() error {
 
 // Apply 应用配置到全局变量（不存储）
 func Apply(conf *Config) {
-	if conf.Server != nil {
-		Debug = conf.Server.Debug
-		ListenAddr = conf.Server.ListenAddr
-		JWTSecret = conf.Server.JWTSecret
-		JWTExpiration = conf.Server.JWTExpiration
-		MaxUploadSize = conf.Server.MaxUploadSize
-		ProxyHeaderName = conf.Server.ProxyHeaderName
-		RootDirectory = conf.Server.RootDirectory
-		// JWT 过期时间默认值
-		if JWTExpiration == 0 {
-			JWTExpiration = 86400
-		}
-		// 文件上传大小默认值（100MB）
-		if MaxUploadSize == 0 {
-			MaxUploadSize = 100 << 20
-		}
-		// 将 RootDirectory 转换为绝对路径
-		if !filepath.IsAbs(RootDirectory) {
-			abs, err := filepath.Abs(RootDirectory)
-			if err == nil {
-				RootDirectory = abs
-			}
-		}
+	if conf == nil {
+		return
 	}
+
+	Server = normalizeServerConfig(conf.Server)
 
 	if conf.Agent != nil {
 		Agent = conf.Agent
@@ -112,7 +83,7 @@ func Apply(conf *Config) {
 	if conf.Docker != nil {
 		Docker = conf.Docker
 		if !filepath.IsAbs(Docker.ContainerRoot) {
-			Docker.ContainerRoot = filepath.Join(RootDirectory, Docker.ContainerRoot)
+			Docker.ContainerRoot = filepath.Join(Server.RootDirectory, Docker.ContainerRoot)
 		}
 	}
 
@@ -127,10 +98,34 @@ func Apply(conf *Config) {
 	Members = make(map[string]*MemberConfig, len(conf.Members))
 	for _, m := range conf.Members {
 		if m.HomeDirectory == "" {
-			m.HomeDirectory = filepath.Join(RootDirectory, m.Username)
+			m.HomeDirectory = filepath.Join(Server.RootDirectory, m.Username)
 		} else if !filepath.IsAbs(m.HomeDirectory) {
-			m.HomeDirectory = filepath.Join(RootDirectory, m.HomeDirectory)
+			m.HomeDirectory = filepath.Join(Server.RootDirectory, m.HomeDirectory)
 		}
 		Members[m.Username] = m
 	}
+}
+
+func normalizeServerConfig(server *ServerConfig) *ServerConfig {
+	if server == nil {
+		server = &ServerConfig{}
+	}
+	if server.ListenAddr == "" {
+		server.ListenAddr = defaultListenAddr
+	}
+	if server.JWTExpiration == 0 {
+		server.JWTExpiration = defaultJWTExpiration
+	}
+	if server.MaxUploadSize == 0 {
+		server.MaxUploadSize = defaultMaxUploadSize
+	}
+	if server.RootDirectory == "" {
+		server.RootDirectory = defaultRootDirectory
+	}
+	if !filepath.IsAbs(server.RootDirectory) {
+		if abs, err := filepath.Abs(server.RootDirectory); err == nil {
+			server.RootDirectory = abs
+		}
+	}
+	return server
 }

@@ -34,7 +34,7 @@ type RouteInfo struct {
 // Auth 根据配置选择认证方式，返回用户名和错误原因。
 // 供中间件统一调用，避免在 server 层判断认证模式。
 func (s *Service) Auth(c *gin.Context) (username, errMsg string) {
-	if config.ProxyHeaderName != "" {
+	if config.Server.ProxyHeaderName != "" {
 		return s.HeaderTokenCheck(c)
 	}
 	return s.JwtTokenCheck(c)
@@ -73,7 +73,7 @@ func (s *Service) RoutePermCheck(routePerms map[string]RouteInfo, method, path, 
 // AuthInfo 返回当前认证模式及已登录用户信息
 func (s *Service) AuthInfo(username string) *AuthInfoResponse {
 	mode := "jwt"
-	if config.ProxyHeaderName != "" {
+	if config.Server.ProxyHeaderName != "" {
 		mode = "header"
 	}
 	return &AuthInfoResponse{
@@ -120,10 +120,10 @@ func (s *Service) Login(req LoginRequest) (*LoginResponse, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"sub": req.Username,
 		"iat": time.Now().Unix(),
-		"exp": time.Now().Add(time.Duration(config.JWTExpiration) * time.Second).Unix(),
+		"exp": time.Now().Add(time.Duration(config.Server.JWTExpiration) * time.Second).Unix(),
 		"pwd": pwd,
 	})
-	tokenString, err := token.SignedString([]byte(config.JWTSecret))
+	tokenString, err := token.SignedString([]byte(config.Server.JWTSecret))
 	if err != nil {
 		return nil, fmt.Errorf("token 生成失败: %w", err)
 	}
@@ -170,7 +170,7 @@ func (s *Service) ApiTokenCreate(username string, req CreateApiTokenRequest) (*C
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err := token.SignedString([]byte(config.JWTSecret))
+	tokenString, err := token.SignedString([]byte(config.Server.JWTSecret))
 	if err != nil {
 		return nil, fmt.Errorf("token 生成失败: %w", err)
 	}
@@ -197,7 +197,7 @@ func (s *Service) JwtUsernameExtract(c *gin.Context) string {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
-		return []byte(config.JWTSecret), nil
+		return []byte(config.Server.JWTSecret), nil
 	})
 	if err != nil || !token.Valid {
 		return ""
@@ -228,7 +228,7 @@ func (s *Service) JwtUsernameExtract(c *gin.Context) string {
 // HeaderUsernameExtract 从代理 Header 中读取用户名，
 // 返回存在于成员列表中的用户名；否则返回空字符串
 func (s *Service) HeaderUsernameExtract(c *gin.Context) string {
-	username := c.GetHeader(config.ProxyHeaderName)
+	username := c.GetHeader(config.Server.ProxyHeaderName)
 	if username == "" {
 		return ""
 	}
@@ -264,7 +264,7 @@ func (s *Service) extractJwtToken(c *gin.Context) string {
 // HeaderTokenCheck 从代理 Header 读取用户名；失败时返回空用户名和具体错误原因。
 // errMsg 区分"Header 缺失"与"用户不存在"两种情况。
 func (s *Service) HeaderTokenCheck(c *gin.Context) (username, errMsg string) {
-	raw := c.GetHeader(config.ProxyHeaderName)
+	raw := c.GetHeader(config.Server.ProxyHeaderName)
 	if raw == "" {
 		return "", "代理 Header 缺失"
 	}

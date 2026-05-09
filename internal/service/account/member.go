@@ -68,7 +68,7 @@ func (s *Service) homeDirEnsure(home, username string) (string, error) {
 		home = username
 	}
 	if !filepath.IsAbs(home) {
-		home = filepath.Join(config.RootDirectory, home)
+		home = filepath.Join(config.Server.RootDirectory, home)
 	}
 	if err := os.MkdirAll(home, 0755); err != nil {
 		return "", err

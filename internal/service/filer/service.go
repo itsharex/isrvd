@@ -37,7 +37,7 @@ type FileInfo struct {
 
 // AbsPath 解析用户相对路径为绝对路径，并防止目录遍历
 func (s *Service) AbsPath(username, path string) string {
-	home := filepath.Clean(filepath.Join(config.RootDirectory, "share"))
+	home := filepath.Clean(filepath.Join(config.Server.RootDirectory, "share"))
 	if username != "" {
 		if member, ok := config.Members[username]; ok {
 			home = filepath.Clean(member.HomeDirectory)

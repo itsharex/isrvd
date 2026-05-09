@@ -173,13 +173,13 @@ func (app *App) filerFileChmod(c *gin.Context) {
 
 func (app *App) filerFileUpload(c *gin.Context) {
 	// 检查文件大小限制
-	if c.Request.ContentLength > config.MaxUploadSize {
+	if c.Request.ContentLength > config.Server.MaxUploadSize {
 		helper.RespondError(c, http.StatusBadRequest, "文件大小超过限制")
 		return
 	}
 
 	// 限制读取的请求体大小
-	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, config.MaxUploadSize)
+	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, config.Server.MaxUploadSize)
 
 	file, header, err := c.Request.FormFile("file")
 	if err != nil {

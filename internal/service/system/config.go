@@ -46,17 +46,8 @@ func pickSecret(newVal, oldVal string) string {
 
 // ConfigAll 获取全部配置
 func (s *ConfigService) ConfigAll() *AllConfigResponse {
-	// 构造响应结构（敏感字段 json:"-" 会自动排除）
 	resp := &AllConfigResponse{
-		Server: &config.ServerConfig{
-			Debug:           config.Debug,
-			ListenAddr:      config.ListenAddr,
-			JWTSecret:       config.JWTSecret,
-			JWTExpiration:   config.JWTExpiration,
-			MaxUploadSize:   config.MaxUploadSize,
-			ProxyHeaderName: config.ProxyHeaderName,
-			RootDirectory:   config.RootDirectory,
-		},
+		Server:      config.Server,
 		Agent:       config.Agent,
 		Apisix:      config.Apisix,
 		Docker:      config.Docker,
@@ -64,7 +55,6 @@ func (s *ConfigService) ConfigAll() *AllConfigResponse {
 		Links:       config.Links,
 	}
 
-	// JSON 深拷贝（自动处理敏感字段过滤）
 	data, err := json.Marshal(resp)
 	if err != nil {
 		return resp
@@ -81,13 +71,8 @@ func (s *ConfigService) ConfigAll() *AllConfigResponse {
 // ConfigUpdateAll 一次性更新全部配置（任何 nil 分区将跳过）
 func (s *ConfigService) ConfigUpdateAll(req UpdateAllConfigRequest) error {
 	if req.Server != nil {
-		config.Debug = req.Server.Debug
-		config.ListenAddr = req.Server.ListenAddr
-		config.JWTSecret = pickSecret(req.Server.JWTSecret, config.JWTSecret)
-		config.JWTExpiration = req.Server.JWTExpiration
-		config.MaxUploadSize = req.Server.MaxUploadSize
-		config.ProxyHeaderName = req.Server.ProxyHeaderName
-		config.RootDirectory = req.Server.RootDirectory
+		req.Server.JWTSecret = pickSecret(req.Server.JWTSecret, config.Server.JWTSecret)
+		config.Server = req.Server
 	}
 	if req.Agent != nil {
 		config.Agent.Model = req.Agent.Model
