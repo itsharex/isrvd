@@ -5,6 +5,7 @@ import api from '@/service/api'
 import type { ApisixRoute } from '@/service/types'
 
 import { formatRouteUpstreamSummary, formatRouteUpstreamType, formatRouteUpstreamNodes, normalizeUpstreamNodes } from '@/helper/apisix'
+import { bindTypeToSearchFocus } from '@/helper/utils'
 
 import { usePortal } from '@/stores'
 
@@ -23,6 +24,8 @@ class Routes extends Vue {
     routes: ApisixRoute[] = []
     loading = false
     searchText = ''
+
+    private unbindTypeToSearchFocus: (() => void) | null = null
 
     // ─── 计算属性 ───
     get filteredRoutes() {
@@ -138,7 +141,13 @@ class Routes extends Vue {
 
     // ─── 生命周期 ───
     mounted() {
+        this.unbindTypeToSearchFocus = bindTypeToSearchFocus(() => Array.from(this.$el.querySelectorAll('[data-page-search="apisix-routes"]')) as HTMLInputElement[])
         this.loadRoutes()
+    }
+
+    unmounted() {
+        this.unbindTypeToSearchFocus?.()
+        this.unbindTypeToSearchFocus = null
     }
 }
 
@@ -157,7 +166,7 @@ export default toNative(Routes)
           </div>
           <div class="flex items-center gap-2">
             <div class="relative">
-              <input v-model="searchText" type="text" placeholder="搜索路由、URI、描述或上游..." class="pl-8 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent w-64" />
+              <input v-model="searchText" data-page-search="apisix-routes" type="text" placeholder="搜索路由、URI、描述或上游..." class="pl-8 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent w-64" />
               <i class="fas fa-search absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
             </div>
             <button class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors" @click="loadRoutes()"><i class="fas fa-rotate"></i>刷新</button>
@@ -186,15 +195,15 @@ export default toNative(Routes)
       <!-- 移动端搜索栏 -->
       <div class="md:hidden px-4 py-2 border-b border-slate-100">
         <div class="relative">
-          <input v-model="searchText" type="text" placeholder="搜索路由、URI、上游..." class="w-full pl-8 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" />
+          <input v-model="searchText" data-page-search="apisix-routes" type="text" placeholder="搜索路由、URI、上游..." class="w-full pl-8 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" />
           <i class="fas fa-search absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
         </div>
       </div>
       <div v-if="loading" class="flex flex-col items-center justify-center py-20"><div class="w-12 h-12 spinner mb-3"></div><p class="text-slate-500">加载中...</p></div>
       <div v-else-if="filteredRoutes.length === 0" class="flex flex-col items-center justify-center py-20">
         <div class="w-16 h-16 rounded-lg bg-slate-100 flex items-center justify-center mb-4"><i class="fas fa-route text-4xl text-slate-300"></i></div>
-        <p class="text-slate-600 font-medium mb-1">暂无路由</p>
-        <p class="text-sm text-slate-400">点击「创建」添加新路由</p>
+        <p class="text-slate-600 font-medium mb-1">{{ routes.length === 0 ? '暂无路由' : '未找到匹配路由' }}</p>
+        <p class="text-sm text-slate-400">{{ routes.length === 0 ? '点击「创建」添加新路由' : '尝试更换关键词或清空搜索条件' }}</p>
       </div>
       <div v-else class="space-y-3">
         <!-- 桌面端表格视图 -->

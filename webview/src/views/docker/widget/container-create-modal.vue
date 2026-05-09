@@ -1,9 +1,6 @@
 <script lang="ts">
 import * as yaml from 'js-yaml'
-import { Component, Inject, Vue, toNative } from 'vue-facing-decorator'
-
-import type { AppActions } from '@/store/state'
-import { APP_ACTIONS_KEY } from '@/store/state'
+import { Component, Vue, toNative } from 'vue-facing-decorator'
 
 import api from '@/service/api'
 import type { DockerImageInfo, DockerNetworkInfo } from '@/service/types'

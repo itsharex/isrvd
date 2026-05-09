@@ -4,6 +4,8 @@ import { Component, Ref, Vue, toNative } from 'vue-facing-decorator'
 import api from '@/service/api'
 import type { DockerNetworkInfo } from '@/service/types'
 
+import { bindTypeToSearchFocus } from '@/helper/utils'
+
 import { usePortal } from '@/stores'
 
 import NetworkCreateModal from './widget/network-create-modal.vue'
@@ -21,6 +23,21 @@ class Networks extends Vue {
     // ─── 数据属性 ───
     networks: DockerNetworkInfo[] = []
     loading = false
+    searchText = ''
+
+    private unbindTypeToSearchFocus: (() => void) | null = null
+
+    get filteredNetworks() {
+        if (!this.searchText) return this.networks
+        const keyword = this.searchText.toLowerCase()
+        return this.networks.filter((network: DockerNetworkInfo) =>
+            network.name.toLowerCase().includes(keyword) ||
+            network.id.toLowerCase().includes(keyword) ||
+            (network.driver || '').toLowerCase().includes(keyword) ||
+            (network.subnet || '').toLowerCase().includes(keyword) ||
+            (network.scope || '').toLowerCase().includes(keyword)
+        )
+    }
 
     // ─── 方法 ───
     async loadNetworks() {
@@ -74,7 +91,13 @@ class Networks extends Vue {
 
     // ─── 生命周期 ───
     mounted() {
+        this.unbindTypeToSearchFocus = bindTypeToSearchFocus(() => Array.from(this.$el.querySelectorAll('[data-page-search="docker-networks"]')) as HTMLInputElement[])
         this.loadNetworks()
+    }
+
+    unmounted() {
+        this.unbindTypeToSearchFocus?.()
+        this.unbindTypeToSearchFocus = null
     }
 }
 
@@ -98,6 +121,10 @@ export default toNative(Networks)
             </div>
           </div>
           <div class="flex items-center gap-2">
+            <div class="relative">
+              <input v-model="searchText" data-page-search="docker-networks" type="text" placeholder="搜索网络名称、ID、驱动或子网..." class="pl-8 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent w-64" />
+              <i class="fas fa-search absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+            </div>
             <button class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors" @click="loadNetworks()">
               <i class="fas fa-rotate"></i>刷新
             </button>
@@ -128,6 +155,13 @@ export default toNative(Networks)
         </div>
       </div>
 
+      <div class="md:hidden px-4 py-2 border-b border-slate-100">
+        <div class="relative">
+          <input v-model="searchText" data-page-search="docker-networks" type="text" placeholder="搜索网络名称、ID、驱动..." class="w-full pl-8 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" />
+          <i class="fas fa-search absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+        </div>
+      </div>
+
       <!-- Loading State -->
       <div v-if="loading" class="flex flex-col items-center justify-center py-20">
         <div class="w-12 h-12 spinner mb-3"></div>
@@ -135,7 +169,7 @@ export default toNative(Networks)
       </div>
 
       <!-- Network List -->
-      <div v-else-if="networks.length > 0" class="space-y-3">
+      <div v-else-if="filteredNetworks.length > 0" class="space-y-3">
         <!-- 桌面端表格视图 -->
         <div class="hidden md:block overflow-x-auto">
           <table class="w-full border-collapse">
@@ -149,7 +183,7 @@ export default toNative(Networks)
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-slate-100">
-              <tr v-for="net in networks" :key="net.id" class="hover:bg-slate-50 transition-colors">
+              <tr v-for="net in filteredNetworks" :key="net.id" class="hover:bg-slate-50 transition-colors">
                 <td class="px-4 py-3 max-w-[280px]">
                   <div class="flex items-center gap-2 min-w-0">
                     <div class="w-8 h-8 rounded-lg bg-purple-400 flex items-center justify-center flex-shrink-0">
@@ -195,7 +229,7 @@ export default toNative(Networks)
         <!-- 移动端卡片视图 -->
         <div class="md:hidden space-y-3 p-4">
           <div 
-            v-for="net in networks" 
+            v-for="net in filteredNetworks" 
             :key="net.id"
             class="rounded-xl border border-slate-200 bg-white p-4 transition-all hover:shadow-sm"
           >
@@ -256,8 +290,8 @@ export default toNative(Networks)
         <div class="w-16 h-16 rounded-lg bg-slate-100 flex items-center justify-center mb-4">
           <i class="fas fa-network-wired text-4xl text-slate-300"></i>
         </div>
-        <p class="text-slate-600 font-medium mb-1">暂无自定义网络</p>
-        <p class="text-sm text-slate-400">点击「创建网络」添加自定义网络</p>
+        <p class="text-slate-600 font-medium mb-1">{{ networks.length === 0 ? '暂无自定义网络' : '未找到匹配网络' }}</p>
+        <p class="text-sm text-slate-400">{{ networks.length === 0 ? '点击「创建网络」添加自定义网络' : '尝试更换关键词或清空搜索条件' }}</p>
       </div>
     </div>
 

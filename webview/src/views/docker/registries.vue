@@ -4,6 +4,8 @@ import { Component, Ref, Vue, toNative } from 'vue-facing-decorator'
 import api from '@/service/api'
 import type { DockerRegistryInfo } from '@/service/types'
 
+import { bindTypeToSearchFocus } from '@/helper/utils'
+
 import { usePortal } from '@/stores'
 
 import RegistryEditModal from './widget/registry-edit-modal.vue'
@@ -20,6 +22,35 @@ class Registries extends Vue {
     indexServerAddress = ''
     registries: DockerRegistryInfo[] = []
     loading = false
+    searchText = ''
+
+    private unbindTypeToSearchFocus: (() => void) | null = null
+
+    get filteredRegistries() {
+        if (!this.searchText) return this.registries
+        const keyword = this.searchText.toLowerCase()
+        return this.registries.filter((registry: DockerRegistryInfo) =>
+            (registry.name || '').toLowerCase().includes(keyword) ||
+            (registry.url || '').toLowerCase().includes(keyword) ||
+            (registry.username || '').toLowerCase().includes(keyword) ||
+            (registry.description || '').toLowerCase().includes(keyword)
+        )
+    }
+
+    get showDockerHub() {
+        if (!this.searchText) return true
+        const keyword = this.searchText.toLowerCase()
+        const candidates = [
+            'docker hub',
+            'docker.io',
+            'index.docker.io',
+            'anonymous',
+            '匿名',
+            this.indexServerAddress,
+            ...this.daemonMirrors
+        ]
+        return candidates.some((value: string) => (value || '').toLowerCase().includes(keyword))
+    }
 
     // ─── 方法 ───
     async loadDaemonInfo() {
@@ -70,8 +101,14 @@ class Registries extends Vue {
 
     // ─── 生命周期 ───
     mounted() {
+        this.unbindTypeToSearchFocus = bindTypeToSearchFocus(() => Array.from(this.$el.querySelectorAll('[data-page-search="docker-registries"]')) as HTMLInputElement[])
         this.loadDaemonInfo()
         this.loadRegistries()
+    }
+
+    unmounted() {
+        this.unbindTypeToSearchFocus?.()
+        this.unbindTypeToSearchFocus = null
     }
 }
 
@@ -95,6 +132,10 @@ export default toNative(Registries)
             </div>
           </div>
           <div class="flex items-center gap-2">
+            <div class="relative">
+              <input v-model="searchText" data-page-search="docker-registries" type="text" placeholder="搜索仓库名称、地址或账号..." class="pl-8 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent w-64" />
+              <i class="fas fa-search absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+            </div>
             <button class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors" @click="loadRegistries()">
               <i class="fas fa-rotate"></i>刷新
             </button>
@@ -125,6 +166,13 @@ export default toNative(Registries)
         </div>
       </div>
 
+      <div class="md:hidden px-4 py-2 border-b border-slate-100">
+        <div class="relative">
+          <input v-model="searchText" data-page-search="docker-registries" type="text" placeholder="搜索仓库名称、地址或账号..." class="w-full pl-8 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" />
+          <i class="fas fa-search absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+        </div>
+      </div>
+
       <!-- Loading -->
       <div v-if="loading" class="flex flex-col items-center justify-center py-20">
         <div class="w-12 h-12 spinner mb-3"></div>
@@ -146,7 +194,7 @@ export default toNative(Registries)
             </thead>
             <tbody class="bg-white divide-y divide-slate-100">
               <!-- Docker Hub 行（始终显示） -->
-              <tr class="hover:bg-slate-50 transition-colors">
+              <tr v-if="showDockerHub" class="hover:bg-slate-50 transition-colors">
                 <td class="px-4 py-3 max-w-[280px]">
                   <div class="flex items-center gap-2 min-w-0">
                     <div class="w-8 h-8 rounded-lg bg-blue-500 flex items-center justify-center flex-shrink-0">
@@ -174,7 +222,7 @@ export default toNative(Registries)
                 <td class="px-4 py-3 text-right text-xs text-slate-400">—</td>
               </tr>
               <!-- 私有仓库行 -->
-              <tr v-for="reg in registries" :key="reg.url" class="hover:bg-slate-50 transition-colors">
+              <tr v-for="reg in filteredRegistries" :key="reg.url" class="hover:bg-slate-50 transition-colors">
                 <td class="px-4 py-3 max-w-[280px]">
                   <div class="flex items-center gap-2 min-w-0">
                     <div class="w-8 h-8 rounded-lg bg-purple-400 flex items-center justify-center flex-shrink-0">
@@ -213,7 +261,7 @@ export default toNative(Registries)
         <!-- 移动端卡片视图 -->
         <div class="md:hidden space-y-3 p-4">
           <!-- Docker Hub 卡片 -->
-          <div class="rounded-xl border border-slate-200 bg-white p-4 transition-all hover:shadow-sm">
+          <div v-if="showDockerHub" class="rounded-xl border border-slate-200 bg-white p-4 transition-all hover:shadow-sm">
             <div class="flex items-center justify-between mb-3">
               <div class="flex items-center gap-3 min-w-0 flex-1">
                 <div class="w-10 h-10 rounded-lg bg-blue-500 flex items-center justify-center flex-shrink-0">
@@ -245,7 +293,7 @@ export default toNative(Registries)
           </div>
 
           <!-- 私有仓库卡片 -->
-          <div v-for="reg in registries" :key="reg.url" class="rounded-xl border border-slate-200 bg-white p-4 transition-all hover:shadow-sm">
+          <div v-for="reg in filteredRegistries" :key="reg.url" class="rounded-xl border border-slate-200 bg-white p-4 transition-all hover:shadow-sm">
             <div class="flex items-center justify-between mb-3">
               <div class="flex items-center gap-3 min-w-0 flex-1">
                 <div class="w-10 h-10 rounded-lg bg-purple-400 flex items-center justify-center flex-shrink-0">
@@ -280,6 +328,18 @@ export default toNative(Registries)
               </button>
             </div>
           </div>
+
+          <div v-if="!showDockerHub && filteredRegistries.length === 0" class="rounded-xl border border-slate-200 bg-white py-10 px-4 text-center">
+            <p class="text-sm text-slate-500">未找到匹配仓库，尝试更换关键词</p>
+          </div>
+        </div>
+
+        <div v-if="!showDockerHub && filteredRegistries.length === 0" class="hidden md:flex flex-col items-center justify-center py-16">
+          <div class="w-16 h-16 rounded-lg bg-slate-100 flex items-center justify-center mb-4">
+            <i class="fas fa-warehouse text-4xl text-slate-300"></i>
+          </div>
+          <p class="text-slate-600 font-medium mb-1">未找到匹配仓库</p>
+          <p class="text-sm text-slate-400">尝试更换关键词或清空搜索条件</p>
         </div>
       </div>
     </div>
