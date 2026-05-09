@@ -4,7 +4,7 @@ import { Component, Ref, Vue, toNative } from 'vue-facing-decorator'
 import api from '@/service/api'
 import type { FilerFileInfo } from '@/service/types'
 
-import { downloadFile, formatFileSize, formatTime, getFileIcon, isEditableFile } from '@/helper/utils'
+import { bindTypeToSearchFocus, downloadFile, formatFileSize, formatTime, getFileIcon, isEditableFile } from '@/helper/utils'
 
 import { usePortal } from '@/stores'
 
@@ -44,10 +44,23 @@ class FileExplorer extends Vue {
     formatTime = formatTime
     getFileIcon = getFileIcon
     isEditableFile = isEditableFile
+    searchText = ''
+
+    private unbindTypeToSearchFocus: (() => void) | null = null
 
     // ─── 计算属性 ───
     get files() {
         return this.portal.files
+    }
+
+    get filteredFiles() {
+        if (!this.searchText) return this.files
+        const keyword = this.searchText.toLowerCase()
+        return this.files.filter((file: FilerFileInfo) =>
+            file.name.toLowerCase().includes(keyword) ||
+            file.path.toLowerCase().includes(keyword) ||
+            file.mode.toLowerCase().includes(keyword)
+        )
     }
 
     get paths() {
@@ -71,7 +84,13 @@ class FileExplorer extends Vue {
 
     // ─── 生命周期 ───
     mounted() {
+        this.unbindTypeToSearchFocus = bindTypeToSearchFocus(() => Array.from(this.$el.querySelectorAll('[data-page-search="filer-explorer"]')) as HTMLInputElement[])
         this.portal.loadFiles('/')
+    }
+
+    unmounted() {
+        this.unbindTypeToSearchFocus?.()
+        this.unbindTypeToSearchFocus = null
     }
 }
 
@@ -117,6 +136,10 @@ export default toNative(FileExplorer)
           </nav>
 
           <div class="flex items-center gap-2 flex-shrink-0">
+            <div class="hidden md:block relative">
+              <input v-model="searchText" data-page-search="filer-explorer" type="text" placeholder="搜索文件名、路径或权限..." class="w-72 pl-8 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" />
+              <i class="fas fa-search absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+            </div>
             <button 
               v-if="appActions.hasPerm('POST /api/filer/list')"
               class="hidden md:flex px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium items-center gap-1.5 transition-colors"
@@ -168,15 +191,22 @@ export default toNative(FileExplorer)
         <p class="text-slate-500">加载中...</p>
       </div>
 
-      <!-- File List -->
       <div v-else>
+        <div class="md:hidden px-4 py-2 border-b border-slate-100">
+          <div class="relative">
+            <input v-model="searchText" data-page-search="filer-explorer" type="text" placeholder="搜索文件名、路径或权限..." class="w-full pl-8 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" />
+            <i class="fas fa-search absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+          </div>
+        </div>
+
+        <!-- File List -->
         <!-- Empty State -->
-        <div v-if="files.length === 0" class="flex flex-col items-center justify-center py-20">
+        <div v-if="filteredFiles.length === 0" class="flex flex-col items-center justify-center py-20">
           <div class="w-16 h-16 rounded-lg bg-slate-100 flex items-center justify-center mb-4">
             <i class="fas fa-folder-open text-4xl text-slate-300"></i>
           </div>
-          <p class="text-slate-600 font-medium mb-1">此目录为空</p>
-          <p class="text-sm text-slate-400">上传文件或创建新目录开始使用</p>
+          <p class="text-slate-600 font-medium mb-1">{{ files.length === 0 ? '此目录为空' : '未找到匹配文件' }}</p>
+          <p class="text-sm text-slate-400">{{ files.length === 0 ? '上传文件或创建新目录开始使用' : '尝试更换关键词或清空搜索条件' }}</p>
         </div>
         <!-- 桌面端表格视图 -->
         <div v-else class="hidden md:block overflow-x-auto">
@@ -191,7 +221,7 @@ export default toNative(FileExplorer)
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-slate-100">
-              <tr v-for="file in files" :key="file.name" class="hover:bg-slate-50 transition-colors">
+              <tr v-for="file in filteredFiles" :key="file.path" class="hover:bg-slate-50 transition-colors">
                 <td class="px-4 py-3 max-w-[280px]">
                   <div class="flex items-center gap-2 min-w-0">
                     <div
@@ -340,10 +370,10 @@ export default toNative(FileExplorer)
         </div>
 
         <!-- 移动端卡片视图 -->
-        <div v-if="files.length > 0" class="md:hidden space-y-3 p-4">
+        <div v-if="filteredFiles.length > 0" class="md:hidden space-y-3 p-4">
           <div 
-            v-for="file in files" 
-            :key="file.name"
+            v-for="file in filteredFiles" 
+            :key="file.path"
             class="rounded-xl border border-slate-200 bg-white p-4 transition-all hover:shadow-sm"
           >
             <!-- 顶部：文件信息和图标 -->

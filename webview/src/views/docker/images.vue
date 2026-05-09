@@ -4,7 +4,7 @@ import { Component, Ref, Vue, toNative } from 'vue-facing-decorator'
 import api from '@/service/api'
 import type { DockerImageInfo, DockerRegistryInfo } from '@/service/types'
 
-import { formatFileSize, formatTime } from '@/helper/utils'
+import { bindTypeToSearchFocus, formatFileSize, formatTime } from '@/helper/utils'
 
 import { usePortal } from '@/stores'
 
@@ -30,8 +30,27 @@ class Images extends Vue {
     registries: DockerRegistryInfo[] = []
     loading = false
     showAllImages = false
+    searchText = ''
     formatFileSize = formatFileSize
     formatTime = formatTime
+
+    private unbindTypeToSearchFocus: (() => void) | null = null
+
+    get filteredImages() {
+        if (!this.searchText) return this.images
+        const keyword = this.searchText.toLowerCase()
+        return this.images.filter((image: DockerImageInfo) => {
+            const tags = (image.repoTags || []).join(' ')
+            const digests = (image.repoDigests || []).join(' ')
+            return (
+                this.getImageName(image).toLowerCase().includes(keyword) ||
+                image.id.toLowerCase().includes(keyword) ||
+                image.shortId.toLowerCase().includes(keyword) ||
+                tags.toLowerCase().includes(keyword) ||
+                digests.toLowerCase().includes(keyword)
+            )
+        })
+    }
 
     // ─── 方法 ───
     async loadImages() {
@@ -159,8 +178,14 @@ class Images extends Vue {
 
     // ─── 生命周期 ───
     mounted() {
+        this.unbindTypeToSearchFocus = bindTypeToSearchFocus(() => Array.from(this.$el.querySelectorAll('[data-page-search="docker-images"]')) as HTMLInputElement[])
         this.loadImages()
         this.loadRegistries()
+    }
+
+    unmounted() {
+        this.unbindTypeToSearchFocus?.()
+        this.unbindTypeToSearchFocus = null
     }
 }
 
@@ -184,6 +209,10 @@ export default toNative(Images)
             </div>
           </div>
           <div class="flex items-center gap-2">
+            <div class="relative">
+              <input v-model="searchText" data-page-search="docker-images" type="text" placeholder="搜索镜像名称、标签、ID..." class="pl-8 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-64" />
+              <i class="fas fa-search absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+            </div>
             <div class="flex gap-1 bg-slate-100 p-1 rounded-lg">
               <button :class="['px-3 py-1 text-xs font-medium rounded-md transition-all duration-200 flex items-center gap-1.5', !showAllImages ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700']" @click="showAllImages = false; loadImages()">
                 <i class="fas fa-cube"></i><span>顶层</span>
@@ -236,6 +265,13 @@ export default toNative(Images)
         </div>
       </div>
 
+      <div class="md:hidden px-4 py-2 border-b border-slate-100">
+        <div class="relative">
+          <input v-model="searchText" data-page-search="docker-images" type="text" placeholder="搜索镜像名称、标签或 ID..." class="w-full pl-8 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+          <i class="fas fa-search absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+        </div>
+      </div>
+
       <!-- Loading -->
       <div v-if="loading" class="flex flex-col items-center justify-center py-20">
         <div class="w-12 h-12 spinner mb-3"></div>
@@ -243,7 +279,7 @@ export default toNative(Images)
       </div>
 
       <!-- Image List -->
-      <div v-else-if="images.length > 0" class="space-y-3">
+      <div v-else-if="filteredImages.length > 0" class="space-y-3">
         <!-- 桌面端表格视图 -->
         <div class="hidden md:block overflow-x-auto">
           <table class="w-full border-collapse">
@@ -257,7 +293,7 @@ export default toNative(Images)
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-slate-100">
-              <tr v-for="img in images" :key="img.id" class="hover:bg-slate-50 transition-colors">
+              <tr v-for="img in filteredImages" :key="img.id" class="hover:bg-slate-50 transition-colors">
                 <td class="px-4 py-3 max-w-[280px]">
                   <div class="flex items-center gap-2 min-w-0">
                     <div class="w-8 h-8 rounded-lg bg-blue-400 flex items-center justify-center flex-shrink-0">
@@ -304,7 +340,7 @@ export default toNative(Images)
         <!-- 移动端卡片视图 -->
         <div class="md:hidden space-y-3 p-4">
           <div 
-            v-for="img in images" 
+            v-for="img in filteredImages" 
             :key="img.id"
             class="rounded-xl border border-slate-200 bg-white p-4 transition-all hover:shadow-sm"
           >
@@ -364,8 +400,8 @@ export default toNative(Images)
         <div class="w-16 h-16 rounded-lg bg-slate-100 flex items-center justify-center mb-4">
           <i class="fas fa-compact-disc text-4xl text-slate-300"></i>
         </div>
-        <p class="text-slate-600 font-medium mb-1">暂无镜像</p>
-        <p class="text-sm text-slate-400">点击「拉取镜像」从 Registry 获取镜像</p>
+        <p class="text-slate-600 font-medium mb-1">{{ images.length === 0 ? '暂无镜像' : '未找到匹配镜像' }}</p>
+        <p class="text-sm text-slate-400">{{ images.length === 0 ? '点击「拉取镜像」从 Registry 获取镜像' : '尝试更换关键词或清空搜索条件' }}</p>
       </div>
     </div>
 
