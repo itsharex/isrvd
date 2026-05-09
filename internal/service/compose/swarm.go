@@ -122,6 +122,11 @@ func (s *Service) swarmRedeploy(ctx context.Context, name, content string) (*Dep
 
 // swarmProjectDeploy 部署 compose project 中的所有服务，失败时回滚已创建的服务
 func (s *Service) swarmProjectDeploy(ctx context.Context, project *types.Project) ([]string, error) {
+	// 确保所有非 external 网络存在（swarm 服务需要 overlay 网络预先存在）
+	if err := s.swarmEnsureNetworks(ctx, project); err != nil {
+		return nil, err
+	}
+
 	var createdIDs []string
 	var items []string
 
@@ -217,4 +222,32 @@ func (s *Service) swarmContentLoad(name string) string {
 		return ""
 	}
 	return string(data)
+}
+
+// swarmEnsureNetworks 确保 project 中所有非 external 的网络以 overlay driver 存在
+// 网络已存在时跳过，创建失败时返回错误
+func (s *Service) swarmEnsureNetworks(ctx context.Context, project *types.Project) error {
+	for key, netCfg := range project.Networks {
+		// external 网络由用户自己管理，跳过
+		if bool(netCfg.External) {
+			continue
+		}
+		netName := netCfg.Name
+		if netName == "" {
+			netName = key
+		}
+		// 已存在则跳过
+		if _, err := s.docker.NetworkInspect(ctx, netName); err == nil {
+			continue
+		}
+		driver := netCfg.Driver
+		if driver == "" {
+			driver = "overlay"
+		}
+		if _, err := s.docker.NetworkCreate(ctx, netName, driver); err != nil {
+			return fmt.Errorf("创建网络 %s 失败: %w", netName, err)
+		}
+		logman.Info("Swarm network created", "network", netName, "driver", driver)
+	}
+	return nil
 }

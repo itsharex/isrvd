@@ -229,16 +229,23 @@ func ProjectFromSwarmInspect(info *swarm.ServiceInfo) (*types.Project, error) {
 	}
 
 	// 网络
+	var projectNetworks types.Networks
 	if len(info.Networks) > 0 {
 		svc.Networks = make(map[string]*types.ServiceNetworkConfig, len(info.Networks))
+		projectNetworks = make(types.Networks, len(info.Networks))
 		for _, n := range info.Networks {
 			svc.Networks[n] = &types.ServiceNetworkConfig{}
+			projectNetworks[n] = types.NetworkConfig{
+				Name:   n,
+				Driver: "overlay",
+			}
 		}
 	}
 
 	return &types.Project{
 		Name:     name,
 		Services: types.Services{name: svc},
+		Networks: projectNetworks,
 	}, nil
 }
 
