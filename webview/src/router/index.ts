@@ -159,9 +159,9 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/swarm/tasks.vue')
   },
   {
-    path: '/compose/docker/deploy',
-    name: 'compose-docker-deploy',
-    component: () => import('@/views/compose/docker-deploy.vue')
+    path: '/compose/deploy',
+    name: 'compose-deploy',
+    component: () => import('@/views/compose/deploy.vue')
   },
   {
     path: '/account/members',

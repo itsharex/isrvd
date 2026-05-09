@@ -5,7 +5,6 @@ export type ComposeDeployTarget = 'docker' | 'swarm'
 // 统一的 compose 部署请求
 // 项目名（projectName）从 compose 文件中的 name: 字段自动获取，无需前端填写
 export interface ComposeDeploy {
-    target: ComposeDeployTarget
     content: string         // 完整 compose yaml 文本（前端已完成 ${VAR} 插值）
     initURL?: string        // 可选：附加运行文件 zip 下载地址（仅 docker 生效）
     initFile?: File         // 可选：附加运行文件（仅 docker 生效，与 initURL 互斥，文件优先）

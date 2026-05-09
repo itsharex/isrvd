@@ -122,6 +122,7 @@ class ContainerCreateModal extends Vue {
         }
 
         const doc: Record<string, unknown> = {
+            name: svcName,
             services: { [svcName]: svc }
         }
 
@@ -149,7 +150,7 @@ class ContainerCreateModal extends Vue {
 
         this.modalLoading = true
         try {
-            await api.composeDockerDeploy({ content, target: 'docker' })
+            await api.composeDockerDeploy({ content })
             this.portal.showNotification('success', '容器创建成功')
             this.isOpen = false
             this.$emit('success')

@@ -39,10 +39,6 @@ class ComposeDeploy extends Vue {
         return !this.loading && !!this.content.trim()
     }
 
-    get targetLabel(): string {
-        return this.target === 'swarm' ? 'Swarm 服务' : '单机容器'
-    }
-
     // ─── 方法 ───
     selectTarget(t: ComposeDeployTarget) {
         if (t === 'swarm' && !this.swarmAvailable) return
@@ -81,7 +77,6 @@ class ComposeDeploy extends Vue {
             const res = this.target === 'swarm'
                 ? await api.composeSwarmDeploy({ content: this.content })
                 : await api.composeDockerDeploy({
-                    target: 'docker',
                     content: this.content,
                     initURL: this.initURL.trim() || undefined,
                     initFile: this.initFile ?? undefined,
@@ -164,6 +159,29 @@ export default toNative(ComposeDeploy)
 
       <!-- 表单 -->
       <div class="p-4 md:p-6 space-y-4 max-w-5xl">
+        <!-- 部署目标 -->
+        <div class="inline-flex gap-1 bg-slate-100 p-1 rounded-lg">
+          <button
+            type="button"
+            :class="['px-3 py-1 text-xs font-medium rounded-md transition-all duration-200 flex items-center gap-1.5',
+                     target === 'docker' ? 'bg-white text-amber-600 shadow-sm' : 'text-slate-500 hover:text-slate-700']"
+            @click="selectTarget('docker')"
+          >
+            <i class="fab fa-docker"></i><span>单机容器</span>
+          </button>
+          <button
+            type="button"
+            :disabled="!swarmAvailable"
+            :class="['px-3 py-1 text-xs font-medium rounded-md transition-all duration-200 flex items-center gap-1.5',
+                     target === 'swarm' ? 'bg-white text-amber-600 shadow-sm'
+                     : (swarmAvailable ? 'text-slate-500 hover:text-slate-700' : 'text-slate-300 cursor-not-allowed')]"
+            :title="swarmAvailable ? '' : '当前节点未启用 Swarm'"
+            @click="selectTarget('swarm')"
+          >
+            <i class="fas fa-cubes"></i><span>Swarm 服务</span>
+          </button>
+        </div>
+
         <!-- 应用市场预填提示 -->
         <div v-if="fromMarketplace" class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 flex items-start gap-2 text-xs">
           <i class="fas fa-circle-info text-amber-500 mt-0.5"></i>
@@ -172,34 +190,10 @@ export default toNative(ComposeDeploy)
           </div>
         </div>
 
-        <!-- 部署目标 -->
-        <div>
-          <label class="block text-sm font-medium text-slate-700 mb-2">部署目标</label>
-          <div class="inline-flex gap-1 bg-slate-100 p-1 rounded-lg">
-            <button
-              type="button"
-              :class="['px-3 py-1 text-xs font-medium rounded-md transition-all duration-200 flex items-center gap-1.5',
-                       target === 'docker' ? 'bg-white text-amber-600 shadow-sm' : 'text-slate-500 hover:text-slate-700']"
-              @click="selectTarget('docker')"
-            >
-              <i class="fab fa-docker"></i><span>单机容器</span>
-            </button>
-            <button
-              type="button"
-              :disabled="!swarmAvailable"
-              :class="['px-3 py-1 text-xs font-medium rounded-md transition-all duration-200 flex items-center gap-1.5',
-                       target === 'swarm' ? 'bg-white text-amber-600 shadow-sm'
-                       : (swarmAvailable ? 'text-slate-500 hover:text-slate-700' : 'text-slate-300 cursor-not-allowed')]"
-              :title="swarmAvailable ? '' : '当前节点未启用 Swarm'"
-              @click="selectTarget('swarm')"
-            >
-              <i class="fas fa-cubes"></i><span>Swarm 服务</span>
-            </button>
-          </div>
-        </div>
-
         <!-- Compose 内容 -->
-        <ComposeEditor v-model="content" :disabled="loading" 
+        <ComposeEditor
+          v-model="content"
+          :disabled="loading"
           warning="项目名来自 compose 文件的 name 字段；变量插值需在客户端完成，后端仅按原文落盘与加载"
         />
 
