@@ -23,13 +23,26 @@ func (s *Service) dockerDeploy(ctx context.Context, req DeployRequest) (*DeployR
 		return nil, fmt.Errorf("未配置容器数据根目录")
 	}
 
-	installDir := filepath.Join(root, req.ProjectName)
-	composeFile := filepath.Join(installDir, "compose.yml")
-	if _, err := os.Stat(composeFile); err == nil {
-		return nil, fmt.Errorf("目录 %s 已包含 compose 配置，请先移除或使用其它实例名", installDir)
+	// 先从 compose 内容加载项目，获取项目名
+	project, err := compose.LoadProjectFromContent(ctx, req.Content, "")
+	if err != nil {
+		return nil, err
+	}
+	projectName := project.Name
+	if projectName == "" || projectName == "." {
+		projectName = shortHash(req.Content)
+	}
+	if !safeName.MatchString(projectName) {
+		return nil, fmt.Errorf("非法的项目名称: %s", projectName)
 	}
 
-	_, err := os.Stat(installDir)
+	installDir := filepath.Join(root, projectName)
+	composeFile := filepath.Join(installDir, "compose.yml")
+	if _, err := os.Stat(composeFile); err == nil {
+		return nil, fmt.Errorf("目录 %s 已包含 compose 配置，请先移除", installDir)
+	}
+
+	_, err = os.Stat(installDir)
 	installDirExists := err == nil
 	if err := os.MkdirAll(installDir, 0755); err != nil {
 		return nil, fmt.Errorf("创建安装目录失败: %w", err)
@@ -50,9 +63,9 @@ func (s *Service) dockerDeploy(ctx context.Context, req DeployRequest) (*DeployR
 		return nil, fmt.Errorf("写入 compose 文件失败: %w", err)
 	}
 
-	project, err := compose.LoadProject(ctx, compose.LoadOptions{
-		WorkingDir:  installDir,
-		ProjectName: req.ProjectName,
+	// 重新加载项目，使用正确的 WorkingDir 以解析相对路径
+	project, err = compose.LoadProject(ctx, compose.LoadOptions{
+		WorkingDir: installDir,
 	})
 	if err != nil {
 		return nil, err
@@ -64,7 +77,7 @@ func (s *Service) dockerDeploy(ctx context.Context, req DeployRequest) (*DeployR
 	for _, svc := range project.Services {
 		cname := dockerContainerNameOf(svc)
 		if _, err := s.docker.ContainerInspect(ctx, cname); err == nil {
-			return nil, fmt.Errorf("容器 %s 已存在，请先移除或使用其它实例名", cname)
+			return nil, fmt.Errorf("容器 %s 已存在，请先移除", cname)
 		}
 	}
 
@@ -74,8 +87,8 @@ func (s *Service) dockerDeploy(ctx context.Context, req DeployRequest) (*DeployR
 	}
 
 	deployed = true
-	logman.Info("Compose deployed", "name", req.ProjectName, "dir", installDir)
-	return &DeployResult{Target: TargetDocker, Items: items, InstallDir: installDir}, nil
+	logman.Info("Compose deployed", "name", projectName, "dir", installDir)
+	return &DeployResult{Target: TargetDocker, ProjectName: projectName, Items: items, InstallDir: installDir}, nil
 }
 
 // dockerInitFileHandle 处理附加运行文件（支持 URL 下载或直接上传）

@@ -29,11 +29,6 @@ export default toNative(ComposeEditor)
 
 <template>
   <div class="space-y-3">
-    <div v-if="warning" class="bg-amber-50 border border-amber-200 rounded-lg p-3">
-      <p class="text-sm text-amber-700">
-        <i class="fas fa-exclamation-triangle mr-1"></i>{{ warning }}
-      </p>
-    </div>
     <div>
       <label class="block text-sm font-medium text-slate-700 mb-2">
         <i class="fas fa-file-code mr-1 text-slate-400"></i>compose.yml
@@ -46,6 +41,11 @@ export default toNative(ComposeEditor)
           :disabled="disabled"
         />
       </div>
+    </div>
+    <div v-if="warning" class="bg-amber-50 border border-amber-200 rounded-lg p-3">
+      <p class="text-sm text-amber-700">
+        <i class="fas fa-exclamation-triangle mr-1"></i>{{ warning }}
+      </p>
     </div>
   </div>
 </template>

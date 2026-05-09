@@ -46,12 +46,11 @@ func (app *App) composeDockerDeploy(c *gin.Context) {
 	}
 
 	req := svcCompose.DeployRequest{
-		Content:     c.PostForm("content"),
-		ProjectName: c.PostForm("projectName"),
-		InitURL:     c.PostForm("initURL"),
+		Content: c.PostForm("content"),
+		InitURL: c.PostForm("initURL"),
 	}
-	if req.Content == "" || req.ProjectName == "" {
-		helper.RespondError(c, http.StatusBadRequest, "content 和 projectName 不能为空")
+	if req.Content == "" {
+		helper.RespondError(c, http.StatusBadRequest, "content 不能为空")
 		return
 	}
 

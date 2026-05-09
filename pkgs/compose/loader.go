@@ -106,13 +106,12 @@ func LoadProjectFromContent(ctx context.Context, content string, projectName str
 		Environment: loadHostEnv(),
 	}
 
-	if projectName == "" {
-		projectName = "isrvd"
-	}
 	projectName = loader.NormalizeProjectName(projectName)
 
 	project, err := loader.LoadWithContext(ctx, details, func(o *loader.Options) {
-		o.SetProjectName(projectName, true)
+		if projectName != "" {
+			o.SetProjectName(projectName, true)
+		}
 		o.SkipConsistencyCheck = false
 		o.SkipValidation = false
 		o.ResolvePaths = false

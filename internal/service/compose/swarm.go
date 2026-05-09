@@ -9,8 +9,8 @@ import (
 	"github.com/compose-spec/compose-go/v2/types"
 	"github.com/rehiy/pango/logman"
 
-	pkgdocker "isrvd/pkgs/docker"
 	"isrvd/pkgs/compose"
+	pkgdocker "isrvd/pkgs/docker"
 )
 
 // ==================== 部署 ====================
@@ -20,17 +20,26 @@ func (s *Service) swarmDeploy(ctx context.Context, req DeployRequest) (*DeployRe
 		return nil, fmt.Errorf("swarm 服务未初始化")
 	}
 
-	project, err := compose.LoadProjectFromContent(ctx, req.Content, req.ProjectName)
+	// 从 compose 内容加载项目，获取项目名
+	project, err := compose.LoadProjectFromContent(ctx, req.Content, "")
 	if err != nil {
 		return nil, err
 	}
+	projectName := project.Name
+	if projectName == "" || projectName == "." {
+		projectName = shortHash(req.Content)
+	}
+	if !safeName.MatchString(projectName) {
+		return nil, fmt.Errorf("非法的项目名称: %s", projectName)
+	}
+
 	if len(project.Services) == 0 {
 		return nil, fmt.Errorf("compose 文件中没有定义服务")
 	}
 
 	for _, svc := range project.Services {
 		if _, err := s.swarm.ServiceInspect(ctx, svc.Name); err == nil {
-			return nil, fmt.Errorf("服务 %s 已存在，请先移除或使用其它实例名", svc.Name)
+			return nil, fmt.Errorf("服务 %s 已存在，请先移除", svc.Name)
 		}
 	}
 
@@ -39,9 +48,9 @@ func (s *Service) swarmDeploy(ctx context.Context, req DeployRequest) (*DeployRe
 		return nil, err
 	}
 
-	s.swarmContentSave(req.ProjectName, req.Content, "")
+	s.swarmContentSave(projectName, req.Content, "")
 
-	return &DeployResult{Target: TargetSwarm, Items: items}, nil
+	return &DeployResult{Target: TargetSwarm, ProjectName: projectName, Items: items}, nil
 }
 
 // ==================== 获取内容 ====================

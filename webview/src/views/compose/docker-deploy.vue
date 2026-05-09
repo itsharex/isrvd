@@ -20,15 +20,9 @@ class ComposeDeploy extends Vue {
 
     // 部署参数
     target: ComposeDeployTarget = 'docker'
-    projectName = ''
     initURL = ''
     initFile: File | null = null
     content = ''
-
-    // ─── 计算属性 ───
-    get swarmAvailable(): boolean {
-        return this.portal.hasPerm('POST /api/compose/swarm/deploy')
-    }
 
     // 应用市场 modal 开关
     marketplaceVisible = false
@@ -36,17 +30,13 @@ class ComposeDeploy extends Vue {
     // 预填态（来自应用市场一键选择）：仅用于头部提示徽章，不锁定输入
     fromMarketplace = false
 
-    // 实例名合法性校验（与后端 safeName 保持一致）
-    readonly nameRegex = /^[a-zA-Z0-9][a-zA-Z0-9_.-]*$/
-
     // ─── 计算属性 ───
-    get projectNameValid(): boolean {
-        const name = this.projectName.trim()
-        return !!name && this.nameRegex.test(name)
+    get swarmAvailable(): boolean {
+        return this.portal.hasPerm('POST /api/compose/swarm/deploy')
     }
 
     get canSubmit(): boolean {
-        return !this.loading && !!this.content.trim() && this.projectNameValid
+        return !this.loading && !!this.content.trim()
     }
 
     get targetLabel(): string {
@@ -65,7 +55,6 @@ class ComposeDeploy extends Vue {
 
     onMarketplacePick(payload: ComposeMarketplacePick) {
         this.content = payload.compose
-        this.projectName = payload.name
         this.initURL = payload.initURL || ''
         this.target = 'docker'
         this.fromMarketplace = true
@@ -87,19 +76,17 @@ class ComposeDeploy extends Vue {
     async handleDeploy() {
         if (!this.canSubmit) return
 
-        const projectName = this.projectName.trim()
-
         this.loading = true
         try {
             const res = this.target === 'swarm'
-                ? await api.composeSwarmDeploy({ content: this.content, projectName })
+                ? await api.composeSwarmDeploy({ content: this.content })
                 : await api.composeDockerDeploy({
                     target: 'docker',
                     content: this.content,
-                    projectName,
                     initURL: this.initURL.trim() || undefined,
                     initFile: this.initFile ?? undefined,
                 })
+            const projectName = res.payload?.projectName || ''
             const created = res.payload?.items || []
             const label = this.target === 'swarm' ? '服务' : '容器'
             this.portal.showNotification('success', `${projectName} 部署成功，已创建 ${created.length} 个${label}`)
@@ -118,7 +105,6 @@ class ComposeDeploy extends Vue {
 
     resetForm() {
         this.content = ''
-        this.projectName = ''
         this.initURL = ''
         this.initFile = null
         this.target = 'docker'
@@ -212,30 +198,15 @@ export default toNative(ComposeDeploy)
           </div>
         </div>
 
-        <!-- 实例名（必填；docker 落盘到 数据目录/实例名，swarm 仅作 compose project 名） -->
-        <div>
-          <label class="block text-sm font-medium text-slate-700 mb-2">
-            实例名 <span class="text-red-500">*</span>
-          </label>
-          <input
-            v-model="projectName"
-            type="text"
-            placeholder="例如 my-app"
-            class="input"
-            :disabled="loading"
-          />
-          <p class="mt-1 text-xs text-slate-400">
-            同时作为 compose project 名<span v-if="target === 'docker'">，将在同名目录下保存 compose.yml</span>
-          </p>
-          <p v-if="projectName.trim() && !projectNameValid" class="mt-1 text-xs text-red-500">
-            实例名不符合命名规则 <code class="px-1 bg-slate-100 rounded">[a-zA-Z0-9][a-zA-Z0-9_.-]*</code>
-          </p>
-        </div>
+        <!-- Compose 内容 -->
+        <ComposeEditor v-model="content" :disabled="loading" 
+          warning="项目名来自 compose 文件的 name 字段；变量插值需在客户端完成，后端仅按原文落盘与加载"
+        />
 
         <!-- 附加文件（仅 docker） -->
         <div v-if="target === 'docker'">
           <label class="block text-sm font-medium text-slate-700 mb-2">附加文件
-            <span class="text-xs font-normal text-slate-400">（选填，部署前解压到实例目录）</span>
+            <span class="text-xs font-normal text-slate-400">（选填，部署前解压到项目目录）</span>
           </label>
           <div class="flex items-center gap-2">
             <input
@@ -266,17 +237,6 @@ export default toNative(ComposeDeploy)
             </label>
           </div>
           <p class="mt-1 text-xs text-slate-400">URL 与上传文件二选一，仅支持 .zip 格式</p>
-        </div>
-
-        <!-- Compose 内容 -->
-        <div>
-          <label class="block text-sm font-medium text-slate-700 mb-2">
-            Compose 内容 <span class="text-red-500">*</span>
-          </label>
-          <ComposeEditor v-model="content" :disabled="loading" />
-          <p class="mt-1 text-xs text-slate-400">
-            变量插值需在客户端完成，后端仅按原文落盘与加载
-          </p>
         </div>
 
         <!-- 操作按钮 -->

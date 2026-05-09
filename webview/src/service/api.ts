@@ -481,7 +481,6 @@ class ApiService {
 
     composeDockerDeploy(data: ComposeDeploy) {
         const form = new FormData()
-        form.append('projectName', data.projectName)
         form.append('content', data.content)
         // 文件优先，二者互斥
         if (data.initFile) {
@@ -492,7 +491,7 @@ class ApiService {
         return http.post<ComposeDeployResult>('/api/compose/docker/deploy', form)
     }
 
-    composeSwarmDeploy(data: { content: string; projectName: string }) {
+    composeSwarmDeploy(data: { content: string }) {
         return http.post<ComposeDeployResult>('/api/compose/swarm/deploy', data)
     }
 

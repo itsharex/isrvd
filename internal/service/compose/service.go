@@ -3,6 +3,7 @@ package compose
 
 import (
 	"context"
+	"crypto/sha256"
 	"fmt"
 	"io"
 	"regexp"
@@ -26,10 +27,9 @@ const (
 
 // DeployRequest 部署请求
 type DeployRequest struct {
-	Content     string    `json:"content" binding:"required"`
-	ProjectName string    `json:"projectName" binding:"required"`
-	InitURL     string    `json:"initURL,omitempty"`
-	InitFile    io.Reader `json:"-"`
+	Content  string    `json:"content" binding:"required"`
+	InitURL  string    `json:"initURL,omitempty"`
+	InitFile io.Reader `json:"-"`
 }
 
 // RedeployRequest 重建请求
@@ -39,9 +39,10 @@ type RedeployRequest struct {
 
 // DeployResult 部署结果
 type DeployResult struct {
-	Target     Target   `json:"target"`
-	Items      []string `json:"items"`
-	InstallDir string   `json:"installDir,omitempty"`
+	Target      Target   `json:"target"`
+	ProjectName string   `json:"projectName"`
+	Items       []string `json:"items"`
+	InstallDir  string   `json:"installDir,omitempty"`
 }
 
 // ==================== 服务定义 ====================
@@ -92,9 +93,6 @@ func NewService() (*Service, error) {
 
 // Deploy 统一部署入口
 func (s *Service) Deploy(ctx context.Context, target Target, req DeployRequest) (*DeployResult, error) {
-	if !safeName.MatchString(req.ProjectName) {
-		return nil, fmt.Errorf("非法的实例名")
-	}
 	switch target {
 	case TargetDocker:
 		return s.dockerDeploy(ctx, req)
@@ -109,9 +107,6 @@ func (s *Service) Deploy(ctx context.Context, target Target, req DeployRequest) 
 func (s *Service) ContentInspect(ctx context.Context, target Target, name string) (string, error) {
 	if name == "" {
 		return "", fmt.Errorf("名称不能为空")
-	}
-	if !safeName.MatchString(name) {
-		return "", fmt.Errorf("非法的实例名")
 	}
 	switch target {
 	case TargetDocker:
@@ -128,9 +123,6 @@ func (s *Service) Redeploy(ctx context.Context, target Target, name string, req 
 	if req.Content == "" {
 		return nil, fmt.Errorf("compose 内容不能为空")
 	}
-	if !safeName.MatchString(name) {
-		return nil, fmt.Errorf("非法的实例名")
-	}
 	switch target {
 	case TargetDocker:
 		return s.dockerRedeploy(ctx, name, req.Content)
@@ -139,4 +131,10 @@ func (s *Service) Redeploy(ctx context.Context, target Target, name string, req 
 	default:
 		return nil, fmt.Errorf("不支持的目标: %s", target)
 	}
+}
+
+// shortHash 返回内容的短 hash 字符串
+func shortHash(content string) string {
+	h := sha256.Sum256([]byte(content))
+	return fmt.Sprintf("%x", h[:4])
 }
