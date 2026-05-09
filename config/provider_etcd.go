@@ -12,13 +12,7 @@ import (
 	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
-const (
-	defaultEtcdScheme    = "http"
-	defaultEtcdConfigKey = "/isrvd/config"
-	defaultEtcdTimeout   = 5 * time.Second
-)
-
-// EtcdProvider etcd 配置提供者，value 使用 config.yml 同款 YAML 文本。
+// EtcdProvider etcd 配置提供者
 type EtcdProvider struct {
 	client   *clientv3.Client
 	key      string
@@ -170,7 +164,7 @@ func parseEtcdOptions(path string) (*EtcdOptions, error) {
 	q := u.Query()
 	scheme := q.Get("scheme")
 	if scheme == "" {
-		scheme = defaultEtcdScheme
+		scheme = "http"
 	}
 
 	var endpoints []string
@@ -180,7 +174,7 @@ func parseEtcdOptions(path string) (*EtcdOptions, error) {
 		}
 	}
 
-	timeout := defaultEtcdTimeout
+	timeout := 5 * time.Second
 	if raw := q.Get("timeout"); raw != "" {
 		if timeout, err = time.ParseDuration(raw); err != nil {
 			return nil, fmt.Errorf("etcd timeout 无效: %w", err)
@@ -193,7 +187,7 @@ func parseEtcdOptions(path string) (*EtcdOptions, error) {
 
 	key := u.Path
 	if key == "" || key == "/" {
-		key = defaultEtcdConfigKey
+		key = "/isrvd/config"
 	}
 
 	return &EtcdOptions{

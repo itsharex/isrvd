@@ -2,21 +2,9 @@ package config
 
 import "path/filepath"
 
-const (
-	defaultListenAddr    = ":8080"
-	defaultJWTExpiration = 86400
-	defaultMaxUploadSize = 100 << 20
-	defaultRootDirectory = "."
-)
-
 var (
 	// Server 服务器配置
-	Server = &ServerConfig{
-		ListenAddr:    defaultListenAddr,
-		JWTExpiration: defaultJWTExpiration,
-		MaxUploadSize: defaultMaxUploadSize,
-		RootDirectory: defaultRootDirectory,
-	}
+	Server = ServerNormalize(nil)
 	// Agent LLM 配置
 	Agent = &AgentConfig{}
 	// Apisix 配置
@@ -112,16 +100,16 @@ func ServerNormalize(server *ServerConfig) *ServerConfig {
 		server = &ServerConfig{}
 	}
 	if server.ListenAddr == "" {
-		server.ListenAddr = defaultListenAddr
+		server.ListenAddr = ":8080"
 	}
 	if server.JWTExpiration == 0 {
-		server.JWTExpiration = defaultJWTExpiration
+		server.JWTExpiration = 86400
 	}
 	if server.MaxUploadSize == 0 {
-		server.MaxUploadSize = defaultMaxUploadSize
+		server.MaxUploadSize = 100 << 20
 	}
 	if server.RootDirectory == "" {
-		server.RootDirectory = defaultRootDirectory
+		server.RootDirectory = "."
 	}
 	if !filepath.IsAbs(server.RootDirectory) {
 		if abs, err := filepath.Abs(server.RootDirectory); err == nil {
