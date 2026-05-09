@@ -2,28 +2,26 @@
 
 ## 配置存储后端
 
-默认从 YAML 文件读取配置：
+`CONFIG_PATH` 指定配置位置，未设置时读取 `./config.yml`；etcd 中的 value 仍是 `config.yml` 同款 YAML。
 
 ```bash
+# 本地 YAML
 CONFIG_PATH=/data/conf/isrvd.yml ./isrvd
+
+# etcd：先导入，再启动
+etcdctl put /isrvd/config "$(cat /data/conf/isrvd.yml)"
+CONFIG_PATH="etcd://user:pass@127.0.0.1:2379/isrvd/config?scheme=http&timeout=5s" ./isrvd
+
+# etcd key 不存在时，用 fallback YAML 初始化
+CONFIG_PATH="etcd://127.0.0.1:2379/isrvd/config?fallback=/data/conf/isrvd.yml" ./isrvd
 ```
 
-也可使用 etcd 存储同样的 YAML 内容，便于多实例共享配置：
+格式：`etcd://user:pass@host1:2379,host2:2379/key?scheme=http&timeout=5s&fallback=/path/config.yml`。
 
-```bash
-CONFIG_PATH="etcd://127.0.0.1:2379/isrvd/config?scheme=http&timeout=5s&fallback=/data/conf/isrvd.yml" ./isrvd
-```
-
-| 配置 | 默认值 | 说明 |
-|------|------|------|
-| CONFIG_PATH | config.yml | 普通路径使用 YAML；`etcd://...` 使用 etcd |
-| scheme | http | etcd endpoint 协议，放在 `CONFIG_PATH` query 中 |
-| timeout | 5s | etcd 连接超时，放在 `CONFIG_PATH` query 中 |
-| user:pass@ | 空 | etcd 用户名密码，放在 `CONFIG_PATH` authority 中；特殊字符需 URL encode |
-| fallback | 空 | etcd key 不存在时读取的 YAML 文件路径，读取成功后会写入 etcd |
-| ETCD_USERNAME / ETCD_PASSWORD | 空 | 可补充或覆盖 URI 中的认证信息 |
-
-> etcd 中的值仍为完整 `config.yml` YAML 文本。首次使用前可通过 `etcdctl put /isrvd/config "$(cat config.yml)"` 导入。
+- `user:pass@` 可省略，认证也可通过 `ETCD_USERNAME` / `ETCD_PASSWORD` 提供。
+- `scheme` 默认 `http`，`timeout` 默认 `5s`。
+- `fallback` 仅在 etcd key 不存在时触发；连接失败、权限错误、超时、已有值解析失败不会 fallback。
+- YAML provider 会保留历史兼容逻辑：成员明文密码自动迁移为 bcrypt 并写回 YAML。
 
 ## 获取配置
 

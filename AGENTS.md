@@ -154,11 +154,23 @@ skills/isrvd/
 - 请求/响应结构体：定义在对应 handler 子包；业务模型：就近定义在对应 `pkgs` 文件
 - 避免跨包重复定义语义相同结构体
 
-### 配置结构体
+### 配置结构体与 Provider
 
 - 顶层 `Config`（`config/types.go`），子配置：`Server`、`AgentConfig`、`ApisixConfig`、`DockerConfig`、`MarketplaceConfig`、`MemberConfig`
+- `Server` 必须作为 `config.Server` 结构体统一访问，禁止重新展开为 `config.Debug`、`config.ListenAddr` 等包级散变量
 - 镜像仓库 `DockerRegistry`（含 `Name`、`URL`、`Username`、`Password`、`Description`）
-- 字段使用指针类型 `*` 和 YAML 标签
+- 字段使用指针类型 `*` 和 YAML 标签；配置持久化以 YAML 结构为准，禁止用 API 响应的 `json:"-"` 语义保存配置
+
+**配置 Provider 规范（强制）**
+
+- `provider.go` 只定义 `ConfigProvider` 抽象、全局 provider、`Init/SetProvider` 和基于 `CONFIG_PATH` 的适配器分发；禁止在其中解析具体存储细节
+- 适配器文件自解析自身配置：`provider_yaml.go` 处理文件路径；`provider_etcd.go` 处理 `etcd://user:pass@host/key?query` URI
+- `CONFIG_PATH` 是唯一入口：普通路径/`file://` 使用 YAML；`etcd://` 使用 etcd；禁止新增 `CONFIG_PROVIDER`、`ETCD_ENDPOINTS`、`ETCD_CONFIG_KEY` 等平行入口
+- etcd value 存储完整 `config.yml` 同款 YAML 文本，便于 `config.yml` 与 etcd 互迁；禁止改为 JSON，避免敏感字段因 `json:"-"` 丢失
+- etcd URI 使用标准形式：`etcd://user:pass@host1:2379,host2:2379/isrvd/config?scheme=http&timeout=5s&fallback=/path/config.yml`
+- etcd 认证优先从 URI userinfo 读取；生产场景可用 `ETCD_USERNAME`、`ETCD_PASSWORD` 补充或覆盖；特殊字符必须 URL encode
+- `fallback` 只在 etcd key 不存在时触发：读取 YAML 后写入 etcd；etcd 连接失败、权限错误、超时、已有值解析失败均不得 fallback
+- YAML 明文密码迁移是 `provider_yaml.go` 的历史兼容逻辑，禁止放入 provider 抽象或 etcd provider
 
 ---
 
@@ -234,10 +246,15 @@ skills/isrvd/
 - 形状：`rounded-lg`（禁止 `rounded-full`/`rounded-2xl`）
 - 尺寸：`w-16 h-16`（空状态/登录）、`w-12 h-12`（加载）、`w-10 h-10`（移动卡片）、`w-9 h-9`（toolbar）、`w-8 h-8`（桌面表格）
 
-### 6.7 列表双视图（强制）
+### 6.7 列表双视图与搜索（强制）
 
 - 桌面：`hidden md:block overflow-x-auto` + `<table>`
 - 移动：`md:hidden space-y-3 p-4` + 卡片列表（**`p-4` 不得省略**，卡片 `rounded-xl border border-slate-200 bg-white p-4 transition-all hover:shadow-sm`）
+- 所有资源列表页必须提供 `searchText` + `filteredXxx` 过滤逻辑，并使用 `webview/src/component/page-search.vue`，禁止手写重复的搜索框 HTML
+- 页面级键盘输入直达搜索只能通过 `PageSearch` 的 `type-to-search` 启用；禁止页面直接调用 `bindTypeToSearchFocus`
+- 每个列表页只允许一个 `PageSearch` 设置 `type-to-search`（通常为桌面搜索框）；移动端搜索框复用同一个 `search-key`，但不设置 `type-to-search`
+- `search-key` 使用稳定唯一值（建议与路由名一致，如 `docker-images`、`apisix-routes`、`system-audit-logs`）
+- 过滤逻辑保留在页面内，不下沉到 `PageSearch`；组件只负责输入 UI、`v-model` 和键盘直达绑定
 
 **移动端卡片顶部结构（强制）**：
 
@@ -432,7 +449,7 @@ skills/isrvd/
 
 ## 8) 注册中心与服务初始化
 
-启动顺序：`main → config.Load → registry.Init → server.NewApp`
+启动顺序：`main → config.Init → registry.Init → server.StartApp`
 
 可用性检查：`IsDockerAvailable`、`IsSwarmAvailable`、`IsApisixAvailable`
 
