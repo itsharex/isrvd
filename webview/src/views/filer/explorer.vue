@@ -4,7 +4,9 @@ import { Component, Ref, Vue, toNative } from 'vue-facing-decorator'
 import api from '@/service/api'
 import type { FilerFileInfo } from '@/service/types'
 
-import { bindTypeToSearchFocus, downloadFile, formatFileSize, formatTime, getFileIcon, isEditableFile } from '@/helper/utils'
+import { downloadFile, formatFileSize, formatTime, getFileIcon, isEditableFile } from '@/helper/utils'
+
+import PageSearch from '@/component/page-search.vue'
 
 import { usePortal } from '@/stores'
 
@@ -20,7 +22,7 @@ import ZipModal from './widget/zip-modal.vue'
 
 @Component({
     components: {
-        ChmodModal, CreateModal, DeleteModal, MkdirModal,
+        PageSearch, ChmodModal, CreateModal, DeleteModal, MkdirModal,
         ModifyModal, RenameModal, UnzipModal, UploadModal, ZipModal
     }
 })
@@ -45,8 +47,6 @@ class FileExplorer extends Vue {
     getFileIcon = getFileIcon
     isEditableFile = isEditableFile
     searchText = ''
-
-    private unbindTypeToSearchFocus: (() => void) | null = null
 
     // ─── 计算属性 ───
     get files() {
@@ -84,13 +84,7 @@ class FileExplorer extends Vue {
 
     // ─── 生命周期 ───
     mounted() {
-        this.unbindTypeToSearchFocus = bindTypeToSearchFocus(() => Array.from(this.$el.querySelectorAll('[data-page-search="filer-explorer"]')) as HTMLInputElement[])
         this.portal.loadFiles('/')
-    }
-
-    unmounted() {
-        this.unbindTypeToSearchFocus?.()
-        this.unbindTypeToSearchFocus = null
     }
 }
 
@@ -136,10 +130,7 @@ export default toNative(FileExplorer)
           </nav>
 
           <div class="flex items-center gap-2 flex-shrink-0">
-            <div class="hidden md:block relative">
-              <input v-model="searchText" data-page-search="filer-explorer" type="text" placeholder="搜索文件名、路径或权限..." class="w-72 pl-8 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" />
-              <i class="fas fa-search absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-            </div>
+            <PageSearch v-model="searchText" search-key="filer-explorer" placeholder="搜索文件名、路径或权限..." width-class="w-72" focus-color="primary" type-to-search class="hidden md:block" />
             <button 
               v-if="appActions.hasPerm('POST /api/filer/list')"
               class="hidden md:flex px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium items-center gap-1.5 transition-colors"
@@ -193,10 +184,7 @@ export default toNative(FileExplorer)
 
       <div v-else>
         <div class="md:hidden px-4 py-2 border-b border-slate-100">
-          <div class="relative">
-            <input v-model="searchText" data-page-search="filer-explorer" type="text" placeholder="搜索文件名、路径或权限..." class="w-full pl-8 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" />
-            <i class="fas fa-search absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-          </div>
+          <PageSearch v-model="searchText" search-key="filer-explorer" placeholder="搜索文件名、路径或权限..." width-class="w-full" focus-color="primary" />
         </div>
 
         <!-- File List -->

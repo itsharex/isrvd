@@ -6,9 +6,13 @@ import type { SwarmTask, SwarmServiceInfo } from '@/service/types'
 
 import { formatTime } from '@/helper/utils'
 
+import PageSearch from '@/component/page-search.vue'
+
 import { usePortal } from '@/stores'
 
-@Component
+@Component({
+    components: { PageSearch }
+})
 class Tasks extends Vue {
     portal = usePortal()
 
@@ -17,12 +21,27 @@ class Tasks extends Vue {
     services: SwarmServiceInfo[] = []
     tasksLoading = false
     selectedServiceId = ''
+    searchText = ''
     formatTime = formatTime
 
     // ─── 计算属性 ───
     get filteredTasks() {
-        if (!this.selectedServiceId) return this.tasks
-        return this.tasks.filter((t: SwarmTask) => t.serviceID === this.selectedServiceId)
+        let list = this.tasks
+        if (this.selectedServiceId) {
+            list = list.filter((t: SwarmTask) => t.serviceID === this.selectedServiceId)
+        }
+        if (!this.searchText) return list
+        const s = this.searchText.toLowerCase()
+        return list.filter((t: SwarmTask) =>
+            (t.id || '').toLowerCase().includes(s) ||
+            (t.serviceName || '').toLowerCase().includes(s) ||
+            (t.serviceID || '').toLowerCase().includes(s) ||
+            (t.nodeName || '').toLowerCase().includes(s) ||
+            (t.nodeID || '').toLowerCase().includes(s) ||
+            (t.state || '').toLowerCase().includes(s) ||
+            (t.message || '').toLowerCase().includes(s) ||
+            (t.err || '').toLowerCase().includes(s)
+        )
     }
 
     // ─── 方法 ───
@@ -89,6 +108,7 @@ export default toNative(Tasks)
             </div>
           </div>
           <div class="flex items-center gap-2">
+            <PageSearch v-model="searchText" search-key="swarm-tasks" placeholder="搜索任务、服务、节点、状态或消息..." width-class="w-64" focus-color="emerald" type-to-search />
             <select v-model="selectedServiceId" class="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs text-slate-700 min-w-[160px]">
               <option value="">全部服务</option>
               <option v-for="s in services" :key="s.id" :value="s.id">{{ s.name }}</option>
@@ -114,6 +134,7 @@ export default toNative(Tasks)
               <i class="fas fa-rotate text-sm"></i>
             </button>
           </div>
+          <PageSearch v-model="searchText" search-key="swarm-tasks" placeholder="搜索任务、服务、节点、状态或消息..." width-class="w-full" focus-color="emerald" class="mb-2" />
           <select v-model="selectedServiceId" class="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs text-slate-700">
             <option value="">全部服务</option>
             <option v-for="s in services" :key="s.id" :value="s.id">{{ s.name }}</option>

@@ -6,12 +6,14 @@ import type { ApisixUpstream } from '@/service/types'
 
 import { normalizeUpstreamNodes } from '@/helper/apisix'
 
+import PageSearch from '@/component/page-search.vue'
+
 import { usePortal } from '@/stores'
 
 import UpstreamEditModal from './widget/upstream-edit-modal.vue'
 
 @Component({
-    components: { UpstreamEditModal }
+    components: { PageSearch, UpstreamEditModal }
 })
 class Upstreams extends Vue {
     portal = usePortal()
@@ -126,10 +128,7 @@ export default toNative(Upstreams)
             </div>
           </div>
           <div class="flex items-center gap-2">
-            <div class="relative">
-              <input v-model="searchText" type="text" placeholder="搜索上游、节点或策略..." class="pl-8 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent w-56" />
-              <i class="fas fa-search absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-            </div>
+            <PageSearch v-model="searchText" search-key="apisix-upstreams" placeholder="搜索上游、节点或策略..." width-class="w-56" focus-color="emerald" type-to-search />
             <button class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors" @click="loadUpstreams()">
               <i class="fas fa-rotate"></i>刷新
             </button>
@@ -161,10 +160,7 @@ export default toNative(Upstreams)
       </div>
 
       <div class="md:hidden px-4 py-2 border-b border-slate-100">
-        <div class="relative">
-          <input v-model="searchText" type="text" placeholder="搜索上游、节点..." class="w-full pl-8 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent" />
-          <i class="fas fa-search absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-        </div>
+        <PageSearch v-model="searchText" search-key="apisix-upstreams" placeholder="搜索上游、节点..." width-class="w-full" focus-color="emerald" />
       </div>
 
       <div v-if="loading" class="flex flex-col items-center justify-center py-20">

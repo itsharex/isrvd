@@ -8,11 +8,12 @@ import api from '@/service/api'
 import type { AuditLog } from '@/service/types'
 
 import BaseModal from '@/component/modal.vue'
+import PageSearch from '@/component/page-search.vue'
 
 import { usePortal } from '@/stores'
 
 @Component({
-    components: { BaseModal, Codemirror }
+    components: { BaseModal, PageSearch, Codemirror }
 })
 class AuditLogs extends Vue {
     portal = usePortal()
@@ -21,6 +22,7 @@ class AuditLogs extends Vue {
     logs: AuditLog[] = []
     loading = false
     selectedUsername = ''
+    searchText = ''
 
     // ─── 详情 Modal ───
     detailOpen = false
@@ -47,8 +49,20 @@ class AuditLogs extends Vue {
     }
 
     get filteredLogs() {
-        if (!this.selectedUsername) return this.logs
-        return this.logs.filter(log => log.username === this.selectedUsername)
+        let list = this.logs
+        if (this.selectedUsername) {
+            list = list.filter(log => log.username === this.selectedUsername)
+        }
+        if (!this.searchText) return list
+        const s = this.searchText.toLowerCase()
+        return list.filter((log: AuditLog) =>
+            (log.username || '').toLowerCase().includes(s) ||
+            (log.method || '').toLowerCase().includes(s) ||
+            (log.uri || '').toLowerCase().includes(s) ||
+            (log.body || '').toLowerCase().includes(s) ||
+            (log.ip || '').toLowerCase().includes(s) ||
+            String(log.statusCode || '').includes(s)
+        )
     }
 
     get uniqueUsernames() {
@@ -133,6 +147,7 @@ export default toNative(AuditLogs)
             </div>
           </div>
           <div class="flex items-center gap-2">
+            <PageSearch v-model="searchText" search-key="system-audit-logs" placeholder="搜索用户、方法、URI、IP 或状态..." width-class="w-64" focus-color="rose" type-to-search />
             <select v-model="selectedUsername" class="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs text-slate-700 min-w-[140px]">
               <option value="">所有用户</option>
               <option v-for="username in uniqueUsernames" :key="username" :value="username">{{ username }}</option>
@@ -158,6 +173,7 @@ export default toNative(AuditLogs)
               <i class="fas fa-rotate text-sm"></i>
             </button>
           </div>
+          <PageSearch v-model="searchText" search-key="system-audit-logs" placeholder="搜索用户、方法、URI、IP 或状态..." width-class="w-full" focus-color="rose" class="mb-2" />
           <select v-model="selectedUsername" class="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs text-slate-700">
             <option value="">所有用户</option>
             <option v-for="username in uniqueUsernames" :key="username" :value="username">{{ username }}</option>

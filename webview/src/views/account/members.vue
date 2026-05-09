@@ -4,12 +4,14 @@ import { Component, Ref, Vue, toNative } from 'vue-facing-decorator'
 import api from '@/service/api'
 import type { MemberInfo } from '@/service/types'
 
+import PageSearch from '@/component/page-search.vue'
+
 import { usePortal } from '@/stores'
 
 import MemberEditModal from './widget/member-edit-modal.vue'
 
 @Component({
-    components: { MemberEditModal }
+    components: { PageSearch, MemberEditModal }
 })
 class Members extends Vue {
     portal = usePortal()
@@ -18,6 +20,18 @@ class Members extends Vue {
     // ─── 数据属性 ───
     members: MemberInfo[] = []
     membersLoading = false
+    searchText = ''
+
+    get filteredMembers() {
+        if (!this.searchText) return this.members
+        const s = this.searchText.toLowerCase()
+        return this.members.filter((m: MemberInfo) =>
+            (m.username || '').toLowerCase().includes(s) ||
+            (m.description || '').toLowerCase().includes(s) ||
+            (m.homeDirectory || '').toLowerCase().includes(s) ||
+            (m.permissions || []).join(' ').toLowerCase().includes(s)
+        )
+    }
 
     // ─── 方法 ───
     async loadMembers() {
@@ -83,6 +97,7 @@ export default toNative(Members)
             </div>
           </div>
           <div class="flex items-center gap-2">
+            <PageSearch v-model="searchText" search-key="account-members" placeholder="搜索用户名、描述、家目录或权限..." width-class="w-64" focus-color="blue" type-to-search />
             <button type="button" class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors" @click="loadMembers">
               <i class="fas fa-rotate"></i>刷新
             </button>
@@ -112,6 +127,9 @@ export default toNative(Members)
           </div>
         </div>
       </div>
+      <div class="md:hidden px-4 py-2 border-b border-slate-100">
+        <PageSearch v-model="searchText" search-key="account-members" placeholder="搜索用户名、描述、家目录或权限..." width-class="w-full" focus-color="blue" />
+      </div>
 
       <!-- Loading -->
       <div v-if="membersLoading" class="flex flex-col items-center justify-center py-20">
@@ -120,7 +138,7 @@ export default toNative(Members)
       </div>
 
       <!-- Empty -->
-      <div v-else-if="members.length === 0" class="flex flex-col items-center justify-center py-20">
+      <div v-else-if="filteredMembers.length === 0" class="flex flex-col items-center justify-center py-20">
         <div class="w-16 h-16 rounded-lg bg-slate-100 flex items-center justify-center mb-4">
           <i class="fas fa-users text-4xl text-slate-300"></i>
         </div>
@@ -142,7 +160,7 @@ export default toNative(Members)
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-slate-100">
-              <tr v-for="m in members" :key="m.username" class="hover:bg-slate-50 transition-colors">
+              <tr v-for="m in filteredMembers" :key="m.username" class="hover:bg-slate-50 transition-colors">
                 <td class="px-4 py-3 max-w-[280px]">
                   <div class="flex items-center gap-2 min-w-0">
                     <div class="w-8 h-8 rounded-lg bg-blue-500 flex items-center justify-center flex-shrink-0">
@@ -189,7 +207,7 @@ export default toNative(Members)
 
         <!-- 移动端卡片 -->
         <div class="md:hidden space-y-3 p-4">
-          <div v-for="m in members" :key="m.username" class="rounded-xl border border-slate-200 bg-white p-4 transition-all hover:shadow-sm">
+          <div v-for="m in filteredMembers" :key="m.username" class="rounded-xl border border-slate-200 bg-white p-4 transition-all hover:shadow-sm">
             <!-- 顶部：用户信息 -->
             <div class="flex items-center justify-between mb-3">
               <div class="flex items-center gap-3 min-w-0 flex-1">

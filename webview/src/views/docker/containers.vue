@@ -4,7 +4,9 @@ import { Component, Ref, Vue, toNative } from 'vue-facing-decorator'
 import api from '@/service/api'
 import type { DockerContainerInfo } from '@/service/types'
 
-import { bindTypeToSearchFocus, formatTime } from '@/helper/utils'
+import { formatTime } from '@/helper/utils'
+
+import PageSearch from '@/component/page-search.vue'
 
 import { usePortal } from '@/stores'
 
@@ -12,7 +14,7 @@ import ContainerCreateModal from './widget/container-create-modal.vue'
 import ContainerEditModal from './widget/container-edit-modal.vue'
 
 @Component({
-    components: { ContainerCreateModal, ContainerEditModal }
+    components: { PageSearch, ContainerCreateModal, ContainerEditModal }
 })
 class Containers extends Vue {
     portal = usePortal()
@@ -26,8 +28,6 @@ class Containers extends Vue {
     loading = false
     showAll = false
     searchText = ''
-
-    private unbindTypeToSearchFocus: (() => void) | null = null
 
     get filteredContainers() {
         if (!this.searchText) return this.containers
@@ -100,13 +100,7 @@ class Containers extends Vue {
 
     // ─── 生命周期 ───
     mounted() {
-        this.unbindTypeToSearchFocus = bindTypeToSearchFocus(() => Array.from(this.$el.querySelectorAll('[data-page-search="docker-containers"]')) as HTMLInputElement[])
         this.loadContainers()
-    }
-
-    unmounted() {
-        this.unbindTypeToSearchFocus?.()
-        this.unbindTypeToSearchFocus = null
     }
 }
 
@@ -130,10 +124,7 @@ export default toNative(Containers)
             </div>
           </div>
           <div class="flex items-center gap-2">
-            <div class="relative">
-              <input v-model="searchText" data-page-search="docker-containers" type="text" placeholder="搜索容器名称、ID、镜像或端口..." class="pl-8 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent w-64" />
-              <i class="fas fa-search absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-            </div>
+            <PageSearch v-model="searchText" search-key="docker-containers" placeholder="搜索容器名称、ID、镜像或端口..." width-class="w-64" focus-color="emerald" type-to-search />
             <div class="flex gap-1 bg-slate-100 p-1 rounded-lg">
               <button :class="['px-3 py-1 text-xs font-medium rounded-md transition-all duration-200 flex items-center gap-1.5', !showAll ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700']" @click="showAll = false; loadContainers()">
                 <i class="fas fa-play"></i><span>运行中</span>
@@ -182,10 +173,7 @@ export default toNative(Containers)
         </div>
       </div>
       <div class="md:hidden px-4 py-2 border-b border-slate-100">
-        <div class="relative">
-          <input v-model="searchText" data-page-search="docker-containers" type="text" placeholder="搜索容器名称、镜像或端口..." class="w-full pl-8 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent" />
-          <i class="fas fa-search absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-        </div>
+        <PageSearch v-model="searchText" search-key="docker-containers" placeholder="搜索容器名称、镜像或端口..." width-class="w-full" focus-color="emerald" />
       </div>
       <!-- Loading -->
       <div v-if="loading" class="flex flex-col items-center justify-center py-20">

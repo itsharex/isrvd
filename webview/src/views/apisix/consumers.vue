@@ -4,12 +4,14 @@ import { Component, Ref, Vue, toNative } from 'vue-facing-decorator'
 import api from '@/service/api'
 import type { ApisixConsumer, ApisixRoute } from '@/service/types'
 
+import PageSearch from '@/component/page-search.vue'
+
 import { usePortal } from '@/stores'
 
 import ConsumerEditModal from './widget/consumer-edit-modal.vue'
 
 @Component({
-    components: { ConsumerEditModal }
+    components: { PageSearch, ConsumerEditModal }
 })
 class Consumers extends Vue {
     portal = usePortal()
@@ -105,15 +107,7 @@ export default toNative(Consumers)
             </div>
           </div>
           <div class="flex items-center gap-2">
-            <div class="relative">
-              <input
-                v-model="searchText"
-                type="text"
-                placeholder="搜索消费者..."
-                class="pl-8 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent w-48"
-              />
-              <i class="fas fa-search absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-            </div>
+            <PageSearch v-model="searchText" search-key="apisix-consumers" placeholder="搜索消费者..." width-class="w-48" focus-color="violet" type-to-search />
             <button class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors" @click="loadConsumers()">
               <i class="fas fa-rotate"></i>刷新
             </button>
@@ -145,15 +139,7 @@ export default toNative(Consumers)
       </div>
       <!-- 移动端搜索栏 -->
       <div class="md:hidden px-4 py-2 border-b border-slate-100">
-        <div class="relative">
-          <input
-            v-model="searchText"
-            type="text"
-            placeholder="搜索消费者..."
-            class="w-full pl-8 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
-          />
-          <i class="fas fa-search absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-        </div>
+        <PageSearch v-model="searchText" search-key="apisix-consumers" placeholder="搜索消费者..." width-class="w-full" focus-color="violet" />
       </div>
 
       <!-- Loading -->

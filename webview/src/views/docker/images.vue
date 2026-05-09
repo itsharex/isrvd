@@ -4,7 +4,9 @@ import { Component, Ref, Vue, toNative } from 'vue-facing-decorator'
 import api from '@/service/api'
 import type { DockerImageInfo, DockerRegistryInfo } from '@/service/types'
 
-import { bindTypeToSearchFocus, formatFileSize, formatTime } from '@/helper/utils'
+import { formatFileSize, formatTime } from '@/helper/utils'
+
+import PageSearch from '@/component/page-search.vue'
 
 import { usePortal } from '@/stores'
 
@@ -14,7 +16,7 @@ import ImageTagModal from './widget/image-tag-modal.vue'
 import RegistryPushModal from './widget/registry-push-modal.vue'
 
 @Component({
-    components: { ImagePullModal, ImageTagModal, ImageBuildModal, RegistryPushModal }
+    components: { PageSearch, ImagePullModal, ImageTagModal, ImageBuildModal, RegistryPushModal }
 })
 class Images extends Vue {
     portal = usePortal()
@@ -33,8 +35,6 @@ class Images extends Vue {
     searchText = ''
     formatFileSize = formatFileSize
     formatTime = formatTime
-
-    private unbindTypeToSearchFocus: (() => void) | null = null
 
     get filteredImages() {
         if (!this.searchText) return this.images
@@ -178,14 +178,8 @@ class Images extends Vue {
 
     // ─── 生命周期 ───
     mounted() {
-        this.unbindTypeToSearchFocus = bindTypeToSearchFocus(() => Array.from(this.$el.querySelectorAll('[data-page-search="docker-images"]')) as HTMLInputElement[])
         this.loadImages()
         this.loadRegistries()
-    }
-
-    unmounted() {
-        this.unbindTypeToSearchFocus?.()
-        this.unbindTypeToSearchFocus = null
     }
 }
 
@@ -209,10 +203,7 @@ export default toNative(Images)
             </div>
           </div>
           <div class="flex items-center gap-2">
-            <div class="relative">
-              <input v-model="searchText" data-page-search="docker-images" type="text" placeholder="搜索镜像名称、标签、ID..." class="pl-8 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-64" />
-              <i class="fas fa-search absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-            </div>
+            <PageSearch v-model="searchText" search-key="docker-images" placeholder="搜索镜像名称、标签、ID..." width-class="w-64" focus-color="blue" type-to-search />
             <div class="flex gap-1 bg-slate-100 p-1 rounded-lg">
               <button :class="['px-3 py-1 text-xs font-medium rounded-md transition-all duration-200 flex items-center gap-1.5', !showAllImages ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700']" @click="showAllImages = false; loadImages()">
                 <i class="fas fa-cube"></i><span>顶层</span>
@@ -266,10 +257,7 @@ export default toNative(Images)
       </div>
 
       <div class="md:hidden px-4 py-2 border-b border-slate-100">
-        <div class="relative">
-          <input v-model="searchText" data-page-search="docker-images" type="text" placeholder="搜索镜像名称、标签或 ID..." class="w-full pl-8 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
-          <i class="fas fa-search absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-        </div>
+        <PageSearch v-model="searchText" search-key="docker-images" placeholder="搜索镜像名称、标签或 ID..." width-class="w-full" focus-color="blue" />
       </div>
 
       <!-- Loading -->

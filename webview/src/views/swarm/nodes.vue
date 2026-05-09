@@ -7,22 +7,38 @@ import type { SwarmNodeInfo } from '@/service/types'
 import { copyToClipboard } from '@/helper/utils'
 
 import BaseModal from '@/component/modal.vue'
+import PageSearch from '@/component/page-search.vue'
 
 import { usePortal } from '@/stores'
 
-@Component({ components: { BaseModal } })
+@Component({ components: { BaseModal, PageSearch } })
 class Nodes extends Vue {
     portal = usePortal()
 
     // ─── 数据属性 ───
     nodes: SwarmNodeInfo[] = []
     nodesLoading = false
+    searchText = ''
     showJoinModal = false
     joinTokens: { worker: string; manager: string } | null = null
     joinTokensLoading = false
     joinTokenRole: 'worker' | 'manager' = 'worker'
     joinAddr = ''
     copied = false
+
+    get filteredNodes() {
+        if (!this.searchText) return this.nodes
+        const s = this.searchText.toLowerCase()
+        return this.nodes.filter((n: SwarmNodeInfo) =>
+            (n.hostname || '').toLowerCase().includes(s) ||
+            (n.id || '').toLowerCase().includes(s) ||
+            (n.role || '').toLowerCase().includes(s) ||
+            (n.availability || '').toLowerCase().includes(s) ||
+            (n.state || '').toLowerCase().includes(s) ||
+            (n.addr || '').toLowerCase().includes(s) ||
+            (n.engineVersion || '').toLowerCase().includes(s)
+        )
+    }
 
     // ─── 方法 ───
     nodeStateClass(state: string) {
@@ -132,6 +148,7 @@ export default toNative(Nodes)
             </div>
           </div>
           <div class="flex items-center gap-2">
+            <PageSearch v-model="searchText" search-key="swarm-nodes" placeholder="搜索主机名、ID、角色、状态或 IP..." width-class="w-64" focus-color="blue" type-to-search />
             <button class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors" @click="loadNodes">
               <i class="fas fa-rotate"></i>刷新
             </button>
@@ -161,12 +178,15 @@ export default toNative(Nodes)
           </div>
         </div>
       </div>
+      <div class="md:hidden px-4 py-2 border-b border-slate-100">
+        <PageSearch v-model="searchText" search-key="swarm-nodes" placeholder="搜索主机名、ID、角色、状态或 IP..." width-class="w-full" focus-color="blue" />
+      </div>
 
       <div v-if="nodesLoading" class="flex flex-col items-center justify-center py-20">
         <div class="w-12 h-12 spinner mb-3"></div>
         <p class="text-slate-500">加载中...</p>
       </div>
-      <div v-else-if="nodes.length > 0" class="space-y-3">
+      <div v-else-if="filteredNodes.length > 0" class="space-y-3">
         <!-- 桌面端表格视图 -->
         <div class="hidden md:block overflow-x-auto">
           <table class="w-full border-collapse">
@@ -182,7 +202,7 @@ export default toNative(Nodes)
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-slate-100">
-              <tr v-for="n in nodes" :key="n.id" class="hover:bg-slate-50 transition-colors">
+              <tr v-for="n in filteredNodes" :key="n.id" class="hover:bg-slate-50 transition-colors">
                 <td class="px-4 py-3 max-w-[280px]">
                   <div class="flex items-center gap-2 min-w-0">
                     <div class="w-8 h-8 rounded-lg bg-blue-400 flex items-center justify-center flex-shrink-0">
@@ -222,7 +242,7 @@ export default toNative(Nodes)
         <!-- 移动端卡片视图 -->
         <div class="md:hidden space-y-3 p-4">
           <div 
-            v-for="n in nodes" 
+            v-for="n in filteredNodes" 
             :key="n.id"
             class="rounded-xl border border-slate-200 bg-white p-4 transition-all hover:shadow-sm"
           >

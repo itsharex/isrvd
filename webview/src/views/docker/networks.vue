@@ -4,7 +4,7 @@ import { Component, Ref, Vue, toNative } from 'vue-facing-decorator'
 import api from '@/service/api'
 import type { DockerNetworkInfo } from '@/service/types'
 
-import { bindTypeToSearchFocus } from '@/helper/utils'
+import PageSearch from '@/component/page-search.vue'
 
 import { usePortal } from '@/stores'
 
@@ -12,7 +12,7 @@ import NetworkCreateModal from './widget/network-create-modal.vue'
 
 @Component({
     expose: ['load', 'show'],
-    components: { NetworkCreateModal }
+    components: { PageSearch, NetworkCreateModal }
 })
 class Networks extends Vue {
     portal = usePortal()
@@ -24,8 +24,6 @@ class Networks extends Vue {
     networks: DockerNetworkInfo[] = []
     loading = false
     searchText = ''
-
-    private unbindTypeToSearchFocus: (() => void) | null = null
 
     get filteredNetworks() {
         if (!this.searchText) return this.networks
@@ -91,13 +89,7 @@ class Networks extends Vue {
 
     // ─── 生命周期 ───
     mounted() {
-        this.unbindTypeToSearchFocus = bindTypeToSearchFocus(() => Array.from(this.$el.querySelectorAll('[data-page-search="docker-networks"]')) as HTMLInputElement[])
         this.loadNetworks()
-    }
-
-    unmounted() {
-        this.unbindTypeToSearchFocus?.()
-        this.unbindTypeToSearchFocus = null
     }
 }
 
@@ -121,10 +113,7 @@ export default toNative(Networks)
             </div>
           </div>
           <div class="flex items-center gap-2">
-            <div class="relative">
-              <input v-model="searchText" data-page-search="docker-networks" type="text" placeholder="搜索网络名称、ID、驱动或子网..." class="pl-8 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent w-64" />
-              <i class="fas fa-search absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-            </div>
+            <PageSearch v-model="searchText" search-key="docker-networks" placeholder="搜索网络名称、ID、驱动或子网..." width-class="w-64" focus-color="purple" type-to-search />
             <button class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors" @click="loadNetworks()">
               <i class="fas fa-rotate"></i>刷新
             </button>
@@ -156,10 +145,7 @@ export default toNative(Networks)
       </div>
 
       <div class="md:hidden px-4 py-2 border-b border-slate-100">
-        <div class="relative">
-          <input v-model="searchText" data-page-search="docker-networks" type="text" placeholder="搜索网络名称、ID、驱动..." class="w-full pl-8 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" />
-          <i class="fas fa-search absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-        </div>
+        <PageSearch v-model="searchText" search-key="docker-networks" placeholder="搜索网络名称、ID、驱动..." width-class="w-full" focus-color="purple" />
       </div>
 
       <!-- Loading State -->

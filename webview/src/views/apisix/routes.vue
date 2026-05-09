@@ -5,14 +5,15 @@ import api from '@/service/api'
 import type { ApisixRoute } from '@/service/types'
 
 import { formatRouteUpstreamSummary, formatRouteUpstreamType, formatRouteUpstreamNodes, normalizeUpstreamNodes } from '@/helper/apisix'
-import { bindTypeToSearchFocus } from '@/helper/utils'
+
+import PageSearch from '@/component/page-search.vue'
 
 import { usePortal } from '@/stores'
 
 import RouteEditModal from './widget/route-edit-modal.vue'
 
 @Component({
-    components: { RouteEditModal }
+    components: { PageSearch, RouteEditModal }
 })
 class Routes extends Vue {
     portal = usePortal()
@@ -24,8 +25,6 @@ class Routes extends Vue {
     routes: ApisixRoute[] = []
     loading = false
     searchText = ''
-
-    private unbindTypeToSearchFocus: (() => void) | null = null
 
     // ─── 计算属性 ───
     get filteredRoutes() {
@@ -141,13 +140,7 @@ class Routes extends Vue {
 
     // ─── 生命周期 ───
     mounted() {
-        this.unbindTypeToSearchFocus = bindTypeToSearchFocus(() => Array.from(this.$el.querySelectorAll('[data-page-search="apisix-routes"]')) as HTMLInputElement[])
         this.loadRoutes()
-    }
-
-    unmounted() {
-        this.unbindTypeToSearchFocus?.()
-        this.unbindTypeToSearchFocus = null
     }
 }
 
@@ -165,10 +158,7 @@ export default toNative(Routes)
             <div><h1 class="text-lg font-semibold text-slate-800">路由管理</h1><p class="text-xs text-slate-500">管理 APISIX 路由，并支持多上游节点或引用已有上游</p></div>
           </div>
           <div class="flex items-center gap-2">
-            <div class="relative">
-              <input v-model="searchText" data-page-search="apisix-routes" type="text" placeholder="搜索路由、URI、描述或上游..." class="pl-8 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent w-64" />
-              <i class="fas fa-search absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-            </div>
+            <PageSearch v-model="searchText" search-key="apisix-routes" placeholder="搜索路由、URI、描述或上游..." width-class="w-64" focus-color="indigo" type-to-search />
             <button class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors" @click="loadRoutes()"><i class="fas fa-rotate"></i>刷新</button>
             <button v-if="portal.hasPerm('POST /api/apisix/route')" class="px-3 py-1.5 rounded-lg bg-indigo-500 hover:bg-indigo-600 text-white text-xs font-medium flex items-center gap-1.5 transition-colors" @click="openCreateModal()"><i class="fas fa-plus"></i>创建</button>
           </div>
@@ -194,10 +184,7 @@ export default toNative(Routes)
       </div>
       <!-- 移动端搜索栏 -->
       <div class="md:hidden px-4 py-2 border-b border-slate-100">
-        <div class="relative">
-          <input v-model="searchText" data-page-search="apisix-routes" type="text" placeholder="搜索路由、URI、上游..." class="w-full pl-8 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" />
-          <i class="fas fa-search absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-        </div>
+        <PageSearch v-model="searchText" search-key="apisix-routes" placeholder="搜索路由、URI、上游..." width-class="w-full" focus-color="indigo" />
       </div>
       <div v-if="loading" class="flex flex-col items-center justify-center py-20"><div class="w-12 h-12 spinner mb-3"></div><p class="text-slate-500">加载中...</p></div>
       <div v-else-if="filteredRoutes.length === 0" class="flex flex-col items-center justify-center py-20">
