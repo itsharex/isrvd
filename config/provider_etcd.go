@@ -27,44 +27,34 @@ type EtcdProvider struct {
 	mu       sync.Mutex
 }
 
+type EtcdOptions struct {
+	endpoints []string
+	username  string
+	password  string
+	key       string
+	fallback  string
+	timeout   time.Duration
+}
+
 // NewEtcdProvider 创建 etcd 配置提供者。
 // CONFIG_PATH 示例：etcd://user:pass@host1:2379,host2:2379/isrvd/config?scheme=http&timeout=5s
 func NewEtcdProvider(path string) (*EtcdProvider, error) {
-	u, err := url.Parse(path)
+	opts, err := parseEtcdOptions(path)
 	if err != nil {
 		return nil, err
 	}
-	if u.Host == "" {
-		return nil, fmt.Errorf("etcd 配置路径缺少 endpoints")
-	}
-
-	q := u.Query()
-	timeout := defaultEtcdTimeout
-	if raw := q.Get("timeout"); raw != "" {
-		if timeout, err = time.ParseDuration(raw); err != nil {
-			return nil, fmt.Errorf("etcd timeout 无效: %w", err)
-		}
-	}
-
-	username := envOrDefault("ETCD_USERNAME", u.User.Username())
-	password, _ := u.User.Password()
-	password = envOrDefault("ETCD_PASSWORD", password)
 
 	cli, err := clientv3.New(clientv3.Config{
-		Endpoints:   etcdEndpoints(u.Host, q.Get("scheme")),
-		Username:    username,
-		Password:    password,
-		DialTimeout: timeout,
+		Endpoints:   opts.endpoints,
+		Username:    opts.username,
+		Password:    opts.password,
+		DialTimeout: opts.timeout,
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	key := u.Path
-	if key == "" || key == "/" {
-		key = defaultEtcdConfigKey
-	}
-	return &EtcdProvider{client: cli, key: key, fallback: q.Get("fallback"), timeout: timeout}, nil
+	return &EtcdProvider{client: cli, key: opts.key, fallback: opts.fallback, timeout: opts.timeout}, nil
 }
 
 func (e *EtcdProvider) Type() string {
@@ -168,15 +158,50 @@ func (e *EtcdProvider) context() (context.Context, context.CancelFunc) {
 	return context.WithTimeout(context.Background(), e.timeout)
 }
 
-func etcdEndpoints(hosts, scheme string) []string {
+func parseEtcdOptions(path string) (*EtcdOptions, error) {
+	u, err := url.Parse(path)
+	if err != nil {
+		return nil, err
+	}
+	if u.Host == "" {
+		return nil, fmt.Errorf("etcd 配置路径缺少 endpoints")
+	}
+
+	q := u.Query()
+	scheme := q.Get("scheme")
 	if scheme == "" {
 		scheme = defaultEtcdScheme
 	}
+
 	var endpoints []string
-	for _, host := range strings.Split(hosts, ",") {
+	for _, host := range strings.Split(u.Host, ",") {
 		if host = strings.TrimSpace(host); host != "" {
 			endpoints = append(endpoints, scheme+"://"+host)
 		}
 	}
-	return endpoints
+
+	timeout := defaultEtcdTimeout
+	if raw := q.Get("timeout"); raw != "" {
+		if timeout, err = time.ParseDuration(raw); err != nil {
+			return nil, fmt.Errorf("etcd timeout 无效: %w", err)
+		}
+	}
+
+	username := envOrDefault("ETCD_USERNAME", u.User.Username())
+	password, _ := u.User.Password()
+	password = envOrDefault("ETCD_PASSWORD", password)
+
+	key := u.Path
+	if key == "" || key == "/" {
+		key = defaultEtcdConfigKey
+	}
+
+	return &EtcdOptions{
+		endpoints: endpoints,
+		username:  username,
+		password:  password,
+		key:       key,
+		fallback:  q.Get("fallback"),
+		timeout:   timeout,
+	}, nil
 }
