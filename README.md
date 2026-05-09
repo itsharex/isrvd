@@ -107,7 +107,7 @@ CONFIG_PATH="etcd://user:pass@127.0.0.1:2379/isrvd/config?scheme=http&timeout=5s
 CONFIG_PATH="etcd://127.0.0.1:2379/isrvd/config?fallback=/data/conf/isrvd.yml" ./isrvd
 ```
 
-`etcd://user:pass@host1:2379,host2:2379/key?scheme=http&timeout=5s&fallback=/path/config.yml`；认证可省略或用 `ETCD_USERNAME` / `ETCD_PASSWORD` 补充。
+`etcd://user:pass@host1:2379,host2:2379/key?scheme=http&timeout=5s&fallback=/path/config.yml`；认证可省略或用 `ETCD_USERNAME` / `ETCD_PASSWORD` 补充。etcd 配置变更仅记录重启提示，不自动热更新。
 
 ## 本地开发
 

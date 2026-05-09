@@ -105,6 +105,50 @@ func (e *EtcdProvider) loadFallback() (*Config, error) {
 	return conf, nil
 }
 
+func (e *EtcdProvider) Watch(ctx context.Context) (<-chan struct{}, <-chan error) {
+	changes := make(chan struct{}, 1)
+	errs := make(chan error, 1)
+
+	go func() {
+		defer close(changes)
+		defer close(errs)
+
+		for resp := range e.client.Watch(ctx, e.key) {
+			if err := resp.Err(); err != nil {
+				select {
+				case errs <- err:
+				default:
+				}
+				continue
+			}
+			for _, event := range resp.Events {
+				switch event.Type {
+				case clientv3.EventTypePut:
+					var conf Config
+					if err := yaml.Unmarshal(event.Kv.Value, &conf); err != nil {
+						select {
+						case errs <- fmt.Errorf("etcd 配置解析失败: %w", err):
+						default:
+						}
+						continue
+					}
+					select {
+					case changes <- struct{}{}:
+					default:
+					}
+				case clientv3.EventTypeDelete:
+					select {
+					case errs <- fmt.Errorf("etcd 配置已删除: %s", e.key):
+					default:
+					}
+				}
+			}
+		}
+	}()
+
+	return changes, errs
+}
+
 func (e *EtcdProvider) Save(conf *Config) error {
 	e.mu.Lock()
 	defer e.mu.Unlock()

@@ -170,6 +170,7 @@ skills/isrvd/
 - etcd URI 使用标准形式：`etcd://user:pass@host1:2379,host2:2379/isrvd/config?scheme=http&timeout=5s&fallback=/path/config.yml`
 - etcd 认证优先从 URI userinfo 读取；生产场景可用 `ETCD_USERNAME`、`ETCD_PASSWORD` 补充或覆盖；特殊字符必须 URL encode
 - `fallback` 只在 etcd key 不存在时触发：读取 YAML 后写入 etcd；etcd 连接失败、权限错误、超时、已有值解析失败均不得 fallback
+- etcd watch 只允许做变更检测和重启提示，禁止自动 `Apply` 或静默重建 registry/service
 - YAML 明文密码迁移是 `provider_yaml.go` 的历史兼容逻辑，禁止放入 provider 抽象或 etcd provider
 
 ---

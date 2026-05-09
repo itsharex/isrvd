@@ -1,6 +1,7 @@
 package config
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strings"
@@ -13,6 +14,10 @@ type ConfigProvider interface {
 	Type() string
 	Load() (*Config, error)
 	Save(*Config) error
+}
+
+type ConfigWatcher interface {
+	Watch(context.Context) (<-chan struct{}, <-chan error)
 }
 
 var provider ConfigProvider
@@ -37,7 +42,39 @@ func Init() error {
 	}
 
 	logman.Info("load config", "provider", provider.Type())
-	return Load()
+	if err := Load(); err != nil {
+		return err
+	}
+
+	watchConfigChanges()
+	return nil
+}
+
+func watchConfigChanges() {
+	watcher, ok := provider.(ConfigWatcher)
+	if !ok {
+		return
+	}
+
+	changes, errs := watcher.Watch(context.Background())
+	go func() {
+		for changes != nil || errs != nil {
+			select {
+			case _, ok := <-changes:
+				if !ok {
+					changes = nil
+					continue
+				}
+				logman.Warn("Config changed", "provider", provider.Type(), "msg", "检测到配置变更，当前不会自动热更新，请重启服务使配置完整生效")
+			case err, ok := <-errs:
+				if !ok {
+					errs = nil
+					continue
+				}
+				logman.Warn("Config watch error", "provider", provider.Type(), "error", err)
+			}
+		}
+	}()
 }
 
 func envOrDefault(key, fallback string) string {
