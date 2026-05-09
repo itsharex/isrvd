@@ -40,7 +40,6 @@ func (app *App) composeContentInspect(c *gin.Context) {
 
 // composeDockerDeploy Docker 部署（multipart form，支持文件上传）
 func (app *App) composeDockerDeploy(c *gin.Context) {
-	// 检查文件大小限制
 	if c.Request.ContentLength > config.Server.MaxUploadSize {
 		helper.RespondError(c, http.StatusBadRequest, "文件大小超过限制")
 		return
@@ -58,7 +57,6 @@ func (app *App) composeDockerDeploy(c *gin.Context) {
 
 	// 读取上传的 zip 文件（可选）
 	if fh, err := c.FormFile("initFile"); err == nil {
-		// 检查单个文件大小
 		if fh.Size > config.Server.MaxUploadSize {
 			helper.RespondError(c, http.StatusBadRequest, "文件大小超过限制")
 			return

@@ -72,7 +72,7 @@ func (s *ConfigService) ConfigAll() *AllConfigResponse {
 func (s *ConfigService) ConfigUpdateAll(req UpdateAllConfigRequest) error {
 	if req.Server != nil {
 		req.Server.JWTSecret = pickSecret(req.Server.JWTSecret, config.Server.JWTSecret)
-		config.Server = req.Server
+		config.Server = config.ServerNormalize(req.Server)
 	}
 	if req.Agent != nil {
 		config.Agent.Model = req.Agent.Model

@@ -70,7 +70,7 @@ func Apply(conf *Config) {
 		return
 	}
 
-	Server = normalizeServerConfig(conf.Server)
+	Server = ServerNormalize(conf.Server)
 
 	if conf.Agent != nil {
 		Agent = conf.Agent
@@ -106,7 +106,8 @@ func Apply(conf *Config) {
 	}
 }
 
-func normalizeServerConfig(server *ServerConfig) *ServerConfig {
+// ServerNormalize 填充 Server 默认值并归一化路径
+func ServerNormalize(server *ServerConfig) *ServerConfig {
 	if server == nil {
 		server = &ServerConfig{}
 	}

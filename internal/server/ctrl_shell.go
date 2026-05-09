@@ -11,7 +11,6 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/rehiy/pango/logman"
 
-	"isrvd/config"
 	"isrvd/internal/helper"
 )
 
@@ -24,7 +23,11 @@ func (app *App) defineShellRoutes() []Route {
 
 func (app *App) shellWebSocket(c *gin.Context) {
 	username := c.GetString("username")
-	member := config.Members[username]
+	member := app.accountSvc.MemberInspect(username)
+	if member == nil {
+		logman.Error("用户不存在", "username", username)
+		return
+	}
 
 	shell := c.DefaultQuery("shell", "bash")
 	conn, err := helper.WsUpgrader.Upgrade(c.Writer, c.Request, nil)
