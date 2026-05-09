@@ -92,6 +92,19 @@ bash <(curl -sL https://jscdn.rehi.org/gh/rehiy/isrvd/build/script/isrvd.sh) dow
 
 也可直接运行 `./isrvd`，通过环境变量 `CONFIG_PATH` 指定配置文件。
 
+配置默认使用 YAML 文件，也支持将同样的 YAML 内容存储到 etcd，便于多实例共享配置：
+
+```bash
+# YAML（默认）
+CONFIG_PATH=/data/conf/isrvd.yml ./isrvd
+
+# etcd
+etcdctl put /isrvd/config "$(cat /data/conf/isrvd.yml)"
+CONFIG_PATH="etcd://127.0.0.1:2379/isrvd/config?scheme=http&timeout=5s&fallback=/data/conf/isrvd.yml" ./isrvd
+```
+
+`CONFIG_PATH` 使用标准 URI 格式：`etcd://user:pass@host1:2379,host2:2379/key?scheme=http&timeout=5s&fallback=/path/config.yml`。无认证时可省略 `user:pass@`；生产环境也可用 `ETCD_USERNAME`、`ETCD_PASSWORD` 补充或覆盖认证信息。`fallback` 仅在 etcd key 不存在时生效，会读取 YAML 并写入 etcd。
+
 ## 本地开发
 
 ### 环境要求

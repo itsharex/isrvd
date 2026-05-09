@@ -38,7 +38,6 @@ func (y *YamlProvider) Load() (*Config, error) {
 	}
 
 	y.migratePasswords(conf)
-
 	return conf, nil
 }
 
@@ -55,7 +54,7 @@ func (y *YamlProvider) Save(conf *Config) error {
 	return os.WriteFile(y.file, data, 0644)
 }
 
-// migratePasswords 迁移明文密码为加密格式
+// migratePasswords 迁移 YAML 历史明文密码为加密格式
 func (y *YamlProvider) migratePasswords(conf *Config) {
 	migrated := false
 
@@ -79,7 +78,7 @@ func (y *YamlProvider) migratePasswords(conf *Config) {
 		if err := y.Save(conf); err != nil {
 			logman.Warn("密码迁移保存失败", "error", err)
 		} else {
-			logman.Info("配置文件已自动更新（密码迁移）")
+			logman.Info("YAML 配置已自动更新（密码迁移）")
 		}
 	}
 }

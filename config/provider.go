@@ -1,31 +1,48 @@
 package config
 
 import (
+	"fmt"
 	"os"
+	"strings"
 
 	"github.com/rehiy/pango/logman"
 )
 
-// 全局配置提供者实例
-var provider ConfigProvider
-
 // ConfigProvider 配置提供者接口
-// 支持从不同数据源加载配置（yml/etcd 等）
 type ConfigProvider interface {
 	Type() string
 	Load() (*Config, error)
 	Save(*Config) error
 }
 
+var provider ConfigProvider
+
 func Init() error {
 	if provider == nil {
-		file := "config.yml"
-		if f := os.Getenv("CONFIG_PATH"); f != "" {
-			file = f
+		path := envOrDefault("CONFIG_PATH", "config.yml")
+		switch {
+		case strings.HasPrefix(strings.ToLower(path), "etcd://"):
+			p, err := NewEtcdProvider(path)
+			if err != nil {
+				return err
+			}
+			provider = p
+		case strings.HasPrefix(strings.ToLower(path), "file://"):
+			provider = NewYamlProvider(strings.TrimPrefix(path, "file://"))
+		case strings.Contains(path, "://"):
+			return fmt.Errorf("不支持的配置路径: %s", path)
+		default:
+			provider = NewYamlProvider(path)
 		}
-		provider = NewYamlProvider(file)
 	}
 
 	logman.Info("load config", "provider", provider.Type())
 	return Load()
+}
+
+func envOrDefault(key, fallback string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	return fallback
 }
