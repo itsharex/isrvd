@@ -10,7 +10,7 @@ import (
 
 // AllConfigResponse 全部配置聚合响应
 type AllConfigResponse struct {
-	Server      *config.Server            `json:"server"`
+	Server      *config.ServerConfig      `json:"server"`
 	Agent       *config.AgentConfig       `json:"agent"`
 	Apisix      *config.ApisixConfig      `json:"apisix"`
 	Docker      *config.DockerConfig      `json:"docker"`
@@ -20,7 +20,7 @@ type AllConfigResponse struct {
 
 // UpdateAllConfigRequest 全量更新请求
 type UpdateAllConfigRequest struct {
-	Server      *config.Server            `json:"server"`
+	Server      *config.ServerConfig      `json:"server"`
 	Agent       *config.AgentConfig       `json:"agent"`
 	Apisix      *config.ApisixConfig      `json:"apisix"`
 	Docker      *config.DockerConfig      `json:"docker"`
@@ -48,10 +48,12 @@ func pickSecret(newVal, oldVal string) string {
 func (s *ConfigService) ConfigAll() *AllConfigResponse {
 	// 构造响应结构（敏感字段 json:"-" 会自动排除）
 	resp := &AllConfigResponse{
-		Server: &config.Server{
+		Server: &config.ServerConfig{
 			Debug:           config.Debug,
 			ListenAddr:      config.ListenAddr,
 			JWTSecret:       config.JWTSecret,
+			JWTExpiration:   config.JWTExpiration,
+			MaxUploadSize:   config.MaxUploadSize,
 			ProxyHeaderName: config.ProxyHeaderName,
 			RootDirectory:   config.RootDirectory,
 		},
@@ -82,6 +84,8 @@ func (s *ConfigService) ConfigUpdateAll(req UpdateAllConfigRequest) error {
 		config.Debug = req.Server.Debug
 		config.ListenAddr = req.Server.ListenAddr
 		config.JWTSecret = pickSecret(req.Server.JWTSecret, config.JWTSecret)
+		config.JWTExpiration = req.Server.JWTExpiration
+		config.MaxUploadSize = req.Server.MaxUploadSize
 		config.ProxyHeaderName = req.Server.ProxyHeaderName
 		config.RootDirectory = req.Server.RootDirectory
 	}

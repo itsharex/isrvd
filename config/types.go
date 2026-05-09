@@ -2,7 +2,7 @@ package config
 
 // 配置结构
 type Config struct {
-	Server      *Server            `yaml:"server"`
+	Server      *ServerConfig      `yaml:"server"`
 	Agent       *AgentConfig       `yaml:"agent"`
 	Apisix      *ApisixConfig      `yaml:"apisix"`
 	Docker      *DockerConfig      `yaml:"docker"`
@@ -12,10 +12,12 @@ type Config struct {
 }
 
 // 服务器配置
-type Server struct {
+type ServerConfig struct {
 	Debug           bool   `yaml:"debug" json:"debug"`
 	ListenAddr      string `yaml:"listenAddr" json:"listenAddr"`
-	JWTSecret       string `yaml:"jwtSecret" json:"-"` // 敏感字段不序列化到 JSON
+	JWTSecret       string `yaml:"jwtSecret" json:"-"`                 // 敏感字段不序列化到 JSON
+	JWTExpiration   int64  `yaml:"jwtExpiration" json:"jwtExpiration"` // JWT 过期时间（秒），默认 86400
+	MaxUploadSize   int64  `yaml:"maxUploadSize" json:"maxUploadSize"` // 文件上传最大大小（字节），默认 100MB
 	ProxyHeaderName string `yaml:"proxyHeaderName" json:"proxyHeaderName"`
 	RootDirectory   string `yaml:"rootDirectory" json:"rootDirectory"`
 }

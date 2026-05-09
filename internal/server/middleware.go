@@ -78,7 +78,24 @@ func AuditMiddleware(svc *svcSystem.AuditService) gin.HandlerFunc {
 		if !isWS {
 			body = svc.RequestBodyRead(c)
 		}
+
 		c.Next()
 		svc.RequestRecord(c, startTime, body)
+	}
+}
+
+// securityHeadersMiddleware 安全响应头中间件
+func securityHeadersMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// 防止点击劫持
+		c.Header("X-Frame-Options", "DENY")
+		// 防止 MIME 类型嗅探
+		c.Header("X-Content-Type-Options", "nosniff")
+		// XSS 保护
+		c.Header("X-XSS-Protection", "1; mode=block")
+		// 引用策略
+		c.Header("Referrer-Policy", "strict-origin-when-cross-origin")
+
+		c.Next()
 	}
 }

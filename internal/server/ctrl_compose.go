@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"isrvd/config"
 	"isrvd/internal/helper"
 	svcCompose "isrvd/internal/service/compose"
 )
@@ -39,6 +40,12 @@ func (app *App) composeContentInspect(c *gin.Context) {
 
 // composeDockerDeploy Docker 部署（multipart form，支持文件上传）
 func (app *App) composeDockerDeploy(c *gin.Context) {
+	// 检查文件大小限制
+	if c.Request.ContentLength > config.MaxUploadSize {
+		helper.RespondError(c, http.StatusBadRequest, "文件大小超过限制")
+		return
+	}
+
 	req := svcCompose.DeployRequest{
 		Content:     c.PostForm("content"),
 		ProjectName: c.PostForm("projectName"),
@@ -51,6 +58,11 @@ func (app *App) composeDockerDeploy(c *gin.Context) {
 
 	// 读取上传的 zip 文件（可选）
 	if fh, err := c.FormFile("initFile"); err == nil {
+		// 检查单个文件大小
+		if fh.Size > config.MaxUploadSize {
+			helper.RespondError(c, http.StatusBadRequest, "文件大小超过限制")
+			return
+		}
 		f, err := fh.Open()
 		if err != nil {
 			helper.RespondError(c, http.StatusBadRequest, "读取上传文件失败: "+err.Error())

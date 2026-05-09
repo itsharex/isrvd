@@ -120,7 +120,7 @@ func (s *Service) Login(req LoginRequest) (*LoginResponse, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"sub": req.Username,
 		"iat": time.Now().Unix(),
-		"exp": time.Now().Add(24 * time.Hour).Unix(),
+		"exp": time.Now().Add(time.Duration(config.JWTExpiration) * time.Second).Unix(),
 		"pwd": pwd,
 	})
 	tokenString, err := token.SignedString([]byte(config.JWTSecret))

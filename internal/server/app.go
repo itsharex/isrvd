@@ -86,6 +86,11 @@ type Route struct {
 // 按模块注册路由，每个模块自己管理路由定义和注册
 func (app *App) initRoutes() {
 	r := app.Group(APINamespace)
+
+	// 安全响应头中间件
+	r.Use(securityHeadersMiddleware())
+
+	// 认证与权限中间件
 	r.Use(AuthMiddleware(app.routePerms, app.accountSvc))
 	r.Use(PermMiddleware(app.routePerms, app.accountSvc))
 	r.Use(AuditMiddleware(app.auditSvc))

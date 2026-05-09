@@ -1,14 +1,20 @@
 package config
 
-import "path/filepath"
+import (
+	"path/filepath"
+)
 
 var (
 	// 模式
 	Debug = false
 	// 监听地址
 	ListenAddr = ":8080"
-	// JWT 密钥
-	JWTSecret = "jwt-secret-key"
+	// JWT 密钥（由启动脚本配置）
+	JWTSecret = ""
+	// JWT 过期时间（秒），0 表示使用默认值 24小时
+	JWTExpiration int64 = 0
+	// 文件上传最大大小（字节），0 表示使用默认值 100M
+	MaxUploadSize int64 = 0
 	// 内网代理用户名 Header 名（为空则不启用）
 	ProxyHeaderName = ""
 	// 基础目录
@@ -37,7 +43,6 @@ func Load() error {
 	}
 
 	Apply(conf)
-
 	return nil
 }
 
@@ -49,10 +54,12 @@ func Save() error {
 	}
 
 	conf := &Config{
-		Server: &Server{
+		Server: &ServerConfig{
 			Debug:           Debug,
 			ListenAddr:      ListenAddr,
 			JWTSecret:       JWTSecret,
+			JWTExpiration:   JWTExpiration,
+			MaxUploadSize:   MaxUploadSize,
 			ProxyHeaderName: ProxyHeaderName,
 			RootDirectory:   RootDirectory,
 		},
@@ -73,8 +80,18 @@ func Apply(conf *Config) {
 		Debug = conf.Server.Debug
 		ListenAddr = conf.Server.ListenAddr
 		JWTSecret = conf.Server.JWTSecret
+		JWTExpiration = conf.Server.JWTExpiration
+		MaxUploadSize = conf.Server.MaxUploadSize
 		ProxyHeaderName = conf.Server.ProxyHeaderName
 		RootDirectory = conf.Server.RootDirectory
+		// JWT 过期时间默认值
+		if JWTExpiration == 0 {
+			JWTExpiration = 86400
+		}
+		// 文件上传大小默认值（100MB）
+		if MaxUploadSize == 0 {
+			MaxUploadSize = 100 << 20
+		}
 		// 将 RootDirectory 转换为绝对路径
 		if !filepath.IsAbs(RootDirectory) {
 			abs, err := filepath.Abs(RootDirectory)

@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/rehiy/pango/logman"
 
+	"isrvd/config"
 	"isrvd/internal/helper"
 )
 
@@ -171,6 +172,15 @@ func (app *App) filerFileChmod(c *gin.Context) {
 }
 
 func (app *App) filerFileUpload(c *gin.Context) {
+	// 检查文件大小限制
+	if c.Request.ContentLength > config.MaxUploadSize {
+		helper.RespondError(c, http.StatusBadRequest, "文件大小超过限制")
+		return
+	}
+
+	// 限制读取的请求体大小
+	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, config.MaxUploadSize)
+
 	file, header, err := c.Request.FormFile("file")
 	if err != nil {
 		helper.RespondError(c, http.StatusBadRequest, "No file uploaded")
