@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/rehiy/pango/filer"
+	"github.com/rehiy/pango/logman"
 
 	"isrvd/config"
 	"isrvd/pkgs/archive"
@@ -35,7 +36,8 @@ type FileInfo struct {
 	ModTime time.Time `json:"modTime"`
 }
 
-// AbsPath 解析用户相对路径为绝对路径，并防止目录遍历
+// AbsPath 解析用户相对路径为绝对路径，并防止目录遍历和符号链接逃逸
+// 安全策略：解析所有符号链接后，验证实际路径仍在 home 目录内
 func (s *Service) AbsPath(username, path string) string {
 	home := filepath.Clean(filepath.Join(config.Server.RootDirectory, "share"))
 	if username != "" {
@@ -43,12 +45,46 @@ func (s *Service) AbsPath(username, path string) string {
 			home = filepath.Clean(member.HomeDirectory)
 		}
 	}
+
+	// 构建请求的绝对路径
 	abs := filepath.Clean(filepath.Join(home, path))
-	rel, err := filepath.Rel(home, abs)
-	if err == nil && rel != ".." && !filepath.IsAbs(rel) && !strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
-		return abs
+
+	// 解析 home 目录的符号链接（home 本身可能是符号链接）
+	homeReal, err := filepath.EvalSymlinks(home)
+	if err != nil {
+		homeReal = home // 如果 home 不存在，使用原始路径
 	}
-	return home
+
+	// 尝试解析请求路径的符号链接
+	// 如果路径不存在，逐级向上查找存在的父目录并验证
+	realPath := abs
+	for {
+		real, err := filepath.EvalSymlinks(realPath)
+		if err == nil {
+			realPath = real
+			break
+		}
+		// 路径不存在，检查父目录
+		parent := filepath.Dir(realPath)
+		if parent == realPath {
+			// 已到达根目录，无法继续向上
+			break
+		}
+		realPath = parent
+	}
+
+	// 验证实际路径是否在 home 目录内
+	rel, err := filepath.Rel(homeReal, realPath)
+	if err != nil {
+		logman.Warn("Path escape attempt", "username", username, "path", path, "realPath", realPath, "error", err)
+		return home // 无法计算相对路径，拒绝访问
+	}
+	if rel == ".." || filepath.IsAbs(rel) || strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
+		logman.Warn("Path escape attempt", "username", username, "path", path, "realPath", realPath, "home", homeReal)
+		return home // 路径逃逸，拒绝访问
+	}
+
+	return abs
 }
 
 // FileList 列出目录下的文件
