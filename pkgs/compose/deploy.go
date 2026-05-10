@@ -44,35 +44,40 @@ func (s *ComposeService) DeployProject(ctx context.Context, project *types.Proje
 	}
 
 	for _, svc := range project.Services {
-		req, err := ServiceToCreateRequest(project, svc)
+		id, name, err := s.ServiceContainerCreate(ctx, project, svc)
 		if err != nil {
 			rollback()
 			return nil, err
 		}
 
-		if err := s.docker.ImageEnsure(ctx, svc.Image); err != nil {
-			rollback()
-			return nil, fmt.Errorf("镜像 %s 不存在，拉取失败: %w", svc.Image, err)
-		}
-
-		id, err := s.docker.ContainerCreate(ctx, req)
-		if err != nil {
-			rollback()
-			return nil, fmt.Errorf("创建容器 %s 失败: %w", req.Name, err)
-		}
-
 		createdIDs = append(createdIDs, id)
-		containers = append(containers, fmt.Sprintf("%s (%s)", req.Name, pkgdocker.ShortID(id)))
+		containers = append(containers, fmt.Sprintf("%s (%s)", name, pkgdocker.ShortID(id)))
 
 		logman.Info("Compose container deployed",
 			"project", project.Name,
 			"service", svc.Name,
-			"container", req.Name,
+			"container", name,
 			"id", pkgdocker.ShortID(id),
 		)
 	}
 
 	return containers, nil
+}
+
+// ServiceContainerCreate 根据 compose service 创建对应 Docker 容器
+func (s *ComposeService) ServiceContainerCreate(ctx context.Context, project *types.Project, svc types.ServiceConfig) (string, string, error) {
+	req, err := ServiceToCreateRequest(project, svc)
+	if err != nil {
+		return "", "", err
+	}
+	if err := s.docker.ImageEnsure(ctx, svc.Image); err != nil {
+		return "", "", fmt.Errorf("镜像 %s 不存在，拉取失败: %w", svc.Image, err)
+	}
+	id, err := s.docker.ContainerCreate(ctx, req)
+	if err != nil {
+		return "", "", fmt.Errorf("创建容器 %s 失败: %w", req.Name, err)
+	}
+	return id, req.Name, nil
 }
 
 // collectNetworks 收集 project 中所有非内置网络名（去重）

@@ -232,9 +232,9 @@ func (s *Service) dockerImageRedeploy(ctx context.Context, name, serviceName, im
 		return nil, fmt.Errorf("删除旧容器 %s 失败: %w", oldContainerName, err)
 	}
 
-	id, err := s.dockerServiceCreate(ctx, newProject, newSvc)
+	id, err := s.dockerServiceContainerCreate(ctx, newProject, newSvc)
 	if err != nil {
-		if _, rbErr := s.dockerServiceCreate(ctx, oldProject, oldSvc); rbErr != nil {
+		if _, rbErr := s.dockerServiceContainerCreate(ctx, oldProject, oldSvc); rbErr != nil {
 			logman.Warn("Docker service rollback failed", "name", name, "service", serviceName, "error", rbErr)
 		}
 		s.dockerContentSave(installDir, oldContent, "")
@@ -267,19 +267,9 @@ func (s *Service) dockerProjectLoad(ctx context.Context, name, content, installD
 	})
 }
 
-func (s *Service) dockerServiceCreate(ctx context.Context, project *types.Project, svc types.ServiceConfig) (string, error) {
-	req, err := compose.ServiceToCreateRequest(project, svc)
-	if err != nil {
-		return "", err
-	}
-	if err := s.docker.ImageEnsure(ctx, svc.Image); err != nil {
-		return "", fmt.Errorf("镜像 %s 不存在，拉取失败: %w", svc.Image, err)
-	}
-	id, err := s.docker.ContainerCreate(ctx, req)
-	if err != nil {
-		return "", fmt.Errorf("创建容器 %s 失败: %w", req.Name, err)
-	}
-	return id, nil
+func (s *Service) dockerServiceContainerCreate(ctx context.Context, project *types.Project, svc types.ServiceConfig) (string, error) {
+	id, _, err := s.compose.ServiceContainerCreate(ctx, project, svc)
+	return id, err
 }
 
 // dockerContainersRemove 停止并删除实例的所有容器
