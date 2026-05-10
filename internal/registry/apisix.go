@@ -6,7 +6,7 @@ import (
 	"isrvd/config"
 	"isrvd/pkgs/apisix"
 
-	"github.com/rehiy/pango/logman"
+	"github.com/rehiy/libgo/logman"
 )
 
 var ApisixClient *apisix.Client

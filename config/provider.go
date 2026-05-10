@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/rehiy/pango/logman"
+	"github.com/rehiy/libgo/logman"
 )
 
 // ConfigProvider 配置提供者接口

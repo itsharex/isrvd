@@ -10,8 +10,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/rehiy/pango/filer"
-	"github.com/rehiy/pango/logman"
+	"github.com/rehiy/libgo/filer"
+	"github.com/rehiy/libgo/logman"
 
 	"isrvd/config"
 	"isrvd/pkgs/archive"

@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/rehiy/pango/logman"
+	"github.com/rehiy/libgo/logman"
 
 	"isrvd/config"
 	"isrvd/internal/helper"

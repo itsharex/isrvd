@@ -8,8 +8,8 @@ import (
 	"path/filepath"
 
 	"github.com/compose-spec/compose-go/v2/types"
-	"github.com/rehiy/pango/logman"
-	"github.com/rehiy/pango/request"
+	"github.com/rehiy/libgo/logman"
+	"github.com/rehiy/libgo/request"
 
 	"isrvd/pkgs/archive"
 	"isrvd/pkgs/compose"

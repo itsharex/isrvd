@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/docker/docker/api/types/network"
-	"github.com/rehiy/pango/logman"
+	"github.com/rehiy/libgo/logman"
 )
 
 // NetworkInfo Docker 网络信息

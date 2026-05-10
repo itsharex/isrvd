@@ -9,7 +9,7 @@ import (
 	"github.com/creack/pty"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
-	"github.com/rehiy/pango/logman"
+	"github.com/rehiy/libgo/logman"
 
 	"isrvd/internal/helper"
 )

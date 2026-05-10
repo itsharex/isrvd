@@ -3,7 +3,7 @@ package registry
 import (
 	"context"
 
-	"github.com/rehiy/pango/logman"
+	"github.com/rehiy/libgo/logman"
 
 	"isrvd/pkgs/compose"
 )

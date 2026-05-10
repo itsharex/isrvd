@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/compose-spec/compose-go/v2/types"
-	"github.com/rehiy/pango/logman"
+	"github.com/rehiy/libgo/logman"
 
 	pkgdocker "isrvd/pkgs/docker"
 )

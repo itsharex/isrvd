@@ -7,7 +7,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/rehiy/pango/strutil"
+	"github.com/rehiy/libgo/strutil"
 )
 
 // Consumer Apisix Consumer 信息

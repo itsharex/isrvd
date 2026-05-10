@@ -4,7 +4,7 @@ package apisix
 import (
 	"fmt"
 
-	"github.com/rehiy/pango/logman"
+	"github.com/rehiy/libgo/logman"
 
 	"isrvd/internal/registry"
 	pkgapisix "isrvd/pkgs/apisix"

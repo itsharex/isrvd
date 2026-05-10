@@ -6,7 +6,7 @@ import (
 
 	"github.com/docker/docker/api/types/swarm"
 	"github.com/docker/docker/client"
-	"github.com/rehiy/pango/logman"
+	"github.com/rehiy/libgo/logman"
 )
 
 // SwarmService Swarm 业务逻辑服务

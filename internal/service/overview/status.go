@@ -6,7 +6,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/rehiy/pango/psutil"
+	"github.com/rehiy/libgo/psutil"
 	"github.com/shirou/gopsutil/v3/disk"
 
 	"isrvd/config"

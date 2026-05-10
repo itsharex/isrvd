@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/rehiy/pango/logman"
+	"github.com/rehiy/libgo/logman"
 )
 
 // Client Apisix Admin API 客户端

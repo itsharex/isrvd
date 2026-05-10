@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/docker/docker/api/types/container"
-	"github.com/rehiy/pango/logman"
+	"github.com/rehiy/libgo/logman"
 	"github.com/shirou/gopsutil/v3/cpu"
 )
 

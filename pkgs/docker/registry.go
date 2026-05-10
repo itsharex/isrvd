@@ -9,7 +9,7 @@ import (
 
 	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/api/types/registry"
-	"github.com/rehiy/pango/logman"
+	"github.com/rehiy/libgo/logman"
 )
 
 // RegistryInfo 镜像仓库信息

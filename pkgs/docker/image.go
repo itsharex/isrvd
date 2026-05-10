@@ -12,7 +12,7 @@ import (
 	dockerimage "github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/api/types/registry"
 	dockerspec "github.com/moby/docker-image-spec/specs-go/v1"
-	"github.com/rehiy/pango/logman"
+	"github.com/rehiy/libgo/logman"
 )
 
 // ImageInfo Docker 镜像信息

@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/docker/docker/api/types/swarm"
-	"github.com/rehiy/pango/logman"
+	"github.com/rehiy/libgo/logman"
 )
 
 // NodeInfo Swarm 节点信息（列表项）

@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/rehiy/pango/logman"
+	"github.com/rehiy/libgo/logman"
 
 	"isrvd/config"
 	"isrvd/pkgs/docker"

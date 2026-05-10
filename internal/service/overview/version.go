@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/rehiy/pango/logman"
+	"github.com/rehiy/libgo/logman"
 )
 
 // VersionCheck 版本检测结果

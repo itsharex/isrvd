@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/compose-spec/compose-go/v2/types"
-	"github.com/rehiy/pango/logman"
+	"github.com/rehiy/libgo/logman"
 
 	"isrvd/pkgs/compose"
 	pkgdocker "isrvd/pkgs/docker"

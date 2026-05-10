@@ -2,8 +2,8 @@ package server
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/rehiy/pango/httpd"
-	"github.com/rehiy/pango/logman"
+	"github.com/rehiy/libgo/httpd"
+	"github.com/rehiy/libgo/logman"
 
 	svcAccount "isrvd/internal/service/account"
 	svcApisix "isrvd/internal/service/apisix"

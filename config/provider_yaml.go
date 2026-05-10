@@ -5,7 +5,7 @@ import (
 	"sync"
 
 	"github.com/goccy/go-yaml"
-	"github.com/rehiy/pango/logman"
+	"github.com/rehiy/libgo/logman"
 
 	"isrvd/internal/helper"
 )
