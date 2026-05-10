@@ -174,11 +174,6 @@ func (s *Service) swarmImageRedeploy(ctx context.Context, name, serviceName, ima
 
 // swarmProjectDeploy 部署 compose project 中的所有服务，失败时回滚已创建的服务
 func (s *Service) swarmProjectDeploy(ctx context.Context, project *types.Project) ([]string, error) {
-	// 确保所有非 external 网络存在（swarm 服务需要 overlay 网络预先存在）
-	if err := s.swarmEnsureNetworks(ctx, project); err != nil {
-		return nil, err
-	}
-
 	var createdIDs []string
 	var items []string
 
@@ -191,20 +186,14 @@ func (s *Service) swarmProjectDeploy(ctx context.Context, project *types.Project
 	}
 
 	for _, svc := range project.Services {
-		req, err := compose.ServiceToSwarmRequest(project, svc)
+		id, err := s.swarmServiceCreate(ctx, project, svc)
 		if err != nil {
 			rollback()
 			return nil, err
 		}
 
-		id, err := s.swarm.ServiceCreate(ctx, req)
-		if err != nil {
-			rollback()
-			return nil, fmt.Errorf("创建服务 %s 失败: %w", req.Name, err)
-		}
-
 		createdIDs = append(createdIDs, id)
-		items = append(items, fmt.Sprintf("%s (%s)", req.Name, pkgdocker.ShortID(id)))
+		items = append(items, fmt.Sprintf("%s (%s)", svc.Name, pkgdocker.ShortID(id)))
 		logman.Info("Swarm service deployed", "service", svc.Name, "id", pkgdocker.ShortID(id))
 	}
 	return items, nil
