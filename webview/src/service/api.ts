@@ -64,6 +64,7 @@ import type {
     // Compose
     ComposeDeployResult,
     ComposeDeploy,
+    ComposeImageRedeploy,
     ComposeRedeploy
 } from './types'
 
@@ -499,8 +500,16 @@ class ApiService {
         return http.post<ComposeDeployResult>(`/api/compose/docker/${name}/redeploy`, data)
     }
 
+    composeDockerImageRedeploy(name: string, data: ComposeImageRedeploy) {
+        return http.post<ComposeDeployResult>(`/api/compose/docker/${name}/image-redeploy`, data)
+    }
+
     composeSwarmRedeploy(name: string, data: ComposeRedeploy) {
         return http.post<ComposeDeployResult>(`/api/compose/swarm/${name}/redeploy`, data)
+    }
+
+    composeSwarmImageRedeploy(name: string, data: ComposeImageRedeploy) {
+        return http.post<ComposeDeployResult>(`/api/compose/swarm/${name}/image-redeploy`, data)
     }
 }
 

@@ -13,6 +13,7 @@ import (
 	"github.com/rehiy/libgo/request"
 
 	"isrvd/pkgs/compose"
+	pkgdocker "isrvd/pkgs/docker"
 )
 
 // ==================== 部署 ====================
@@ -188,6 +189,65 @@ func (s *Service) dockerRedeploy(ctx context.Context, name, content string) (*De
 	return &DeployResult{Target: TargetDocker, Items: items, InstallDir: installDir}, nil
 }
 
+func (s *Service) dockerImageRedeploy(ctx context.Context, name, serviceName, image string) (*DeployResult, error) {
+	root := s.docker.ContainerRoot()
+	installDir := ""
+	if root != "" {
+		installDir = filepath.Join(root, name)
+	}
+
+	oldContent, err := s.dockerContentGet(ctx, name)
+	if err != nil {
+		return nil, err
+	}
+	newContent, err := updateServiceImageContent(ctx, name, oldContent, serviceName, image)
+	if err != nil {
+		return nil, err
+	}
+
+	oldProject, err := s.dockerProjectLoad(ctx, name, oldContent, installDir)
+	if err != nil {
+		return nil, err
+	}
+	oldSvc, err := projectServiceFind(oldProject, serviceName)
+	if err != nil {
+		return nil, err
+	}
+
+	newProject, err := s.dockerProjectLoad(ctx, name, newContent, installDir)
+	if err != nil {
+		s.dockerContentSave(installDir, oldContent, "")
+		return nil, err
+	}
+	newSvc, err := projectServiceFind(newProject, serviceName)
+	if err != nil {
+		s.dockerContentSave(installDir, oldContent, "")
+		return nil, err
+	}
+
+	oldContainerName := dockerContainerNameOf(oldSvc)
+	_ = s.docker.ContainerAction(ctx, oldContainerName, "stop")
+	if err := s.docker.ContainerAction(ctx, oldContainerName, "remove"); err != nil {
+		s.dockerContentSave(installDir, oldContent, "")
+		return nil, fmt.Errorf("删除旧容器 %s 失败: %w", oldContainerName, err)
+	}
+
+	id, err := s.dockerServiceContainerCreate(ctx, newProject, newSvc)
+	if err != nil {
+		if _, rbErr := s.dockerServiceContainerCreate(ctx, oldProject, oldSvc); rbErr != nil {
+			logman.Warn("Docker service rollback failed", "name", name, "service", serviceName, "error", rbErr)
+		}
+		s.dockerContentSave(installDir, oldContent, "")
+		return nil, err
+	}
+
+	s.dockerContentSave(installDir, newContent, oldContent)
+
+	item := fmt.Sprintf("%s (%s)", dockerContainerNameOf(newSvc), pkgdocker.ShortID(id))
+	logman.Info("Compose service image redeployed", "name", name, "service", serviceName, "image", image)
+	return &DeployResult{Target: TargetDocker, ProjectName: name, Items: []string{item}, InstallDir: installDir}, nil
+}
+
 // ==================== 辅助函数 ====================
 
 // dockerProjectLoad 写入 compose.yml 后用 LoadProject 加载，确保相对路径基于 installDir 展开
@@ -205,6 +265,11 @@ func (s *Service) dockerProjectLoad(ctx context.Context, name, content, installD
 		WorkingDir:  installDir,
 		ProjectName: name,
 	})
+}
+
+func (s *Service) dockerServiceContainerCreate(ctx context.Context, project *types.Project, svc types.ServiceConfig) (string, error) {
+	id, _, err := s.compose.ServiceContainerCreate(ctx, project, svc)
+	return id, err
 }
 
 // dockerContainersRemove 停止并删除实例的所有容器

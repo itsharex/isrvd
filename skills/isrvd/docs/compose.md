@@ -1,56 +1,101 @@
-# Compose 部署 API
+# Compose API
 
-## Docker Compose（单机部署）
+Compose 接口用于单机 Docker Compose 与 Swarm Stack 的部署、读取配置、重部署，以及按服务更新镜像并重建。
 
-### 部署
+## 字段说明
 
-```bash
-# JSON 方式
-isrvd_post "/compose/docker/deploy" "{\"projectName\":\"<PROJECT>\",\"content\":$(cat docker-compose.yml | jq -sR)}"
-
-# multipart 方式（带初始化文件）
-isrvd_upload "/compose/docker/deploy" "initFile" "./<INIT_FILE>" "projectName=<PROJECT>" "content=$(cat docker-compose.yml)"
-```
+### ComposeDeploy
 
 | 字段 | 类型 | 必填 | 说明 |
-|------|------|------|------|
-| projectName | string | ✅ | 项目名 |
-| content | string | ✅ | docker-compose.yml 内容 |
-| initURL | string | | 初始化数据 URL |
-| initFile | file | | 初始化数据文件 |
+|---|---|---|---|
+| `content` | string | 是 | 完整 compose yaml 文本 |
+| `initURL` | string | 否 | 附加运行文件 zip 下载地址，仅 Docker Compose 部署生效 |
+| `initFile` | file | 否 | 附加运行文件 zip，仅 Docker Compose 部署生效；与 `initURL` 互斥且文件优先 |
 
-返回 `DeployResult`：`{target, items: string[], installDir}`
+### ComposeRedeploy
 
-### 获取 Compose 文件内容
+| 字段 | 类型 | 必填 | 说明 |
+|---|---|---|---|
+| `content` | string | 是 | 完整 compose yaml 文本 |
+
+### ComposeImageRedeploy
+
+| 字段 | 类型 | 必填 | 说明 |
+|---|---|---|---|
+| `serviceName` | string | 是 | 要更新镜像的 compose 服务名 |
+| `image` | string | 是 | 新镜像名，支持带 tag 或 digest |
+
+### ComposeDeployResult
+
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| `target` | string | 部署目标：`docker` 或 `swarm` |
+| `projectName` | string | 实际使用的项目名 |
+| `items` | string[] | 创建或重建的容器/服务列表 |
+| `installDir` | string | Docker Compose 落盘目录；Swarm 不返回 |
+
+## Docker Compose
+
+### 部署
+
+Docker Compose 部署使用 multipart form，支持上传附加运行文件。
 
 ```bash
-isrvd_get "/compose/docker/<PROJECT>"
+isrvd_upload "/compose/docker/deploy" "initFile" "./init.zip" "content=$(cat docker-compose.yml)"
 ```
 
-### 重新部署
+仅提交 compose 内容：
 
 ```bash
-isrvd_post "/compose/docker/<PROJECT>/redeploy" '{"content":"<COMPOSE_YAML>"}'
+isrvd_post "/compose/docker/deploy" "$(jq -n --arg content "$(cat docker-compose.yml)" '{content:$content}')"
 ```
 
----
+使用远程附加文件：
 
-## Swarm Stack（集群部署）
+```bash
+isrvd_post "/compose/docker/deploy" '{"content":"<COMPOSE_YAML>","initURL":"<ZIP_URL>"}'
+```
+
+### 读取 compose 文件
+
+```bash
+isrvd_get "/compose/docker/<NAME>"
+```
+
+### 重部署
+
+```bash
+isrvd_post "/compose/docker/<NAME>/redeploy" "$(jq -n --arg content "$(cat docker-compose.yml)" '{content:$content}')"
+```
+
+### 按服务更新镜像并重建
+
+```bash
+isrvd_post "/compose/docker/<NAME>/image-redeploy" '{"serviceName":"<SERVICE_NAME>","image":"<NEW_IMAGE>"}'
+```
+
+## Swarm Compose
 
 ### 部署
 
 ```bash
-isrvd_post "/compose/swarm/deploy" "{\"projectName\":\"<STACK>\",\"content\":$(cat docker-compose.yml | jq -sR)}"
+isrvd_post "/compose/swarm/deploy" "$(jq -n --arg content "$(cat stack.yml)" '{content:$content}')"
 ```
 
-### 获取 Stack 文件内容
+### 读取 compose 文件
 
 ```bash
-isrvd_get "/compose/swarm/<STACK>"
+isrvd_get "/compose/swarm/<NAME>"
 ```
 
-### 重新部署
+### 重部署
 
 ```bash
-isrvd_post "/compose/swarm/<STACK>/redeploy" '{"content":"<COMPOSE_YAML>"}'
+isrvd_post "/compose/swarm/<NAME>/redeploy" "$(jq -n --arg content "$(cat stack.yml)" '{content:$content}')"
+```
+
+### 按服务更新镜像并重建
+
+```bash
+isrvd_post "/compose/swarm/<NAME>/image-redeploy" '{"serviceName":"<SERVICE_NAME>","image":"<NEW_IMAGE>"}'
 ```
