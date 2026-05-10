@@ -10,11 +10,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/rehiy/libgo/archive"
 	"github.com/rehiy/libgo/filer"
 	"github.com/rehiy/libgo/logman"
 
 	"isrvd/config"
-	"isrvd/pkgs/archive"
 )
 
 // Service 文件管理业务服务

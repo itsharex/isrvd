@@ -6,11 +6,11 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/rehiy/libgo/gpu"
 	"github.com/rehiy/libgo/psutil"
 	"github.com/shirou/gopsutil/v3/disk"
 
 	"isrvd/config"
-	pkggpu "isrvd/pkgs/gpu"
 )
 
 // DiskIOStat 硬盘 IO 统计
@@ -130,7 +130,7 @@ func buildGPUDeviceKey(vendor, address, name string, index int) string {
 }
 
 func buildSystemGPUs(ctx context.Context) []*SystemGPU {
-	deviceStats, err := pkggpu.GetGPUStats(ctx)
+	deviceStats, err := gpu.GetGPUStats(ctx)
 	if err != nil && len(deviceStats) == 0 {
 		return nil
 	}
