@@ -9,6 +9,8 @@ import (
 	"regexp"
 	"sync"
 
+	"github.com/compose-spec/compose-go/v2/types"
+
 	"isrvd/internal/registry"
 	"isrvd/pkgs/compose"
 	"isrvd/pkgs/docker"
@@ -35,6 +37,12 @@ type DeployRequest struct {
 // RedeployRequest 重建请求
 type RedeployRequest struct {
 	Content string `json:"content" binding:"required"`
+}
+
+// ImageRedeployRequest 按服务更新镜像并重建请求
+type ImageRedeployRequest struct {
+	ServiceName string `json:"serviceName" binding:"required"`
+	Image       string `json:"image" binding:"required"`
 }
 
 // DeployResult 部署结果
@@ -131,6 +139,68 @@ func (s *Service) Redeploy(ctx context.Context, target Target, name string, req 
 	default:
 		return nil, fmt.Errorf("不支持的目标: %s", target)
 	}
+}
+
+// ImageRedeploy 按服务更新镜像并重建
+func (s *Service) ImageRedeploy(ctx context.Context, target Target, name string, req ImageRedeployRequest) (*DeployResult, error) {
+	if req.ServiceName == "" {
+		return nil, fmt.Errorf("serviceName 不能为空")
+	}
+	if req.Image == "" {
+		return nil, fmt.Errorf("image 不能为空")
+	}
+	switch target {
+	case TargetDocker:
+		return s.dockerImageRedeploy(ctx, name, req.ServiceName, req.Image)
+	case TargetSwarm:
+		return s.swarmImageRedeploy(ctx, name, req.ServiceName, req.Image)
+	default:
+		return nil, fmt.Errorf("不支持的目标: %s", target)
+	}
+}
+
+func updateServiceImageContent(ctx context.Context, name, content, serviceName, image string) (string, error) {
+	if content == "" {
+		return "", fmt.Errorf("compose 内容不能为空")
+	}
+	project, err := compose.LoadProjectFromContent(ctx, content, name)
+	if err != nil {
+		return "", err
+	}
+	if len(project.Services) == 0 {
+		return "", fmt.Errorf("compose 文件中没有定义服务")
+	}
+
+	matched := false
+	for key, svc := range project.Services {
+		if svc.Name == serviceName {
+			svc.Image = image
+			project.Services[key] = svc
+			matched = true
+			break
+		}
+	}
+	if !matched {
+		return "", fmt.Errorf("compose 服务 %s 不存在", serviceName)
+	}
+
+	data, err := compose.ProjectToYAML(project)
+	if err != nil {
+		return "", err
+	}
+	return string(data), nil
+}
+
+func projectServiceFind(project *types.Project, serviceName string) (types.ServiceConfig, error) {
+	if project == nil {
+		return types.ServiceConfig{}, fmt.Errorf("compose 项目为空")
+	}
+	for _, svc := range project.Services {
+		if svc.Name == serviceName {
+			return svc, nil
+		}
+	}
+	return types.ServiceConfig{}, fmt.Errorf("compose 服务 %s 不存在", serviceName)
 }
 
 // shortHash 返回内容的短 hash 字符串

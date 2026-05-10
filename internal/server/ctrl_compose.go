@@ -18,10 +18,12 @@ func (app *App) defineComposeRoutes() []Route {
 		{Method: "GET", Path: "/compose/docker/:name", Handler: app.composeContentInspect, Module: "compose", Label: "读取 Docker Compose 文件"},
 		{Method: "POST", Path: "/compose/docker/deploy", Handler: app.composeDockerDeploy, Module: "compose", Label: "部署 Docker Compose"},
 		{Method: "POST", Path: "/compose/docker/:name/redeploy", Handler: app.composeRedeploy, Module: "compose", Label: "重部署 Docker Compose"},
+		{Method: "POST", Path: "/compose/docker/:name/image-redeploy", Handler: app.composeServiceImageRedeploy, Module: "compose", Label: "按服务更新 Docker Compose 镜像并重建"},
 		// Swarm Compose
 		{Method: "GET", Path: "/compose/swarm/:name", Handler: app.composeContentInspect, Module: "compose", Label: "读取 Swarm Compose 文件"},
 		{Method: "POST", Path: "/compose/swarm/deploy", Handler: app.composeSwarmDeploy, Module: "compose", Label: "部署 Swarm Compose"},
 		{Method: "POST", Path: "/compose/swarm/:name/redeploy", Handler: app.composeRedeploy, Module: "compose", Label: "重部署 Swarm Compose"},
+		{Method: "POST", Path: "/compose/swarm/:name/image-redeploy", Handler: app.composeServiceImageRedeploy, Module: "compose", Label: "按服务更新 Swarm Compose 镜像并重建"},
 	}
 }
 
@@ -110,6 +112,25 @@ func (app *App) composeRedeploy(c *gin.Context) {
 		return
 	}
 	helper.RespondSuccess(c, "重建成功", result)
+}
+
+// composeServiceImageRedeploy 按服务更新镜像并重建（Docker/Swarm 通用）
+func (app *App) composeServiceImageRedeploy(c *gin.Context) {
+	target := parseComposeTarget(c)
+	name := c.Param("name")
+
+	var req svcCompose.ImageRedeployRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		helper.RespondError(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	result, err := app.composeSvc.ImageRedeploy(c.Request.Context(), target, name, req)
+	if err != nil {
+		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	helper.RespondSuccess(c, "镜像更新并重建成功", result)
 }
 
 // parseComposeTarget 从路由路径解析部署目标

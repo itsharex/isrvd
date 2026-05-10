@@ -118,6 +118,58 @@ func (s *Service) swarmRedeploy(ctx context.Context, name, content string) (*Dep
 	return &DeployResult{Target: TargetSwarm, Items: items}, nil
 }
 
+func (s *Service) swarmImageRedeploy(ctx context.Context, name, serviceName, image string) (*DeployResult, error) {
+	if s.swarm == nil {
+		return nil, fmt.Errorf("swarm 服务未初始化")
+	}
+
+	oldContent, err := s.swarmContentGet(ctx, name)
+	if err != nil {
+		return nil, err
+	}
+	newContent, err := updateServiceImageContent(ctx, name, oldContent, serviceName, image)
+	if err != nil {
+		return nil, err
+	}
+
+	oldProject, err := compose.LoadProjectFromContent(ctx, oldContent, name)
+	if err != nil {
+		return nil, err
+	}
+	oldSvc, err := projectServiceFind(oldProject, serviceName)
+	if err != nil {
+		return nil, err
+	}
+
+	newProject, err := compose.LoadProjectFromContent(ctx, newContent, name)
+	if err != nil {
+		return nil, err
+	}
+	newSvc, err := projectServiceFind(newProject, serviceName)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := s.swarm.ServiceAction(ctx, oldSvc.Name, "remove", nil); err != nil {
+		return nil, fmt.Errorf("删除旧服务 %s 失败: %w", oldSvc.Name, err)
+	}
+
+	id, err := s.swarmServiceCreate(ctx, newProject, newSvc)
+	if err != nil {
+		if _, rbErr := s.swarmServiceCreate(ctx, oldProject, oldSvc); rbErr != nil {
+			logman.Warn("Swarm service rollback failed", "name", name, "service", serviceName, "error", rbErr)
+		}
+		s.swarmContentSave(name, oldContent, "")
+		return nil, err
+	}
+
+	s.swarmContentSave(name, newContent, oldContent)
+
+	item := fmt.Sprintf("%s (%s)", newSvc.Name, pkgdocker.ShortID(id))
+	logman.Info("Swarm compose service image redeployed", "name", name, "service", serviceName, "image", image)
+	return &DeployResult{Target: TargetSwarm, ProjectName: name, Items: []string{item}}, nil
+}
+
 // ==================== 辅助函数 ====================
 
 // swarmProjectDeploy 部署 compose project 中的所有服务，失败时回滚已创建的服务
@@ -156,6 +208,21 @@ func (s *Service) swarmProjectDeploy(ctx context.Context, project *types.Project
 		logman.Info("Swarm service deployed", "service", svc.Name, "id", pkgdocker.ShortID(id))
 	}
 	return items, nil
+}
+
+func (s *Service) swarmServiceCreate(ctx context.Context, project *types.Project, svc types.ServiceConfig) (string, error) {
+	if err := s.swarmEnsureNetworks(ctx, project); err != nil {
+		return "", err
+	}
+	req, err := compose.ServiceToSwarmRequest(project, svc)
+	if err != nil {
+		return "", err
+	}
+	id, err := s.swarm.ServiceCreate(ctx, req)
+	if err != nil {
+		return "", fmt.Errorf("创建服务 %s 失败: %w", req.Name, err)
+	}
+	return id, nil
 }
 
 // swarmServicesRemove 删除实例的所有服务

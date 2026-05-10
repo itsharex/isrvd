@@ -15,6 +15,12 @@ export interface ComposeRedeploy {
     content: string
 }
 
+// Compose Image Redeploy 请求
+export interface ComposeImageRedeploy {
+    serviceName: string
+    image: string
+}
+
 export interface ComposeDeployResult {
     target: ComposeDeployTarget
     projectName: string     // 实际使用的项目名
