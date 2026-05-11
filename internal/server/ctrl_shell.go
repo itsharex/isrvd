@@ -1,17 +1,16 @@
 package server
 
 import (
+	"context"
 	"io"
-	"os"
 	"os/exec"
 	"runtime"
 
 	"github.com/creack/pty"
 	"github.com/gin-gonic/gin"
-	"github.com/gorilla/websocket"
+	"github.com/rehiy/libgo/command"
 	"github.com/rehiy/libgo/logman"
-
-	"isrvd/internal/helper"
+	"github.com/rehiy/libgo/websocket"
 )
 
 // defineShellRoutes 定义 Shell 模块路由（Web 终端）
@@ -26,30 +25,26 @@ func (app *App) shellWebSocket(c *gin.Context) {
 	member := app.accountSvc.MemberInspect(username)
 	if member == nil {
 		logman.Error("用户不存在", "username", username)
+		c.AbortWithStatus(403)
 		return
 	}
 
-	shell := c.DefaultQuery("shell", "bash")
-	conn, err := helper.WsUpgrader.Upgrade(c.Writer, c.Request, nil)
-	if err != nil {
-		logman.Error("WebSocket 升级错误", "error", err)
-		return
-	}
-	defer conn.Close()
+	shell := c.DefaultQuery("shell", command.DefaultShell())
 
-	shellRunTerminal(conn, shell, member.HomeDirectory)
+	// 使用 Handler 模式处理 WebSocket
+	app.wsConfig.Handler(func(conn *websocket.ServerConn) {
+		shellRunTerminal(conn, shell, member.HomeDirectory)
+	})(c)
 }
 
-func shellRunTerminal(conn *websocket.Conn, shell, homeDir string) {
-	originalShell := shell
-	shell = shellResolve(shell)
-	if shell != originalShell {
-		shellSendMsg(conn, "[提示: "+originalShell+" 不可用，已降级到 "+shell+"]\r\n")
-	}
+func shellRunTerminal(conn *websocket.ServerConn, shell, homeDir string) {
+	shell = command.GetShell(shell)
+
+	ctx := context.Background()
 
 	// PTY 模式（仅非 Windows）
 	if runtime.GOOS != "windows" {
-		cmd := shellBuildCmd(shell, homeDir)
+		cmd := command.NewCommand(ctx, shell, nil, homeDir)
 		ptmx, err := pty.Start(cmd)
 		if err == nil {
 			defer ptmx.Close()
@@ -57,18 +52,18 @@ func shellRunTerminal(conn *websocket.Conn, shell, homeDir string) {
 			return
 		}
 		logman.Warn("PTY 启动失败，降级到 Pipe 模式", "error", err)
-		shellSendMsg(conn, "[提示: PTY 模式不可用，已降级到 Pipe 模式]\r\n")
+		conn.Write([]byte("[提示: PTY 模式不可用，已降级到 Pipe 模式]\r\n"))
 	}
 
-	// Pipe 模式：重新创建 cmd 对象（避免 PTY 失败后 Stdin 已设置）
-	cmd := shellBuildCmd(shell, homeDir)
+	// Pipe 模式
+	cmd := command.NewCommand(ctx, shell, nil, homeDir)
 	if err := shellRunWithPipe(conn, cmd); err != nil {
 		logman.Error("Pipe 模式启动失败", "shell", shell, "error", err)
-		shellSendMsg(conn, "[启动 "+shell+" 失败: "+err.Error()+"]\r\n")
+		conn.Write([]byte("[启动 " + shell + " 失败: " + err.Error() + "]\r\n"))
 	}
 }
 
-func shellRunWithPipe(conn *websocket.Conn, cmd *exec.Cmd) error {
+func shellRunWithPipe(conn *websocket.ServerConn, cmd *exec.Cmd) error {
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
 		return err
@@ -88,18 +83,22 @@ func shellRunWithPipe(conn *websocket.Conn, cmd *exec.Cmd) error {
 	return nil
 }
 
-func shellHandleIO(conn *websocket.Conn, stdin io.Writer, stdout io.Reader, cmd *exec.Cmd) {
+func shellHandleIO(conn *websocket.ServerConn, stdin io.Writer, stdout io.Reader, cmd *exec.Cmd) {
+	// 确保进程被终止
 	defer func() {
 		if cmd.Process != nil {
 			cmd.Process.Kill()
+			cmd.Wait()
 		}
 	}()
+
+	// 读取输出
 	go func() {
 		buf := make([]byte, 1024)
 		for {
 			n, err := stdout.Read(buf)
 			if n > 0 {
-				shellSendMsg(conn, string(buf[:n]))
+				conn.Write(buf[:n])
 			}
 			if err != nil {
 				logman.Error("shellHandleIO: stdout.Read error", "error", err)
@@ -107,72 +106,22 @@ func shellHandleIO(conn *websocket.Conn, stdin io.Writer, stdout io.Reader, cmd 
 			}
 		}
 	}()
-	shellSendMsg(conn, "[终端已连接，输入命令后回车]\r\n")
+
+	conn.Write([]byte("[终端已连接，输入命令后回车]\r\n"))
+
+	// 读取输入
+	buf := make([]byte, 1024)
 	for {
-		_, msg, err := conn.ReadMessage()
+		n, err := conn.Read(buf)
 		if err != nil {
-			logman.Error("shellHandleIO: conn.ReadMessage error", "error", err)
+			logman.Error("shellHandleIO: conn.Read error", "error", err)
 			return
 		}
-		if _, err = stdin.Write(msg); err != nil {
-			logman.Error("shellHandleIO: stdin.Write error", "error", err)
-			return
-		}
-	}
-}
-
-func shellSendMsg(conn *websocket.Conn, msg string) {
-	if err := conn.WriteMessage(websocket.TextMessage, []byte(msg)); err != nil {
-		logman.Error("shellSendMsg: write error", "error", err)
-	}
-}
-
-func shellResolve(shell string) string {
-	if _, err := exec.LookPath(shell); err == nil {
-		return shell
-	}
-	switch runtime.GOOS {
-	case "windows":
-		for _, fb := range []string{"powershell", "pwsh", "cmd"} {
-			if _, err := exec.LookPath(fb); err == nil {
-				return fb
-			}
-		}
-	case "darwin":
-		for _, fb := range []string{"zsh", "bash", "sh"} {
-			if _, err := exec.LookPath(fb); err == nil {
-				return fb
-			}
-		}
-	default:
-		for _, fb := range []string{"bash", "sh", "zsh"} {
-			if _, err := exec.LookPath(fb); err == nil {
-				return fb
+		if n > 0 {
+			if _, err = stdin.Write(buf[:n]); err != nil {
+				logman.Error("shellHandleIO: stdin.Write error", "error", err)
+				return
 			}
 		}
 	}
-	return shell
-}
-
-func shellBuildCmd(shell, homeDir string) *exec.Cmd {
-	var cmd *exec.Cmd
-	env := os.Environ()
-
-	switch runtime.GOOS {
-	case "windows":
-		// Windows 下通过 /C chcp 65001 切换 UTF-8 代码页后再启动目标 shell，
-		// 避免 GBK 输出导致 WebSocket UTF-8 错误
-		cmd = exec.Command("cmd", "/C", "chcp 65001 >nul && "+shell)
-		env = append(env, "TERM=dumb")
-	case "darwin":
-		cmd = exec.Command(shell)
-		env = append([]string{"TERM=xterm-256color", "CLICOLOR=1"}, env...)
-	default:
-		cmd = exec.Command(shell)
-		env = append([]string{"TERM=xterm-256color"}, env...)
-	}
-
-	cmd.Dir = homeDir
-	cmd.Env = env
-	return cmd
 }

@@ -10,12 +10,10 @@ require (
 	github.com/gin-gonic/gin v1.12.0
 	github.com/goccy/go-yaml v1.19.2
 	github.com/golang-jwt/jwt/v5 v5.3.1
-	github.com/gorilla/websocket v1.5.3
 	github.com/moby/docker-image-spec v1.3.1
-	github.com/rehiy/libgo v0.14.0
+	github.com/rehiy/libgo v0.14.1
 	github.com/shirou/gopsutil/v3 v3.24.5
 	go.etcd.io/etcd/client/v3 v3.6.11
-	golang.org/x/crypto v0.51.0
 )
 
 require (
@@ -37,6 +35,7 @@ require (
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/fatih/color v1.19.0 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
+	github.com/forgoer/openssl v1.8.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.13 // indirect
 	github.com/gin-contrib/sse v1.1.1 // indirect
 	github.com/go-logr/logr v1.4.3 // indirect
@@ -49,6 +48,7 @@ require (
 	github.com/goccy/go-json v0.10.6 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
+	github.com/google/uuid v1.6.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.29.0 // indirect
 	github.com/jaypipes/ghw v0.24.0 // indirect
 	github.com/jaypipes/pcidb v1.1.1 // indirect
@@ -94,6 +94,7 @@ require (
 	go.uber.org/zap v1.28.0 // indirect
 	go.yaml.in/yaml/v4 v4.0.0-rc.4 // indirect
 	golang.org/x/arch v0.27.0 // indirect
+	golang.org/x/crypto v0.51.0 // indirect
 	golang.org/x/net v0.54.0 // indirect
 	golang.org/x/sync v0.20.0 // indirect
 	golang.org/x/sys v0.44.0 // indirect
@@ -108,3 +109,6 @@ require (
 	gotest.tools/v3 v3.5.2 // indirect
 	howett.net/plist v1.0.2-0.20250314012144-ee69052608d9 // indirect
 )
+
+// 强制使用新拆分的 genproto 模块，避免与旧版本冲突
+replace google.golang.org/genproto => google.golang.org/genproto/googleapis/api v0.0.0-20260504160031-60b97b32f348

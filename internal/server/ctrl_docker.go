@@ -4,8 +4,9 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/rehiy/libgo/websocket"
 
-	"isrvd/internal/helper"
+	
 	svcDocker "isrvd/internal/service/docker"
 	pkgdocker "isrvd/pkgs/docker"
 )
@@ -55,44 +56,44 @@ type svcDockerRegistryUpsertRequest = svcDocker.RegistryUpsertRequest
 func (app *App) dockerInfo(c *gin.Context) {
 	result, err := app.dockerSvc.Info(c.Request.Context())
 	if err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "Docker info retrieved", result)
+	respondSuccess(c, "Docker info retrieved", result)
 }
 
 func (app *App) dockerContainerList(c *gin.Context) {
 	all := c.DefaultQuery("all", "false") == "true"
 	result, err := app.dockerSvc.ContainerList(c.Request.Context(), all)
 	if err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "Containers listed successfully", result)
+	respondSuccess(c, "Containers listed successfully", result)
 }
 
 func (app *App) dockerContainerCreate(c *gin.Context) {
 	var req pkgdocker.ContainerCreateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		helper.RespondError(c, http.StatusBadRequest, err.Error())
+		respondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	result, err := app.dockerSvc.ContainerCreate(c.Request.Context(), req)
 	if err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "容器创建成功", result)
+	respondSuccess(c, "容器创建成功", result)
 }
 
 func (app *App) dockerContainerStats(c *gin.Context) {
 	id := c.Param("id")
 	result, err := app.dockerSvc.ContainerStats(c.Request.Context(), id)
 	if err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "Container stats retrieved", result)
+	respondSuccess(c, "Container stats retrieved", result)
 }
 
 func (app *App) dockerContainerAction(c *gin.Context) {
@@ -100,14 +101,14 @@ func (app *App) dockerContainerAction(c *gin.Context) {
 		ID: c.Param("id"),
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		helper.RespondError(c, http.StatusBadRequest, err.Error())
+		respondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	if err := app.dockerSvc.ContainerAction(c.Request.Context(), req); err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "Container "+req.Action+" successfully", nil)
+	respondSuccess(c, "Container "+req.Action+" successfully", nil)
 }
 
 func (app *App) dockerContainerLogs(c *gin.Context) {
@@ -117,32 +118,29 @@ func (app *App) dockerContainerLogs(c *gin.Context) {
 		Follow: c.DefaultQuery("follow", "false") == "true",
 	}
 	if req.ID == "" {
-		helper.RespondError(c, http.StatusBadRequest, "container id is required")
+		respondError(c, http.StatusBadRequest, "container id is required")
 		return
 	}
 	result, err := app.dockerSvc.ContainerLogs(c.Request.Context(), req)
 	if err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "Container logs retrieved", result)
+	respondSuccess(c, "Container logs retrieved", result)
 }
 
 func (app *App) dockerContainerExec(c *gin.Context) {
-	conn, err := helper.WsUpgrader.Upgrade(c.Writer, c.Request, nil)
-	if err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, "WebSocket 升级失败")
-		return
-	}
-	defer conn.Close()
-
 	containerID := c.Param("id")
 	shell := c.DefaultQuery("shell", "/bin/sh")
 	if containerID == "" {
-		conn.WriteMessage(1, []byte("[错误: 缺少容器ID]\r\n"))
+		respondError(c, http.StatusBadRequest, "缺少容器ID")
 		return
 	}
-	app.dockerSvc.ContainerExec(c.Request.Context(), conn, containerID, shell)
+
+	// 使用 Handler 模式处理 WebSocket
+	app.wsConfig.Handler(func(conn *websocket.ServerConn) {
+		app.dockerSvc.ContainerExec(c.Request.Context(), conn, containerID, shell)
+	})(c)
 }
 
 // ─── 镜像 ───
@@ -151,10 +149,10 @@ func (app *App) dockerImageList(c *gin.Context) {
 	all := c.DefaultQuery("all", "false") == "true"
 	result, err := app.dockerSvc.ImageList(c.Request.Context(), all)
 	if err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "Images listed successfully", result)
+	respondSuccess(c, "Images listed successfully", result)
 }
 
 func (app *App) dockerImageAction(c *gin.Context) {
@@ -162,62 +160,62 @@ func (app *App) dockerImageAction(c *gin.Context) {
 		ID: c.Param("id"),
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		helper.RespondError(c, http.StatusBadRequest, err.Error())
+		respondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	if err := app.dockerSvc.ImageAction(c.Request.Context(), req); err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "Image "+req.Action+" successfully", nil)
+	respondSuccess(c, "Image "+req.Action+" successfully", nil)
 }
 
 func (app *App) dockerImageTag(c *gin.Context) {
 	var req pkgdocker.ImageTagRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		helper.RespondError(c, http.StatusBadRequest, err.Error())
+		respondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	req.ID = c.Param("id")
 	if err := app.dockerSvc.ImageTag(c.Request.Context(), req); err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "镜像打标签成功", nil)
+	respondSuccess(c, "镜像打标签成功", nil)
 }
 
 func (app *App) dockerImageSearch(c *gin.Context) {
 	name := c.Query("name")
 	result, err := app.dockerSvc.ImageSearch(c.Request.Context(), name)
 	if err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "Images searched successfully", result)
+	respondSuccess(c, "Images searched successfully", result)
 }
 
 func (app *App) dockerImageBuild(c *gin.Context) {
 	var req pkgdocker.ImageBuildRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		helper.RespondError(c, http.StatusBadRequest, err.Error())
+		respondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	result, err := app.dockerSvc.ImageBuild(c.Request.Context(), req)
 	if err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "镜像构建成功", result)
+	respondSuccess(c, "镜像构建成功", result)
 }
 
 func (app *App) dockerImageInspect(c *gin.Context) {
 	id := c.Param("id")
 	result, err := app.dockerSvc.ImageInspect(c.Request.Context(), id)
 	if err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "Image detail retrieved", result)
+	respondSuccess(c, "Image detail retrieved", result)
 }
 
 // ─── 网络 ───
@@ -225,10 +223,10 @@ func (app *App) dockerImageInspect(c *gin.Context) {
 func (app *App) dockerNetworkList(c *gin.Context) {
 	result, err := app.dockerSvc.NetworkList(c.Request.Context())
 	if err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "Networks listed successfully", result)
+	respondSuccess(c, "Networks listed successfully", result)
 }
 
 func (app *App) dockerNetworkAction(c *gin.Context) {
@@ -236,38 +234,38 @@ func (app *App) dockerNetworkAction(c *gin.Context) {
 		ID: c.Param("id"),
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		helper.RespondError(c, http.StatusBadRequest, err.Error())
+		respondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	if err := app.dockerSvc.NetworkAction(c.Request.Context(), req); err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "Network "+req.Action+" successfully", nil)
+	respondSuccess(c, "Network "+req.Action+" successfully", nil)
 }
 
 func (app *App) dockerNetworkCreate(c *gin.Context) {
 	var req pkgdocker.NetworkCreateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		helper.RespondError(c, http.StatusBadRequest, err.Error())
+		respondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	result, err := app.dockerSvc.NetworkCreate(c.Request.Context(), req)
 	if err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "网络创建成功", result)
+	respondSuccess(c, "网络创建成功", result)
 }
 
 func (app *App) dockerNetworkInspect(c *gin.Context) {
 	id := c.Param("id")
 	result, err := app.dockerSvc.NetworkInspect(c.Request.Context(), id)
 	if err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "Network detail retrieved", result)
+	respondSuccess(c, "Network detail retrieved", result)
 }
 
 // ─── 卷 ───
@@ -275,10 +273,10 @@ func (app *App) dockerNetworkInspect(c *gin.Context) {
 func (app *App) dockerVolumeList(c *gin.Context) {
 	result, err := app.dockerSvc.VolumeList(c.Request.Context())
 	if err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "Volumes listed successfully", result)
+	respondSuccess(c, "Volumes listed successfully", result)
 }
 
 func (app *App) dockerVolumeAction(c *gin.Context) {
@@ -286,106 +284,106 @@ func (app *App) dockerVolumeAction(c *gin.Context) {
 		Name: c.Param("name"),
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		helper.RespondError(c, http.StatusBadRequest, err.Error())
+		respondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	if err := app.dockerSvc.VolumeAction(c.Request.Context(), req); err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "Volume "+req.Action+" successfully", nil)
+	respondSuccess(c, "Volume "+req.Action+" successfully", nil)
 }
 
 func (app *App) dockerVolumeCreate(c *gin.Context) {
 	var req pkgdocker.VolumeCreateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		helper.RespondError(c, http.StatusBadRequest, err.Error())
+		respondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	result, err := app.dockerSvc.VolumeCreate(c.Request.Context(), req)
 	if err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "卷创建成功", result)
+	respondSuccess(c, "卷创建成功", result)
 }
 
 func (app *App) dockerVolumeInspect(c *gin.Context) {
 	name := c.Param("name")
 	result, err := app.dockerSvc.VolumeInspect(c.Request.Context(), name)
 	if err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "Volume detail retrieved", result)
+	respondSuccess(c, "Volume detail retrieved", result)
 }
 
 // ─── 镜像仓库 ───
 
 func (app *App) dockerRegistryList(c *gin.Context) {
-	helper.RespondSuccess(c, "Registries listed successfully", app.dockerSvc.RegistryList())
+	respondSuccess(c, "Registries listed successfully", app.dockerSvc.RegistryList())
 }
 
 func (app *App) dockerRegistryCreate(c *gin.Context) {
 	var req svcDockerRegistryUpsertRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		helper.RespondError(c, http.StatusBadRequest, err.Error())
+		respondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	if err := app.dockerSvc.RegistryCreate(req); err != nil {
-		helper.RespondError(c, http.StatusBadRequest, err.Error())
+		respondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "仓库添加成功", nil)
+	respondSuccess(c, "仓库添加成功", nil)
 }
 
 func (app *App) dockerRegistryUpdate(c *gin.Context) {
 	originalURL := c.Query("url")
 	var req svcDockerRegistryUpsertRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		helper.RespondError(c, http.StatusBadRequest, err.Error())
+		respondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	if err := app.dockerSvc.RegistryUpdate(originalURL, req); err != nil {
-		helper.RespondError(c, http.StatusBadRequest, err.Error())
+		respondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "仓库更新成功", nil)
+	respondSuccess(c, "仓库更新成功", nil)
 }
 
 func (app *App) dockerRegistryDelete(c *gin.Context) {
 	url := c.Query("url")
 	if err := app.dockerSvc.RegistryDelete(url); err != nil {
-		helper.RespondError(c, http.StatusBadRequest, err.Error())
+		respondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "仓库删除成功", nil)
+	respondSuccess(c, "仓库删除成功", nil)
 }
 
 func (app *App) dockerImagePush(c *gin.Context) {
 	var req pkgdocker.ImagePushRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		helper.RespondError(c, http.StatusBadRequest, err.Error())
+		respondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	result, err := app.dockerSvc.ImagePush(c.Request.Context(), req)
 	if err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "镜像推送成功", result)
+	respondSuccess(c, "镜像推送成功", result)
 }
 
 func (app *App) dockerImagePull(c *gin.Context) {
 	var req pkgdocker.ImagePullRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		helper.RespondError(c, http.StatusBadRequest, err.Error())
+		respondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	result, err := app.dockerSvc.ImagePull(c.Request.Context(), req)
 	if err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "镜像拉取成功", result)
+	respondSuccess(c, "镜像拉取成功", result)
 }

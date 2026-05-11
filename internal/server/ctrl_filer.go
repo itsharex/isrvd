@@ -9,7 +9,7 @@ import (
 	"github.com/rehiy/libgo/logman"
 
 	"isrvd/config"
-	"isrvd/internal/helper"
+	
 )
 
 // defineFilerRoutes 定义 Filer 模块路由（文件管理）
@@ -56,7 +56,7 @@ type filerRenameReq struct {
 func (app *App) filerFileList(c *gin.Context) {
 	var req filerPathReq
 	if err := c.ShouldBindJSON(&req); err != nil {
-		helper.RespondError(c, http.StatusBadRequest, err.Error())
+		respondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	username := c.GetString("username")
@@ -64,116 +64,116 @@ func (app *App) filerFileList(c *gin.Context) {
 	files, err := app.filerSvc.FileList(absPath, req.Path)
 	if err != nil {
 		logman.Error("List files failed", "path", absPath, "error", err)
-		helper.RespondError(c, http.StatusNotFound, "Directory not found")
+		respondError(c, http.StatusNotFound, "Directory not found")
 		return
 	}
-	helper.RespondSuccess(c, "Files listed successfully", gin.H{"path": req.Path, "files": files})
+	respondSuccess(c, "Files listed successfully", gin.H{"path": req.Path, "files": files})
 }
 
 func (app *App) filerFileDelete(c *gin.Context) {
 	var req filerPathReq
 	if err := c.ShouldBindJSON(&req); err != nil {
-		helper.RespondError(c, http.StatusBadRequest, err.Error())
+		respondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	absPath := app.filerSvc.AbsPath(c.GetString("username"), req.Path)
 	if err := app.filerSvc.FileDelete(absPath); err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, "Cannot delete file")
+		respondError(c, http.StatusInternalServerError, "Cannot delete file")
 		return
 	}
-	helper.RespondSuccess(c, "File deleted successfully", nil)
+	respondSuccess(c, "File deleted successfully", nil)
 }
 
 func (app *App) filerFileMkdir(c *gin.Context) {
 	var req filerPathReq
 	if err := c.ShouldBindJSON(&req); err != nil {
-		helper.RespondError(c, http.StatusBadRequest, err.Error())
+		respondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	absPath := app.filerSvc.AbsPath(c.GetString("username"), req.Path)
 	if err := app.filerSvc.FileMkdir(absPath); err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, "Cannot create directory")
+		respondError(c, http.StatusInternalServerError, "Cannot create directory")
 		return
 	}
-	helper.RespondSuccess(c, "Directory created successfully", nil)
+	respondSuccess(c, "Directory created successfully", nil)
 }
 
 func (app *App) filerFileCreate(c *gin.Context) {
 	var req filerContentReq
 	if err := c.ShouldBindJSON(&req); err != nil {
-		helper.RespondError(c, http.StatusBadRequest, err.Error())
+		respondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	absPath := app.filerSvc.AbsPath(c.GetString("username"), req.Path)
 	if err := app.filerSvc.FileCreate(absPath, []byte(req.Content)); err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, "Cannot create file")
+		respondError(c, http.StatusInternalServerError, "Cannot create file")
 		return
 	}
-	helper.RespondSuccess(c, "File created successfully", nil)
+	respondSuccess(c, "File created successfully", nil)
 }
 
 func (app *App) filerFileRead(c *gin.Context) {
 	var req filerPathReq
 	if err := c.ShouldBindJSON(&req); err != nil {
-		helper.RespondError(c, http.StatusBadRequest, err.Error())
+		respondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	absPath := app.filerSvc.AbsPath(c.GetString("username"), req.Path)
 	content, err := app.filerSvc.FileRead(absPath)
 	if err != nil {
-		helper.RespondError(c, http.StatusNotFound, "File not found")
+		respondError(c, http.StatusNotFound, "File not found")
 		return
 	}
-	helper.RespondSuccess(c, "File content retrieved", gin.H{"path": req.Path, "content": string(content)})
+	respondSuccess(c, "File content retrieved", gin.H{"path": req.Path, "content": string(content)})
 }
 
 func (app *App) filerFileModify(c *gin.Context) {
 	var req filerContentReq
 	if err := c.ShouldBindJSON(&req); err != nil {
-		helper.RespondError(c, http.StatusBadRequest, err.Error())
+		respondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	absPath := app.filerSvc.AbsPath(c.GetString("username"), req.Path)
 	if err := app.filerSvc.FileWrite(absPath, []byte(req.Content)); err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, "Cannot save file")
+		respondError(c, http.StatusInternalServerError, "Cannot save file")
 		return
 	}
-	helper.RespondSuccess(c, "File saved successfully", nil)
+	respondSuccess(c, "File saved successfully", nil)
 }
 
 func (app *App) filerFileRename(c *gin.Context) {
 	var req filerRenameReq
 	if err := c.ShouldBindJSON(&req); err != nil {
-		helper.RespondError(c, http.StatusBadRequest, err.Error())
+		respondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	username := c.GetString("username")
 	absPath := app.filerSvc.AbsPath(username, req.Path)
 	targetPath := app.filerSvc.AbsPath(username, filepath.Join(filepath.Dir(req.Path), req.Target))
 	if err := app.filerSvc.FileRename(absPath, targetPath); err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, "Cannot rename file")
+		respondError(c, http.StatusInternalServerError, "Cannot rename file")
 		return
 	}
-	helper.RespondSuccess(c, "File renamed successfully", nil)
+	respondSuccess(c, "File renamed successfully", nil)
 }
 
 func (app *App) filerFileChmod(c *gin.Context) {
 	var req filerChmodReq
 	if err := c.ShouldBindJSON(&req); err != nil {
-		helper.RespondError(c, http.StatusBadRequest, err.Error())
+		respondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	absPath := app.filerSvc.AbsPath(c.GetString("username"), req.Path)
 	if err := app.filerSvc.FileChmod(absPath, req.Mode); err != nil {
-		helper.RespondError(c, http.StatusBadRequest, err.Error())
+		respondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "Permissions changed successfully", nil)
+	respondSuccess(c, "Permissions changed successfully", nil)
 }
 
 func (app *App) filerFileUpload(c *gin.Context) {
 	if c.Request.ContentLength > config.Server.MaxUploadSize {
-		helper.RespondError(c, http.StatusBadRequest, "文件大小超过限制")
+		respondError(c, http.StatusBadRequest, "文件大小超过限制")
 		return
 	}
 
@@ -181,7 +181,7 @@ func (app *App) filerFileUpload(c *gin.Context) {
 
 	file, header, err := c.Request.FormFile("file")
 	if err != nil {
-		helper.RespondError(c, http.StatusBadRequest, "No file uploaded")
+		respondError(c, http.StatusBadRequest, "No file uploaded")
 		return
 	}
 	defer file.Close()
@@ -197,26 +197,26 @@ func (app *App) filerFileUpload(c *gin.Context) {
 
 	data, err := io.ReadAll(file)
 	if err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, "Cannot read uploaded file")
+		respondError(c, http.StatusInternalServerError, "Cannot read uploaded file")
 		return
 	}
 	if err := app.filerSvc.FileWrite(absPath, data); err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, "Cannot write file")
+		respondError(c, http.StatusInternalServerError, "Cannot write file")
 		return
 	}
-	helper.RespondSuccess(c, "File uploaded successfully", nil)
+	respondSuccess(c, "File uploaded successfully", nil)
 }
 
 func (app *App) filerFileDownload(c *gin.Context) {
 	var req filerPathReq
 	if err := c.ShouldBindJSON(&req); err != nil {
-		helper.RespondError(c, http.StatusBadRequest, err.Error())
+		respondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	absPath := app.filerSvc.AbsPath(c.GetString("username"), req.Path)
 	content, err := app.filerSvc.FileRead(absPath)
 	if err != nil {
-		helper.RespondError(c, http.StatusNotFound, "File not found")
+		respondError(c, http.StatusNotFound, "File not found")
 		return
 	}
 	c.Header("Content-Disposition", "attachment; filename="+filepath.Base(req.Path))
@@ -228,29 +228,29 @@ func (app *App) filerFileDownload(c *gin.Context) {
 func (app *App) filerFileZip(c *gin.Context) {
 	var req filerPathReq
 	if err := c.ShouldBindJSON(&req); err != nil {
-		helper.RespondError(c, http.StatusBadRequest, err.Error())
+		respondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	absPath := app.filerSvc.AbsPath(c.GetString("username"), req.Path)
 	if err := app.filerSvc.FileZip(absPath); err != nil {
 		logman.Error("Create zip failed", "path", absPath, "error", err)
-		helper.RespondError(c, http.StatusInternalServerError, "无法创建压缩文件")
+		respondError(c, http.StatusInternalServerError, "无法创建压缩文件")
 		return
 	}
-	helper.RespondSuccess(c, "Archive created successfully", nil)
+	respondSuccess(c, "Archive created successfully", nil)
 }
 
 func (app *App) filerFileUnzip(c *gin.Context) {
 	var req filerPathReq
 	if err := c.ShouldBindJSON(&req); err != nil {
-		helper.RespondError(c, http.StatusBadRequest, err.Error())
+		respondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	absPath := app.filerSvc.AbsPath(c.GetString("username"), req.Path)
 	if err := app.filerSvc.FileUnzip(absPath); err != nil {
 		logman.Error("Unzip failed", "path", absPath, "error", err)
-		helper.RespondError(c, http.StatusInternalServerError, "无法解压文件")
+		respondError(c, http.StatusInternalServerError, "无法解压文件")
 		return
 	}
-	helper.RespondSuccess(c, "Archive extracted successfully", nil)
+	respondSuccess(c, "Archive extracted successfully", nil)
 }

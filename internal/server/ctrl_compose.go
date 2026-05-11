@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"isrvd/config"
-	"isrvd/internal/helper"
+	
 	svcCompose "isrvd/internal/service/compose"
 )
 
@@ -34,16 +34,16 @@ func (app *App) composeContentInspect(c *gin.Context) {
 
 	content, err := app.composeSvc.ContentInspect(c.Request.Context(), target, name)
 	if err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "获取 compose 文件成功", gin.H{"content": content})
+	respondSuccess(c, "获取 compose 文件成功", gin.H{"content": content})
 }
 
 // composeDockerDeploy Docker 部署（multipart form，支持文件上传）
 func (app *App) composeDockerDeploy(c *gin.Context) {
 	if c.Request.ContentLength > config.Server.MaxUploadSize {
-		helper.RespondError(c, http.StatusBadRequest, "文件大小超过限制")
+		respondError(c, http.StatusBadRequest, "文件大小超过限制")
 		return
 	}
 
@@ -52,19 +52,19 @@ func (app *App) composeDockerDeploy(c *gin.Context) {
 		InitURL: c.PostForm("initURL"),
 	}
 	if req.Content == "" {
-		helper.RespondError(c, http.StatusBadRequest, "content 不能为空")
+		respondError(c, http.StatusBadRequest, "content 不能为空")
 		return
 	}
 
 	// 读取上传的 zip 文件（可选）
 	if fh, err := c.FormFile("initFile"); err == nil {
 		if fh.Size > config.Server.MaxUploadSize {
-			helper.RespondError(c, http.StatusBadRequest, "文件大小超过限制")
+			respondError(c, http.StatusBadRequest, "文件大小超过限制")
 			return
 		}
 		f, err := fh.Open()
 		if err != nil {
-			helper.RespondError(c, http.StatusBadRequest, "读取上传文件失败: "+err.Error())
+			respondError(c, http.StatusBadRequest, "读取上传文件失败: "+err.Error())
 			return
 		}
 		req.InitFile = f
@@ -73,26 +73,26 @@ func (app *App) composeDockerDeploy(c *gin.Context) {
 
 	result, err := app.composeSvc.Deploy(c.Request.Context(), svcCompose.TargetDocker, req)
 	if err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "部署成功", result)
+	respondSuccess(c, "部署成功", result)
 }
 
 // composeSwarmDeploy Swarm 部署（JSON body）
 func (app *App) composeSwarmDeploy(c *gin.Context) {
 	var req svcCompose.DeployRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		helper.RespondError(c, http.StatusBadRequest, err.Error())
+		respondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	result, err := app.composeSvc.Deploy(c.Request.Context(), svcCompose.TargetSwarm, req)
 	if err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "部署成功", result)
+	respondSuccess(c, "部署成功", result)
 }
 
 // composeRedeploy 重建（Docker/Swarm 通用）
@@ -102,16 +102,16 @@ func (app *App) composeRedeploy(c *gin.Context) {
 
 	var req svcCompose.RedeployRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		helper.RespondError(c, http.StatusBadRequest, err.Error())
+		respondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	result, err := app.composeSvc.Redeploy(c.Request.Context(), target, name, req)
 	if err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "重建成功", result)
+	respondSuccess(c, "重建成功", result)
 }
 
 // composeServiceImageRedeploy 按服务更新镜像并重建（Docker/Swarm 通用）
@@ -121,16 +121,16 @@ func (app *App) composeServiceImageRedeploy(c *gin.Context) {
 
 	var req svcCompose.ImageRedeployRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		helper.RespondError(c, http.StatusBadRequest, err.Error())
+		respondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	result, err := app.composeSvc.ImageRedeploy(c.Request.Context(), target, name, req)
 	if err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "镜像更新并重建成功", result)
+	respondSuccess(c, "镜像更新并重建成功", result)
 }
 
 // parseComposeTarget 从路由路径解析部署目标

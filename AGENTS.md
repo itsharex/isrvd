@@ -108,9 +108,9 @@ skills/isrvd/
 
 ### HTTP 与响应
 
-- 状态码用 `net/http` 常量；成功 `helper.RespondSuccess`，失败 `helper.RespondError`
+- 状态码用 `net/http` 常量；成功 `httpd.RespondSuccess`，失败 `httpd.RespondError`
 - 绑定优先 `ShouldBindJSON/ShouldBindQuery/ShouldBindURI`，绑定失败返回 `err.Error()`
-- WebSocket 统一 `helper.WsUpgrader`，不在 handler 中定义私有 upgrader
+- WebSocket 统一用 `wsConfig.Handler()`，不在 handler 中定义私有配置
 
 ### 错误处理
 

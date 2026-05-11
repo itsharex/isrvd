@@ -7,7 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"isrvd/internal/helper"
+	
 	svcAccount "isrvd/internal/service/account"
 	svcSystem "isrvd/internal/service/system"
 )
@@ -28,7 +28,7 @@ func AuthMiddleware(routePerms map[string]svcAccount.RouteInfo, svc *svcAccount.
 
 		username, errMsg := svc.Auth(c)
 		if username == "" {
-			helper.RespondError(c, http.StatusUnauthorized, errMsg)
+			respondError(c, http.StatusUnauthorized, errMsg)
 			c.Abort()
 			return
 		}
@@ -43,7 +43,7 @@ func PermMiddleware(routePerms map[string]svcAccount.RouteInfo, svc *svcAccount.
 	return func(c *gin.Context) {
 		path := c.FullPath()
 		if path == "" {
-			helper.RespondError(c, http.StatusForbidden, "未授权的访问路径")
+			respondError(c, http.StatusForbidden, "未授权的访问路径")
 			c.Abort()
 			return
 		}
@@ -54,7 +54,7 @@ func PermMiddleware(routePerms map[string]svcAccount.RouteInfo, svc *svcAccount.
 			if err != nil {
 				msg = err.Error()
 			}
-			helper.RespondError(c, http.StatusForbidden, msg)
+			respondError(c, http.StatusForbidden, msg)
 			c.Abort()
 			return
 		}
@@ -95,6 +95,8 @@ func securityHeadersMiddleware() gin.HandlerFunc {
 		c.Header("X-XSS-Protection", "1; mode=block")
 		// 引用策略
 		c.Header("Referrer-Policy", "strict-origin-when-cross-origin")
+		// CSP：限制资源加载和脚本执行，降低 XSS 风险
+		c.Header("Content-Security-Policy", "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'")
 
 		c.Next()
 	}

@@ -5,12 +5,12 @@ import (
 	"io"
 
 	"github.com/docker/docker/api/types/container"
-	"github.com/gorilla/websocket"
 	"github.com/rehiy/libgo/logman"
+	"github.com/rehiy/libgo/websocket"
 )
 
 // ContainerExec 容器终端 WebSocket 处理（业务逻辑层）
-func (s *DockerService) ContainerExec(ctx context.Context, conn *websocket.Conn, containerID, shell string) {
+func (s *DockerService) ContainerExec(ctx context.Context, conn *websocket.ServerConn, containerID, shell string) {
 	if shell == "" {
 		shell = "/bin/sh"
 	}
@@ -26,7 +26,7 @@ func (s *DockerService) ContainerExec(ctx context.Context, conn *websocket.Conn,
 
 	execResp, err := s.client.ContainerExecCreate(ctx, containerID, execConfig)
 	if err != nil {
-		sendWsMessage(conn, "[创建终端会话失败: "+err.Error()+"]\r\n")
+		conn.Write([]byte("[创建终端会话失败: " + err.Error() + "]\r\n"))
 		return
 	}
 
@@ -34,12 +34,12 @@ func (s *DockerService) ContainerExec(ctx context.Context, conn *websocket.Conn,
 	attachConfig := container.ExecStartOptions{Tty: true}
 	hijackedResp, err := s.client.ContainerExecAttach(ctx, execResp.ID, attachConfig)
 	if err != nil {
-		sendWsMessage(conn, "[连接终端失败: "+err.Error()+"]\r\n")
+		conn.Write([]byte("[连接终端失败: " + err.Error() + "]\r\n"))
 		return
 	}
 	defer hijackedResp.Close()
 
-	sendWsMessage(conn, "[容器终端已连接]\r\n")
+	conn.Write([]byte("[容器终端已连接]\r\n"))
 
 	// 转发容器输出到 WebSocket
 	done := make(chan struct{})
@@ -55,33 +55,28 @@ func (s *DockerService) ContainerExec(ctx context.Context, conn *websocket.Conn,
 				return
 			}
 			if n > 0 {
-				sendWsMessage(conn, string(buf[:n]))
+				conn.Write(buf[:n])
 			}
 		}
 	}()
 
 	// 转发 WebSocket 输入到容器
+	buf := make([]byte, 1024)
 	for {
-		_, msg, err := conn.ReadMessage()
+		n, err := conn.Read(buf)
 		if err != nil {
 			logman.Error("WebSocket read error", "error", err)
 			break
 		}
-		if _, err := hijackedResp.Conn.Write(msg); err != nil {
-			logman.Error("Container exec write error", "error", err)
-			break
+		if n > 0 {
+			if _, err := hijackedResp.Conn.Write(buf[:n]); err != nil {
+				logman.Error("Container exec write error", "error", err)
+				break
+			}
 		}
 	}
 
 	// 关闭 hijack 连接触发 reader goroutine 退出，等待其结束后函数返回
-	// defer hijackedResp.Close() 兜底，net.Conn 重复关闭幂等
 	hijackedResp.Close()
 	<-done
-}
-
-// sendWsMessage 发送 WebSocket 消息
-func sendWsMessage(conn *websocket.Conn, msg string) {
-	if err := conn.WriteMessage(websocket.TextMessage, []byte(msg)); err != nil {
-		logman.Error("WebSocket write error", "error", err)
-	}
 }

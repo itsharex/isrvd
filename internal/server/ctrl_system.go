@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"isrvd/config"
-	"isrvd/internal/helper"
+	
 	svcAccount "isrvd/internal/service/account"
 	svcSystem "isrvd/internal/service/system"
 )
@@ -26,24 +26,24 @@ func (app *App) defineSystemRoutes() []Route {
 func (app *App) systemConfigInspect(c *gin.Context) {
 	if c.Query("reload") == "true" {
 		if err := config.Load(); err != nil {
-			helper.RespondError(c, http.StatusInternalServerError, err.Error())
+			respondError(c, http.StatusInternalServerError, err.Error())
 			return
 		}
 	}
-	helper.RespondSuccess(c, "ok", app.configSvc.ConfigAll())
+	respondSuccess(c, "ok", app.configSvc.ConfigAll())
 }
 
 func (app *App) systemConfigUpdate(c *gin.Context) {
 	var req svcSystem.UpdateAllConfigRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		helper.RespondError(c, http.StatusBadRequest, err.Error())
+		respondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	if err := app.configSvc.ConfigUpdateAll(req); err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "全部配置已保存，部分项需重启生效", nil)
+	respondSuccess(c, "全部配置已保存，部分项需重启生效", nil)
 }
 
 // systemAuditLogList 获取操作审计日志
@@ -54,5 +54,5 @@ func (app *App) systemAuditLogList(c *gin.Context) {
 		limit = l
 	}
 	logs := app.auditSvc.LogList(username, limit)
-	helper.RespondSuccess(c, "ok", logs)
+	respondSuccess(c, "ok", logs)
 }

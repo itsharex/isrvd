@@ -5,7 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"isrvd/internal/helper"
+	
 	pkgapisix "isrvd/pkgs/apisix"
 )
 
@@ -53,47 +53,47 @@ func (app *App) defineApisixRoutes() []Route {
 func (app *App) apisixRouteList(c *gin.Context) {
 	result, err := app.apisixSvc.RouteList()
 	if err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "", result)
+	respondSuccess(c, "", result)
 }
 
 func (app *App) apisixRouteInspect(c *gin.Context) {
 	result, err := app.apisixSvc.RouteInspect(c.Param("id"))
 	if err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "", result)
+	respondSuccess(c, "", result)
 }
 
 func (app *App) apisixRouteCreate(c *gin.Context) {
 	var req pkgapisix.Route
 	if err := c.ShouldBindJSON(&req); err != nil {
-		helper.RespondError(c, http.StatusBadRequest, err.Error())
+		respondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	result, err := app.apisixSvc.RouteCreate(req)
 	if err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "Route created successfully", result)
+	respondSuccess(c, "Route created successfully", result)
 }
 
 func (app *App) apisixRouteUpdate(c *gin.Context) {
 	var req pkgapisix.Route
 	if err := c.ShouldBindJSON(&req); err != nil {
-		helper.RespondError(c, http.StatusBadRequest, err.Error())
+		respondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	result, err := app.apisixSvc.RouteUpdate(c.Param("id"), req)
 	if err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "Route updated successfully", result)
+	respondSuccess(c, "Route updated successfully", result)
 }
 
 func (app *App) apisixRouteStatusPatch(c *gin.Context) {
@@ -101,31 +101,31 @@ func (app *App) apisixRouteStatusPatch(c *gin.Context) {
 		Status int `json:"status"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		helper.RespondError(c, http.StatusBadRequest, err.Error())
+		respondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	if err := app.apisixSvc.RouteStatusPatch(c.Param("id"), req.Status); err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "Route status updated successfully", nil)
+	respondSuccess(c, "Route status updated successfully", nil)
 }
 
 func (app *App) apisixRouteDelete(c *gin.Context) {
 	if err := app.apisixSvc.RouteDelete(c.Param("id")); err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "Route deleted successfully", nil)
+	respondSuccess(c, "Route deleted successfully", nil)
 }
 
 func (app *App) apisixConsumerList(c *gin.Context) {
 	result, err := app.apisixSvc.ConsumerList()
 	if err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "", result)
+	respondSuccess(c, "", result)
 }
 
 func (app *App) apisixConsumerCreate(c *gin.Context) {
@@ -135,15 +135,15 @@ func (app *App) apisixConsumerCreate(c *gin.Context) {
 		Plugins  map[string]any `json:"plugins"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		helper.RespondError(c, http.StatusBadRequest, err.Error())
+		respondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	result, err := app.apisixSvc.ConsumerCreate(req.Username, req.Desc, req.Plugins)
 	if err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "Consumer created successfully", result)
+	respondSuccess(c, "Consumer created successfully", result)
 }
 
 func (app *App) apisixConsumerUpdate(c *gin.Context) {
@@ -153,31 +153,31 @@ func (app *App) apisixConsumerUpdate(c *gin.Context) {
 		Plugins map[string]any `json:"plugins"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		helper.RespondError(c, http.StatusBadRequest, err.Error())
+		respondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	if err := app.apisixSvc.ConsumerUpdate(username, req.Desc, req.Plugins); err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "Consumer updated successfully", gin.H{"username": username, "desc": req.Desc})
+	respondSuccess(c, "Consumer updated successfully", gin.H{"username": username, "desc": req.Desc})
 }
 
 func (app *App) apisixConsumerDelete(c *gin.Context) {
 	if err := app.apisixSvc.ConsumerDelete(c.Param("username")); err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "Consumer deleted successfully", nil)
+	respondSuccess(c, "Consumer deleted successfully", nil)
 }
 
 func (app *App) apisixWhitelistList(c *gin.Context) {
 	result, err := app.apisixSvc.WhitelistList()
 	if err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "", result)
+	respondSuccess(c, "", result)
 }
 
 func (app *App) apisixWhitelistRevoke(c *gin.Context) {
@@ -186,183 +186,183 @@ func (app *App) apisixWhitelistRevoke(c *gin.Context) {
 		ConsumerName string `json:"consumer_name" binding:"required"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		helper.RespondError(c, http.StatusBadRequest, err.Error())
+		respondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	if err := app.apisixSvc.WhitelistRevoke(req.RouteID, req.ConsumerName); err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "Whitelist revoked successfully", nil)
+	respondSuccess(c, "Whitelist revoked successfully", nil)
 }
 
 func (app *App) apisixPluginConfigList(c *gin.Context) {
 	result, err := app.apisixSvc.PluginConfigList()
 	if err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "", result)
+	respondSuccess(c, "", result)
 }
 
 func (app *App) apisixPluginConfigInspect(c *gin.Context) {
 	result, err := app.apisixSvc.PluginConfigInspect(c.Param("id"))
 	if err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "", result)
+	respondSuccess(c, "", result)
 }
 
 func (app *App) apisixPluginConfigCreate(c *gin.Context) {
 	var req pkgapisix.PluginConfig
 	if err := c.ShouldBindJSON(&req); err != nil {
-		helper.RespondError(c, http.StatusBadRequest, err.Error())
+		respondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	result, err := app.apisixSvc.PluginConfigCreate(req)
 	if err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "Plugin Config created successfully", result)
+	respondSuccess(c, "Plugin Config created successfully", result)
 }
 
 func (app *App) apisixPluginConfigUpdate(c *gin.Context) {
 	var req pkgapisix.PluginConfig
 	if err := c.ShouldBindJSON(&req); err != nil {
-		helper.RespondError(c, http.StatusBadRequest, err.Error())
+		respondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	result, err := app.apisixSvc.PluginConfigUpdate(c.Param("id"), req)
 	if err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "Plugin Config updated successfully", result)
+	respondSuccess(c, "Plugin Config updated successfully", result)
 }
 
 func (app *App) apisixPluginConfigDelete(c *gin.Context) {
 	if err := app.apisixSvc.PluginConfigDelete(c.Param("id")); err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "Plugin Config deleted successfully", nil)
+	respondSuccess(c, "Plugin Config deleted successfully", nil)
 }
 
 func (app *App) apisixUpstreamList(c *gin.Context) {
 	result, err := app.apisixSvc.UpstreamList()
 	if err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "", result)
+	respondSuccess(c, "", result)
 }
 
 func (app *App) apisixUpstreamInspect(c *gin.Context) {
 	result, err := app.apisixSvc.UpstreamInspect(c.Param("id"))
 	if err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "", result)
+	respondSuccess(c, "", result)
 }
 
 func (app *App) apisixUpstreamCreate(c *gin.Context) {
 	var req pkgapisix.Upstream
 	if err := c.ShouldBindJSON(&req); err != nil {
-		helper.RespondError(c, http.StatusBadRequest, err.Error())
+		respondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	result, err := app.apisixSvc.UpstreamCreate(req)
 	if err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "Upstream created successfully", result)
+	respondSuccess(c, "Upstream created successfully", result)
 }
 
 func (app *App) apisixUpstreamUpdate(c *gin.Context) {
 	var req pkgapisix.Upstream
 	if err := c.ShouldBindJSON(&req); err != nil {
-		helper.RespondError(c, http.StatusBadRequest, err.Error())
+		respondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	result, err := app.apisixSvc.UpstreamUpdate(c.Param("id"), req)
 	if err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "Upstream updated successfully", result)
+	respondSuccess(c, "Upstream updated successfully", result)
 }
 
 func (app *App) apisixUpstreamDelete(c *gin.Context) {
 	if err := app.apisixSvc.UpstreamDelete(c.Param("id")); err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "Upstream deleted successfully", nil)
+	respondSuccess(c, "Upstream deleted successfully", nil)
 }
 
 func (app *App) apisixSSLList(c *gin.Context) {
 	result, err := app.apisixSvc.SSLList()
 	if err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "", result)
+	respondSuccess(c, "", result)
 }
 
 func (app *App) apisixSSLInspect(c *gin.Context) {
 	result, err := app.apisixSvc.SSLInspect(c.Param("id"))
 	if err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "", result)
+	respondSuccess(c, "", result)
 }
 
 func (app *App) apisixSSLCreate(c *gin.Context) {
 	var req pkgapisix.SSL
 	if err := c.ShouldBindJSON(&req); err != nil {
-		helper.RespondError(c, http.StatusBadRequest, err.Error())
+		respondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	result, err := app.apisixSvc.SSLCreate(req)
 	if err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "SSL created successfully", result)
+	respondSuccess(c, "SSL created successfully", result)
 }
 
 func (app *App) apisixSSLUpdate(c *gin.Context) {
 	var req pkgapisix.SSL
 	if err := c.ShouldBindJSON(&req); err != nil {
-		helper.RespondError(c, http.StatusBadRequest, err.Error())
+		respondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	result, err := app.apisixSvc.SSLUpdate(c.Param("id"), req)
 	if err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "SSL updated successfully", result)
+	respondSuccess(c, "SSL updated successfully", result)
 }
 
 func (app *App) apisixSSLDelete(c *gin.Context) {
 	if err := app.apisixSvc.SSLDelete(c.Param("id")); err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "SSL deleted successfully", nil)
+	respondSuccess(c, "SSL deleted successfully", nil)
 }
 
 func (app *App) apisixPluginList(c *gin.Context) {
 	result, err := app.apisixSvc.PluginList()
 	if err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "", result)
+	respondSuccess(c, "", result)
 }

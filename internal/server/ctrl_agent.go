@@ -13,7 +13,7 @@ import (
 	"github.com/rehiy/libgo/logman"
 
 	"isrvd/config"
-	"isrvd/internal/helper"
+	
 )
 
 // defineAgentRoutes 定义 Agent 模块路由（LLM 代理）
@@ -27,7 +27,7 @@ var agentHTTPClient = &http.Client{Timeout: 10 * time.Minute}
 
 func (app *App) agentProxy(c *gin.Context) {
 	if config.Agent.BaseURL == "" {
-		helper.RespondError(c, http.StatusServiceUnavailable, "Agent LLM 未配置")
+		respondError(c, http.StatusServiceUnavailable, "Agent LLM 未配置")
 		return
 	}
 
@@ -36,7 +36,7 @@ func (app *App) agentProxy(c *gin.Context) {
 
 	body, err := io.ReadAll(c.Request.Body)
 	if err != nil {
-		helper.RespondError(c, http.StatusBadRequest, "读取请求体失败")
+		respondError(c, http.StatusBadRequest, "读取请求体失败")
 		return
 	}
 
@@ -48,7 +48,7 @@ func (app *App) agentProxy(c *gin.Context) {
 
 	req, err := http.NewRequestWithContext(c.Request.Context(), c.Request.Method, targetURL, bytes.NewReader(body))
 	if err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, "构造代理请求失败")
+		respondError(c, http.StatusInternalServerError, "构造代理请求失败")
 		return
 	}
 
@@ -71,7 +71,7 @@ func (app *App) agentProxy(c *gin.Context) {
 	resp, err := agentHTTPClient.Do(req)
 	if err != nil {
 		logman.Error("agent proxy: upstream request failed", "err", err)
-		helper.RespondError(c, http.StatusBadGateway, "上游 LLM 请求失败")
+		respondError(c, http.StatusBadGateway, "上游 LLM 请求失败")
 		return
 	}
 	defer resp.Body.Close()

@@ -7,9 +7,9 @@ import (
 	"path/filepath"
 
 	"github.com/rehiy/libgo/logman"
+	"github.com/rehiy/libgo/secure"
 
 	"isrvd/config"
-	"isrvd/internal/helper"
 )
 
 // 哨兵错误，供 handler 层进行错误类型判断
@@ -100,7 +100,7 @@ func (s *Service) MemberCreate(req MemberUpsertRequest) error {
 	}
 
 	// 对密码进行 bcrypt 加密
-	hashedPassword, err := helper.HashPassword(req.Password)
+	hashedPassword, err := secure.BcryptHash(req.Password)
 	if err != nil {
 		return fmt.Errorf("密码加密失败: %w", err)
 	}
@@ -135,8 +135,8 @@ func (s *Service) MemberUpdate(username string, req MemberUpsertRequest) error {
 		return fmt.Errorf("创建 home 目录失败: %w", err)
 	}
 
-	// 密码为空时 HashPassword 返回空，保持原密码不变
-	hashedPassword, err := helper.HashPassword(req.Password)
+	// 密码为空时 Hash 返回空，保持原密码不变
+	hashedPassword, err := secure.BcryptHash(req.Password)
 	if err != nil {
 		return fmt.Errorf("密码加密失败: %w", err)
 	}
@@ -190,12 +190,12 @@ func (s *Service) PasswordChange(username string, req ChangePasswordRequest) err
 	if req.OldPassword == "" {
 		return fmt.Errorf("请输入原密码")
 	}
-	if !helper.VerifyPassword(req.OldPassword, member.Password) {
+	if !secure.BcryptVerify(req.OldPassword, member.Password) {
 		return fmt.Errorf("原密码错误")
 	}
 
 	// 加密新密码
-	hashedPassword, err := helper.HashPassword(req.NewPassword)
+	hashedPassword, err := secure.BcryptHash(req.NewPassword)
 	if err != nil {
 		return fmt.Errorf("密码加密失败: %w", err)
 	}

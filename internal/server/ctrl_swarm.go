@@ -5,7 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"isrvd/internal/helper"
+	
 	pkgswarm "isrvd/pkgs/swarm"
 )
 
@@ -34,29 +34,29 @@ func (app *App) defineSwarmRoutes() []Route {
 func (app *App) swarmInfo(c *gin.Context) {
 	result, err := app.swarmSvc.Info(c.Request.Context())
 	if err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "Swarm info retrieved", result)
+	respondSuccess(c, "Swarm info retrieved", result)
 }
 
 func (app *App) swarmNodeList(c *gin.Context) {
 	result, err := app.swarmSvc.NodeList(c.Request.Context())
 	if err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "Nodes listed", result)
+	respondSuccess(c, "Nodes listed", result)
 }
 
 func (app *App) swarmNodeInspect(c *gin.Context) {
 	id := c.Param("id")
 	result, err := app.swarmSvc.NodeInspect(c.Request.Context(), id)
 	if err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "Node detail retrieved", result)
+	respondSuccess(c, "Node detail retrieved", result)
 }
 
 func (app *App) swarmNodeAction(c *gin.Context) {
@@ -64,47 +64,47 @@ func (app *App) swarmNodeAction(c *gin.Context) {
 		Action string `json:"action"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		helper.RespondError(c, http.StatusBadRequest, err.Error())
+		respondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	if err := app.swarmSvc.NodeAction(c.Request.Context(), c.Param("id"), req.Action); err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "Node updated", nil)
+	respondSuccess(c, "Node updated", nil)
 }
 
 func (app *App) swarmServiceList(c *gin.Context) {
 	result, err := app.swarmSvc.ServiceList(c.Request.Context())
 	if err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "Services listed", result)
+	respondSuccess(c, "Services listed", result)
 }
 
 func (app *App) swarmServiceInspect(c *gin.Context) {
 	id := c.Param("id")
 	result, err := app.swarmSvc.ServiceInspect(c.Request.Context(), id)
 	if err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "Service detail retrieved", result)
+	respondSuccess(c, "Service detail retrieved", result)
 }
 
 func (app *App) swarmServiceCreate(c *gin.Context) {
 	var req pkgswarm.ServiceSpec
 	if err := c.ShouldBindJSON(&req); err != nil {
-		helper.RespondError(c, http.StatusBadRequest, err.Error())
+		respondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	id, err := app.swarmSvc.ServiceCreate(c.Request.Context(), req)
 	if err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "Service created", gin.H{"id": id})
+	respondSuccess(c, "Service created", gin.H{"id": id})
 }
 
 func (app *App) swarmServiceAction(c *gin.Context) {
@@ -113,22 +113,22 @@ func (app *App) swarmServiceAction(c *gin.Context) {
 		Replicas *uint64 `json:"replicas,omitempty"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		helper.RespondError(c, http.StatusBadRequest, err.Error())
+		respondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	if err := app.swarmSvc.ServiceAction(c.Request.Context(), c.Param("id"), req.Action, req.Replicas); err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "Service "+req.Action+" successfully", nil)
+	respondSuccess(c, "Service "+req.Action+" successfully", nil)
 }
 
 func (app *App) swarmServiceForceUpdate(c *gin.Context) {
 	if err := app.swarmSvc.ServiceForceUpdate(c.Request.Context(), c.Param("id")); err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "Service force updated", nil)
+	respondSuccess(c, "Service force updated", nil)
 }
 
 func (app *App) swarmServiceLogs(c *gin.Context) {
@@ -136,27 +136,27 @@ func (app *App) swarmServiceLogs(c *gin.Context) {
 	tail := c.DefaultQuery("tail", "100")
 	logs, err := app.swarmSvc.ServiceLogs(c.Request.Context(), serviceID, tail)
 	if err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "Logs retrieved", gin.H{"logs": logs})
+	respondSuccess(c, "Logs retrieved", gin.H{"logs": logs})
 }
 
 func (app *App) swarmTaskList(c *gin.Context) {
 	serviceID := c.Query("serviceID")
 	result, err := app.swarmSvc.TaskList(c.Request.Context(), serviceID)
 	if err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "Tasks listed", result)
+	respondSuccess(c, "Tasks listed", result)
 }
 
 func (app *App) swarmJoinToken(c *gin.Context) {
 	result, err := app.swarmSvc.JoinToken(c.Request.Context())
 	if err != nil {
-		helper.RespondError(c, http.StatusInternalServerError, err.Error())
+		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.RespondSuccess(c, "Join tokens retrieved", result)
+	respondSuccess(c, "Join tokens retrieved", result)
 }

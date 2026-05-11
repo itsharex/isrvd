@@ -3,7 +3,7 @@ package server
 import (
 	"github.com/gin-gonic/gin"
 
-	"isrvd/internal/helper"
+	
 	svcAccount "isrvd/internal/service/account"
 )
 
@@ -16,9 +16,9 @@ func (app *App) defineOverviewRoutes() []Route {
 }
 
 func (app *App) overviewStat(c *gin.Context) {
-	helper.RespondSuccess(c, "ok", app.overviewSvc.Stat(c.Request.Context()))
+	respondSuccess(c, "ok", app.overviewSvc.Stat(c.Request.Context()))
 }
 
 func (app *App) overviewProbe(c *gin.Context) {
-	helper.RespondSuccess(c, "ok", app.overviewSvc.Probe(c.Request.Context()))
+	respondSuccess(c, "ok", app.overviewSvc.Probe(c.Request.Context()))
 }

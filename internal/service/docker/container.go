@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/gorilla/websocket"
+	"github.com/rehiy/libgo/websocket"
 
 	pkgdocker "isrvd/pkgs/docker"
 )
@@ -61,7 +61,7 @@ func (s *Service) ContainerLogs(ctx context.Context, req pkgdocker.ContainerLogs
 }
 
 // ContainerExec 容器终端 WebSocket（代理到 pkgs 层）
-func (s *Service) ContainerExec(ctx context.Context, conn *websocket.Conn, containerID, shell string) {
+func (s *Service) ContainerExec(ctx context.Context, conn *websocket.ServerConn, containerID, shell string) {
 	s.docker.ContainerExec(ctx, conn, containerID, shell)
 }
 

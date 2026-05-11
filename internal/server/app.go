@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/rehiy/libgo/httpd"
 	"github.com/rehiy/libgo/logman"
+	"github.com/rehiy/libgo/websocket"
 
 	svcAccount "isrvd/internal/service/account"
 	svcApisix "isrvd/internal/service/apisix"
@@ -23,6 +24,7 @@ const APINamespace = "/api"
 // App 应用实例，持有各业务服务
 type App struct {
 	*gin.Engine
+	wsConfig    *websocket.ServerConfig
 	overviewSvc *svcOverview.Service
 	configSvc   *svcSystem.ConfigService
 	auditSvc    *svcSystem.AuditService
@@ -37,7 +39,8 @@ type App struct {
 
 func StartApp() {
 	app := &App{
-		Engine:     httpd.Engine(config.Server.Debug),
+		Engine:   httpd.Engine(config.Server.Debug),
+		wsConfig: &websocket.ServerConfig{AllowedOrigins: config.Server.AllowedOrigins},
 		routePerms: make(map[string]svcAccount.RouteInfo),
 	}
 
@@ -89,6 +92,9 @@ type Route struct {
 // 按模块注册路由，每个模块自己管理路由定义和注册
 func (app *App) initRoutes() {
 	r := app.Group(APINamespace)
+
+	// CORS 中间件（必须在最前面）
+	r.Use(app.wsConfig.CorsMiddleware())
 
 	// 安全响应头中间件
 	r.Use(securityHeadersMiddleware())

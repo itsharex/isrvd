@@ -9,9 +9,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/rehiy/libgo/logman"
+	"github.com/rehiy/libgo/secure"
 
 	"isrvd/config"
-	"isrvd/internal/helper"
 )
 
 // RouteAccess 路由访问级别（数值越大，要求越高）
@@ -105,7 +105,7 @@ type LoginResponse struct {
 // Login 校验用户名密码并签发 JWT Token
 func (s *Service) Login(req LoginRequest) (*LoginResponse, error) {
 	member, exists := config.Members[req.Username]
-	if !exists || !helper.VerifyPassword(req.Password, member.Password) {
+	if !exists || !secure.BcryptVerify(req.Password, member.Password) {
 		logman.Warn("Login failed", "username", req.Username)
 		return nil, fmt.Errorf("invalid credentials")
 	}

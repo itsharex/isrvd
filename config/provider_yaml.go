@@ -6,8 +6,7 @@ import (
 
 	"github.com/goccy/go-yaml"
 	"github.com/rehiy/libgo/logman"
-
-	"isrvd/internal/helper"
+	"github.com/rehiy/libgo/secure"
 )
 
 // YamlProvider YAML 文件配置提供者
@@ -59,11 +58,11 @@ func (y *YamlProvider) migratePasswords(conf *Config) {
 	migrated := false
 
 	for _, m := range conf.Members {
-		if m.Password == "" || helper.HashedBcrypt(m.Password) {
+		if m.Password == "" || secure.IsBcrypt(m.Password) {
 			continue
 		}
 
-		hashedPassword, err := helper.HashPassword(m.Password)
+		hashedPassword, err := secure.BcryptHash(m.Password)
 		if err != nil {
 			logman.Warn("密码加密失败", "username", m.Username, "error", err)
 			continue
