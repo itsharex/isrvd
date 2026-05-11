@@ -29,7 +29,7 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitReturns": true,
-    "noUncheckedIndexedAccess": false,
+    "noUncheckedIndexedAccess": true,
     // 装饰器支持（vue-facing-decorator 需要）
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
