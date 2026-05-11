@@ -127,7 +127,7 @@ func (s *Service) swarmImageRedeploy(ctx context.Context, name, serviceName, ima
 	if err != nil {
 		return nil, err
 	}
-	newContent, err := updateServiceImageContent(ctx, name, oldContent, serviceName, image)
+	newContent, newProject, err := updateServiceImage(ctx, name, oldContent, serviceName, image)
 	if err != nil {
 		return nil, err
 	}
@@ -137,11 +137,6 @@ func (s *Service) swarmImageRedeploy(ctx context.Context, name, serviceName, ima
 		return nil, err
 	}
 	oldSvc, err := projectServiceFind(oldProject, serviceName)
-	if err != nil {
-		return nil, err
-	}
-
-	newProject, err := compose.LoadProjectFromContent(ctx, newContent, name)
 	if err != nil {
 		return nil, err
 	}

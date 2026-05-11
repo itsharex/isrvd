@@ -179,10 +179,15 @@ func (m *SwarmService) ServiceCreate(ctx context.Context, req ServiceSpec) (stri
 		if strings.EqualFold(p.Protocol, "udp") {
 			proto = swarm.PortConfigProtocolUDP
 		}
+		publishMode := swarm.PortConfigPublishModeIngress
+		if strings.EqualFold(p.PublishMode, "host") {
+			publishMode = swarm.PortConfigPublishModeHost
+		}
 		spec.EndpointSpec.Ports = append(spec.EndpointSpec.Ports, swarm.PortConfig{
 			Protocol:      proto,
 			PublishedPort: p.PublishedPort,
 			TargetPort:    p.TargetPort,
+			PublishMode:   publishMode,
 		})
 	}
 

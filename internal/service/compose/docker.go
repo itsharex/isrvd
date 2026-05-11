@@ -132,7 +132,7 @@ func (s *Service) dockerContentGet(ctx context.Context, name string) (string, er
 	}
 
 	imageConfig, _ := s.docker.ImageConfig(ctx, info.Config.Image)
-	project, err := compose.ProjectFromInspect(info, imageConfig)
+	project, err := compose.ProjectFromDockerInspect(info, imageConfig)
 	if err != nil {
 		return "", err
 	}
@@ -200,7 +200,7 @@ func (s *Service) dockerImageRedeploy(ctx context.Context, name, serviceName, im
 	if err != nil {
 		return nil, err
 	}
-	newContent, err := updateServiceImageContent(ctx, name, oldContent, serviceName, image)
+	newContent, newProject, err := updateServiceImage(ctx, name, oldContent, serviceName, image)
 	if err != nil {
 		return nil, err
 	}
@@ -213,15 +213,8 @@ func (s *Service) dockerImageRedeploy(ctx context.Context, name, serviceName, im
 	if err != nil {
 		return nil, err
 	}
-
-	newProject, err := s.dockerProjectLoad(ctx, name, newContent, installDir)
-	if err != nil {
-		s.dockerContentSave(installDir, oldContent, "")
-		return nil, err
-	}
 	newSvc, err := projectServiceFind(newProject, serviceName)
 	if err != nil {
-		s.dockerContentSave(installDir, oldContent, "")
 		return nil, err
 	}
 

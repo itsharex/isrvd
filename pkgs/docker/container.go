@@ -165,8 +165,8 @@ type ContainerCreateRequest struct {
 	Volumes    []VolumeMapping   `json:"volumes"`
 	Network    string            `json:"network"`
 	Restart    string            `json:"restart"`
-	Memory     int64             `json:"memory"`   // 内存限制，单位 MB
-	Cpus       float64           `json:"cpus"`     // CPU 核数限制，如 0.5、2.0
+	Memory     int64             `json:"memory"` // 内存限制，单位 MB
+	Cpus       float64           `json:"cpus"`   // CPU 核数限制，如 0.5、2.0
 	Workdir    string            `json:"workdir"`
 	User       string            `json:"user"`
 	Hostname   string            `json:"hostname"`
@@ -219,17 +219,22 @@ func (s *DockerService) ContainerCreate(ctx context.Context, req ContainerCreate
 		exposedPorts := make(nat.PortSet)
 		for hostPortSpec, containerPort := range req.Ports {
 			hostPort := hostPortSpec
+			hostIP := "0.0.0.0"
 			proto := "tcp"
 			if idx := strings.LastIndex(hostPortSpec, "/"); idx >= 0 {
 				hostPort = hostPortSpec[:idx]
 				proto = hostPortSpec[idx+1:]
+			}
+			if idx := strings.LastIndex(hostPort, ":"); idx >= 0 {
+				hostIP = hostPort[:idx]
+				hostPort = hostPort[idx+1:]
 			}
 			// 防御性剥离 containerPort 中可能携带的协议后缀（如 "80/tcp"）
 			if idx := strings.Index(containerPort, "/"); idx >= 0 {
 				containerPort = containerPort[:idx]
 			}
 			port := nat.Port(containerPort + "/" + proto)
-			portBindings[port] = []nat.PortBinding{{HostIP: "0.0.0.0", HostPort: hostPort}}
+			portBindings[port] = []nat.PortBinding{{HostIP: hostIP, HostPort: hostPort}}
 			exposedPorts[port] = struct{}{}
 		}
 		hostConfig.PortBindings = portBindings
@@ -280,50 +285,8 @@ func (s *DockerService) ContainerCreate(ctx context.Context, req ContainerCreate
 	return resp.ID, nil
 }
 
-// ContainerUpdateRequest 容器配置更新请求
-type ContainerUpdateRequest struct {
-	Name       string            `json:"name" binding:"required"`
-	Image      string            `json:"image" binding:"required"`
-	Cmd        []string          `json:"cmd"`
-	Env        []string          `json:"env"`
-	Ports      map[string]string `json:"ports"`
-	Volumes    []VolumeMapping   `json:"volumes"`
-	Network    string            `json:"network"`
-	Restart    string            `json:"restart"`
-	Memory     int64             `json:"memory"`   // 内存限制，单位 MB
-	Cpus       float64           `json:"cpus"`     // CPU 核数限制，如 0.5、2.0
-	Workdir    string            `json:"workdir"`
-	User       string            `json:"user"`
-	Hostname   string            `json:"hostname"`
-	Privileged bool              `json:"privileged"`
-	CapAdd     []string          `json:"capAdd"`
-	CapDrop    []string          `json:"capDrop"`
-}
-
-// ToCreateRequest 将更新请求转换为创建请求，复用创建逻辑（供 UpdateContainer 和快照服务等共用）
-func (req ContainerUpdateRequest) ToCreateRequest() ContainerCreateRequest {
-	return ContainerCreateRequest{
-		Image:      req.Image,
-		Name:       req.Name,
-		Cmd:        req.Cmd,
-		Env:        req.Env,
-		Ports:      req.Ports,
-		Volumes:    req.Volumes,
-		Network:    req.Network,
-		Restart:    req.Restart,
-		Memory:     req.Memory,
-		Cpus:       req.Cpus,
-		Workdir:    req.Workdir,
-		User:       req.User,
-		Hostname:   req.Hostname,
-		Privileged: req.Privileged,
-		CapAdd:     req.CapAdd,
-		CapDrop:    req.CapDrop,
-	}
-}
-
 // ContainerUpdate 更新容器配置并重建
-func (s *DockerService) ContainerUpdate(ctx context.Context, req ContainerUpdateRequest) (string, error) {
+func (s *DockerService) ContainerUpdate(ctx context.Context, req ContainerCreateRequest) (string, error) {
 	// 查找并停止旧容器
 	containers, err := s.client.ContainerList(ctx, container.ListOptions{All: true})
 	if err != nil {
@@ -353,7 +316,7 @@ func (s *DockerService) ContainerUpdate(ctx context.Context, req ContainerUpdate
 		}
 	}
 
-	return s.ContainerCreate(ctx, req.ToCreateRequest())
+	return s.ContainerCreate(ctx, req)
 }
 
 func (s *DockerService) buildMount(containerName string, vol VolumeMapping) (mount.Mount, error) {

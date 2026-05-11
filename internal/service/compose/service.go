@@ -123,6 +123,7 @@ func (s *Service) ContentInspect(ctx context.Context, target Target, name string
 		return "", fmt.Errorf("不支持的目标: %s", target)
 	}
 }
+
 // Redeploy 重建：全量重建或按服务更新镜像重建
 // - req.ServiceName + req.Image 非空：更新指定服务镜像后重建
 // - 否则：req.Content 必须非空，全量重建
@@ -153,16 +154,18 @@ func (s *Service) Redeploy(ctx context.Context, target Target, name string, req 
 	}
 }
 
-func updateServiceImageContent(ctx context.Context, name, content, serviceName, image string) (string, error) {
+// updateServiceImage 将 compose 内容中指定服务的镜像替换为 image，
+// 返回更新后的 YAML 文本和已修改的 project（避免调用方二次加载）
+func updateServiceImage(ctx context.Context, name, content, serviceName, image string) (string, *types.Project, error) {
 	if content == "" {
-		return "", fmt.Errorf("compose 内容不能为空")
+		return "", nil, fmt.Errorf("compose 内容不能为空")
 	}
 	project, err := compose.LoadProjectFromContent(ctx, content, name)
 	if err != nil {
-		return "", err
+		return "", nil, err
 	}
 	if len(project.Services) == 0 {
-		return "", fmt.Errorf("compose 文件中没有定义服务")
+		return "", nil, fmt.Errorf("compose 文件中没有定义服务")
 	}
 
 	matched := false
@@ -175,14 +178,14 @@ func updateServiceImageContent(ctx context.Context, name, content, serviceName, 
 		}
 	}
 	if !matched {
-		return "", fmt.Errorf("compose 服务 %s 不存在", serviceName)
+		return "", nil, fmt.Errorf("compose 服务 %s 不存在", serviceName)
 	}
 
 	data, err := compose.ProjectToYAML(project)
 	if err != nil {
-		return "", err
+		return "", nil, err
 	}
-	return string(data), nil
+	return string(data), project, nil
 }
 
 func projectServiceFind(project *types.Project, serviceName string) (types.ServiceConfig, error) {
