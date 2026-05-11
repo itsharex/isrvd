@@ -88,7 +88,7 @@ export default toNative(ServiceInfo)
           </div>
           <div class="flex items-center gap-2">
             <div class="flex gap-1 bg-slate-100 p-1 rounded-lg">
-              <button v-if="portal.hasPerm('GET /api/swarm/service/:id')" :class="['px-3 py-1 text-xs font-medium rounded-md transition-all duration-200 flex items-center gap-1.5', activeTab() === 'swarm-service-info' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700']" @click="switchTab('swarm-service-info')">
+              <button v-if="portal.hasPerm('GET /api/swarm/service/:id')" :class="['px-3 py-1 text-xs font-medium rounded-md transition-all duration-200 flex items-center gap-1.5', activeTab() === 'swarm-service' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700']" @click="switchTab('swarm-service')">
                 <i class="fas fa-circle-info"></i><span>详情</span>
               </button>
               <button v-if="portal.hasPerm('GET /api/swarm/service/:id/logs')" :class="['px-3 py-1 text-xs font-medium rounded-md transition-all duration-200 flex items-center gap-1.5', activeTab() === 'swarm-service-logs' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700']" @click="switchTab('swarm-service-logs')">
@@ -117,7 +117,7 @@ export default toNative(ServiceInfo)
             </button>
           </div>
           <div class="flex justify-center gap-1 bg-slate-100 p-1 rounded-lg">
-            <button v-if="portal.hasPerm('GET /api/swarm/service/:id')" :class="['px-3 py-1 text-xs font-medium rounded-md transition-all duration-200 flex items-center gap-1.5', activeTab() === 'swarm-service-info' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700']" @click="switchTab('swarm-service-info')">
+            <button v-if="portal.hasPerm('GET /api/swarm/service/:id')" :class="['px-3 py-1 text-xs font-medium rounded-md transition-all duration-200 flex items-center gap-1.5', activeTab() === 'swarm-service' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700']" @click="switchTab('swarm-service')">
               <i class="fas fa-circle-info"></i><span>详情</span>
             </button>
             <button v-if="portal.hasPerm('GET /api/swarm/service/:id/logs')" :class="['px-3 py-1 text-xs font-medium rounded-md transition-all duration-200 flex items-center gap-1.5', activeTab() === 'swarm-service-logs' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700']" @click="switchTab('swarm-service-logs')">

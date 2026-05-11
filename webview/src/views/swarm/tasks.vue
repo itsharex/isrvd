@@ -74,7 +74,7 @@ class Tasks extends Vue {
     }
 
     goServiceDetail(serviceId: string) {
-        this.$router.push({ name: 'swarm-service-info', params: { id: serviceId } })
+        this.$router.push({ name: 'swarm-service', params: { id: serviceId } })
     }
 
     goNodeDetail(nodeId: string) {

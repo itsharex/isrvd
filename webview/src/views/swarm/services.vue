@@ -213,7 +213,7 @@ export default toNative(Services)
                 <td class="px-4 py-3 text-sm text-slate-600">{{ svc.updatedAt?.slice(0, 16).replace('T', ' ') }}</td>
                 <td class="px-4 py-3">
                   <div class="flex justify-end items-center gap-1">
-                    <button v-if="portal.hasPerm('GET /api/swarm/service/:id')" class="btn-icon text-slate-600 hover:bg-slate-50" title="详情" @click="$router.push({ name: 'swarm-service-info', params: { id: svc.id } })"><i class="fas fa-circle-info text-xs"></i></button>
+                    <button v-if="portal.hasPerm('GET /api/swarm/service/:id')" class="btn-icon text-slate-600 hover:bg-slate-50" title="详情" @click="$router.push({ name: 'swarm-service', params: { id: svc.id } })"><i class="fas fa-circle-info text-xs"></i></button>
                     <button v-if="portal.hasPerm('GET /api/swarm/service/:id/logs')" class="btn-icon text-slate-600 hover:bg-slate-50" title="日志" @click="$router.push({ name: 'swarm-service-logs', params: { id: svc.id } })"><i class="fas fa-file-lines text-xs"></i></button>
                     <button v-if="svc.mode === 'replicated' && portal.hasPerm('POST /api/swarm/service/:id/action')" class="btn-icon text-indigo-600 hover:bg-indigo-50" title="扩缩容" @click="openScaleModal(svc)"><i class="fas fa-up-right-and-down-left-from-center text-xs"></i></button>
                     <button v-if="portal.hasPerm('POST /api/swarm/service/:id/force-update')" class="btn-icon text-blue-600 hover:bg-blue-50" title="强制重部署" @click="handleRedeploy(svc)"><i class="fas fa-arrows-rotate text-xs"></i></button>
@@ -277,7 +277,7 @@ export default toNative(Services)
             
             <!-- 底部：操作按钮 -->
             <div class="flex flex-wrap gap-1.5 pt-2 border-t border-slate-100">
-              <button v-if="portal.hasPerm('GET /api/swarm/service/:id')" class="btn-icon text-slate-600 hover:bg-slate-50" title="详情" @click="$router.push({ name: 'swarm-service-info', params: { id: svc.id } })">
+              <button v-if="portal.hasPerm('GET /api/swarm/service/:id')" class="btn-icon text-slate-600 hover:bg-slate-50" title="详情" @click="$router.push({ name: 'swarm-service', params: { id: svc.id } })">
                 <i class="fas fa-circle-info text-xs"></i><span class="text-xs ml-1">详情</span>
               </button>
               <button v-if="portal.hasPerm('GET /api/swarm/service/:id/logs')" class="btn-icon text-slate-600 hover:bg-slate-50" title="日志" @click="$router.push({ name: 'swarm-service-logs', params: { id: svc.id } })">
