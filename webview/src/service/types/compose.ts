@@ -11,14 +11,12 @@ export interface ComposeDeploy {
 }
 
 // Compose Redeploy 请求
+// - content 非空，serviceName 为空：全量重建
+// - serviceName + image 非空：按服务更新镜像重建
 export interface ComposeRedeploy {
-    content: string
-}
-
-// Compose Image Redeploy 请求
-export interface ComposeImageRedeploy {
-    serviceName: string
-    image: string
+    content?: string
+    serviceName?: string
+    image?: string
 }
 
 export interface ComposeDeployResult {

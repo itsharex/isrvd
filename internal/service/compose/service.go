@@ -35,14 +35,12 @@ type DeployRequest struct {
 }
 
 // RedeployRequest 重建请求
+// - serviceName + image 非空：从现有内容读取后更新指定服务镜像重建
+// - 否则：content 必须非空，全量重建
 type RedeployRequest struct {
-	Content string `json:"content" binding:"required"`
-}
-
-// ImageRedeployRequest 按服务更新镜像并重建请求
-type ImageRedeployRequest struct {
-	ServiceName string `json:"serviceName" binding:"required"`
-	Image       string `json:"image" binding:"required"`
+	Content     string `json:"content,omitempty"`
+	ServiceName string `json:"serviceName,omitempty"`
+	Image       string `json:"image,omitempty"`
 }
 
 // DeployResult 部署结果
@@ -125,35 +123,31 @@ func (s *Service) ContentInspect(ctx context.Context, target Target, name string
 		return "", fmt.Errorf("不支持的目标: %s", target)
 	}
 }
-
-// Redeploy 重建
+// Redeploy 重建：全量重建或按服务更新镜像重建
+// - req.ServiceName + req.Image 非空：更新指定服务镜像后重建
+// - 否则：req.Content 必须非空，全量重建
 func (s *Service) Redeploy(ctx context.Context, target Target, name string, req RedeployRequest) (*DeployResult, error) {
+	if req.ServiceName != "" {
+		if req.Image == "" {
+			return nil, fmt.Errorf("image 不能为空")
+		}
+		switch target {
+		case TargetDocker:
+			return s.dockerImageRedeploy(ctx, name, req.ServiceName, req.Image)
+		case TargetSwarm:
+			return s.swarmImageRedeploy(ctx, name, req.ServiceName, req.Image)
+		default:
+			return nil, fmt.Errorf("不支持的目标: %s", target)
+		}
+	}
 	if req.Content == "" {
-		return nil, fmt.Errorf("compose 内容不能为空")
+		return nil, fmt.Errorf("content 不能为空")
 	}
 	switch target {
 	case TargetDocker:
 		return s.dockerRedeploy(ctx, name, req.Content)
 	case TargetSwarm:
 		return s.swarmRedeploy(ctx, name, req.Content)
-	default:
-		return nil, fmt.Errorf("不支持的目标: %s", target)
-	}
-}
-
-// ImageRedeploy 按服务更新镜像并重建
-func (s *Service) ImageRedeploy(ctx context.Context, target Target, name string, req ImageRedeployRequest) (*DeployResult, error) {
-	if req.ServiceName == "" {
-		return nil, fmt.Errorf("serviceName 不能为空")
-	}
-	if req.Image == "" {
-		return nil, fmt.Errorf("image 不能为空")
-	}
-	switch target {
-	case TargetDocker:
-		return s.dockerImageRedeploy(ctx, name, req.ServiceName, req.Image)
-	case TargetSwarm:
-		return s.swarmImageRedeploy(ctx, name, req.ServiceName, req.Image)
 	default:
 		return nil, fmt.Errorf("不支持的目标: %s", target)
 	}
