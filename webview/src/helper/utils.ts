@@ -171,23 +171,17 @@ export const copyToClipboard = async (text: string): Promise<boolean> => {
 
 // ─── 主题 ───
 
-/** 根据 localStorage 或系统偏好初始化主题 */
+/** 根据 localStorage 或系统偏好初始化主题，用户的显式选择优先于系统偏好 */
 export const initTheme = (): void => {
     const stored = localStorage.getItem('app-theme')
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-    if (stored === 'dark' || (!stored && prefersDark)) {
-        document.documentElement.classList.add('dark')
-    } else {
-        document.documentElement.classList.remove('dark')
-    }
+    const isDark = stored
+        ? stored === 'dark'
+        : window.matchMedia('(prefers-color-scheme: dark)').matches
+    document.documentElement.classList.toggle('dark', isDark)
 }
 
-/** 切换主题：强制暗色时写入 localStorage，切回亮色时删除（恢复跟随系统）*/
+/** 切换主题并将用户选择持久化到 localStorage */
 export const toggleTheme = (): void => {
     const isDark = document.documentElement.classList.toggle('dark')
-    if (isDark) {
-        localStorage.setItem('app-theme', 'dark')
-    } else {
-        localStorage.removeItem('app-theme')
-    }
+    localStorage.setItem('app-theme', isDark ? 'dark' : 'light')
 }
