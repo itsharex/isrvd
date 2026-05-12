@@ -13,6 +13,7 @@ import (
 
 // ShortID 返回 ID 的前 12 字符，不足 12 则返回原值
 func ShortID(id string) string {
+	id = strings.TrimPrefix(id, "sha256:")
 	if len(id) > 12 {
 		return id[:12]
 	}

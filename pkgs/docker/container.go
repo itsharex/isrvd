@@ -374,26 +374,26 @@ func (s *DockerService) ContainerUpdate(ctx context.Context, req ContainerSpec) 
 		return "", err
 	}
 
-	var oldContainerID string
+	var id string
 	for _, ct := range containers {
 		ctName := ""
 		if len(ct.Names) > 0 {
 			ctName = strings.TrimPrefix(ct.Names[0], "/")
 		}
 		if ctName == req.Name {
-			oldContainerID = ct.ID
+			id = ct.ID
 			break
 		}
 	}
 
 	// 停止并删除旧容器
-	if oldContainerID != "" {
+	if id != "" {
 		timeout := 10
-		if err := s.client.ContainerStop(ctx, oldContainerID, container.StopOptions{Timeout: &timeout}); err != nil {
-			logman.Warn("Stop old container failed", "id", ShortID(oldContainerID), "error", err)
+		if err := s.client.ContainerStop(ctx, id, container.StopOptions{Timeout: &timeout}); err != nil {
+			logman.Warn("Stop old container failed", "id", ShortID(id), "error", err)
 		}
-		if err := s.client.ContainerRemove(ctx, oldContainerID, container.RemoveOptions{Force: true}); err != nil {
-			logman.Warn("Remove old container failed", "id", ShortID(oldContainerID), "error", err)
+		if err := s.client.ContainerRemove(ctx, id, container.RemoveOptions{Force: true}); err != nil {
+			logman.Warn("Remove old container failed", "id", ShortID(id), "error", err)
 		}
 	}
 

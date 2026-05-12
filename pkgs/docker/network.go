@@ -11,11 +11,11 @@ import (
 
 // NetworkInfo Docker 网络信息
 type NetworkInfo struct {
-	ID      string `json:"id"`
-	Name    string `json:"name"`
-	Driver  string `json:"driver"`
-	Subnet  string `json:"subnet"`
-	Scope   string `json:"scope"`
+	ID     string `json:"id"`
+	Name   string `json:"name"`
+	Driver string `json:"driver"`
+	Subnet string `json:"subnet"`
+	Scope  string `json:"scope"`
 }
 
 // NetworkList 列出网络
@@ -33,7 +33,11 @@ func (s *DockerService) NetworkList(ctx context.Context) ([]*NetworkInfo, error)
 			subnet = net.IPAM.Config[0].Subnet
 		}
 		result = append(result, &NetworkInfo{
-			ID: ShortID(net.ID), Name: net.Name, Driver: net.Driver, Subnet: subnet, Scope: net.Scope,
+			ID:     ShortID(net.ID),
+			Name:   net.Name,
+			Driver: net.Driver,
+			Subnet: subnet,
+			Scope:  net.Scope,
 		})
 	}
 

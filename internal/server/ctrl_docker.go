@@ -221,12 +221,10 @@ func (app *App) dockerImageBuild(c *gin.Context) {
 
 func (app *App) dockerImagePrune(c *gin.Context) {
 	var req pkgdocker.ImagePruneRequest
-	// 请求体可选；缺省时仅清理悬空层
-	if c.Request.ContentLength > 0 {
-		if err := c.ShouldBindJSON(&req); err != nil {
-			respondError(c, http.StatusBadRequest, err.Error())
-			return
-		}
+	// 请求体可选；空 JSON 表示仅清理悬空层
+	if err := c.ShouldBindJSON(&req); err != nil && err.Error() != "EOF" {
+		respondError(c, http.StatusBadRequest, err.Error())
+		return
 	}
 	result, err := app.dockerSvc.ImagePrune(c.Request.Context(), req)
 	if err != nil {

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -40,15 +41,9 @@ func (s *DockerService) ImageList(ctx context.Context, all bool) ([]*ImageInfo, 
 			continue
 		}
 
-		id := img.ID
-		shortID := id
-		if strings.HasPrefix(id, "sha256:") {
-			shortID = id[7:]
-		}
-		shortID = ShortID(shortID)
 		result = append(result, &ImageInfo{
-			ID:          id,
-			ShortID:     shortID,
+			ID:          img.ID,
+			ShortID:     ShortID(img.ID),
 			RepoTags:    img.RepoTags,
 			RepoDigests: img.RepoDigests,
 			Size:        img.Size,
@@ -85,8 +80,8 @@ type ImagePruneDeleted struct {
 // 会回收所有未被容器引用的镜像（包括有标签但闲置的）。
 func (s *DockerService) ImagePrune(ctx context.Context, req ImagePruneRequest) (*ImagePruneReport, error) {
 	args := filters.NewArgs()
-	// dangling 过滤器为 Docker prune 必填项；true=仅悬空，false=全部未用
-	args.Add("dangling", fmt.Sprintf("%t", !req.All))
+	// dangling=true 仅清理悬空层；dangling=false 清理所有未被容器引用的镜像
+	args.Add("dangling", strconv.FormatBool(!req.All))
 	if req.Until != "" {
 		args.Add("until", req.Until)
 	}
@@ -303,12 +298,6 @@ func (s *DockerService) ImageInspect(ctx context.Context, id string) (*ImageDeta
 		return nil, err
 	}
 
-	shortID := img.ID
-	if strings.HasPrefix(shortID, "sha256:") {
-		shortID = shortID[7:]
-	}
-	shortID = ShortID(shortID)
-
 	// 提取暴露端口列表
 	var exposedPorts []string
 	if img.Config != nil {
@@ -364,7 +353,7 @@ func (s *DockerService) ImageInspect(ctx context.Context, id string) (*ImageDeta
 
 	result := &ImageDetail{
 		ID:           img.ID,
-		ShortID:      shortID,
+		ShortID:      ShortID(img.ID),
 		RepoTags:     img.RepoTags,
 		RepoDigests:  img.RepoDigests,
 		Size:         img.Size,
