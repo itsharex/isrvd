@@ -14,13 +14,7 @@ isrvd_get "/swarm/services"
 | mode | string | `replicated` / `global` |
 | replicas | number | 副本数 |
 | runningTasks | number | 运行中的任务数 |
-| env | string[] | 环境变量 |
-| args | string[] | 命令参数 |
-| networks | string[] | 网络名 |
 | ports | object[] | `{protocol, targetPort, publishedPort, publishMode}` |
-| mounts | object[] | `{type, source, target, readOnly}` |
-| labels | object | 标签 |
-| constraints | string[] | 放置约束 |
 | createdAt | string | 创建时间 |
 | updatedAt | string | 更新时间 |
 
@@ -29,6 +23,8 @@ isrvd_get "/swarm/services"
 ```bash
 isrvd_get "/swarm/service/<SVC_ID>"
 ```
+
+返回完整 `ServiceDetail`，在列表字段基础上额外包含：`env、args、networks、mounts、labels、constraints`。
 
 ## 创建服务
 

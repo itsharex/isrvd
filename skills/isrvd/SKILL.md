@@ -80,7 +80,7 @@ isrvd_token "$ISRVD_APIURL" "$ISRVD_APITOKEN"
 │   └── 配置路由         → docs/apisix/routes.md
 │
 ├── 更新/变更
-│   ├── 更新 Compose 服务镜像 → docs/compose.md (image-redeploy)
+│   ├── 更新 Compose 服务镜像 → docs/compose.md (redeploy + serviceName/image)
 │   ├── 更新容器镜像     → docs/docker/images.md (拉取) + docs/docker/containers.md (重建)
 │   ├── 扩缩容           → docs/swarm/services.md
 │   ├── 重新部署         → docs/swarm/services.md (force-update)
@@ -150,8 +150,8 @@ isrvd_post "/compose/swarm/deploy" "$(jq -n --arg content "$(cat stack.yml)" '{c
 ### 更新 Compose 服务镜像并重建
 
 ```bash
-isrvd_post "/compose/docker/<NAME>/image-redeploy" '{"serviceName":"<SERVICE_NAME>","image":"<NEW_IMAGE>"}'
-isrvd_post "/compose/swarm/<NAME>/image-redeploy" '{"serviceName":"<SERVICE_NAME>","image":"<NEW_IMAGE>"}'
+isrvd_post "/compose/docker/<NAME>/redeploy" '{"serviceName":"<SERVICE_NAME>","image":"<NEW_IMAGE>"}'
+isrvd_post "/compose/swarm/<NAME>/redeploy" '{"serviceName":"<SERVICE_NAME>","image":"<NEW_IMAGE>"}'
 ```
 
 ### 部署 Swarm 服务并验证
