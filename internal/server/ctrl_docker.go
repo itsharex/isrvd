@@ -30,6 +30,7 @@ func (app *App) defineDockerRoutes() []Route {
 		{Method: "POST", Path: "/docker/image/:id/tag", Handler: app.dockerImageTag, Module: "docker", Label: "标记镜像"},
 		{Method: "GET", Path: "/docker/image/:id", Handler: app.dockerImageInspect, Module: "docker", Label: "查看镜像"},
 		{Method: "POST", Path: "/docker/image/build", Handler: app.dockerImageBuild, Module: "docker", Label: "构建镜像"},
+		{Method: "POST", Path: "/docker/image/prune", Handler: app.dockerImagePrune, Module: "docker", Label: "清理镜像"},
 		{Method: "POST", Path: "/docker/image/push", Handler: app.dockerImagePush, Module: "docker", Label: "推送镜像"},
 		{Method: "POST", Path: "/docker/image/pull", Handler: app.dockerImagePull, Module: "docker", Label: "拉取镜像"},
 		// 网络管理
@@ -216,6 +217,23 @@ func (app *App) dockerImageBuild(c *gin.Context) {
 		return
 	}
 	respondSuccess(c, "镜像构建成功", result)
+}
+
+func (app *App) dockerImagePrune(c *gin.Context) {
+	var req pkgdocker.ImagePruneRequest
+	// 请求体可选；缺省时仅清理悬空层
+	if c.Request.ContentLength > 0 {
+		if err := c.ShouldBindJSON(&req); err != nil {
+			respondError(c, http.StatusBadRequest, err.Error())
+			return
+		}
+	}
+	result, err := app.dockerSvc.ImagePrune(c.Request.Context(), req)
+	if err != nil {
+		respondError(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	respondSuccess(c, "镜像清理成功", result)
 }
 
 func (app *App) dockerImageInspect(c *gin.Context) {
