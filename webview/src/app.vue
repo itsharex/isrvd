@@ -26,34 +26,25 @@ class App extends Vue {
         this.navigationRef?.toggleMobileSidebar()
     }
 
-    /**
-     * 处理 OIDC 回调（Fragment 中的 oidc_code / oidc_error）
-     * 放在 App 入口而非 Login 组件，确保已登录状态下也能处理。
-     */
+    // 处理 OIDC 回调（query 参数中的 oidc_code / oidc_error）
+    // 放在 App 入口而非 Login 组件，确保已登录状态下也能处理。
     async handleOIDCCallback() {
-        const hash = window.location.hash.slice(1)
-        if (!hash) return
-
-        const params = new URLSearchParams(hash)
-
+        const params = new URLSearchParams(window.location.search)
         const error = params.get('oidc_error')
+        const code = params.get('oidc_code')
+        if (!error && !code) return
+
+        // 立即清除 query，避免刷新时重复处理
+        window.history.replaceState({}, document.title, window.location.pathname + window.location.hash)
+
         if (error) {
-            // 清除 Fragment，避免刷新时重复处理
-            window.history.replaceState({}, document.title, window.location.pathname + window.location.search)
             this.portal.showNotification('error', error)
             return
         }
 
-        const code = params.get('oidc_code')
-        if (!code) return
-
-        // 立即清除 Fragment，缩短 loginCode 的暴露窗口
-        window.history.replaceState({}, document.title, window.location.pathname + window.location.search)
-
         try {
-            const { payload } = await api.accountOIDCExchange({ code })
+            const { payload } = await api.accountOIDCExchange({ code: code ?? '' })
             if (!payload) return
-
             this.portal.setAuth({ authMode: 'jwt', ...payload })
             await this.portal.initialize()
         } catch {

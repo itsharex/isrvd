@@ -73,13 +73,10 @@ func (app *App) accountOIDCLogin(c *gin.Context) {
 func (app *App) accountOIDCCallback(c *gin.Context) {
 	code, err := app.accountSvc.OIDCCallback(c)
 	if err != nil {
-		// 通过 URL Fragment 传递错误，不出现在服务器 Referer 日志中
-		// 错误消息已由 service 层脱敏，不含内部细节
-		c.Redirect(http.StatusFound, "/#oidc_error="+url.QueryEscape(err.Error()))
+		c.Redirect(http.StatusFound, "/?oidc_error="+url.QueryEscape(err.Error()))
 		return
 	}
-	// loginCode 放入 Fragment（不发送到服务器、不进浏览器历史）
-	c.Redirect(http.StatusFound, "/#oidc_code="+url.QueryEscape(code))
+	c.Redirect(http.StatusFound, "/?oidc_code="+url.QueryEscape(code))
 }
 
 // accountOIDCExchange 使用一次性登录码换取 JWT Token
