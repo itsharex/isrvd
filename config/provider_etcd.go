@@ -9,150 +9,21 @@ import (
 	"time"
 
 	"github.com/goccy/go-yaml"
-	clientv3 "go.etcd.io/etcd/client/v3"
+
+	"isrvd/pkgs/etcd"
 )
 
 // EtcdProvider etcd 配置提供者
+// CONFIG_PATH 示例：etcd://user:pass@host1:2379,host2:2379/isrvd/config?scheme=http&timeout=5s
 type EtcdProvider struct {
-	client   *clientv3.Client
+	client   *etcd.Client
 	key      string
 	fallback string
 	timeout  time.Duration
 	mu       sync.Mutex
 }
 
-type EtcdOptions struct {
-	endpoints []string
-	username  string
-	password  string
-	key       string
-	fallback  string
-	timeout   time.Duration
-}
-
-// NewEtcdProvider 创建 etcd 配置提供者。
-// CONFIG_PATH 示例：etcd://user:pass@host1:2379,host2:2379/isrvd/config?scheme=http&timeout=5s
 func NewEtcdProvider(path string) (*EtcdProvider, error) {
-	opts, err := parseEtcdOptions(path)
-	if err != nil {
-		return nil, err
-	}
-
-	cli, err := clientv3.New(clientv3.Config{
-		Endpoints:   opts.endpoints,
-		Username:    opts.username,
-		Password:    opts.password,
-		DialTimeout: opts.timeout,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	return &EtcdProvider{client: cli, key: opts.key, fallback: opts.fallback, timeout: opts.timeout}, nil
-}
-
-func (e *EtcdProvider) Type() string {
-	return "etcd"
-}
-
-func (e *EtcdProvider) Load() (*Config, error) {
-	ctx, cancel := e.context()
-	defer cancel()
-
-	resp, err := e.client.Get(ctx, e.key)
-	if err != nil {
-		return nil, err
-	}
-	if len(resp.Kvs) == 0 {
-		return e.loadFallback()
-	}
-
-	conf := &Config{}
-	if err := yaml.Unmarshal(resp.Kvs[0].Value, conf); err != nil {
-		return nil, err
-	}
-	return conf, nil
-}
-
-func (e *EtcdProvider) loadFallback() (*Config, error) {
-	if e.fallback == "" {
-		return nil, fmt.Errorf("etcd 配置不存在: %s", e.key)
-	}
-
-	conf, err := NewYamlProvider(e.fallback).Load()
-	if err != nil {
-		return nil, fmt.Errorf("读取 fallback 配置失败: %w", err)
-	}
-	if err := e.Save(conf); err != nil {
-		return nil, fmt.Errorf("写入 etcd fallback 配置失败: %w", err)
-	}
-	return conf, nil
-}
-
-func (e *EtcdProvider) Watch(ctx context.Context) (<-chan struct{}, <-chan error) {
-	changes := make(chan struct{}, 1)
-	errs := make(chan error, 1)
-
-	go func() {
-		defer close(changes)
-		defer close(errs)
-
-		for resp := range e.client.Watch(ctx, e.key) {
-			if err := resp.Err(); err != nil {
-				select {
-				case errs <- err:
-				default:
-				}
-				continue
-			}
-			for _, event := range resp.Events {
-				switch event.Type {
-				case clientv3.EventTypePut:
-					var conf Config
-					if err := yaml.Unmarshal(event.Kv.Value, &conf); err != nil {
-						select {
-						case errs <- fmt.Errorf("etcd 配置解析失败: %w", err):
-						default:
-						}
-						continue
-					}
-					select {
-					case changes <- struct{}{}:
-					default:
-					}
-				case clientv3.EventTypeDelete:
-					select {
-					case errs <- fmt.Errorf("etcd 配置已删除: %s", e.key):
-					default:
-					}
-				}
-			}
-		}
-	}()
-
-	return changes, errs
-}
-
-func (e *EtcdProvider) Save(conf *Config) error {
-	e.mu.Lock()
-	defer e.mu.Unlock()
-
-	data, err := yaml.Marshal(conf)
-	if err != nil {
-		return err
-	}
-
-	ctx, cancel := e.context()
-	defer cancel()
-	_, err = e.client.Put(ctx, e.key, string(data))
-	return err
-}
-
-func (e *EtcdProvider) context() (context.Context, context.CancelFunc) {
-	return context.WithTimeout(context.Background(), e.timeout)
-}
-
-func parseEtcdOptions(path string) (*EtcdOptions, error) {
 	u, err := url.Parse(path)
 	if err != nil {
 		return nil, err
@@ -190,12 +61,120 @@ func parseEtcdOptions(path string) (*EtcdOptions, error) {
 		key = "/isrvd/config"
 	}
 
-	return &EtcdOptions{
-		endpoints: endpoints,
-		username:  username,
-		password:  password,
-		key:       key,
-		fallback:  q.Get("fallback"),
-		timeout:   timeout,
+	cli := etcd.New(etcd.Config{
+		Endpoints:   endpoints,
+		Username:    username,
+		Password:    password,
+		DialTimeout: timeout,
+	})
+
+	return &EtcdProvider{
+		client:   cli,
+		key:      key,
+		fallback: q.Get("fallback"),
+		timeout:  timeout,
 	}, nil
+}
+
+func (e *EtcdProvider) Type() string {
+	return "etcd"
+}
+
+func (e *EtcdProvider) Load() (*Config, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), e.timeout)
+	defer cancel()
+
+	val, err := e.client.Get(ctx, e.key)
+	if err != nil {
+		return nil, err
+	}
+	if val == "" {
+		return e.loadFallback()
+	}
+
+	conf := &Config{}
+	if err := yaml.Unmarshal([]byte(val), conf); err != nil {
+		return nil, err
+	}
+	return conf, nil
+}
+
+func (e *EtcdProvider) loadFallback() (*Config, error) {
+	if e.fallback == "" {
+		return nil, fmt.Errorf("etcd 配置不存在: %s", e.key)
+	}
+	conf, err := NewYamlProvider(e.fallback).Load()
+	if err != nil {
+		return nil, fmt.Errorf("读取 fallback 配置失败: %w", err)
+	}
+	if err := e.Save(conf); err != nil {
+		return nil, fmt.Errorf("写入 etcd fallback 配置失败: %w", err)
+	}
+	return conf, nil
+}
+
+func (e *EtcdProvider) Watch(ctx context.Context) (<-chan struct{}, <-chan error) {
+	changes := make(chan struct{}, 1)
+	errs := make(chan error, 1)
+
+	watchEvents, watchErrs := e.client.Watch(ctx, e.key)
+
+	go func() {
+		defer close(changes)
+		defer close(errs)
+
+		for {
+			select {
+			case ev, ok := <-watchEvents:
+				if !ok {
+					return
+				}
+				switch ev.Type {
+				case "PUT":
+					var conf Config
+					if err := yaml.Unmarshal([]byte(ev.Value), &conf); err != nil {
+						select {
+						case errs <- fmt.Errorf("etcd 配置解析失败: %w", err):
+						default:
+						}
+						continue
+					}
+					select {
+					case changes <- struct{}{}:
+					default:
+					}
+				case "DELETE":
+					select {
+					case errs <- fmt.Errorf("etcd 配置已删除: %s", e.key):
+					default:
+					}
+				}
+			case err, ok := <-watchErrs:
+				if !ok {
+					return
+				}
+				select {
+				case errs <- err:
+				default:
+				}
+			}
+		}
+	}()
+
+	return changes, errs
+}
+
+func (e *EtcdProvider) Save(conf *Config) error {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+
+	data, err := yaml.Marshal(conf)
+	if err != nil {
+		return err
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), e.timeout)
+	defer cancel()
+
+	return e.client.Put(ctx, e.key, string(data))
 }
