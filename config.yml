@@ -7,12 +7,12 @@ server:
 
 oidc:
   enabled: false
-  # issuerUrl: https://idp.example.com
   # 元数据（authorization_endpoint、token_endpoint、jwks_uri 等）由 issuerUrl 自动发现
+  # issuerUrl: https://idp.example.com
   # clientId: isrvd
   # clientSecret: your-client-secret
-  # redirectUrl: https://isrvd.example.com/api/account/oidc/callback（留空则从请求 Host 自动生成）
-  # usernameClaim: preferred_username（默认值，对应 OIDC 标准 claim）
+  # redirectUrl: https://isrvd.example.com/api/account/oidc/callback
+  # usernameClaim: email（默认值，对应 OIDC 标准 claim）
   # scopes: [openid, profile, email]（默认值，openid 始终被自动包含）
 
 agent:
