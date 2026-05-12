@@ -24,7 +24,7 @@ issues: list[tuple[str, int, str, str]] = []
 def report(filepath: str, lineno: int, level: str, msg: str):
     issues.append((filepath, lineno, level, msg))
 
-# ─── 工具函数 ────────────────────────────────────────────────────────────────
+# ─── 工具函数 ────────
 
 def get_template(content: str) -> str:
     m = re.search(r'<template>(.*?)</template>', content, re.DOTALL)
@@ -46,7 +46,7 @@ def has_card_list(tmpl: str) -> bool:
         return False
     return 'rounded-xl border border-slate-200 bg-white p-4' in tmpl[pos:pos+400]
 
-# ─── 检查函数 ────────────────────────────────────────────────────────────────
+# ─── 检查函数 ────────
 
 def check_toolbar_layout(filepath, lines, tmpl, tmpl_line0):
     """5.6 toolbar 必须有桌面/移动双布局，且有标题结构"""
@@ -577,7 +577,7 @@ def check_enum_badge_rounded(filepath, lines, tmpl, tmpl_line0):
                    f"badge 应用 rounded 或 rounded-lg，不得用 rounded-full: {stripped[:100]}")
 
 
-# ─── 主流程 ──────────────────────────────────────────────────────────────────
+# ─── 主流程 ──────────
 
 CHECKS = [
     check_toolbar_layout,

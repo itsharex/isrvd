@@ -18,7 +18,7 @@ class Config extends Vue {
   activeTab: 'server' | 'agent' | 'oidc' | 'app' | 'links' = 'server'
 
   server: ServerConfig = { debug: false, listenAddr: '', proxyHeaderName: '', rootDirectory: '' }
-  oidc: OIDCConfig = { enabled: false, issuerUrl: '', clientId: '', redirectUrl: '', usernameClaim: 'preferred_username', scopes: ['openid', 'profile', 'email'] }
+  oidc: OIDCConfig = { enabled: false, issuerUrl: '', clientId: '', redirectUrl: '', usernameClaim: 'email', scopes: ['openid', 'profile', 'email'] }
   oidcScopes = 'openid profile email'
   agent: AgentConfig = { model: '', baseUrl: '' }
   apisix: ApisixConfig = { adminUrl: '' }
@@ -33,7 +33,7 @@ class Config extends Vue {
       const res = await api.systemConfig(reload ? { reload: 'true' } : undefined)
       const payload = res.payload as AllConfig
       this.server = { ...payload.server }
-      this.oidc = { ...(payload.oidc || { enabled: false, issuerUrl: '', clientId: '', redirectUrl: '', usernameClaim: 'preferred_username', scopes: ['openid', 'profile', 'email'] }) }
+      this.oidc = { ...(payload.oidc || { enabled: false, issuerUrl: '', clientId: '', redirectUrl: '', usernameClaim: 'email', scopes: ['openid', 'profile', 'email'] }) }
       this.oidcScopes = (this.oidc.scopes || []).join(' ')
       this.agent = { ...payload.agent }
       this.apisix = { ...payload.apisix }
