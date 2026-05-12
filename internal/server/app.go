@@ -39,8 +39,8 @@ type App struct {
 
 func StartApp() {
 	app := &App{
-		Engine:   httpd.Engine(config.Server.Debug),
-		wsConfig: &websocket.ServerConfig{AllowedOrigins: config.Server.AllowedOrigins},
+		Engine:     httpd.Engine(config.Server.Debug),
+		wsConfig:   &websocket.ServerConfig{AllowedOrigins: config.Server.AllowedOrigins},
 		routePerms: make(map[string]svcAccount.RouteInfo),
 	}
 

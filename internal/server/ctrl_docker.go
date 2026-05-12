@@ -13,38 +13,38 @@ import (
 // defineDockerRoutes 定义 Docker 模块路由
 func (app *App) defineDockerRoutes() []Route {
 	return []Route{
-		// Docker 信息
-		{Method: "GET", Path: "/docker/info", Handler: app.dockerInfo, Module: "docker", Label: "获取 Docker 信息"},
+		// Docker 服务
+		{Method: "GET", Path: "/docker/info", Handler: app.dockerInfo, Module: "docker", Label: "获取 Docker 服务信息"},
 		// 容器管理
-		{Method: "GET", Path: "/docker/containers", Handler: app.dockerContainerList, Module: "docker", Label: "列出容器"},
-		{Method: "GET", Path: "/docker/container/:id", Handler: app.dockerContainerInspect, Module: "docker", Label: "查看容器"},
+		{Method: "GET", Path: "/docker/containers", Handler: app.dockerContainerList, Module: "docker", Label: "查询容器列表"},
+		{Method: "GET", Path: "/docker/container/:id", Handler: app.dockerContainerInspect, Module: "docker", Label: "获取容器详情"},
 		{Method: "POST", Path: "/docker/container", Handler: app.dockerContainerCreate, Module: "docker", Label: "创建容器"},
-		{Method: "GET", Path: "/docker/container/:id/stats", Handler: app.dockerContainerStats, Module: "docker", Label: "查看容器统计"},
-		{Method: "POST", Path: "/docker/container/:id/action", Handler: app.dockerContainerAction, Module: "docker", Label: "操作容器"},
-		{Method: "GET", Path: "/docker/container/:id/logs", Handler: app.dockerContainerLogs, Module: "docker", Label: "查看容器日志"},
+		{Method: "GET", Path: "/docker/container/:id/stats", Handler: app.dockerContainerStats, Module: "docker", Label: "获取容器资源统计"},
+		{Method: "POST", Path: "/docker/container/:id/action", Handler: app.dockerContainerAction, Module: "docker", Label: "执行容器操作"},
+		{Method: "GET", Path: "/docker/container/:id/logs", Handler: app.dockerContainerLogs, Module: "docker", Label: "获取容器日志"},
 		{Method: "GET", Path: "/docker/container/:id/exec", Handler: app.dockerContainerExec, Module: "docker", Label: "打开容器终端"},
 		// 镜像管理
-		{Method: "GET", Path: "/docker/images", Handler: app.dockerImageList, Module: "docker", Label: "列出镜像"},
+		{Method: "GET", Path: "/docker/images", Handler: app.dockerImageList, Module: "docker", Label: "查询镜像列表"},
 		{Method: "GET", Path: "/docker/images/search", Handler: app.dockerImageSearch, Module: "docker", Label: "搜索镜像"},
-		{Method: "POST", Path: "/docker/image/:id/action", Handler: app.dockerImageAction, Module: "docker", Label: "操作镜像"},
-		{Method: "POST", Path: "/docker/image/:id/tag", Handler: app.dockerImageTag, Module: "docker", Label: "标记镜像"},
-		{Method: "GET", Path: "/docker/image/:id", Handler: app.dockerImageInspect, Module: "docker", Label: "查看镜像"},
+		{Method: "POST", Path: "/docker/image/:id/action", Handler: app.dockerImageAction, Module: "docker", Label: "执行镜像操作"},
+		{Method: "POST", Path: "/docker/image/:id/tag", Handler: app.dockerImageTag, Module: "docker", Label: "添加镜像标签"},
+		{Method: "GET", Path: "/docker/image/:id", Handler: app.dockerImageInspect, Module: "docker", Label: "获取镜像详情"},
 		{Method: "POST", Path: "/docker/image/build", Handler: app.dockerImageBuild, Module: "docker", Label: "构建镜像"},
 		{Method: "POST", Path: "/docker/image/prune", Handler: app.dockerImagePrune, Module: "docker", Label: "清理镜像"},
 		{Method: "POST", Path: "/docker/image/push", Handler: app.dockerImagePush, Module: "docker", Label: "推送镜像"},
 		{Method: "POST", Path: "/docker/image/pull", Handler: app.dockerImagePull, Module: "docker", Label: "拉取镜像"},
 		// 网络管理
-		{Method: "GET", Path: "/docker/networks", Handler: app.dockerNetworkList, Module: "docker", Label: "列出网络"},
-		{Method: "POST", Path: "/docker/network/:id/action", Handler: app.dockerNetworkAction, Module: "docker", Label: "操作网络"},
+		{Method: "GET", Path: "/docker/networks", Handler: app.dockerNetworkList, Module: "docker", Label: "查询网络列表"},
+		{Method: "POST", Path: "/docker/network/:id/action", Handler: app.dockerNetworkAction, Module: "docker", Label: "执行网络操作"},
 		{Method: "POST", Path: "/docker/network", Handler: app.dockerNetworkCreate, Module: "docker", Label: "创建网络"},
-		{Method: "GET", Path: "/docker/network/:id", Handler: app.dockerNetworkInspect, Module: "docker", Label: "查看网络"},
-		// 卷管理
-		{Method: "GET", Path: "/docker/volumes", Handler: app.dockerVolumeList, Module: "docker", Label: "列出数据卷"},
-		{Method: "POST", Path: "/docker/volume/:name/action", Handler: app.dockerVolumeAction, Module: "docker", Label: "操作数据卷"},
+		{Method: "GET", Path: "/docker/network/:id", Handler: app.dockerNetworkInspect, Module: "docker", Label: "获取网络详情"},
+		// 数据卷管理
+		{Method: "GET", Path: "/docker/volumes", Handler: app.dockerVolumeList, Module: "docker", Label: "查询数据卷列表"},
+		{Method: "POST", Path: "/docker/volume/:name/action", Handler: app.dockerVolumeAction, Module: "docker", Label: "执行数据卷操作"},
 		{Method: "POST", Path: "/docker/volume", Handler: app.dockerVolumeCreate, Module: "docker", Label: "创建数据卷"},
-		{Method: "GET", Path: "/docker/volume/:name", Handler: app.dockerVolumeInspect, Module: "docker", Label: "查看数据卷"},
+		{Method: "GET", Path: "/docker/volume/:name", Handler: app.dockerVolumeInspect, Module: "docker", Label: "获取数据卷详情"},
 		// 镜像仓库
-		{Method: "GET", Path: "/docker/registries", Handler: app.dockerRegistryList, Module: "docker", Label: "列出镜像仓库"},
+		{Method: "GET", Path: "/docker/registries", Handler: app.dockerRegistryList, Module: "docker", Label: "查询镜像仓库列表"},
 		{Method: "POST", Path: "/docker/registry", Handler: app.dockerRegistryCreate, Module: "docker", Label: "添加镜像仓库"},
 		{Method: "PUT", Path: "/docker/registry", Handler: app.dockerRegistryUpdate, Module: "docker", Label: "更新镜像仓库"},
 		{Method: "DELETE", Path: "/docker/registry", Handler: app.dockerRegistryDelete, Module: "docker", Label: "删除镜像仓库"},
@@ -60,7 +60,7 @@ func (app *App) dockerInfo(c *gin.Context) {
 		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	respondSuccess(c, "获取 Docker 信息成功", result)
+	respondSuccess(c, "获取 Docker 服务信息成功", result)
 }
 
 func (app *App) dockerContainerList(c *gin.Context) {
@@ -104,7 +104,7 @@ func (app *App) dockerContainerStats(c *gin.Context) {
 		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	respondSuccess(c, "获取容器统计成功", result)
+	respondSuccess(c, "获取容器资源统计成功", result)
 }
 
 func (app *App) dockerContainerAction(c *gin.Context) {
@@ -192,7 +192,7 @@ func (app *App) dockerImageTag(c *gin.Context) {
 		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	respondSuccess(c, "镜像打标签成功", nil)
+	respondSuccess(c, "添加镜像标签成功", nil)
 }
 
 func (app *App) dockerImageSearch(c *gin.Context) {
@@ -294,7 +294,7 @@ func (app *App) dockerNetworkInspect(c *gin.Context) {
 	respondSuccess(c, "获取网络详情成功", result)
 }
 
-// ─── 卷 ───
+// ─── 数据卷 ───
 
 func (app *App) dockerVolumeList(c *gin.Context) {
 	result, err := app.dockerSvc.VolumeList(c.Request.Context())
@@ -302,7 +302,7 @@ func (app *App) dockerVolumeList(c *gin.Context) {
 		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	respondSuccess(c, "获取卷列表成功", result)
+	respondSuccess(c, "获取数据卷列表成功", result)
 }
 
 func (app *App) dockerVolumeAction(c *gin.Context) {
@@ -317,7 +317,7 @@ func (app *App) dockerVolumeAction(c *gin.Context) {
 		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	respondSuccess(c, "卷操作成功", nil)
+	respondSuccess(c, "数据卷操作成功", nil)
 }
 
 func (app *App) dockerVolumeCreate(c *gin.Context) {
@@ -331,7 +331,7 @@ func (app *App) dockerVolumeCreate(c *gin.Context) {
 		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	respondSuccess(c, "卷创建成功", result)
+	respondSuccess(c, "数据卷创建成功", result)
 }
 
 func (app *App) dockerVolumeInspect(c *gin.Context) {
@@ -341,13 +341,13 @@ func (app *App) dockerVolumeInspect(c *gin.Context) {
 		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	respondSuccess(c, "获取卷详情成功", result)
+	respondSuccess(c, "获取数据卷详情成功", result)
 }
 
 // ─── 镜像仓库 ───
 
 func (app *App) dockerRegistryList(c *gin.Context) {
-	respondSuccess(c, "获取仓库列表成功", app.dockerSvc.RegistryList())
+	respondSuccess(c, "获取镜像仓库列表成功", app.dockerSvc.RegistryList())
 }
 
 func (app *App) dockerRegistryCreate(c *gin.Context) {
@@ -360,7 +360,7 @@ func (app *App) dockerRegistryCreate(c *gin.Context) {
 		respondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
-	respondSuccess(c, "仓库添加成功", nil)
+	respondSuccess(c, "镜像仓库添加成功", nil)
 }
 
 func (app *App) dockerRegistryUpdate(c *gin.Context) {
@@ -374,7 +374,7 @@ func (app *App) dockerRegistryUpdate(c *gin.Context) {
 		respondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
-	respondSuccess(c, "仓库更新成功", nil)
+	respondSuccess(c, "镜像仓库更新成功", nil)
 }
 
 func (app *App) dockerRegistryDelete(c *gin.Context) {
@@ -383,7 +383,7 @@ func (app *App) dockerRegistryDelete(c *gin.Context) {
 		respondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
-	respondSuccess(c, "仓库删除成功", nil)
+	respondSuccess(c, "镜像仓库删除成功", nil)
 }
 
 func (app *App) dockerImagePush(c *gin.Context) {

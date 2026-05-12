@@ -5,7 +5,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	
 	pkgapisix "isrvd/pkgs/apisix"
 )
 
@@ -13,40 +12,40 @@ import (
 func (app *App) defineApisixRoutes() []Route {
 	return []Route{
 		// Route 管理
-		{Method: "GET", Path: "/apisix/routes", Handler: app.apisixRouteList, Module: "apisix", Label: "列出 APISIX 路由"},
-		{Method: "GET", Path: "/apisix/route/:id", Handler: app.apisixRouteInspect, Module: "apisix", Label: "查看 APISIX 路由"},
+		{Method: "GET", Path: "/apisix/routes", Handler: app.apisixRouteList, Module: "apisix", Label: "查询 APISIX 路由列表"},
+		{Method: "GET", Path: "/apisix/route/:id", Handler: app.apisixRouteInspect, Module: "apisix", Label: "获取 APISIX 路由详情"},
 		{Method: "POST", Path: "/apisix/route", Handler: app.apisixRouteCreate, Module: "apisix", Label: "创建 APISIX 路由"},
 		{Method: "PUT", Path: "/apisix/route/:id", Handler: app.apisixRouteUpdate, Module: "apisix", Label: "更新 APISIX 路由"},
 		{Method: "PATCH", Path: "/apisix/route/:id/status", Handler: app.apisixRouteStatusPatch, Module: "apisix", Label: "切换 APISIX 路由状态"},
 		{Method: "DELETE", Path: "/apisix/route/:id", Handler: app.apisixRouteDelete, Module: "apisix", Label: "删除 APISIX 路由"},
 		// Consumer 管理
-		{Method: "GET", Path: "/apisix/consumers", Handler: app.apisixConsumerList, Module: "apisix", Label: "列出 APISIX 消费者"},
+		{Method: "GET", Path: "/apisix/consumers", Handler: app.apisixConsumerList, Module: "apisix", Label: "查询 APISIX 消费者列表"},
 		{Method: "POST", Path: "/apisix/consumer", Handler: app.apisixConsumerCreate, Module: "apisix", Label: "创建 APISIX 消费者"},
 		{Method: "PUT", Path: "/apisix/consumer/:username", Handler: app.apisixConsumerUpdate, Module: "apisix", Label: "更新 APISIX 消费者"},
 		{Method: "DELETE", Path: "/apisix/consumer/:username", Handler: app.apisixConsumerDelete, Module: "apisix", Label: "删除 APISIX 消费者"},
 		// 白名单
-		{Method: "GET", Path: "/apisix/whitelist", Handler: app.apisixWhitelistList, Module: "apisix", Label: "查看 APISIX 白名单"},
-		{Method: "POST", Path: "/apisix/whitelist/revoke", Handler: app.apisixWhitelistRevoke, Module: "apisix", Label: "撤销 APISIX 白名单"},
+		{Method: "GET", Path: "/apisix/whitelist", Handler: app.apisixWhitelistList, Module: "apisix", Label: "查询 APISIX 白名单"},
+		{Method: "POST", Path: "/apisix/whitelist/revoke", Handler: app.apisixWhitelistRevoke, Module: "apisix", Label: "撤销 APISIX 白名单授权"},
 		// PluginConfig 管理
-		{Method: "GET", Path: "/apisix/plugin-configs", Handler: app.apisixPluginConfigList, Module: "apisix", Label: "列出 APISIX 插件配置"},
-		{Method: "GET", Path: "/apisix/plugin-config/:id", Handler: app.apisixPluginConfigInspect, Module: "apisix", Label: "查看 APISIX 插件配置"},
+		{Method: "GET", Path: "/apisix/plugin-configs", Handler: app.apisixPluginConfigList, Module: "apisix", Label: "查询 APISIX 插件配置列表"},
+		{Method: "GET", Path: "/apisix/plugin-config/:id", Handler: app.apisixPluginConfigInspect, Module: "apisix", Label: "获取 APISIX 插件配置详情"},
 		{Method: "POST", Path: "/apisix/plugin-config", Handler: app.apisixPluginConfigCreate, Module: "apisix", Label: "创建 APISIX 插件配置"},
 		{Method: "PUT", Path: "/apisix/plugin-config/:id", Handler: app.apisixPluginConfigUpdate, Module: "apisix", Label: "更新 APISIX 插件配置"},
 		{Method: "DELETE", Path: "/apisix/plugin-config/:id", Handler: app.apisixPluginConfigDelete, Module: "apisix", Label: "删除 APISIX 插件配置"},
 		// Upstream 管理
-		{Method: "GET", Path: "/apisix/upstreams", Handler: app.apisixUpstreamList, Module: "apisix", Label: "列出 APISIX 上游"},
-		{Method: "GET", Path: "/apisix/upstream/:id", Handler: app.apisixUpstreamInspect, Module: "apisix", Label: "查看 APISIX 上游"},
+		{Method: "GET", Path: "/apisix/upstreams", Handler: app.apisixUpstreamList, Module: "apisix", Label: "查询 APISIX 上游列表"},
+		{Method: "GET", Path: "/apisix/upstream/:id", Handler: app.apisixUpstreamInspect, Module: "apisix", Label: "获取 APISIX 上游详情"},
 		{Method: "POST", Path: "/apisix/upstream", Handler: app.apisixUpstreamCreate, Module: "apisix", Label: "创建 APISIX 上游"},
 		{Method: "PUT", Path: "/apisix/upstream/:id", Handler: app.apisixUpstreamUpdate, Module: "apisix", Label: "更新 APISIX 上游"},
 		{Method: "DELETE", Path: "/apisix/upstream/:id", Handler: app.apisixUpstreamDelete, Module: "apisix", Label: "删除 APISIX 上游"},
 		// SSL 管理
-		{Method: "GET", Path: "/apisix/ssls", Handler: app.apisixSSLList, Module: "apisix", Label: "列出 APISIX 证书"},
-		{Method: "GET", Path: "/apisix/ssl/:id", Handler: app.apisixSSLInspect, Module: "apisix", Label: "查看 APISIX 证书"},
+		{Method: "GET", Path: "/apisix/ssls", Handler: app.apisixSSLList, Module: "apisix", Label: "查询 APISIX 证书列表"},
+		{Method: "GET", Path: "/apisix/ssl/:id", Handler: app.apisixSSLInspect, Module: "apisix", Label: "获取 APISIX 证书详情"},
 		{Method: "POST", Path: "/apisix/ssl", Handler: app.apisixSSLCreate, Module: "apisix", Label: "创建 APISIX 证书"},
 		{Method: "PUT", Path: "/apisix/ssl/:id", Handler: app.apisixSSLUpdate, Module: "apisix", Label: "更新 APISIX 证书"},
 		{Method: "DELETE", Path: "/apisix/ssl/:id", Handler: app.apisixSSLDelete, Module: "apisix", Label: "删除 APISIX 证书"},
 		// 插件列表
-		{Method: "GET", Path: "/apisix/plugins", Handler: app.apisixPluginList, Module: "apisix", Label: "列出 APISIX 插件"},
+		{Method: "GET", Path: "/apisix/plugins", Handler: app.apisixPluginList, Module: "apisix", Label: "查询 APISIX 插件列表"},
 	}
 }
 

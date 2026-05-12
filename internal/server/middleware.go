@@ -7,7 +7,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	
 	svcAccount "isrvd/internal/service/account"
 	svcSystem "isrvd/internal/service/system"
 )
