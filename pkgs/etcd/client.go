@@ -19,6 +19,7 @@ type Client struct {
 	endpoints  []string
 	username   string
 	password   string
+	timeout    time.Duration
 	httpClient *http.Client
 }
 
@@ -40,7 +41,8 @@ func New(cfg Config) *Client {
 		endpoints:  cfg.Endpoints,
 		username:   cfg.Username,
 		password:   cfg.Password,
-		httpClient: &http.Client{}, // 不设置全局 Timeout，避免 watch 长连接被定时切断；超时由 ctx 控制
+		timeout:    timeout,
+		httpClient: &http.Client{}, // 不设置全局 Timeout，避免 watch 长连接被定时切断；普通请求超时由 ctx 或 c.timeout 控制
 	}
 }
 
@@ -183,6 +185,12 @@ func (c *Client) Watch(ctx context.Context, key string) (<-chan WatchEvent, <-ch
 }
 
 func (c *Client) do(ctx context.Context, path string, body []byte) ([]byte, error) {
+	if _, ok := ctx.Deadline(); !ok && c.timeout > 0 {
+		var cancel context.CancelFunc
+		ctx, cancel = context.WithTimeout(ctx, c.timeout)
+		defer cancel()
+	}
+
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost,
 		c.endpoint()+path, bytes.NewReader(body))
 	if err != nil {
