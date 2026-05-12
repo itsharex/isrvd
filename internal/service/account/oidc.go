@@ -159,7 +159,7 @@ func (s *Service) OIDCCallback(c *gin.Context) (string, error) {
 		return "", fmt.Errorf("OIDC 登录失败，请重试")
 	}
 
-	username, err := oidcUsername(idToken, config.OIDC.UsernameClaim)
+	username, err := oidcUsername(c.Request.Context(), provider, oauthConfig.TokenSource(c.Request.Context(), token), idToken, config.OIDC.UsernameClaim)
 	if err != nil {
 		logman.Warn("OIDC username claim error", "err", err, "claim", config.OIDC.UsernameClaim)
 		return "", fmt.Errorf("OIDC 登录失败，请重试")
@@ -256,7 +256,7 @@ func (s *Service) cleanupOIDC() {
 	}
 }
 
-func oidcUsername(idToken *oidc.IDToken, claimName string) (string, error) {
+func oidcUsername(ctx context.Context, provider *oidc.Provider, tokenSource oauth2.TokenSource, idToken *oidc.IDToken, claimName string) (string, error) {
 	claimName = strings.TrimSpace(claimName)
 	if claimName == "" {
 		claimName = "preferred_username"
@@ -265,12 +265,25 @@ func oidcUsername(idToken *oidc.IDToken, claimName string) (string, error) {
 		return idToken.Subject, nil
 	}
 
-	var claims map[string]any
-	if err := idToken.Claims(&claims); err != nil {
-		return "", fmt.Errorf("OIDC claims 解析失败")
+	// 先尝试从 id_token 中读取
+	var idClaims map[string]any
+	if err := idToken.Claims(&idClaims); err == nil {
+		if v, _ := idClaims[claimName].(string); strings.TrimSpace(v) != "" {
+			return strings.TrimSpace(v), nil
+		}
 	}
 
-	value, _ := claims[claimName].(string)
+	// id_token 中没有，回落到 UserInfo endpoint
+	userInfo, err := provider.UserInfo(ctx, tokenSource)
+	if err != nil {
+		return "", fmt.Errorf("获取 UserInfo 失败: %w", err)
+	}
+	var uClaims map[string]any
+	if err := userInfo.Claims(&uClaims); err != nil {
+		return "", fmt.Errorf("UserInfo claims 解析失败")
+	}
+
+	value, _ := uClaims[claimName].(string)
 	value = strings.TrimSpace(value)
 	if value == "" {
 		return "", fmt.Errorf("OIDC claim %s 为空", claimName)
