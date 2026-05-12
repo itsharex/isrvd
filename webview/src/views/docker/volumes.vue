@@ -161,7 +161,8 @@ export default toNative(Volumes)
                       <i class="fas fa-database text-white text-sm"></i>
                     </div>
                     <div class="min-w-0">
-                      <span class="font-medium text-slate-800 truncate block" :title="vol.name">{{ vol.name }}</span>
+                      <a v-if="portal.hasPerm('GET /api/docker/volume/:name')" :href="'/docker/volume/' + encodeURIComponent(vol.name)" class="font-medium text-slate-800 hover:text-amber-600 transition-colors truncate block" :title="vol.name" @click.prevent="viewVolumeDetail(vol)">{{ vol.name }}</a>
+                      <span v-else class="font-medium text-slate-800 truncate block" :title="vol.name">{{ vol.name }}</span>
                       <span class="text-xs text-slate-400 truncate block mt-0.5">{{ vol.driver }}</span>
                     </div>
                   </div>
@@ -196,7 +197,8 @@ export default toNative(Volumes)
                 <i class="fas fa-database text-white text-base"></i>
               </div>
               <div class="min-w-0">
-                <span class="font-medium text-slate-800 text-sm truncate block" :title="vol.name">{{ vol.name }}</span>
+                <a v-if="portal.hasPerm('GET /api/docker/volume/:name')" :href="'/docker/volume/' + encodeURIComponent(vol.name)" class="font-medium text-slate-800 hover:text-amber-600 transition-colors text-sm truncate block" :title="vol.name" @click.prevent="viewVolumeDetail(vol)">{{ vol.name }}</a>
+                <span v-else class="font-medium text-slate-800 text-sm truncate block" :title="vol.name">{{ vol.name }}</span>
                 <span class="text-xs text-slate-400 truncate block mt-0.5">{{ vol.driver }}</span>
               </div>
             </div>

@@ -194,7 +194,8 @@ export default toNative(Services)
                       <i class="fas fa-cubes text-white text-sm"></i>
                     </div>
                     <div class="min-w-0">
-                      <span class="font-medium text-slate-800 truncate block">{{ svc.name }}</span>
+                      <a v-if="portal.hasPerm('GET /api/swarm/service/:id')" :href="'/swarm/service/' + svc.id" class="font-medium text-slate-800 hover:text-emerald-600 transition-colors truncate block" @click.prevent="$router.push({ name: 'swarm-service', params: { id: svc.id } })">{{ svc.name }}</a>
+                      <span v-else class="font-medium text-slate-800 truncate block">{{ svc.name }}</span>
                       <code class="text-xs text-slate-400 font-mono truncate block mt-0.5">{{ svc.image }}</code>
                     </div>
                   </div>
@@ -240,7 +241,8 @@ export default toNative(Services)
                   <i class="fas fa-cubes text-white text-base"></i>
                 </div>
                 <div class="min-w-0">
-                  <span class="font-medium text-slate-800 text-sm truncate block">{{ svc.name }}</span>
+                  <a v-if="portal.hasPerm('GET /api/swarm/service/:id')" :href="'/swarm/service/' + svc.id" class="font-medium text-slate-800 hover:text-emerald-600 transition-colors text-sm truncate block" @click.prevent="$router.push({ name: 'swarm-service', params: { id: svc.id } })">{{ svc.name }}</a>
+                  <span v-else class="font-medium text-slate-800 text-sm truncate block">{{ svc.name }}</span>
                   <code class="text-xs text-slate-400 font-mono truncate block mt-0.5">{{ svc.image }}</code>
                 </div>
               </div>

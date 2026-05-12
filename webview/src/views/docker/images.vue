@@ -288,7 +288,8 @@ export default toNative(Images)
                       <i class="fas fa-compact-disc text-white text-sm"></i>
                     </div>
                     <div class="min-w-0">
-                      <span class="font-medium text-slate-800 truncate block">{{ getImageName(img) }}</span>
+                      <a v-if="portal.hasPerm('GET /api/docker/image/:id')" :href="'/docker/image/' + img.id" class="font-medium text-slate-800 hover:text-blue-600 transition-colors truncate block" @click.prevent="$router.push('/docker/image/' + img.id)">{{ getImageName(img) }}</a>
+                      <span v-else class="font-medium text-slate-800 truncate block">{{ getImageName(img) }}</span>
                       <code class="text-xs text-slate-400 font-mono truncate block mt-0.5">{{ img.shortId }}</code>
                     </div>
                   </div>
@@ -338,7 +339,8 @@ export default toNative(Images)
                 <i class="fas fa-compact-disc text-white text-base"></i>
               </div>
               <div class="min-w-0">
-                <span class="font-medium text-slate-800 text-sm truncate block">{{ getImageName(img) }}</span>
+                <a v-if="portal.hasPerm('GET /api/docker/image/:id')" :href="'/docker/image/' + img.id" class="font-medium text-slate-800 hover:text-blue-600 transition-colors text-sm truncate block" @click.prevent="$router.push('/docker/image/' + img.id)">{{ getImageName(img) }}</a>
+                <span v-else class="font-medium text-slate-800 text-sm truncate block">{{ getImageName(img) }}</span>
                 <code class="text-xs text-slate-400 font-mono truncate block mt-0.5">{{ img.shortId }}</code>
               </div>
             </div>

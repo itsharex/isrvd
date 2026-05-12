@@ -203,7 +203,8 @@ export default toNative(Containers)
                       <i class="fas fa-box text-white text-sm"></i>
                     </div>
                     <div class="min-w-0">
-                      <span class="font-medium text-slate-800 truncate block" :title="ct.name || ct.id">{{ ct.name || ct.id }}</span>
+                      <a v-if="portal.hasPerm('GET /api/docker/container/:id')" :href="'/docker/container/' + ct.id" class="font-medium text-slate-800 hover:text-emerald-600 transition-colors truncate block" :title="ct.name || ct.id" @click.prevent="$router.push({ path: '/docker/container/' + ct.id })">{{ ct.name || ct.id }}</a>
+                      <span v-else class="font-medium text-slate-800 truncate block" :title="ct.name || ct.id">{{ ct.name || ct.id }}</span>
                       <code class="text-xs text-slate-400 truncate block mt-0.5" :title="ct.image">{{ formatImageName(ct.image) }}</code>
                     </div>
                   </div>
@@ -269,7 +270,8 @@ export default toNative(Containers)
                 <i class="fas fa-box text-white text-base"></i>
               </div>
               <div class="min-w-0">
-                <span class="font-medium text-slate-800 text-sm truncate block" :title="ct.name || ct.id">{{ ct.name || ct.id }}</span>
+                <a v-if="portal.hasPerm('GET /api/docker/container/:id')" :href="'/docker/container/' + ct.id" class="font-medium text-slate-800 hover:text-emerald-600 transition-colors text-sm truncate block" :title="ct.name || ct.id" @click.prevent="$router.push({ path: '/docker/container/' + ct.id })">{{ ct.name || ct.id }}</a>
+                <span v-else class="font-medium text-slate-800 text-sm truncate block" :title="ct.name || ct.id">{{ ct.name || ct.id }}</span>
                 <code class="text-xs text-slate-400 truncate block mt-0.5" :title="ct.image">{{ formatImageName(ct.image) }}</code>
               </div>
             </div>

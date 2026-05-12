@@ -176,7 +176,8 @@ export default toNative(Networks)
                       <i class="fas fa-network-wired text-white text-sm"></i>
                     </div>
                     <div class="min-w-0">
-                      <span class="font-medium text-slate-800 truncate block">{{ net.name }}</span>
+                      <a v-if="portal.hasPerm('GET /api/docker/network/:id')" :href="'/docker/network/' + net.id" class="font-medium text-slate-800 hover:text-purple-600 transition-colors truncate block" @click.prevent="viewNetworkDetail(net)">{{ net.name }}</a>
+                      <span v-else class="font-medium text-slate-800 truncate block">{{ net.name }}</span>
                       <code class="text-xs text-slate-400 font-mono truncate block mt-0.5">{{ net.id }}</code>
                     </div>
                   </div>
@@ -225,7 +226,8 @@ export default toNative(Networks)
                 <i class="fas fa-network-wired text-white text-base"></i>
               </div>
               <div class="min-w-0">
-                <span class="font-medium text-slate-800 text-sm truncate block">{{ net.name }}</span>
+                <a v-if="portal.hasPerm('GET /api/docker/network/:id')" :href="'/docker/network/' + net.id" class="font-medium text-slate-800 hover:text-purple-600 transition-colors text-sm truncate block" @click.prevent="viewNetworkDetail(net)">{{ net.name }}</a>
+                <span v-else class="font-medium text-slate-800 text-sm truncate block">{{ net.name }}</span>
                 <code class="text-xs text-slate-400 font-mono truncate block mt-0.5">{{ net.id }}</code>
               </div>
             </div>
