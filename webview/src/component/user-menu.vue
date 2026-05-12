@@ -1,11 +1,17 @@
 <script lang="ts">
 import { Component, Vue, toNative } from 'vue-facing-decorator'
 
-import { toggleTheme } from '@/helper/utils'
+import { cycleTheme, getThemeMode, type ThemeMode } from '@/helper/utils'
 
 import Dropdown from '@/component/dropdown.vue'
 
 import { usePortal } from '@/stores'
+
+const THEME_META: Record<ThemeMode, { icon: string; label: string }> = {
+    light: { icon: 'fas fa-sun', label: '浅色' },
+    dark: { icon: 'fas fa-moon', label: '深色' },
+    system: { icon: 'fas fa-desktop', label: '跟随系统' }
+}
 
 @Component({
     components: { Dropdown }
@@ -15,10 +21,14 @@ class UserMenu extends Vue {
 
     // ─── 数据属性 ───
     menuOpen = false
+    themeMode: ThemeMode = getThemeMode()
+
+    get themeIcon() { return THEME_META[this.themeMode].icon }
+    get themeLabel() { return THEME_META[this.themeMode].label }
 
     // ─── 方法 ───
     toggleTheme() {
-        toggleTheme()
+        this.themeMode = cycleTheme()
     }
 
     handleLogout() {
@@ -64,13 +74,14 @@ export default toNative(UserMenu)
       个人设置
     </router-link>
 
-    <!-- 暗黑模式切换 -->
+    <!-- 主题切换：浅色 / 深色 / 跟随系统 -->
     <button
       class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-600 hover:text-blue-600 hover:bg-blue-50 transition-colors"
-      @click="toggleTheme"
+      :title="`当前：${themeLabel}，点击切换`"
+      @click.stop="toggleTheme"
     >
-      <i class="fas fa-moon"></i>
-      <span>切换主题</span>
+      <i :class="themeIcon" class="w-4 text-center"></i>
+      <span>主题：{{ themeLabel }}</span>
     </button>
 
     <!-- 分割线 -->
