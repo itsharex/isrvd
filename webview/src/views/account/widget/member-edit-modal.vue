@@ -3,7 +3,7 @@ import { Component, Vue, toNative } from 'vue-facing-decorator'
 
 import api from '@/service/api'
 import { RouteAccessPerm } from '@/service/types'
-import type { MemberInfo, MemberUpsert, RouteInfo } from '@/service/types'
+import type { MemberInfo, MemberUpsert, Route } from '@/service/types'
 
 import BaseModal from '@/component/modal.vue'
 
@@ -59,7 +59,7 @@ class MemberEditModal extends Vue {
     modalLoading = false
     routesLoading = false
     routeGroups: RouteGroup[] = []
-    // access >= 1 的路由 key 集合（匿名/登录即可），默认勾选且不可取消
+    // 非具体权限路由 key 集合（匿名/登录即可），默认勾选且不可取消
     autoPerms: Set<string> = new Set()
     // formData.permissions 的 Set 镜像，用于 O(1) 查找
     permSet: Set<string> = new Set()
@@ -89,11 +89,11 @@ class MemberEditModal extends Vue {
         this.routesLoading = true
         try {
             const res = await api.accountRouteList()
-            const items: RouteInfo[] = res.payload || []
-            // 收集 access >= 1 的路由（匿名/登录即可），自动勾选且不可取消
+            const items: Route[] = res.payload || []
+            // 收集非具体权限路由（匿名/登录即可），自动勾选且不可取消
             const autoPerms = new Set<string>()
             for (const item of items) {
-                if (item.access > RouteAccessPerm) autoPerms.add(item.key)
+                if (item.access !== RouteAccessPerm) autoPerms.add(item.key)
             }
             this.autoPerms = autoPerms
             // 按 module 分组，保持模块顺序

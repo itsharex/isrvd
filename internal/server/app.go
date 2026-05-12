@@ -19,8 +19,6 @@ import (
 	"isrvd/public"
 )
 
-const APINamespace = "/api"
-
 // App 应用实例，持有各业务服务
 type App struct {
 	*gin.Engine
@@ -34,14 +32,46 @@ type App struct {
 	dockerSvc   *svcDocker.Service
 	swarmSvc    *svcSwarm.Service
 	composeSvc  *svcCompose.Service
-	routePerms  map[string]svcAccount.RouteInfo // METHOD+完整路径 → 路由权限索引
+	routeIndex  map[string]Route // METHOD+完整路径 → 路由索引
 }
+
+// RouteAccess 路由访问级别
+type RouteAccess int
+
+// AuditLevel 审计级别
+type AuditLevel int
+
+// Route 定义单个路由的完整信息（同时用于注册、权限验证和审计控制）
+type Route struct {
+	Key     string          `json:"key,omitempty"` // "METHOD /api/path"
+	Method  string          `json:"-"`             // HTTP 方法：GET/POST/PUT/PATCH/DELETE/ANY
+	Path    string          `json:"-"`             // 路由路径（Gin 格式，支持 :param 和 *）
+	Handler gin.HandlerFunc `json:"-"`             // 处理函数
+	Module  string          `json:"module"`        // 模块名，空字符串表示无需模块权限
+	Label   string          `json:"label"`         // 模块显示名，用于错误提示
+	Access  RouteAccess     `json:"access"`        // 访问级别，0：需要具体权限，-1：匿名，1：登录即可访问
+	Audit   AuditLevel      `json:"-"`             // 审计级别，0：按 Method 审计，-1：忽略，1：强制审计
+}
+
+const APINamespace = "/api"
+
+const (
+	AccessAnon RouteAccess = -1 // 匿名
+	AccessPerm RouteAccess = 0  // 需要具体权限
+	AccessAuth RouteAccess = 1  // 登录即可访问
+)
+
+const (
+	AuditIgnore   AuditLevel = -1 // 忽略
+	AuditByMethod AuditLevel = 0  // 按 Method 审计
+	AuditAlways   AuditLevel = 1  // 强制审计
+)
 
 func StartApp() {
 	app := &App{
 		Engine:     httpd.Engine(config.Server.Debug),
 		wsConfig:   &websocket.ServerConfig{AllowedOrigins: config.Server.AllowedOrigins},
-		routePerms: make(map[string]svcAccount.RouteInfo),
+		routeIndex: make(map[string]Route),
 	}
 
 	// 初始化各业务服务
@@ -78,16 +108,6 @@ func StartApp() {
 	httpd.Server(config.Server.ListenAddr)
 }
 
-// Route 定义单个路由的完整信息（同时用于注册和权限验证）
-type Route struct {
-	Method  string                 // HTTP 方法：GET/POST/PUT/PATCH/DELETE/ANY
-	Path    string                 // 路由路径（Gin 格式，支持 :param 和 *）
-	Handler gin.HandlerFunc        // 处理函数
-	Module  string                 // 模块名，空字符串表示无需模块权限
-	Label   string                 // 模块显示名，用于错误提示
-	Access  svcAccount.RouteAccess // 访问级别：anon/auth/perm（默认 perm）
-}
-
 // initRoutes 初始化路由表并注册所有路由
 // 按模块注册路由，每个模块自己管理路由定义和注册
 func (app *App) initRoutes() {
@@ -99,10 +119,10 @@ func (app *App) initRoutes() {
 	// 安全响应头中间件
 	r.Use(securityHeadersMiddleware())
 
-	// 认证与权限中间件
-	r.Use(AuthMiddleware(app.routePerms, app.accountSvc))
-	r.Use(PermMiddleware(app.routePerms, app.accountSvc))
-	r.Use(AuditMiddleware(app.auditSvc))
+	// 认证、权限与审计中间件
+	r.Use(AuthMiddleware(app.routeIndex, app.accountSvc))
+	r.Use(PermMiddleware(app.routeIndex, app.accountSvc))
+	r.Use(AuditMiddleware(app.routeIndex, app.auditSvc))
 
 	// 加载所有模块的路由定义并注册
 	for _, route := range app.collectRoutes() {
@@ -141,14 +161,11 @@ func (app *App) collectRoutes() []Route {
 	return routes
 }
 
-// registerRoute 注册单个路由，并同步建立 METHOD+完整路由模板的权限索引
+// registerRoute 注册单个路由，并同步建立 METHOD+完整路由模板索引
 func (app *App) registerRoute(group *gin.RouterGroup, route Route) {
 	key := route.Method + " " + APINamespace + route.Path
-	app.routePerms[key] = svcAccount.RouteInfo{
-		Module: route.Module,
-		Label:  route.Label,
-		Access: route.Access,
-	}
+	route.Key = key
+	app.routeIndex[key] = route
 
 	switch route.Method {
 	case "GET":

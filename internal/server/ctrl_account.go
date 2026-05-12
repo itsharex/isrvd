@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 	"net/url"
+	"sort"
 
 	"github.com/gin-gonic/gin"
 
@@ -13,29 +14,24 @@ import (
 // defineAccountRoutes 定义 Account 模块路由
 func (app *App) defineAccountRoutes() []Route {
 	return []Route{
-		{Method: "GET", Path: "/account/info", Handler: app.accountAuthInfo, Module: "account", Label: "获取当前认证信息", Access: account.AccessAnon},
-		{Method: "POST", Path: "/account/login", Handler: app.accountLogin, Module: "account", Label: "账号密码登录", Access: account.AccessAnon},
-		{Method: "GET", Path: "/account/oidc/login", Handler: app.accountOIDCLogin, Module: "account", Label: "发起 OIDC 登录", Access: account.AccessAnon},
-		{Method: "GET", Path: "/account/oidc/callback", Handler: app.accountOIDCCallback, Module: "account", Label: "处理 OIDC 回调", Access: account.AccessAnon},
-		{Method: "POST", Path: "/account/oidc/exchange", Handler: app.accountOIDCExchange, Module: "account", Label: "交换 OIDC 登录码", Access: account.AccessAnon},
-		{Method: "GET", Path: "/account/routes", Handler: app.accountRouteList, Module: "account", Label: "查询路由权限列表", Access: account.AccessAuth},
+		// 认证与登录
+		{Method: "GET", Path: "/account/info", Handler: app.accountAuthInfo, Module: "account", Label: "获取当前认证信息", Access: AccessAnon},
+		{Method: "POST", Path: "/account/login", Handler: app.accountLogin, Module: "account", Label: "账号密码登录", Access: AccessAnon},
+		// OIDC 登录
+		{Method: "GET", Path: "/account/oidc/login", Handler: app.accountOIDCLogin, Module: "account", Label: "发起 OIDC 登录", Access: AccessAnon},
+		{Method: "GET", Path: "/account/oidc/callback", Handler: app.accountOIDCCallback, Module: "account", Label: "处理 OIDC 回调", Access: AccessAnon},
+		{Method: "POST", Path: "/account/oidc/exchange", Handler: app.accountOIDCExchange, Module: "account", Label: "交换 OIDC 登录码", Access: AccessAnon},
+		// 凭证管理
 		{Method: "POST", Path: "/account/token", Handler: app.accountApiTokenCreate, Module: "account", Label: "创建 API 令牌"},
-		{Method: "PUT", Path: "/account/password", Handler: app.accountPasswordChange, Module: "account", Label: "修改当前用户密码", Access: account.AccessAuth},
+		{Method: "PUT", Path: "/account/password", Handler: app.accountPasswordChange, Module: "account", Label: "修改当前用户密码", Access: AccessAuth},
+		// 路由权限
+		{Method: "GET", Path: "/account/routes", Handler: app.accountRouteList, Module: "account", Label: "查询路由权限列表", Access: AccessAuth},
+		// 成员管理
 		{Method: "GET", Path: "/account/members", Handler: app.accountMemberList, Module: "account", Label: "查询成员列表"},
 		{Method: "POST", Path: "/account/member", Handler: app.accountMemberCreate, Module: "account", Label: "创建成员"},
 		{Method: "PUT", Path: "/account/member/:username", Handler: app.accountMemberUpdate, Module: "account", Label: "更新成员"},
 		{Method: "DELETE", Path: "/account/member/:username", Handler: app.accountMemberDelete, Module: "account", Label: "删除成员"},
 	}
-}
-
-// accountRouteList 返回所有已注册路由及其权限元信息
-func (app *App) accountRouteList(c *gin.Context) {
-	routes := make([]account.RouteInfo, 0, len(app.routePerms))
-	for key, info := range app.routePerms {
-		info.Key = key
-		routes = append(routes, info)
-	}
-	respondSuccess(c, "ok", routes)
 }
 
 // accountAuthInfo 返回当前认证模式及已登录用户信息
@@ -123,6 +119,21 @@ func (app *App) accountPasswordChange(c *gin.Context) {
 		return
 	}
 	respondSuccess(c, "密码修改成功", nil)
+}
+
+// accountRouteList 返回所有已注册路由及其权限元信息
+func (app *App) accountRouteList(c *gin.Context) {
+	routes := make([]Route, 0, len(app.routeIndex))
+	for _, route := range app.routeIndex {
+		routes = append(routes, route)
+	}
+	sort.Slice(routes, func(i, j int) bool {
+		if routes[i].Module != routes[j].Module {
+			return routes[i].Module < routes[j].Module
+		}
+		return routes[i].Key < routes[j].Key
+	})
+	respondSuccess(c, "ok", routes)
 }
 
 // accountMemberList 列出所有成员

@@ -14,7 +14,7 @@ import type {
     AuthInfo,
     MemberInfo,
     MemberUpsert,
-    RouteInfo,
+    Route,
     ApiTokenCreate,
     ApiTokenResult,
     ChangePassword,
@@ -112,7 +112,7 @@ class ApiService {
     }
 
     accountRouteList() {
-        return http.get<RouteInfo[]>('/api/account/routes')
+        return http.get<Route[]>('/api/account/routes')
     }
 
     accountMemberList() {

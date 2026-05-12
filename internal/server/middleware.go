@@ -14,10 +14,9 @@ import (
 // AuthMiddleware 认证中间件
 // - AccessAnon 路由：可选认证，失败时放行
 // - 其他路由：强制认证，失败时返回 401
-func AuthMiddleware(routePerms map[string]svcAccount.RouteInfo, svc *svcAccount.Service) gin.HandlerFunc {
+func AuthMiddleware(routeIndex map[string]Route, svc *svcAccount.Service) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		key := c.Request.Method + " " + c.FullPath()
-		if info, ok := routePerms[key]; ok && info.Access == svcAccount.AccessAnon {
+		if route, ok := matchRoute(routeIndex, c.Request.Method, c.FullPath()); ok && route.Access == AccessAnon {
 			if username := svc.AuthMix(c); username != "" {
 				c.Set("username", username)
 			}
@@ -38,24 +37,27 @@ func AuthMiddleware(routePerms map[string]svcAccount.RouteInfo, svc *svcAccount.
 
 // PermMiddleware 权限验证中间件
 // 基于 METHOD+PATH 进行集中式权限校验
-func PermMiddleware(routePerms map[string]svcAccount.RouteInfo, svc *svcAccount.Service) gin.HandlerFunc {
+func PermMiddleware(routeIndex map[string]Route, svc *svcAccount.Service) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		path := c.FullPath()
-		if path == "" {
+		route, ok := matchRoute(routeIndex, c.Request.Method, path)
+		if path == "" || !ok {
 			respondError(c, http.StatusForbidden, "未授权的访问路径")
 			c.Abort()
 			return
 		}
 
-		found, err := svc.RoutePermCheck(routePerms, c.Request.Method, path, c.GetString("username"))
-		if !found || err != nil {
-			msg := "未授权的访问路径"
-			if err != nil {
-				msg = err.Error()
-			}
-			respondError(c, http.StatusForbidden, msg)
+		if route.Access == AccessAuth && c.GetString("username") == "" {
+			respondError(c, http.StatusForbidden, "请先登录")
 			c.Abort()
 			return
+		}
+		if route.Access == AccessPerm && route.Module != "" {
+			if err := svc.PermCheck(c.GetString("username"), route.Label, c.Request.Method, path); err != nil {
+				respondError(c, http.StatusForbidden, err.Error())
+				c.Abort()
+				return
+			}
 		}
 
 		c.Next()
@@ -63,11 +65,12 @@ func PermMiddleware(routePerms map[string]svcAccount.RouteInfo, svc *svcAccount.
 }
 
 // AuditMiddleware 操作审计中间件
-// 记录所有非 GET 请求及 WebSocket 连接
-func AuditMiddleware(svc *svcSystem.AuditService) gin.HandlerFunc {
+// 根据路由 Audit 策略决定是否记录：0 按 Method，<0 忽略，>0 强制记录。
+func AuditMiddleware(routeIndex map[string]Route, svc *svcSystem.AuditService) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		route, _ := matchRoute(routeIndex, c.Request.Method, c.FullPath())
 		isWS := strings.EqualFold(c.GetHeader("Upgrade"), "websocket")
-		if !isWS && c.Request.Method == http.MethodGet {
+		if route.Audit < AuditByMethod || (route.Audit == AuditByMethod && !isWS && c.Request.Method == http.MethodGet) {
 			c.Next()
 			return
 		}
@@ -81,6 +84,14 @@ func AuditMiddleware(svc *svcSystem.AuditService) gin.HandlerFunc {
 		c.Next()
 		svc.RequestRecord(c, startTime, body)
 	}
+}
+
+func matchRoute(routeIndex map[string]Route, method, path string) (Route, bool) {
+	route, ok := routeIndex[method+" "+path]
+	if !ok {
+		route, ok = routeIndex["ANY "+path]
+	}
+	return route, ok
 }
 
 // securityHeadersMiddleware 安全响应头中间件

@@ -43,7 +43,16 @@ isrvd_post "/account/oidc/exchange" '{"code":"<OIDC_CODE>"}'
 isrvd_get "/account/routes"
 ```
 
-> access: `0`=需权限, `1`=需登录, `2`=匿名
+返回按 `module`、`key` 排序的路由列表。
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| key | string | 路由权限键，格式为 `METHOD /api/path` |
+| module | string | 模块名 |
+| label | string | 路由显示名 |
+| access | number | 访问级别：`0`=需要具体权限，`1`=登录即可访问，`-1`=匿名访问 |
+
+> 路由未显式配置 `access` 时默认为 `0`，即需要具体权限。
 
 ## 创建 API Token
 

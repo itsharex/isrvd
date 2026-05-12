@@ -8,7 +8,6 @@ import (
 
 	"isrvd/config"
 
-	svcAccount "isrvd/internal/service/account"
 	svcSystem "isrvd/internal/service/system"
 )
 
@@ -16,7 +15,7 @@ import (
 func (app *App) defineSystemRoutes() []Route {
 	return []Route{
 		// 系统配置
-		{Method: "GET", Path: "/system/config", Handler: app.systemConfigInspect, Module: "system", Label: "获取系统配置", Access: svcAccount.AccessAuth},
+		{Method: "GET", Path: "/system/config", Handler: app.systemConfigInspect, Module: "system", Label: "获取系统配置", Access: AccessAuth},
 		{Method: "PUT", Path: "/system/config", Handler: app.systemConfigUpdate, Module: "system", Label: "保存系统配置"},
 		// 审计日志
 		{Method: "GET", Path: "/system/audit/logs", Handler: app.systemAuditLogList, Module: "system", Label: "查询操作审计日志"},
