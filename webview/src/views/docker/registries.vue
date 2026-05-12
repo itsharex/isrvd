@@ -196,7 +196,7 @@ export default toNative(Registries)
                   <div class="flex flex-col gap-1">
                     <code class="text-xs bg-slate-100 px-2 py-0.5 rounded self-start">{{ indexServerAddress || 'https://index.docker.io/v1/' }}</code>
                     <template v-if="daemonMirrors.length > 0">
-                      <code v-for="mirror in daemonMirrors" :key="mirror" class="text-xs bg-sky-50 text-sky-700 px-2 py-0.5 rounded self-start inline-flex items-center gap-1">
+                      <code v-for="mirror in daemonMirrors" :key="mirror" class="text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded self-start inline-flex items-center gap-1">
                         <i class="fas fa-bolt text-sky-400 text-xs"></i>{{ mirror }}
                       </code>
                     </template>
@@ -267,8 +267,8 @@ export default toNative(Registries)
             <template v-if="daemonMirrors.length > 0">
               <div v-for="mirror in daemonMirrors" :key="mirror" class="flex items-center gap-2 mb-3">
                 <span class="text-xs text-slate-400 flex-shrink-0">加速</span>
-                <code class="text-xs bg-sky-50 text-sky-700 px-1.5 py-0.5 rounded truncate flex items-center gap-1">
-                  <i class="fas fa-bolt text-sky-400 text-xs"></i>{{ mirror }}
+                <code class="text-xs bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded truncate flex items-center gap-1">
+                  <i class="fas fa-bolt text-primary-500 text-xs"></i>{{ mirror }}
                 </code>
               </div>
             </template>
