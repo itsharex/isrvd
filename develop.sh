@@ -20,9 +20,18 @@ cleanup() {
 trap cleanup EXIT INT TERM
 
 # 释放占用的端口
-if command -v fuser &>/dev/null; then
-    fuser -k 8080/tcp 3000/tcp 2>/dev/null
-fi
+kill_port() {
+    local port=$1
+    if command -v lsof &>/dev/null; then
+        local pids
+        pids=$(lsof -ti tcp:"$port" 2>/dev/null)
+        [ -n "$pids" ] && kill $pids 2>/dev/null
+    elif command -v fuser &>/dev/null; then
+        fuser -k "${port}/tcp" 2>/dev/null
+    fi
+}
+kill_port 8080
+kill_port 3000
 
 # 启动 Go 服务
 if [ ! -f .local.yml ]; then
@@ -37,9 +46,18 @@ npm i
 npm run dev &
 NPM_PID=$!
 
-# 等待任意一个子进程退出
-wait -n $GO_PID $NPM_PID
-EXIT_CODE=$?
+# 等待任意一个子进程退出（兼容 macOS 默认 bash 3.2，不支持 wait -n）
+EXIT_CODE=0
+while kill -0 $GO_PID 2>/dev/null && kill -0 $NPM_PID 2>/dev/null; do
+    sleep 1
+done
+if ! kill -0 $GO_PID 2>/dev/null; then
+    wait $GO_PID 2>/dev/null
+    EXIT_CODE=$?
+else
+    wait $NPM_PID 2>/dev/null
+    EXIT_CODE=$?
+fi
 
 if [ $EXIT_CODE -gt 128 ]; then
     echo "收到终止信号，正在停止所有进程..."
