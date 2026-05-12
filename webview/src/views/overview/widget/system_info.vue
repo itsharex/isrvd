@@ -45,19 +45,19 @@ export default toNative(SystemInfo)
     </div>
     <div class="rounded-xl border border-slate-200 bg-white p-4">
       <p class="text-xs text-slate-400 mb-1">主机名</p>
-      <p class="text-sm font-semibold text-slate-800 truncate">{{ current.system.HostName }}</p>
+      <p class="text-sm font-semibold text-slate-800 truncate">{{ current.system.hostName }}</p>
     </div>
     <div class="rounded-xl border border-slate-200 bg-white p-4">
       <p class="text-xs text-slate-400 mb-1">操作系统</p>
-      <p class="text-sm font-semibold text-slate-800 truncate">{{ current.system.Platform }} / {{ current.system.KernelArch }}</p>
+      <p class="text-sm font-semibold text-slate-800 truncate">{{ current.system.platform }} / {{ current.system.kernelArch }}</p>
     </div>
     <div class="rounded-xl border border-slate-200 bg-white p-4">
       <p class="text-xs text-slate-400 mb-1">运行时间</p>
-      <p class="text-sm font-semibold text-slate-800">{{ fmtUptime(current.system.Uptime) }}</p>
+      <p class="text-sm font-semibold text-slate-800">{{ fmtUptime(current.system.uptime) }}</p>
     </div>
     <div class="rounded-xl border border-slate-200 bg-white p-4">
       <p class="text-xs text-slate-400 mb-1">CPU 核心</p>
-      <p class="text-sm font-semibold text-slate-800">{{ current.system.CpuCore }} 物理 / {{ current.system.CpuCoreLogic }} 逻辑</p>
+      <p class="text-sm font-semibold text-slate-800">{{ current.system.cpuCore }} 物理 / {{ current.system.cpuCoreLogic }} 逻辑</p>
     </div>
   </div>
 </template>

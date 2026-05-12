@@ -25,22 +25,22 @@ class SystemCpuMem extends Vue {
     private cpuHistory: { labels: string[]; data: number[] } = { labels: [], data: [] }
     private memHistory: { labels: string[]; data: number[] } = { labels: [], data: [] }
 
-    current: Pick<SystemStat['system'], 'CpuPercent' | 'CpuModel' | 'MemoryUsed' | 'MemoryTotal'> | null = null
+    current: Pick<SystemStat['system'], 'cpuPercent' | 'cpuModel' | 'memoryUsed' | 'memoryTotal'> | null = null
 
     get cpuVal() {
-        return this.current ? this.avgCpuPercent(this.current.CpuPercent) : 0
+        return this.current ? this.avgCpuPercent(this.current.cpuPercent) : 0
     }
 
     get memVal() {
-        return this.current ? this.memPercent(this.current.MemoryUsed, this.current.MemoryTotal) : 0
+        return this.current ? this.memPercent(this.current.memoryUsed, this.current.memoryTotal) : 0
     }
 
     get cpuModel() {
-        return this.current?.CpuModel?.[0] || ''
+        return this.current?.cpuModel?.[0] || ''
     }
 
-    get memUsed() { return this.current?.MemoryUsed ?? 0 }
-    get memTotal() { return this.current?.MemoryTotal ?? 0 }
+    get memUsed() { return this.current?.memoryUsed ?? 0 }
+    get memTotal() { return this.current?.memoryTotal ?? 0 }
 
     avgCpuPercent(arr: number[]): number {
         if (!arr || !arr.length) return 0
@@ -131,15 +131,15 @@ class SystemCpuMem extends Vue {
 
     pushData(payload: SystemStat) {
         const s = payload.system
-        this.current = { CpuPercent: s.CpuPercent, CpuModel: s.CpuModel, MemoryUsed: s.MemoryUsed, MemoryTotal: s.MemoryTotal }
+        this.current = { cpuPercent: s.cpuPercent, cpuModel: s.cpuModel, memoryUsed: s.memoryUsed, memoryTotal: s.memoryTotal }
 
         const now = new Date()
         const label = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`
 
         this.cpuHistory.labels.push(label)
-        this.cpuHistory.data.push(this.avgCpuPercent(s.CpuPercent))
+        this.cpuHistory.data.push(this.avgCpuPercent(s.cpuPercent))
         this.memHistory.labels.push(label)
-        this.memHistory.data.push(this.memPercent(s.MemoryUsed, s.MemoryTotal))
+        this.memHistory.data.push(this.memPercent(s.memoryUsed, s.memoryTotal))
 
         if (this.cpuHistory.labels.length > MAX_HISTORY) {
             this.cpuHistory.labels.shift()

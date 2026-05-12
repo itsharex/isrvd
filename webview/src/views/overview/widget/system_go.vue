@@ -44,31 +44,31 @@ export default toNative(SystemGo)
       </div>
       <div class="px-4 py-3">
         <p class="text-xs text-slate-400 mb-1">堆已分配</p>
-        <p class="text-sm font-bold text-slate-800">{{ fmtSize(current.HeapAlloc) }}</p>
+        <p class="text-sm font-bold text-slate-800">{{ fmtSize(current.heapAlloc) }}</p>
       </div>
       <div class="px-4 py-3">
         <p class="text-xs text-slate-400 mb-1">堆使用中</p>
-        <p class="text-sm font-bold text-slate-800">{{ fmtSize(current.HeapInuse) }}</p>
+        <p class="text-sm font-bold text-slate-800">{{ fmtSize(current.heapInuse) }}</p>
       </div>
       <div class="px-4 py-3">
         <p class="text-xs text-slate-400 mb-1">系统申请</p>
-        <p class="text-sm font-bold text-slate-800">{{ fmtSize(current.Sys) }}</p>
+        <p class="text-sm font-bold text-slate-800">{{ fmtSize(current.sys) }}</p>
       </div>
       <div class="px-4 py-3">
         <p class="text-xs text-slate-400 mb-1">栈使用中</p>
-        <p class="text-sm font-bold text-slate-800">{{ fmtSize(current.StackInuse) }}</p>
+        <p class="text-sm font-bold text-slate-800">{{ fmtSize(current.stackInuse) }}</p>
       </div>
       <div class="px-4 py-3">
         <p class="text-xs text-slate-400 mb-1">累计分配</p>
-        <p class="text-sm font-bold text-slate-800">{{ fmtSize(current.TotalAlloc) }}</p>
+        <p class="text-sm font-bold text-slate-800">{{ fmtSize(current.totalAlloc) }}</p>
       </div>
       <div class="px-4 py-3">
         <p class="text-xs text-slate-400 mb-1">GC 次数</p>
-        <p class="text-sm font-bold text-slate-800">{{ current.NumGC }}</p>
+        <p class="text-sm font-bold text-slate-800">{{ current.numGC }}</p>
       </div>
       <div class="px-4 py-3">
         <p class="text-xs text-slate-400 mb-1">最后 GC</p>
-        <p class="text-sm font-bold text-slate-800">{{ fmtGCTime(current.LastGC) }}</p>
+        <p class="text-sm font-bold text-slate-800">{{ fmtGCTime(current.lastGC) }}</p>
       </div>
     </div>
   </div>

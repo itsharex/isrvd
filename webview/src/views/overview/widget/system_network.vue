@@ -44,7 +44,7 @@ class SystemNetwork extends Vue {
     physicalInterfaces(list: SystemNetInterface[]) {
         if (!list) return []
         const virtualPrefixes = ['lo', 'docker', 'veth', 'br-', 'overlay', 'flannel', 'cni', 'tunl', 'dummy', 'virbr']
-        return list.filter(ni => !virtualPrefixes.some(p => ni.Name.startsWith(p)))
+        return list.filter(ni => !virtualPrefixes.some(p => ni.name.startsWith(p)))
     }
 
     currentRate(name: string, dir: string): number {
@@ -106,7 +106,7 @@ class SystemNetwork extends Vue {
     }
 
     pushData(payload: SystemStat) {
-        const ifaces = payload.system?.NetInterface || []
+        const ifaces = payload.system?.netInterface || []
         this.currentIfaces = this.physicalInterfaces(ifaces)
         if (!ifaces.length) return
 
@@ -115,7 +115,7 @@ class SystemNetwork extends Vue {
         const nowTime = Date.now()
 
         this.physicalInterfaces(ifaces).forEach(ni => {
-            const name = ni.Name
+            const name = ni.name
             const last = this.lastNetIO[name]
 
             let recvRate = 0
@@ -124,12 +124,12 @@ class SystemNetwork extends Vue {
             if (last && last.time > 0) {
                 const dt = (nowTime - last.time) / 1000
                 if (dt > 0) {
-                    recvRate = Math.max(0, (ni.BytesRecv - last.recv) / dt)
-                    sentRate = Math.max(0, (ni.BytesSent - last.sent) / dt)
+                    recvRate = Math.max(0, (ni.bytesRecv - last.recv) / dt)
+                    sentRate = Math.max(0, (ni.bytesSent - last.sent) / dt)
                 }
             }
 
-            this.lastNetIO[name] = { recv: ni.BytesRecv, sent: ni.BytesSent, time: nowTime }
+            this.lastNetIO[name] = { recv: ni.bytesRecv, sent: ni.bytesSent, time: nowTime }
 
             if (!this.netHistory[name]) {
                 this.netHistory[name] = { labels: [], recv: [], sent: [] }
@@ -172,29 +172,29 @@ export default toNative(SystemNetwork)
       <span class="text-sm font-semibold text-slate-700">网络接口</span>
     </div>
     <div ref="netContainerRef" class="divide-y divide-slate-100">
-      <div v-for="ni in currentIfaces" :key="ni.Name" class="px-4 py-3">
+      <div v-for="ni in currentIfaces" :key="ni.name" class="px-4 py-3">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-1">
-          <p class="text-xs font-semibold text-slate-700">{{ ni.Name }}</p>
+          <p class="text-xs font-semibold text-slate-700">{{ ni.name }}</p>
           <div class="flex items-center gap-4 text-xs">
             <span class="flex items-center gap-1">
               <i class="fas fa-arrow-down text-emerald-500"></i>
-              <span class="font-mono text-slate-600 w-20 text-right">{{ fmtRate(currentRate(ni.Name, 'recv')) }}</span>
+              <span class="font-mono text-slate-600 w-20 text-right">{{ fmtRate(currentRate(ni.name, 'recv')) }}</span>
             </span>
             <span class="flex items-center gap-1">
               <i class="fas fa-arrow-up text-blue-500"></i>
-              <span class="font-mono text-slate-600 w-20 text-right">{{ fmtRate(currentRate(ni.Name, 'sent')) }}</span>
+              <span class="font-mono text-slate-600 w-20 text-right">{{ fmtRate(currentRate(ni.name, 'sent')) }}</span>
             </span>
           </div>
         </div>
         <div class="relative h-20 bg-slate-50 rounded-lg overflow-hidden">
-          <canvas :data-iface="ni.Name" class="w-full h-full"></canvas>
-          <div v-if="!netHistory[ni.Name]?.labels?.length" class="absolute inset-0 flex items-center justify-center">
+          <canvas :data-iface="ni.name" class="w-full h-full"></canvas>
+          <div v-if="!netHistory[ni.name]?.labels?.length" class="absolute inset-0 flex items-center justify-center">
             <span class="text-xs text-slate-300">等待数据...</span>
           </div>
         </div>
         <div class="flex flex-col sm:flex-row gap-2 sm:gap-4 mt-1.5 text-xs text-slate-400">
-          <span>累计收: {{ fmtBytes(ni.BytesRecv) }}</span>
-          <span>累计发: {{ fmtBytes(ni.BytesSent) }}</span>
+          <span>累计收: {{ fmtBytes(ni.bytesRecv) }}</span>
+          <span>累计发: {{ fmtBytes(ni.bytesSent) }}</span>
         </div>
       </div>
     </div>
