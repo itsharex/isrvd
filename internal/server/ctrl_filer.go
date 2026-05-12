@@ -14,16 +14,18 @@ import (
 // defineFilerRoutes 定义 Filer 模块路由（文件管理）
 func (app *App) defineFilerRoutes() []Route {
 	return []Route{
-		{Method: "POST", Path: "/filer/list", Handler: app.filerFileList, Module: "filer", Label: "查询目录文件列表"},
+		// 读取类操作不记录审计日志
+		{Method: "POST", Path: "/filer/list", Handler: app.filerFileList, Module: "filer", Label: "查询目录文件列表", Audit: AuditIgnore},
+		{Method: "POST", Path: "/filer/read", Handler: app.filerFileRead, Module: "filer", Label: "读取文件内容", Audit: AuditIgnore},
+		{Method: "POST", Path: "/filer/download", Handler: app.filerFileDownload, Module: "filer", Label: "下载文件", Audit: AuditIgnore},
+		// 写入与变更类操作按默认策略审计
 		{Method: "POST", Path: "/filer/mkdir", Handler: app.filerFileMkdir, Module: "filer", Label: "创建目录"},
 		{Method: "POST", Path: "/filer/create", Handler: app.filerFileCreate, Module: "filer", Label: "创建文件"},
-		{Method: "POST", Path: "/filer/read", Handler: app.filerFileRead, Module: "filer", Label: "读取文件内容"},
 		{Method: "POST", Path: "/filer/modify", Handler: app.filerFileModify, Module: "filer", Label: "保存文件内容"},
 		{Method: "POST", Path: "/filer/rename", Handler: app.filerFileRename, Module: "filer", Label: "重命名文件或目录"},
 		{Method: "POST", Path: "/filer/delete", Handler: app.filerFileDelete, Module: "filer", Label: "删除文件或目录"},
 		{Method: "POST", Path: "/filer/chmod", Handler: app.filerFileChmod, Module: "filer", Label: "修改文件权限"},
 		{Method: "POST", Path: "/filer/upload", Handler: app.filerFileUpload, Module: "filer", Label: "上传文件"},
-		{Method: "POST", Path: "/filer/download", Handler: app.filerFileDownload, Module: "filer", Label: "下载文件"},
 		{Method: "POST", Path: "/filer/zip", Handler: app.filerFileZip, Module: "filer", Label: "压缩文件或目录"},
 		{Method: "POST", Path: "/filer/unzip", Handler: app.filerFileUnzip, Module: "filer", Label: "解压文件"},
 	}
