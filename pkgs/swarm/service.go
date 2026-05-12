@@ -16,17 +16,27 @@ import (
 	"isrvd/pkgs/docker"
 )
 
-// ServiceInspect 服务详情
-type ServiceInspect struct {
+// ServiceInfo 服务列表信息（精简视图）
+type ServiceInfo struct {
+	ID           string       `json:"id"`
+	Name         string       `json:"name"`
+	Image        string       `json:"image"`
+	Mode         string       `json:"mode"`
+	Replicas     *uint64      `json:"replicas"`
+	RunningTasks int          `json:"runningTasks"`
+	Ports        []ServicePort `json:"ports"`
+	CreatedAt    string       `json:"createdAt"`
+	UpdatedAt    string       `json:"updatedAt"`
+}
+
+// ServiceDetail 服务详情（完整视图，与 ContainerDetail 对称）
+type ServiceDetail struct {
 	ServiceSpec
 	ID           string `json:"id"`
 	RunningTasks int    `json:"runningTasks"`
 	CreatedAt    string `json:"createdAt"`
 	UpdatedAt    string `json:"updatedAt"`
 }
-
-// ServiceInfo 服务列表信息
-type ServiceInfo = ServiceInspect
 
 // ServiceSpec 服务可写配置（创建/更新共用）
 type ServiceSpec struct {
@@ -82,12 +92,10 @@ func (m *SwarmService) ServiceList(ctx context.Context) ([]ServiceInfo, error) {
 	var result []ServiceInfo
 	for _, s := range services {
 		svc := ServiceInfo{
-			ServiceSpec: ServiceSpec{
-				Name:  s.Spec.Name,
-				Image: s.Spec.TaskTemplate.ContainerSpec.Image,
-				Mode:  "replicated",
-			},
 			ID:           s.ID,
+			Name:         s.Spec.Name,
+			Image:        s.Spec.TaskTemplate.ContainerSpec.Image,
+			Mode:         "replicated",
 			RunningTasks: runningMap[s.ID],
 			CreatedAt:    s.CreatedAt.Format(time.RFC3339),
 			UpdatedAt:    s.UpdatedAt.Format(time.RFC3339),
@@ -97,21 +105,17 @@ func (m *SwarmService) ServiceList(ctx context.Context) ([]ServiceInfo, error) {
 		} else if s.Spec.Mode.Replicated != nil {
 			svc.Replicas = s.Spec.Mode.Replicated.Replicas
 		}
-
-		var ports []ServicePort
 		for _, p := range s.Endpoint.Ports {
 			if p.PublishedPort == 0 && p.TargetPort == 0 {
 				continue
 			}
-			ports = append(ports, ServicePort{
+			svc.Ports = append(svc.Ports, ServicePort{
 				Protocol:      string(p.Protocol),
 				TargetPort:    p.TargetPort,
 				PublishedPort: p.PublishedPort,
 				PublishMode:   string(p.PublishMode),
 			})
 		}
-		svc.Ports = ports
-
 		result = append(result, svc)
 	}
 
@@ -271,11 +275,10 @@ func (m *SwarmService) ServiceLogs(ctx context.Context, serviceID, tail string) 
 	return docker.ParseDockerLogs(raw), nil
 }
 
-// ServiceInspect 获取服务详情
-func (m *SwarmService) ServiceInspect(ctx context.Context, id string) (*ServiceInspect, error) {
-	svc, _, err := m.client.ServiceInspectWithRaw(ctx, id, swarm.ServiceInspectOptions{InsertDefaults: true})
+// ServiceInspect 获取服务详情（返回业务 DTO，供 API 层使用）
+func (m *SwarmService) ServiceInspect(ctx context.Context, id string) (*ServiceDetail, error) {
+	svc, err := m.ServiceInspectRaw(ctx, id)
 	if err != nil {
-		logman.Error("InspectService failed", "id", id, "error", err)
 		return nil, err
 	}
 
@@ -290,7 +293,7 @@ func (m *SwarmService) ServiceInspect(ctx context.Context, id string) (*ServiceI
 		}
 	}
 
-	result := &ServiceInspect{
+	result := &ServiceDetail{
 		ServiceSpec: ServiceSpec{
 			Name:   svc.Spec.Name,
 			Image:  svc.Spec.TaskTemplate.ContainerSpec.Image,
@@ -311,7 +314,6 @@ func (m *SwarmService) ServiceInspect(ctx context.Context, id string) (*ServiceI
 		result.Replicas = svc.Spec.Mode.Replicated.Replicas
 	}
 
-	// 端口
 	for _, p := range svc.Endpoint.Ports {
 		result.Ports = append(result.Ports, ServicePort{
 			Protocol:      string(p.Protocol),
@@ -321,7 +323,6 @@ func (m *SwarmService) ServiceInspect(ctx context.Context, id string) (*ServiceI
 		})
 	}
 
-	// 挂载
 	for _, mt := range svc.Spec.TaskTemplate.ContainerSpec.Mounts {
 		result.Mounts = append(result.Mounts, ServiceMount{
 			Type:     string(mt.Type),
@@ -331,15 +332,23 @@ func (m *SwarmService) ServiceInspect(ctx context.Context, id string) (*ServiceI
 		})
 	}
 
-	// 网络
 	for _, n := range svc.Spec.TaskTemplate.Networks {
 		result.Networks = append(result.Networks, n.Target)
 	}
 
-	// 约束
 	if svc.Spec.TaskTemplate.Placement != nil {
 		result.Constraints = svc.Spec.TaskTemplate.Placement.Constraints
 	}
 
 	return result, nil
+}
+
+// ServiceInspectRaw 获取服务原始配置（返回 Docker SDK 原始类型，供 compose 转换使用）
+func (m *SwarmService) ServiceInspectRaw(ctx context.Context, id string) (swarm.Service, error) {
+	svc, _, err := m.client.ServiceInspectWithRaw(ctx, id, swarm.ServiceInspectOptions{InsertDefaults: true})
+	if err != nil {
+		logman.Error("InspectService failed", "id", id, "error", err)
+		return swarm.Service{}, err
+	}
+	return svc, nil
 }

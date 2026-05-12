@@ -27,7 +27,7 @@ func (s *Service) ContainerList(ctx context.Context, all bool) ([]*pkgdocker.Con
 }
 
 // ContainerCreate 创建并启动容器
-func (s *Service) ContainerCreate(ctx context.Context, req pkgdocker.ContainerCreateRequest) (*ContainerCreateResult, error) {
+func (s *Service) ContainerCreate(ctx context.Context, req pkgdocker.ContainerSpec) (*ContainerCreateResult, error) {
 	if err := s.docker.ImageEnsure(ctx, req.Image); err != nil {
 		return nil, fmt.Errorf("镜像 %s 不存在，拉取失败: %w", req.Image, err)
 	}
@@ -39,7 +39,7 @@ func (s *Service) ContainerCreate(ctx context.Context, req pkgdocker.ContainerCr
 }
 
 // ContainerStats 获取容器统计信息
-func (s *Service) ContainerStats(ctx context.Context, id string) (any, error) {
+func (s *Service) ContainerStats(ctx context.Context, id string) (*pkgdocker.ContainerStatsResponse, error) {
 	if id == "" {
 		return nil, fmt.Errorf("容器ID不能为空")
 	}
@@ -66,6 +66,6 @@ func (s *Service) ContainerExec(ctx context.Context, conn *websocket.ServerConn,
 }
 
 // Info 获取 Docker 概览信息
-func (s *Service) Info(ctx context.Context) (any, error) {
+func (s *Service) Info(ctx context.Context) (*pkgdocker.DockerInfo, error) {
 	return s.docker.Info(ctx)
 }

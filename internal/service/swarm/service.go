@@ -29,12 +29,12 @@ func (s *Service) CheckAvailability(ctx context.Context) bool {
 }
 
 // Info 获取 Swarm 集群概览
-func (s *Service) Info(ctx context.Context) (any, error) {
+func (s *Service) Info(ctx context.Context) (map[string]any, error) {
 	return s.svc.Info(ctx)
 }
 
 // JoinToken 获取加入集群的 token
-func (s *Service) JoinToken(ctx context.Context) (any, error) {
+func (s *Service) JoinToken(ctx context.Context) (map[string]string, error) {
 	return s.svc.JoinToken(ctx)
 }
 
@@ -57,12 +57,12 @@ func (s *Service) NodeInspect(ctx context.Context, id string) (*pkgswarm.NodeDet
 }
 
 // ServiceList 获取服务列表
-func (s *Service) ServiceList(ctx context.Context) (any, error) {
+func (s *Service) ServiceList(ctx context.Context) ([]pkgswarm.ServiceInfo, error) {
 	return s.svc.ServiceList(ctx)
 }
 
 // ServiceInspect 获取服务详情
-func (s *Service) ServiceInspect(ctx context.Context, id string) (*pkgswarm.ServiceInfo, error) {
+func (s *Service) ServiceInspect(ctx context.Context, id string) (*pkgswarm.ServiceDetail, error) {
 	if id == "" {
 		return nil, fmt.Errorf("缺少服务 ID")
 	}
@@ -93,6 +93,6 @@ func (s *Service) ServiceLogs(ctx context.Context, serviceID, tail string) ([]st
 }
 
 // TaskList 获取任务列表
-func (s *Service) TaskList(ctx context.Context, serviceID string) (any, error) {
+func (s *Service) TaskList(ctx context.Context, serviceID string) ([]pkgswarm.Task, error) {
 	return s.svc.TaskList(ctx, serviceID)
 }

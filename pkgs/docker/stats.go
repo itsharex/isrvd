@@ -31,7 +31,7 @@ type CPUThrottledData struct {
 }
 
 // NetDetail 网卡详细统计
-type NetDetail struct {
+type StatsNetDetail struct {
 	RxBytes   uint64 `json:"rxBytes"`
 	RxPackets uint64 `json:"rxPackets"`
 	RxErrors  uint64 `json:"rxErrors"`
@@ -43,7 +43,7 @@ type NetDetail struct {
 }
 
 // BlockDetail 硬盘设备详细统计
-type BlockDetail struct {
+type StatsBlockDetail struct {
 	Major uint64 `json:"major"`
 	Minor uint64 `json:"minor"`
 	Read  uint64 `json:"read"`
@@ -58,24 +58,24 @@ type ContainerProcessList struct {
 
 // ContainerStatsResponse 容器统计信息响应
 type ContainerStatsResponse struct {
-	ID            string                `json:"id"`
-	Name          string                `json:"name"`
-	CPUPercent    float64               `json:"cpuPercent"`
-	CPUCores      int                   `json:"cpuCores"`
-	CPUFreq       float64               `json:"cpuFreq"`
-	MemoryUsage   int64                 `json:"memoryUsage"`
-	MemoryLimit   int64                 `json:"memoryLimit"`
-	MemoryPercent float64               `json:"memoryPercent"`
-	NetworkRx     int64                 `json:"networkRx"`
-	NetworkTx     int64                 `json:"networkTx"`
-	BlockRead     int64                 `json:"blockRead"`
-	BlockWrite    int64                 `json:"blockWrite"`
-	Pids          int64                 `json:"pids"`
-	PidsLimit     int64                 `json:"pidsLimit"`
-	CPUThrottled  *CPUThrottledData     `json:"cpuThrottled"`
-	NetworkDetail map[string]*NetDetail `json:"networkDetail"`
-	BlockDetail   []*BlockDetail        `json:"blockDetail"`
-	ProcessList   *ContainerProcessList `json:"processList"`
+	ID            string                     `json:"id"`
+	Name          string                     `json:"name"`
+	CPUPercent    float64                    `json:"cpuPercent"`
+	CPUCores      int                        `json:"cpuCores"`
+	CPUFreq       float64                    `json:"cpuFreq"`
+	MemoryUsage   int64                      `json:"memoryUsage"`
+	MemoryLimit   int64                      `json:"memoryLimit"`
+	MemoryPercent float64                    `json:"memoryPercent"`
+	NetworkRx     int64                      `json:"networkRx"`
+	NetworkTx     int64                      `json:"networkTx"`
+	BlockRead     int64                      `json:"blockRead"`
+	BlockWrite    int64                      `json:"blockWrite"`
+	Pids          int64                      `json:"pids"`
+	PidsLimit     int64                      `json:"pidsLimit"`
+	CPUThrottled  *CPUThrottledData          `json:"cpuThrottled"`
+	NetworkDetail map[string]*StatsNetDetail `json:"networkDetail"`
+	BlockDetail   []*StatsBlockDetail        `json:"blockDetail"`
+	ProcessList   *ContainerProcessList      `json:"processList"`
 }
 
 // ContainerStats 获取容器统计信息
@@ -126,11 +126,11 @@ func (s *DockerService) ContainerStats(ctx context.Context, id string) (*Contain
 	}
 
 	var networkRx, networkTx int64
-	networkDetail := make(map[string]*NetDetail)
+	networkDetail := make(map[string]*StatsNetDetail)
 	for name, netStats := range v.Networks {
 		networkRx += int64(netStats.RxBytes)
 		networkTx += int64(netStats.TxBytes)
-		networkDetail[name] = &NetDetail{
+		networkDetail[name] = &StatsNetDetail{
 			RxBytes:   netStats.RxBytes,
 			RxPackets: netStats.RxPackets,
 			RxErrors:  netStats.RxErrors,
@@ -158,7 +158,7 @@ func (s *DockerService) ContainerStats(ctx context.Context, id string) (*Contain
 	}
 
 	var blockRead, blockWrite int64
-	blockDetailMap := make(map[string]*BlockDetail)
+	blockDetailMap := make(map[string]*StatsBlockDetail)
 	for _, blkStats := range v.BlkioStats.IoServiceBytesRecursive {
 		switch blkStats.Op {
 		case "read":
@@ -169,7 +169,7 @@ func (s *DockerService) ContainerStats(ctx context.Context, id string) (*Contain
 		if blkStats.Op == "read" || blkStats.Op == "write" {
 			key := fmt.Sprintf("%d:%d", blkStats.Major, blkStats.Minor)
 			if _, ok := blockDetailMap[key]; !ok {
-				blockDetailMap[key] = &BlockDetail{
+				blockDetailMap[key] = &StatsBlockDetail{
 					Major: blkStats.Major,
 					Minor: blkStats.Minor,
 				}
@@ -181,7 +181,8 @@ func (s *DockerService) ContainerStats(ctx context.Context, id string) (*Contain
 			}
 		}
 	}
-	var blockDetail []*BlockDetail
+
+	var blockDetail []*StatsBlockDetail
 	for _, detail := range blockDetailMap {
 		blockDetail = append(blockDetail, detail)
 	}

@@ -7,9 +7,8 @@ import (
 
 	"github.com/compose-spec/compose-go/v2/types"
 	"github.com/docker/docker/api/types/container"
+	dockerswarm "github.com/docker/docker/api/types/swarm"
 	dockerspec "github.com/moby/docker-image-spec/specs-go/v1"
-
-	"isrvd/pkgs/swarm"
 )
 
 // ProjectFromDockerInspect 将 docker inspect 结果反推为单服务 compose Project
@@ -46,7 +45,7 @@ func ProjectFromDockerInspect(info container.InspectResponse, imageConfig *docke
 		CapDrop:       []string(info.HostConfig.CapDrop),
 		Restart:       restartPolicy(string(info.HostConfig.RestartPolicy.Name)),
 		ExtraHosts:    extraHostsToMap(info.HostConfig.ExtraHosts),
-		Labels:        info.Config.Labels,
+		Labels:        diffLabels(info.Config.Labels, imageConfig),
 	}
 
 	applyInspectDNS(&svc, info)
@@ -62,49 +61,53 @@ func ProjectFromDockerInspect(info container.InspectResponse, imageConfig *docke
 	}, nil
 }
 
-// ProjectFromSwarmInspect 将 ServiceInfo 反推为单服务 compose Project
-func ProjectFromSwarmInspect(info *swarm.ServiceInfo) (*types.Project, error) {
-	if info == nil || info.Image == "" {
+// ProjectFromSwarmInspect 将 swarm Service 原始配置反推为单服务 compose Project
+func ProjectFromSwarmInspect(svc dockerswarm.Service) (*types.Project, error) {
+	spec := svc.Spec
+	cs := spec.TaskTemplate.ContainerSpec
+	if cs == nil || cs.Image == "" {
 		return nil, fmt.Errorf("swarm 服务数据不完整")
 	}
 
-	name := defaultString(info.Name, info.ID)
-	svc := types.ServiceConfig{
+	name := defaultString(spec.Name, svc.ID)
+	composeSvc := types.ServiceConfig{
 		Name:        name,
-		Image:       info.Image,
-		Environment: sliceToEnv(info.Env),
-		Command:     types.ShellCommand(info.Args),
-		Labels:      info.Labels,
+		Image:       cs.Image,
+		Environment: sliceToEnv(cs.Env),
+		Command:     types.ShellCommand(cs.Args),
+		Labels:      spec.Labels,
 	}
 
-	// deploy
-	if info.Mode == "global" {
-		svc.Deploy = &types.DeployConfig{Mode: "global"}
-	} else if info.Replicas != nil {
-		r := int(*info.Replicas)
-		svc.Deploy = &types.DeployConfig{Mode: "replicated", Replicas: &r}
+	// deploy: mode / replicas / constraints
+	if spec.Mode.Global != nil {
+		composeSvc.Deploy = &types.DeployConfig{Mode: "global"}
+	} else if spec.Mode.Replicated != nil {
+		r := int(*spec.Mode.Replicated.Replicas)
+		composeSvc.Deploy = &types.DeployConfig{Mode: "replicated", Replicas: &r}
 	}
-	if len(info.Constraints) > 0 {
-		if svc.Deploy == nil {
-			svc.Deploy = &types.DeployConfig{}
+	if spec.TaskTemplate.Placement != nil && len(spec.TaskTemplate.Placement.Constraints) > 0 {
+		if composeSvc.Deploy == nil {
+			composeSvc.Deploy = &types.DeployConfig{}
 		}
-		svc.Deploy.Placement.Constraints = info.Constraints
+		composeSvc.Deploy.Placement.Constraints = spec.TaskTemplate.Placement.Constraints
 	}
 
 	// ports
-	for _, p := range info.Ports {
-		svc.Ports = append(svc.Ports, types.ServicePortConfig{
-			Target:    p.TargetPort,
-			Published: strconv.Itoa(int(p.PublishedPort)),
-			Protocol:  defaultString(p.Protocol, "tcp"),
-			Mode:      defaultString(p.PublishMode, "ingress"),
-		})
+	if spec.EndpointSpec != nil {
+		for _, p := range spec.EndpointSpec.Ports {
+			composeSvc.Ports = append(composeSvc.Ports, types.ServicePortConfig{
+				Target:    p.TargetPort,
+				Published: strconv.Itoa(int(p.PublishedPort)),
+				Protocol:  defaultString(string(p.Protocol), "tcp"),
+				Mode:      defaultString(string(p.PublishMode), "ingress"),
+			})
+		}
 	}
 
 	// volumes
-	for _, m := range info.Mounts {
-		svc.Volumes = append(svc.Volumes, types.ServiceVolumeConfig{
-			Type:     m.Type,
+	for _, m := range cs.Mounts {
+		composeSvc.Volumes = append(composeSvc.Volumes, types.ServiceVolumeConfig{
+			Type:     string(m.Type),
 			Source:   m.Source,
 			Target:   m.Target,
 			ReadOnly: m.ReadOnly,
@@ -113,18 +116,19 @@ func ProjectFromSwarmInspect(info *swarm.ServiceInfo) (*types.Project, error) {
 
 	// networks
 	var projectNetworks types.Networks
-	if len(info.Networks) > 0 {
-		svc.Networks = make(map[string]*types.ServiceNetworkConfig, len(info.Networks))
-		projectNetworks = make(types.Networks, len(info.Networks))
-		for _, n := range info.Networks {
-			svc.Networks[n] = &types.ServiceNetworkConfig{}
-			projectNetworks[n] = types.NetworkConfig{Name: n, Driver: "overlay"}
+	if len(spec.TaskTemplate.Networks) > 0 {
+		composeSvc.Networks = make(map[string]*types.ServiceNetworkConfig, len(spec.TaskTemplate.Networks))
+		projectNetworks = make(types.Networks, len(spec.TaskTemplate.Networks))
+		for _, n := range spec.TaskTemplate.Networks {
+			netCfg := &types.ServiceNetworkConfig{Aliases: n.Aliases}
+			composeSvc.Networks[n.Target] = netCfg
+			projectNetworks[n.Target] = types.NetworkConfig{Name: n.Target, Driver: "overlay"}
 		}
 	}
 
 	return &types.Project{
 		Name:     name,
-		Services: types.Services{name: svc},
+		Services: types.Services{name: composeSvc},
 		Networks: projectNetworks,
 	}, nil
 }
@@ -265,6 +269,24 @@ func diffEnv(containerEnv []string, imageConfig *dockerspec.DockerOCIImageConfig
 		if _, ok := imageEnvSet[e]; !ok {
 			result = append(result, e)
 		}
+	}
+	return result
+}
+
+// diffLabels 过滤掉镜像默认 Labels（Dockerfile LABEL），只保留容器层新增或覆盖的标签
+func diffLabels(containerLabels map[string]string, imageConfig *dockerspec.DockerOCIImageConfig) map[string]string {
+	if imageConfig == nil || len(containerLabels) == 0 {
+		return containerLabels
+	}
+	var result map[string]string
+	for k, v := range containerLabels {
+		if imgV, ok := imageConfig.Labels[k]; ok && imgV == v {
+			continue // 与镜像默认值相同，跳过
+		}
+		if result == nil {
+			result = make(map[string]string)
+		}
+		result[k] = v
 	}
 	return result
 }

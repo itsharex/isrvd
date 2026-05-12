@@ -11,12 +11,11 @@ import (
 
 // NetworkInfo Docker 网络信息
 type NetworkInfo struct {
-	ID      string   `json:"id"`
-	Name    string   `json:"name"`
-	Driver  string   `json:"driver"`
-	Subnet  string   `json:"subnet"`
-	Scope   string   `json:"scope"`
-	Network []string `json:"networks,omitempty"`
+	ID      string `json:"id"`
+	Name    string `json:"name"`
+	Driver  string `json:"driver"`
+	Subnet  string `json:"subnet"`
+	Scope   string `json:"scope"`
 }
 
 // NetworkList 列出网络
@@ -63,8 +62,8 @@ func (s *DockerService) NetworkAction(ctx context.Context, id, action string) er
 	return nil
 }
 
-// NetworkCreateRequest 创建网络请求
-type NetworkCreateRequest struct {
+// NetworkSpec 创建网络请求
+type NetworkSpec struct {
 	Name   string `json:"name" binding:"required"`
 	Driver string `json:"driver"`
 	Subnet string `json:"subnet"`
@@ -95,8 +94,8 @@ type NetworkContainerInfo struct {
 	MacAddress string `json:"macAddress"`
 }
 
-// NetworkInspectResponse 网络详情响应
-type NetworkInspectResponse struct {
+// NetworkDetail 网络详情响应
+type NetworkDetail struct {
 	ID         string                  `json:"id"`
 	Name       string                  `json:"name"`
 	Driver     string                  `json:"driver"`
@@ -109,7 +108,7 @@ type NetworkInspectResponse struct {
 }
 
 // NetworkInspect 获取网络详情
-func (s *DockerService) NetworkInspect(ctx context.Context, id string) (*NetworkInspectResponse, error) {
+func (s *DockerService) NetworkInspect(ctx context.Context, id string) (*NetworkDetail, error) {
 	networkInfo, err := s.client.NetworkInspect(ctx, id, network.InspectOptions{})
 	if err != nil {
 		logman.Error("Network inspect failed", "id", id, "error", err)
@@ -136,7 +135,7 @@ func (s *DockerService) NetworkInspect(ctx context.Context, id string) (*Network
 		})
 	}
 
-	result := &NetworkInspectResponse{
+	result := &NetworkDetail{
 		ID:         networkInfo.ID,
 		Name:       networkInfo.Name,
 		Driver:     networkInfo.Driver,

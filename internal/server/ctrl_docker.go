@@ -6,7 +6,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/rehiy/libgo/websocket"
 
-	
 	svcDocker "isrvd/internal/service/docker"
 	pkgdocker "isrvd/pkgs/docker"
 )
@@ -59,7 +58,7 @@ func (app *App) dockerInfo(c *gin.Context) {
 		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	respondSuccess(c, "Docker info retrieved", result)
+	respondSuccess(c, "获取 Docker 信息成功", result)
 }
 
 func (app *App) dockerContainerList(c *gin.Context) {
@@ -69,11 +68,11 @@ func (app *App) dockerContainerList(c *gin.Context) {
 		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	respondSuccess(c, "Containers listed successfully", result)
+	respondSuccess(c, "获取容器列表成功", result)
 }
 
 func (app *App) dockerContainerCreate(c *gin.Context) {
-	var req pkgdocker.ContainerCreateRequest
+	var req pkgdocker.ContainerSpec
 	if err := c.ShouldBindJSON(&req); err != nil {
 		respondError(c, http.StatusBadRequest, err.Error())
 		return
@@ -93,7 +92,7 @@ func (app *App) dockerContainerStats(c *gin.Context) {
 		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	respondSuccess(c, "Container stats retrieved", result)
+	respondSuccess(c, "获取容器统计成功", result)
 }
 
 func (app *App) dockerContainerAction(c *gin.Context) {
@@ -108,7 +107,7 @@ func (app *App) dockerContainerAction(c *gin.Context) {
 		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	respondSuccess(c, "Container "+req.Action+" successfully", nil)
+	respondSuccess(c, "容器操作成功", nil)
 }
 
 func (app *App) dockerContainerLogs(c *gin.Context) {
@@ -118,7 +117,7 @@ func (app *App) dockerContainerLogs(c *gin.Context) {
 		Follow: c.DefaultQuery("follow", "false") == "true",
 	}
 	if req.ID == "" {
-		respondError(c, http.StatusBadRequest, "container id is required")
+		respondError(c, http.StatusBadRequest, "缺少容器 ID")
 		return
 	}
 	result, err := app.dockerSvc.ContainerLogs(c.Request.Context(), req)
@@ -126,14 +125,14 @@ func (app *App) dockerContainerLogs(c *gin.Context) {
 		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	respondSuccess(c, "Container logs retrieved", result)
+	respondSuccess(c, "获取容器日志成功", result)
 }
 
 func (app *App) dockerContainerExec(c *gin.Context) {
 	containerID := c.Param("id")
 	shell := c.DefaultQuery("shell", "/bin/sh")
 	if containerID == "" {
-		respondError(c, http.StatusBadRequest, "缺少容器ID")
+		respondError(c, http.StatusBadRequest, "缺少容器 ID")
 		return
 	}
 
@@ -152,7 +151,7 @@ func (app *App) dockerImageList(c *gin.Context) {
 		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	respondSuccess(c, "Images listed successfully", result)
+	respondSuccess(c, "获取镜像列表成功", result)
 }
 
 func (app *App) dockerImageAction(c *gin.Context) {
@@ -167,7 +166,7 @@ func (app *App) dockerImageAction(c *gin.Context) {
 		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	respondSuccess(c, "Image "+req.Action+" successfully", nil)
+	respondSuccess(c, "镜像操作成功", nil)
 }
 
 func (app *App) dockerImageTag(c *gin.Context) {
@@ -191,7 +190,7 @@ func (app *App) dockerImageSearch(c *gin.Context) {
 		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	respondSuccess(c, "Images searched successfully", result)
+	respondSuccess(c, "搜索镜像成功", result)
 }
 
 func (app *App) dockerImageBuild(c *gin.Context) {
@@ -215,7 +214,7 @@ func (app *App) dockerImageInspect(c *gin.Context) {
 		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	respondSuccess(c, "Image detail retrieved", result)
+	respondSuccess(c, "获取镜像详情成功", result)
 }
 
 // ─── 网络 ───
@@ -226,7 +225,7 @@ func (app *App) dockerNetworkList(c *gin.Context) {
 		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	respondSuccess(c, "Networks listed successfully", result)
+	respondSuccess(c, "获取网络列表成功", result)
 }
 
 func (app *App) dockerNetworkAction(c *gin.Context) {
@@ -241,11 +240,11 @@ func (app *App) dockerNetworkAction(c *gin.Context) {
 		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	respondSuccess(c, "Network "+req.Action+" successfully", nil)
+	respondSuccess(c, "网络操作成功", nil)
 }
 
 func (app *App) dockerNetworkCreate(c *gin.Context) {
-	var req pkgdocker.NetworkCreateRequest
+	var req pkgdocker.NetworkSpec
 	if err := c.ShouldBindJSON(&req); err != nil {
 		respondError(c, http.StatusBadRequest, err.Error())
 		return
@@ -265,7 +264,7 @@ func (app *App) dockerNetworkInspect(c *gin.Context) {
 		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	respondSuccess(c, "Network detail retrieved", result)
+	respondSuccess(c, "获取网络详情成功", result)
 }
 
 // ─── 卷 ───
@@ -276,7 +275,7 @@ func (app *App) dockerVolumeList(c *gin.Context) {
 		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	respondSuccess(c, "Volumes listed successfully", result)
+	respondSuccess(c, "获取卷列表成功", result)
 }
 
 func (app *App) dockerVolumeAction(c *gin.Context) {
@@ -291,11 +290,11 @@ func (app *App) dockerVolumeAction(c *gin.Context) {
 		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	respondSuccess(c, "Volume "+req.Action+" successfully", nil)
+	respondSuccess(c, "卷操作成功", nil)
 }
 
 func (app *App) dockerVolumeCreate(c *gin.Context) {
-	var req pkgdocker.VolumeCreateRequest
+	var req pkgdocker.VolumeSpec
 	if err := c.ShouldBindJSON(&req); err != nil {
 		respondError(c, http.StatusBadRequest, err.Error())
 		return
@@ -315,13 +314,13 @@ func (app *App) dockerVolumeInspect(c *gin.Context) {
 		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	respondSuccess(c, "Volume detail retrieved", result)
+	respondSuccess(c, "获取卷详情成功", result)
 }
 
 // ─── 镜像仓库 ───
 
 func (app *App) dockerRegistryList(c *gin.Context) {
-	respondSuccess(c, "Registries listed successfully", app.dockerSvc.RegistryList())
+	respondSuccess(c, "获取仓库列表成功", app.dockerSvc.RegistryList())
 }
 
 func (app *App) dockerRegistryCreate(c *gin.Context) {

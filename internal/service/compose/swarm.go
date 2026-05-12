@@ -57,12 +57,12 @@ func (s *Service) SwarmContentGet(ctx context.Context, name string) (string, err
 	}
 
 	// 文件不存在，从运行态反推（仅能反推单服务）
-	info, err := s.swarm.ServiceInspect(ctx, name)
+	raw, err := s.swarm.ServiceInspectRaw(ctx, name)
 	if err != nil {
 		return "", err
 	}
 
-	project, err := compose.ProjectFromSwarmInspect(info)
+	project, err := compose.ProjectFromSwarmInspect(raw)
 	if err != nil {
 		return "", err
 	}

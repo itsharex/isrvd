@@ -8,7 +8,7 @@ import (
 )
 
 // ImageList 列出镜像
-func (s *Service) ImageList(ctx context.Context, all bool) (any, error) {
+func (s *Service) ImageList(ctx context.Context, all bool) ([]*pkgdocker.ImageInfo, error) {
 	return s.docker.ImageList(ctx, all)
 }
 
@@ -23,7 +23,7 @@ func (s *Service) ImageTag(ctx context.Context, req pkgdocker.ImageTagRequest) e
 }
 
 // ImageSearch 搜索镜像
-func (s *Service) ImageSearch(ctx context.Context, term string) (any, error) {
+func (s *Service) ImageSearch(ctx context.Context, term string) ([]*pkgdocker.ImageSearchResult, error) {
 	if term == "" {
 		return nil, fmt.Errorf("搜索关键词不能为空")
 	}
@@ -40,7 +40,7 @@ func (s *Service) ImageBuild(ctx context.Context, req pkgdocker.ImageBuildReques
 }
 
 // ImageInspect 获取镜像详情
-func (s *Service) ImageInspect(ctx context.Context, id string) (any, error) {
+func (s *Service) ImageInspect(ctx context.Context, id string) (*pkgdocker.ImageDetail, error) {
 	if id == "" {
 		return nil, fmt.Errorf("镜像ID不能为空")
 	}

@@ -60,8 +60,8 @@ func (s *DockerService) VolumeAction(ctx context.Context, name, action string) e
 	return nil
 }
 
-// VolumeCreateRequest 创建卷请求
-type VolumeCreateRequest struct {
+// VolumeSpec 创建卷请求
+type VolumeSpec struct {
 	Name   string `json:"name" binding:"required"`
 	Driver string `json:"driver"`
 }
@@ -90,8 +90,8 @@ type VolumeUsedByContainer struct {
 	ReadOnly  bool   `json:"readOnly"`
 }
 
-// VolumeInspectResponse 数据卷详情响应
-type VolumeInspectResponse struct {
+// VolumeDetail 数据卷详情响应
+type VolumeDetail struct {
 	Name       string                   `json:"name"`
 	Driver     string                   `json:"driver"`
 	Mountpoint string                   `json:"mountpoint"`
@@ -103,7 +103,7 @@ type VolumeInspectResponse struct {
 }
 
 // VolumeInspect 获取卷详情
-func (s *DockerService) VolumeInspect(ctx context.Context, name string) (*VolumeInspectResponse, error) {
+func (s *DockerService) VolumeInspect(ctx context.Context, name string) (*VolumeDetail, error) {
 	volInfo, err := s.client.VolumeInspect(ctx, name)
 	if err != nil {
 		logman.Error("Volume inspect failed", "name", name, "error", err)
@@ -132,7 +132,7 @@ func (s *DockerService) VolumeInspect(ctx context.Context, name string) (*Volume
 		}
 	}
 
-	result := &VolumeInspectResponse{
+	result := &VolumeDetail{
 		Name:       volInfo.Name,
 		Driver:     volInfo.Driver,
 		Mountpoint: volInfo.Mountpoint,

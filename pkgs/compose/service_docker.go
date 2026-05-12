@@ -10,17 +10,17 @@ import (
 	"isrvd/pkgs/docker"
 )
 
-// ServiceToDockerRequest 将 compose ServiceConfig 转换为 docker.ContainerCreateRequest
-// 只覆盖 ContainerCreateRequest 已有的字段，未覆盖的 compose 特性
+// ServiceToDockerRequest 将 compose ServiceConfig 转换为 docker.ContainerSpec
+// 只覆盖 ContainerSpec 已有的字段，未覆盖的 compose 特性
 // (healthcheck / ulimits / sysctls 等) 保持忽略，后续按需扩展即可。
 // project 用于将 service.Networks 的 key 解析为顶层 networks.<key>.name 指定的真实 docker 网络名。
-func ServiceToDockerRequest(project *types.Project, svc types.ServiceConfig) (docker.ContainerCreateRequest, error) {
+func ServiceToDockerRequest(project *types.Project, svc types.ServiceConfig) (docker.ContainerSpec, error) {
 	if svc.Image == "" {
-		return docker.ContainerCreateRequest{}, fmt.Errorf("service %q 缺少 image", svc.Name)
+		return docker.ContainerSpec{}, fmt.Errorf("service %q 缺少 image", svc.Name)
 	}
 
 	name := defaultString(svc.ContainerName, svc.Name)
-	req := docker.ContainerCreateRequest{
+	req := docker.ContainerSpec{
 		Image:      svc.Image,
 		Name:       name,
 		Cmd:        []string(svc.Command),
@@ -43,7 +43,7 @@ func ServiceToDockerRequest(project *types.Project, svc types.ServiceConfig) (do
 	return req, nil
 }
 
-func applyDockerNetwork(project *types.Project, svc types.ServiceConfig, req *docker.ContainerCreateRequest) {
+func applyDockerNetwork(project *types.Project, svc types.ServiceConfig, req *docker.ContainerSpec) {
 	if req.Network != "" {
 		return
 	}
@@ -53,7 +53,7 @@ func applyDockerNetwork(project *types.Project, svc types.ServiceConfig, req *do
 	}
 }
 
-func applyDockerPorts(svc types.ServiceConfig, req *docker.ContainerCreateRequest) {
+func applyDockerPorts(svc types.ServiceConfig, req *docker.ContainerSpec) {
 	if len(svc.Ports) == 0 {
 		return
 	}
@@ -74,7 +74,7 @@ func applyDockerPorts(svc types.ServiceConfig, req *docker.ContainerCreateReques
 	}
 }
 
-func applyDockerVolumes(svc types.ServiceConfig, req *docker.ContainerCreateRequest) {
+func applyDockerVolumes(svc types.ServiceConfig, req *docker.ContainerSpec) {
 	for _, v := range svc.Volumes {
 		if v.Source == "" || v.Target == "" {
 			continue
@@ -96,7 +96,7 @@ func applyDockerVolumes(svc types.ServiceConfig, req *docker.ContainerCreateRequ
 	}
 }
 
-func applyDockerResources(svc types.ServiceConfig, req *docker.ContainerCreateRequest) {
+func applyDockerResources(svc types.ServiceConfig, req *docker.ContainerSpec) {
 	if svc.Deploy != nil && svc.Deploy.Resources.Limits != nil {
 		lim := svc.Deploy.Resources.Limits
 		if lim.MemoryBytes > 0 {

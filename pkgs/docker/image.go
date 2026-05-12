@@ -189,8 +189,8 @@ type ImageLayerInfo struct {
 	Empty     bool   `json:"empty"`     // 是否为空层（无文件变更）
 }
 
-// ImageInspectResponse 镜像详情响应
-type ImageInspectResponse struct {
+// ImageDetail 镜像详情响应
+type ImageDetail struct {
 	ID           string            `json:"id"`
 	ShortID      string            `json:"shortId"`
 	RepoTags     []string          `json:"repoTags"`
@@ -248,7 +248,7 @@ func (s *DockerService) ImageConfig(ctx context.Context, imageRef string) (*dock
 }
 
 // ImageInspect 获取镜像详情
-func (s *DockerService) ImageInspect(ctx context.Context, id string) (*ImageInspectResponse, error) {
+func (s *DockerService) ImageInspect(ctx context.Context, id string) (*ImageDetail, error) {
 	img, err := s.client.ImageInspect(ctx, id)
 	if err != nil {
 		logman.Error("Inspect image failed", "id", id, "error", err)
@@ -314,7 +314,7 @@ func (s *DockerService) ImageInspect(ctx context.Context, id string) (*ImageInsp
 		labels = img.Config.Labels
 	}
 
-	result := &ImageInspectResponse{
+	result := &ImageDetail{
 		ID:           img.ID,
 		ShortID:      shortID,
 		RepoTags:     img.RepoTags,

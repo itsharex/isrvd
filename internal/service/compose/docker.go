@@ -76,7 +76,7 @@ func (s *Service) DockerDeploy(ctx context.Context, req DeployRequest) (*DeployR
 
 	for _, svc := range project.Services {
 		cname := dockerContainerNameOf(svc)
-		if _, err := s.docker.ContainerInspect(ctx, cname); err == nil {
+		if _, err := s.docker.ContainerInspectRaw(ctx, cname); err == nil {
 			return nil, fmt.Errorf("容器 %s 已存在，请先移除", cname)
 		}
 	}
@@ -125,7 +125,7 @@ func (s *Service) DockerContentGet(ctx context.Context, name string) (string, er
 	}
 
 	// 文件不存在，从运行态反推
-	info, err := s.docker.ContainerInspect(ctx, name)
+	info, err := s.docker.ContainerInspectRaw(ctx, name)
 	if err != nil {
 		return "", fmt.Errorf("compose 文件不存在且读取运行态失败: %w", err)
 	}

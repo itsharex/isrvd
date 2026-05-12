@@ -5,7 +5,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	
 	pkgswarm "isrvd/pkgs/swarm"
 )
 
@@ -37,7 +36,7 @@ func (app *App) swarmInfo(c *gin.Context) {
 		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	respondSuccess(c, "Swarm info retrieved", result)
+	respondSuccess(c, "获取 Swarm 信息成功", result)
 }
 
 func (app *App) swarmNodeList(c *gin.Context) {
@@ -46,7 +45,7 @@ func (app *App) swarmNodeList(c *gin.Context) {
 		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	respondSuccess(c, "Nodes listed", result)
+	respondSuccess(c, "获取节点列表成功", result)
 }
 
 func (app *App) swarmNodeInspect(c *gin.Context) {
@@ -56,7 +55,7 @@ func (app *App) swarmNodeInspect(c *gin.Context) {
 		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	respondSuccess(c, "Node detail retrieved", result)
+	respondSuccess(c, "获取节点详情成功", result)
 }
 
 func (app *App) swarmNodeAction(c *gin.Context) {
@@ -71,7 +70,7 @@ func (app *App) swarmNodeAction(c *gin.Context) {
 		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	respondSuccess(c, "Node updated", nil)
+	respondSuccess(c, "节点操作成功", nil)
 }
 
 func (app *App) swarmServiceList(c *gin.Context) {
@@ -80,7 +79,7 @@ func (app *App) swarmServiceList(c *gin.Context) {
 		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	respondSuccess(c, "Services listed", result)
+	respondSuccess(c, "获取服务列表成功", result)
 }
 
 func (app *App) swarmServiceInspect(c *gin.Context) {
@@ -90,7 +89,7 @@ func (app *App) swarmServiceInspect(c *gin.Context) {
 		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	respondSuccess(c, "Service detail retrieved", result)
+	respondSuccess(c, "获取服务详情成功", result)
 }
 
 func (app *App) swarmServiceCreate(c *gin.Context) {
@@ -104,7 +103,7 @@ func (app *App) swarmServiceCreate(c *gin.Context) {
 		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	respondSuccess(c, "Service created", gin.H{"id": id})
+	respondSuccess(c, "服务创建成功", gin.H{"id": id})
 }
 
 func (app *App) swarmServiceAction(c *gin.Context) {
@@ -120,7 +119,7 @@ func (app *App) swarmServiceAction(c *gin.Context) {
 		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	respondSuccess(c, "Service "+req.Action+" successfully", nil)
+	respondSuccess(c, "服务操作成功", nil)
 }
 
 func (app *App) swarmServiceForceUpdate(c *gin.Context) {
@@ -128,7 +127,7 @@ func (app *App) swarmServiceForceUpdate(c *gin.Context) {
 		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	respondSuccess(c, "Service force updated", nil)
+	respondSuccess(c, "服务强制更新成功", nil)
 }
 
 func (app *App) swarmServiceLogs(c *gin.Context) {
@@ -139,7 +138,7 @@ func (app *App) swarmServiceLogs(c *gin.Context) {
 		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	respondSuccess(c, "Logs retrieved", gin.H{"logs": logs})
+	respondSuccess(c, "获取日志成功", gin.H{"logs": logs})
 }
 
 func (app *App) swarmTaskList(c *gin.Context) {
@@ -149,7 +148,7 @@ func (app *App) swarmTaskList(c *gin.Context) {
 		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	respondSuccess(c, "Tasks listed", result)
+	respondSuccess(c, "获取任务列表成功", result)
 }
 
 func (app *App) swarmJoinToken(c *gin.Context) {
@@ -158,5 +157,5 @@ func (app *App) swarmJoinToken(c *gin.Context) {
 		respondError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	respondSuccess(c, "Join tokens retrieved", result)
+	respondSuccess(c, "获取加入令牌成功", result)
 }

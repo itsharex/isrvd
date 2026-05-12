@@ -23,7 +23,7 @@ type VolumeMapping struct {
 	ReadOnly      bool   `json:"readOnly"`
 }
 
-// ContainerInfo Docker 容器信息
+// ContainerInfo Docker 容器信息（列表项）
 type ContainerInfo struct {
 	ID       string            `json:"id"`
 	Name     string            `json:"name"`
@@ -35,6 +35,30 @@ type ContainerInfo struct {
 	Created  int64             `json:"created"`
 	IsSwarm  bool              `json:"isSwarm,omitempty"`
 	Labels   map[string]string `json:"labels,omitempty"`
+}
+
+// ContainerDetail 容器详情（inspect DTO，与 ServiceDetail 对称）
+type ContainerDetail struct {
+	ID         string            `json:"id"`
+	Name       string            `json:"name"`
+	Image      string            `json:"image"`
+	State      string            `json:"state"`
+	CreatedAt  string            `json:"createdAt"`
+	Cmd        []string          `json:"cmd,omitempty"`
+	Env        []string          `json:"env,omitempty"`
+	Ports      map[string]string `json:"ports,omitempty"`
+	Volumes    []VolumeMapping   `json:"volumes,omitempty"`
+	Network    string            `json:"network,omitempty"`
+	Restart    string            `json:"restart,omitempty"`
+	Memory     int64             `json:"memory,omitempty"`
+	Cpus       float64           `json:"cpus,omitempty"`
+	Workdir    string            `json:"workdir,omitempty"`
+	User       string            `json:"user,omitempty"`
+	Hostname   string            `json:"hostname,omitempty"`
+	Privileged bool              `json:"privileged,omitempty"`
+	CapAdd     []string          `json:"capAdd,omitempty"`
+	CapDrop    []string          `json:"capDrop,omitempty"`
+	Labels     map[string]string `json:"labels,omitempty"`
 }
 
 // ContainerList 获取容器列表
@@ -74,14 +98,71 @@ func (s *DockerService) ContainerList(ctx context.Context, all bool) ([]*Contain
 	return result, nil
 }
 
-// ContainerInspect 获取容器详细配置（运行态快照依赖此接口）
-func (s *DockerService) ContainerInspect(ctx context.Context, id string) (container.InspectResponse, error) {
+// ContainerInspectRaw 获取容器原始配置（返回 Docker SDK 原始类型，供 compose 转换使用）
+func (s *DockerService) ContainerInspectRaw(ctx context.Context, id string) (container.InspectResponse, error) {
 	info, err := s.client.ContainerInspect(ctx, id)
 	if err != nil {
 		logman.Error("Inspect container failed", "id", id, "error", err)
 		return container.InspectResponse{}, err
 	}
 	return info, nil
+}
+
+// ContainerInspect 获取容器详情（返回业务 DTO，供 API 层使用）
+func (s *DockerService) ContainerInspect(ctx context.Context, id string) (*ContainerDetail, error) {
+	info, err := s.ContainerInspectRaw(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	if info.Config == nil || info.HostConfig == nil {
+		return nil, fmt.Errorf("容器数据不完整")
+	}
+
+	// 端口映射
+	ports := make(map[string]string)
+	for containerPort, bindings := range info.HostConfig.PortBindings {
+		for _, b := range bindings {
+			hostPort := b.HostPort
+			if b.HostIP != "" && b.HostIP != "0.0.0.0" {
+				hostPort = b.HostIP + ":" + hostPort
+			}
+			ports[hostPort+"/"+containerPort.Proto()] = containerPort.Port()
+		}
+	}
+
+	// 挂载
+	var volumes []VolumeMapping
+	for _, m := range info.Mounts {
+		volumes = append(volumes, VolumeMapping{
+			Type:          string(m.Type),
+			Source:        m.Source,
+			ContainerPath: m.Destination,
+			ReadOnly:      !m.RW,
+		})
+	}
+
+	return &ContainerDetail{
+		ID:         ShortID(info.ID),
+		Name:       strings.TrimPrefix(info.Name, "/"),
+		Image:      info.Config.Image,
+		State:      info.State.Status,
+		CreatedAt:  info.Created,
+		Cmd:        info.Config.Cmd,
+		Env:        info.Config.Env,
+		Ports:      ports,
+		Volumes:    volumes,
+		Network:    string(info.HostConfig.NetworkMode),
+		Restart:    string(info.HostConfig.RestartPolicy.Name),
+		Memory:     info.HostConfig.Memory / (1024 * 1024),
+		Cpus:       float64(info.HostConfig.NanoCPUs) / 1e9,
+		Workdir:    info.Config.WorkingDir,
+		User:       info.Config.User,
+		Hostname:   info.Config.Hostname,
+		Privileged: info.HostConfig.Privileged,
+		CapAdd:     []string(info.HostConfig.CapAdd),
+		CapDrop:    []string(info.HostConfig.CapDrop),
+		Labels:     info.Config.Labels,
+	}, nil
 }
 
 // ContainerActionRequest 容器操作请求
@@ -155,8 +236,8 @@ type ContainerLogsRequest struct {
 	Follow bool   `json:"follow"`
 }
 
-// ContainerCreateRequest 创建容器请求
-type ContainerCreateRequest struct {
+// ContainerSpec 容器可写配置（创建/更新共用）
+type ContainerSpec struct {
 	Image      string            `json:"image" binding:"required"`
 	Name       string            `json:"name" binding:"required"`
 	Cmd        []string          `json:"cmd"`
@@ -176,7 +257,7 @@ type ContainerCreateRequest struct {
 }
 
 // ContainerCreate 创建容器
-func (s *DockerService) ContainerCreate(ctx context.Context, req ContainerCreateRequest) (string, error) {
+func (s *DockerService) ContainerCreate(ctx context.Context, req ContainerSpec) (string, error) {
 	containerConfig := &container.Config{
 		Image:      req.Image,
 		Cmd:        req.Cmd,
@@ -286,7 +367,7 @@ func (s *DockerService) ContainerCreate(ctx context.Context, req ContainerCreate
 }
 
 // ContainerUpdate 更新容器配置并重建
-func (s *DockerService) ContainerUpdate(ctx context.Context, req ContainerCreateRequest) (string, error) {
+func (s *DockerService) ContainerUpdate(ctx context.Context, req ContainerSpec) (string, error) {
 	// 查找并停止旧容器
 	containers, err := s.client.ContainerList(ctx, container.ListOptions{All: true})
 	if err != nil {

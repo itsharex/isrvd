@@ -8,7 +8,7 @@ import (
 )
 
 // NetworkList 列出网络
-func (s *Service) NetworkList(ctx context.Context) (any, error) {
+func (s *Service) NetworkList(ctx context.Context) ([]*pkgdocker.NetworkInfo, error) {
 	return s.docker.NetworkList(ctx)
 }
 
@@ -18,7 +18,7 @@ func (s *Service) NetworkAction(ctx context.Context, req pkgdocker.NetworkAction
 }
 
 // NetworkCreate 创建网络
-func (s *Service) NetworkCreate(ctx context.Context, req pkgdocker.NetworkCreateRequest) (map[string]string, error) {
+func (s *Service) NetworkCreate(ctx context.Context, req pkgdocker.NetworkSpec) (map[string]string, error) {
 	id, err := s.docker.NetworkCreate(ctx, req.Name, req.Driver)
 	if err != nil {
 		return nil, err
@@ -27,7 +27,7 @@ func (s *Service) NetworkCreate(ctx context.Context, req pkgdocker.NetworkCreate
 }
 
 // NetworkInspect 获取网络详情
-func (s *Service) NetworkInspect(ctx context.Context, id string) (any, error) {
+func (s *Service) NetworkInspect(ctx context.Context, id string) (*pkgdocker.NetworkDetail, error) {
 	if id == "" {
 		return nil, fmt.Errorf("网络ID不能为空")
 	}
@@ -35,7 +35,7 @@ func (s *Service) NetworkInspect(ctx context.Context, id string) (any, error) {
 }
 
 // VolumeList 列出卷
-func (s *Service) VolumeList(ctx context.Context) (any, error) {
+func (s *Service) VolumeList(ctx context.Context) ([]*pkgdocker.VolumeInfo, error) {
 	return s.docker.VolumeList(ctx)
 }
 
@@ -45,7 +45,7 @@ func (s *Service) VolumeAction(ctx context.Context, req pkgdocker.VolumeActionRe
 }
 
 // VolumeCreate 创建卷
-func (s *Service) VolumeCreate(ctx context.Context, req pkgdocker.VolumeCreateRequest) (map[string]string, error) {
+func (s *Service) VolumeCreate(ctx context.Context, req pkgdocker.VolumeSpec) (map[string]string, error) {
 	name, mountpoint, err := s.docker.VolumeCreate(ctx, req.Name, req.Driver)
 	if err != nil {
 		return nil, err
@@ -54,7 +54,7 @@ func (s *Service) VolumeCreate(ctx context.Context, req pkgdocker.VolumeCreateRe
 }
 
 // VolumeInspect 获取卷详情
-func (s *Service) VolumeInspect(ctx context.Context, name string) (any, error) {
+func (s *Service) VolumeInspect(ctx context.Context, name string) (*pkgdocker.VolumeDetail, error) {
 	if name == "" {
 		return nil, fmt.Errorf("卷名称不能为空")
 	}
