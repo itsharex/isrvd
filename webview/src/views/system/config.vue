@@ -2,7 +2,7 @@
 import { Component, Vue, toNative } from 'vue-facing-decorator'
 
 import api from '@/service/api'
-import type { AllConfig, ServerConfig, AgentConfig, ApisixConfig, DockerConfig, MarketplaceConfig, LinkConfig } from '@/service/types'
+import type { AllConfig, ServerConfig, AgentConfig, OIDCConfig, ApisixConfig, DockerConfig, MarketplaceConfig, LinkConfig } from '@/service/types'
 
 import IconSelect from '@/component/icon-select.vue'
 
@@ -15,9 +15,11 @@ class Config extends Vue {
   // ─── 数据属性 ───
   loading = false
   saving = false
-  activeTab: 'server' | 'agent' | 'app' | 'links' = 'server'
+  activeTab: 'server' | 'agent' | 'oidc' | 'app' | 'links' = 'server'
 
   server: ServerConfig = { debug: false, listenAddr: '', proxyHeaderName: '', rootDirectory: '' }
+  oidc: OIDCConfig = { enabled: false, issuerUrl: '', clientId: '', redirectUrl: '', usernameClaim: 'preferred_username', scopes: ['openid', 'profile', 'email'] }
+  oidcScopes = 'openid profile email'
   agent: AgentConfig = { model: '', baseUrl: '' }
   apisix: ApisixConfig = { adminUrl: '' }
   docker: DockerConfig = { host: '', containerRoot: '' }
@@ -31,6 +33,8 @@ class Config extends Vue {
       const res = await api.systemConfig(reload ? { reload: 'true' } : undefined)
       const payload = res.payload as AllConfig
       this.server = { ...payload.server }
+      this.oidc = { ...(payload.oidc || { enabled: false, issuerUrl: '', clientId: '', redirectUrl: '', usernameClaim: 'preferred_username', scopes: ['openid', 'profile', 'email'] }) }
+      this.oidcScopes = (this.oidc.scopes || []).join(' ')
       this.agent = { ...payload.agent }
       this.apisix = { ...payload.apisix }
       this.docker = { ...payload.docker }
@@ -50,13 +54,14 @@ class Config extends Vue {
     try {
       await api.systemConfigUpdate({
         server: this.server,
+        oidc: { ...this.oidc, scopes: this.oidcScopes.split(/\s+/).filter(Boolean) },
         agent: this.agent,
         apisix: this.apisix,
         docker: this.docker,
         marketplace: this.marketplace,
         links: this.links,
       })
-      this.portal.showNotification('success', '全部配置已保存，部分项需重启生效')
+      this.portal.showNotification('success', '全部配置已保存，监听地址等选项需重启生效')
       this.loadConfig()
     } catch { }
     this.saving = false
@@ -92,7 +97,7 @@ export default toNative(Config)
             </div>
             <div>
               <h1 class="text-lg font-semibold text-slate-800">系统配置</h1>
-              <p class="text-xs text-slate-500">服务器、Agent、APISIX、Docker 配置</p>
+              <p class="text-xs text-slate-500">服务器、OIDC、Agent、APISIX、Docker 配置</p>
             </div>
           </div>
           <div class="flex items-center gap-3">
@@ -100,6 +105,9 @@ export default toNative(Config)
             <div class="bg-slate-100 p-1 rounded-lg flex items-center gap-0.5">
               <button type="button" :class="['px-3 py-1 rounded-md text-xs font-medium transition-colors', activeTab === 'server' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700']" @click="activeTab = 'server'">
                 <i class="fas fa-server mr-1"></i>全局
+              </button>
+              <button type="button" :class="['px-3 py-1 rounded-md text-xs font-medium transition-colors', activeTab === 'oidc' ? 'bg-white text-purple-600 shadow-sm' : 'text-slate-500 hover:text-slate-700']" @click="activeTab = 'oidc'">
+                <i class="fas fa-id-card mr-1"></i>OIDC
               </button>
               <button type="button" :class="['px-3 py-1 rounded-md text-xs font-medium transition-colors', activeTab === 'agent' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700']" @click="activeTab = 'agent'">
                 <i class="fas fa-robot mr-1"></i>Agent
@@ -124,7 +132,7 @@ export default toNative(Config)
             </div>
             <div class="min-w-0">
               <h1 class="text-lg font-semibold text-slate-800 truncate">系统配置</h1>
-              <p class="text-xs text-slate-500 truncate">服务器、Agent、APISIX、Docker 配置</p>
+              <p class="text-xs text-slate-500 truncate">服务器、OIDC、Agent、APISIX、Docker 配置</p>
             </div>
           </div>
           <button type="button" class="w-9 h-9 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-600 transition-colors flex-shrink-0" title="重载配置" @click="loadConfig(true)">
@@ -135,6 +143,9 @@ export default toNative(Config)
         <div class="flex md:hidden mt-3 bg-slate-100 p-1 rounded-lg gap-0.5 overflow-x-auto">
           <button type="button" :class="['flex-1 min-w-0 px-2 py-0.5 rounded-md text-xs font-medium transition-colors whitespace-nowrap', activeTab === 'server' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500']" @click="activeTab = 'server'">
             <i class="fas fa-server mr-1"></i>全局
+          </button>
+          <button type="button" :class="['flex-1 min-w-0 px-2 py-0.5 rounded-md text-xs font-medium transition-colors whitespace-nowrap', activeTab === 'oidc' ? 'bg-white text-purple-600 shadow-sm' : 'text-slate-500']" @click="activeTab = 'oidc'">
+            <i class="fas fa-id-card mr-1"></i>OIDC
           </button>
           <button type="button" :class="['flex-1 min-w-0 px-2 py-0.5 rounded-md text-xs font-medium transition-colors whitespace-nowrap', activeTab === 'agent' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500']" @click="activeTab = 'agent'">
             <i class="fas fa-robot mr-1"></i>Agent
@@ -183,6 +194,45 @@ export default toNative(Config)
             <label class="block text-sm font-medium text-slate-700 mb-1.5">内网代理认证 Header</label>
             <input v-model="server.proxyHeaderName" type="text" placeholder="例如 X-Auth-User（留空禁用）" class="input" />
             <p class="mt-1 text-xs text-slate-400">启用时，将使用上游传入的 Header {{ server.proxyHeaderName }} 值作为登录用户</p>
+          </div>
+        </section>
+
+        <!-- OIDC 配置 -->
+        <section v-if="activeTab === 'oidc'" class="max-w-3xl space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1.5">启用 OIDC 登录</label>
+            <select v-model="oidc.enabled" class="input">
+              <option :value="false">禁用</option>
+              <option :value="true">启用</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1.5">Issuer URL</label>
+            <input v-model="oidc.issuerUrl" type="text" placeholder="https://idp.example.com" class="input" />
+            <p class="mt-1 text-xs text-slate-400">OIDC Provider 的 issuer 地址，用于自动发现 authorization_endpoint、token_endpoint、jwks_uri 等元数据；保存后立即生效</p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1.5">Client ID</label>
+            <input v-model="oidc.clientId" type="text" placeholder="isrvd" class="input" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1.5">Client Secret</label>
+            <input v-model="oidc.clientSecret" type="password" placeholder="留空保持不变" class="input" autocomplete="new-password" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1.5">Redirect URL</label>
+            <input v-model="oidc.redirectUrl" type="text" placeholder="https://isrvd.example.com/api/account/oidc/callback" class="input" />
+            <p class="mt-1 text-xs text-slate-400">留空时按当前请求 Host 自动生成 /api/account/oidc/callback</p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1.5">用户名 Claim</label>
+            <input v-model="oidc.usernameClaim" type="text" placeholder="preferred_username" class="input" />
+            <p class="mt-1 text-xs text-slate-400">该 Claim 的值必须与 members.username 完全一致；用户不存在时登录失败</p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1.5">Scopes</label>
+            <input v-model="oidcScopes" type="text" placeholder="openid profile email" class="input" />
+            <p class="mt-1 text-xs text-slate-400">以空格分隔；系统会自动确保包含 openid</p>
           </div>
         </section>
 

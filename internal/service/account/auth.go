@@ -77,17 +77,19 @@ func (s *Service) AuthInfo(username string) *AuthInfoResponse {
 		mode = "header"
 	}
 	return &AuthInfoResponse{
-		Mode:     mode,
-		Username: username,
-		Member:   s.MemberInspect(username),
+		Mode:        mode,
+		Username:    username,
+		Member:      s.MemberInspect(username),
+		OIDCEnabled: config.OIDC.Enabled,
 	}
 }
 
 // AuthInfoResponse 认证模式及当前用户信息
 type AuthInfoResponse struct {
-	Mode     string      `json:"mode"`
-	Username string      `json:"username,omitempty"`
-	Member   *MemberInfo `json:"member,omitempty"`
+	Mode        string      `json:"mode"`
+	Username    string      `json:"username,omitempty"`
+	Member      *MemberInfo `json:"member,omitempty"`
+	OIDCEnabled bool        `json:"oidcEnabled"`
 }
 
 // LoginRequest 登录请求
@@ -110,6 +112,21 @@ func (s *Service) Login(req LoginRequest) (*LoginResponse, error) {
 		return nil, fmt.Errorf("invalid credentials")
 	}
 
+	resp, err := s.IssueLoginToken(req.Username)
+	if err != nil {
+		return nil, err
+	}
+	logman.Info("User logged in", "username", req.Username)
+	return resp, nil
+}
+
+// IssueLoginToken 为已存在成员签发登录 JWT Token
+func (s *Service) IssueLoginToken(username string) (*LoginResponse, error) {
+	member, exists := config.Members[username]
+	if !exists {
+		return nil, fmt.Errorf("用户不存在")
+	}
+
 	// 密码 hash 后 8 位作为校验，修改密码后 token 自动失效
 	// 注意：bcrypt hash 前 7 位是固定格式（如 $2a$10$），后 8 位会随每次密码重置而变化
 	pwd := ""
@@ -118,7 +135,7 @@ func (s *Service) Login(req LoginRequest) (*LoginResponse, error) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"sub": req.Username,
+		"sub": username,
 		"iat": time.Now().Unix(),
 		"exp": time.Now().Add(time.Duration(config.Server.JWTExpiration) * time.Second).Unix(),
 		"pwd": pwd,
@@ -128,8 +145,7 @@ func (s *Service) Login(req LoginRequest) (*LoginResponse, error) {
 		return nil, fmt.Errorf("token 生成失败: %w", err)
 	}
 
-	logman.Info("User logged in", "username", req.Username)
-	return &LoginResponse{Token: tokenString, Username: req.Username}, nil
+	return &LoginResponse{Token: tokenString, Username: username}, nil
 }
 
 // CreateApiTokenRequest 创建 API Token 请求
@@ -182,13 +198,7 @@ func (s *Service) ApiTokenCreate(username string, req CreateApiTokenRequest) (*C
 // JwtUsernameExtract 从 Authorization Header（或 WebSocket query）中解析 JWT，
 // 返回有效且存在于成员列表中的用户名；否则返回空字符串
 func (s *Service) JwtUsernameExtract(c *gin.Context) string {
-	authHeader := c.GetHeader("Authorization")
-	tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
-
-	// WebSocket 连接时允许从 query 参数获取 token
-	if tokenStr == "" && c.GetHeader("Upgrade") == "websocket" {
-		tokenStr = c.Query("token")
-	}
+	tokenStr := s.extractJwtToken(c)
 	if tokenStr == "" {
 		return ""
 	}

@@ -10,6 +10,7 @@ import type {
     // Account
     AuthLogin,
     AuthLoginResult,
+    OIDCExchange,
     AuthInfo,
     MemberInfo,
     MemberUpsert,
@@ -98,6 +99,10 @@ class ApiService {
 
     accountLogin(data: AuthLogin) {
         return http.post<AuthLoginResult>('/api/account/login', data)
+    }
+
+    accountOIDCExchange(data: OIDCExchange) {
+        return http.post<AuthLoginResult>('/api/account/oidc/exchange', data)
     }
 
     accountInfo() {

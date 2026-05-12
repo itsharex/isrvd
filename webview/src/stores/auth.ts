@@ -13,6 +13,7 @@ export const useAuthStore = defineStore('auth', () => {
     const permissionsLoaded = ref(false)
     const founder = ref(false)
     const permissions = ref<string[]>([])
+    const oidcEnabled = ref(false)
 
     // ─── 操作定义 ───
 
@@ -51,14 +52,23 @@ export const useAuthStore = defineStore('auth', () => {
             authMode.value = 'jwt'
         }
 
-        // 验证认证
-        const authRes = await api.accountInfo()
+        // 验证认证（网络错误时不清除已有 token，避免抖动导致误登出）
+        let authRes
+        try {
+            authRes = await api.accountInfo()
+        } catch {
+            // 网络层异常：保持现有登录状态，不清空 token
+            return
+        }
+
         if (!authRes?.payload) {
+            // 后端明确返回无 payload（如 401），说明 token 确实无效
             clearAuth()
             return
         }
 
         const payload = authRes.payload as AuthInfo
+        oidcEnabled.value = payload.oidcEnabled || false
 
         // 核心原则：无 username 或无 member = 无权限，直接清理
         if (!payload?.username || !payload?.member) {
@@ -83,6 +93,7 @@ export const useAuthStore = defineStore('auth', () => {
         permissionsLoaded,
         founder,
         permissions,
+        oidcEnabled,
         // 操作
         setAuth,
         clearAuth,

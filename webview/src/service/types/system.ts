@@ -30,6 +30,17 @@ export interface AgentConfig {
     apiKey?: string
 }
 
+export interface OIDCConfig {
+    enabled: boolean
+    issuerUrl: string
+    clientId: string
+    // 写入时为空表示保留原值（不通过 JSON 返回）
+    clientSecret?: string
+    redirectUrl: string
+    usernameClaim: string
+    scopes: string[]
+}
+
 export interface ApisixConfig {
     adminUrl: string
     // 写入时为空表示保留原值（不通过 JSON 返回）
@@ -62,6 +73,7 @@ export interface LinkConfig {
 export interface AllConfig {
     server: ServerConfig
     agent: AgentConfig
+    oidc: OIDCConfig
     apisix: ApisixConfig
     docker: DockerConfig
     marketplace: MarketplaceConfig

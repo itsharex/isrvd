@@ -5,6 +5,8 @@ import "path/filepath"
 var (
 	// Server 服务器配置
 	Server = ServerNormalize(nil)
+	// OIDC 配置
+	OIDC = OIDCNormalize(nil)
 	// Agent LLM 配置
 	Agent = &AgentConfig{}
 	// Apisix 配置
@@ -41,6 +43,7 @@ func Save() error {
 
 	conf := &Config{
 		Server:      Server,
+		OIDC:        OIDC,
 		Agent:       Agent,
 		Apisix:      Apisix,
 		Docker:      Docker,
@@ -59,6 +62,8 @@ func Apply(conf *Config) {
 	}
 
 	Server = ServerNormalize(conf.Server)
+
+	OIDC = OIDCNormalize(conf.OIDC)
 
 	if conf.Agent != nil {
 		Agent = conf.Agent
@@ -117,4 +122,18 @@ func ServerNormalize(server *ServerConfig) *ServerConfig {
 		}
 	}
 	return server
+}
+
+// OIDCNormalize 填充 OIDC 默认值
+func OIDCNormalize(oidc *OIDCConfig) *OIDCConfig {
+	if oidc == nil {
+		oidc = &OIDCConfig{}
+	}
+	if oidc.UsernameClaim == "" {
+		oidc.UsernameClaim = "preferred_username"
+	}
+	if len(oidc.Scopes) == 0 {
+		oidc.Scopes = []string{"openid", "profile", "email"}
+	}
+	return oidc
 }

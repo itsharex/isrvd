@@ -63,7 +63,7 @@ isrvd_token "$ISRVD_APIURL" "$ISRVD_APITOKEN"
 |------|----------|
 | [docs/system/overview.md](docs/system/overview.md) | 服务探测、系统资源统计 |
 | [docs/system/config.md](docs/system/config.md) | 系统配置、审计日志 |
-| [docs/system/account.md](docs/system/account.md) | 登录、成员管理、权限、API Token |
+| [docs/system/account.md](docs/system/account.md) | 登录、OIDC 登录、成员管理、权限、API Token |
 | [docs/system/filer.md](docs/system/filer.md) | 文件 CRUD、上传下载、压缩解压 |
 
 ---
@@ -102,7 +102,7 @@ isrvd_token "$ISRVD_APIURL" "$ISRVD_APITOKEN"
 │
 └── 管理
     ├── 镜像仓库         → docs/docker/registries.md
-    ├── 成员/权限/Token  → docs/system/account.md
+    ├── 成员/权限/Token/OIDC 登录 → docs/system/account.md
     ├── 文件管理         → docs/system/filer.md
     └── Web 终端         → GET /api/shell (WebSocket)
 ```

@@ -10,6 +10,7 @@ import UserMenu from '@/component/user-menu.vue'
 
 import AuthLogin from '@/views/account/login.vue'
 
+import api from '@/service/api'
 import { usePortal } from '@/stores'
 
 @Component({
@@ -25,7 +26,44 @@ class App extends Vue {
         this.navigationRef?.toggleMobileSidebar()
     }
 
+    /**
+     * 处理 OIDC 回调（Fragment 中的 oidc_code / oidc_error）
+     * 放在 App 入口而非 Login 组件，确保已登录状态下也能处理。
+     */
+    async handleOIDCCallback() {
+        const hash = window.location.hash.slice(1)
+        if (!hash) return
+
+        const params = new URLSearchParams(hash)
+
+        const error = params.get('oidc_error')
+        if (error) {
+            // 清除 Fragment，避免刷新时重复处理
+            window.history.replaceState({}, document.title, window.location.pathname + window.location.search)
+            this.portal.showNotification('error', error)
+            return
+        }
+
+        const code = params.get('oidc_code')
+        if (!code) return
+
+        // 立即清除 Fragment，缩短 loginCode 的暴露窗口
+        window.history.replaceState({}, document.title, window.location.pathname + window.location.search)
+
+        try {
+            const { payload } = await api.accountOIDCExchange({ code })
+            if (!payload) return
+
+            this.portal.setAuth({ authMode: 'jwt', ...payload })
+            await this.portal.initialize()
+        } catch {
+            this.portal.showNotification('error', 'OIDC 登录失败，请重试')
+        }
+    }
+
     async mounted() {
+        // OIDC 回调需在 initialize 之前处理，确保 token 已就位
+        await this.handleOIDCCallback()
         await this.portal.initialize()
     }
 }

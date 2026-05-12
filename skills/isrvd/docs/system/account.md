@@ -6,7 +6,7 @@
 isrvd_get "/account/info"
 ```
 
-返回：`{mode, username, member}`
+返回：`{mode, username, member, oidcEnabled}`
 
 ## 登录
 
@@ -14,9 +14,28 @@ isrvd_get "/account/info"
 isrvd_post "/account/login" '{"username":"<USER>","password":"<PASS>"}'
 ```
 
-返回：`{"token": "eyJ..."}`
+返回：`{"token": "eyJ...", "username": "<USER>"}`
 
 > 通常使用 `isrvd_login` 命令而非直接调用此接口。
+
+## OIDC 登录
+
+```bash
+# 浏览器跳转，完成 OIDC Authorization Code Flow
+GET /api/account/oidc/login
+```
+
+回调路径：`GET /api/account/oidc/callback`。登录成功后重定向到 `/?oidc_code=<CODE>`；失败重定向到 `/?oidc_error=<ERROR>`。
+
+用一次性登录码换取系统 JWT：
+
+```bash
+isrvd_post "/account/oidc/exchange" '{"code":"<OIDC_CODE>"}'
+```
+
+返回：`{"token": "eyJ...", "username": "<USER>"}`
+
+> OIDC 提取的用户名由 `oidc.usernameClaim` 指定，必须存在于 `members.username`；不存在时与 Header 认证一致，登录失败且不会自动创建成员。
 
 ## 列出路由权限
 

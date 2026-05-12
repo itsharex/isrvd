@@ -4,6 +4,7 @@ go 1.25.0
 
 require (
 	github.com/compose-spec/compose-go/v2 v2.10.2
+	github.com/coreos/go-oidc/v3 v3.18.0
 	github.com/creack/pty v1.1.24
 	github.com/docker/docker v28.5.2+incompatible
 	github.com/docker/go-connections v0.7.0
@@ -13,6 +14,7 @@ require (
 	github.com/moby/docker-image-spec v1.3.1
 	github.com/rehiy/libgo v0.14.1
 	github.com/shirou/gopsutil/v3 v3.24.5
+	golang.org/x/oauth2 v0.36.0
 )
 
 require (
@@ -35,6 +37,7 @@ require (
 	github.com/forgoer/openssl v1.8.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.13 // indirect
 	github.com/gin-contrib/sse v1.1.1 // indirect
+	github.com/go-jose/go-jose/v4 v4.1.4 // indirect
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-ole/go-ole v1.3.0 // indirect

@@ -3,10 +3,10 @@ package server
 import (
 	"errors"
 	"net/http"
+	"net/url"
 
 	"github.com/gin-gonic/gin"
 
-	
 	"isrvd/internal/service/account"
 )
 
@@ -15,6 +15,9 @@ func (app *App) defineAccountRoutes() []Route {
 	return []Route{
 		{Method: "GET", Path: "/account/info", Handler: app.accountAuthInfo, Module: "account", Label: "获取认证信息", Access: account.AccessAnon},
 		{Method: "POST", Path: "/account/login", Handler: app.accountLogin, Module: "account", Label: "登录账户", Access: account.AccessAnon},
+		{Method: "GET", Path: "/account/oidc/login", Handler: app.accountOIDCLogin, Module: "account", Label: "OIDC 登录", Access: account.AccessAnon},
+		{Method: "GET", Path: "/account/oidc/callback", Handler: app.accountOIDCCallback, Module: "account", Label: "OIDC 回调", Access: account.AccessAnon},
+		{Method: "POST", Path: "/account/oidc/exchange", Handler: app.accountOIDCExchange, Module: "account", Label: "OIDC 登录码交换", Access: account.AccessAnon},
 		{Method: "GET", Path: "/account/routes", Handler: app.accountRouteList, Module: "account", Label: "列出路由权限", Access: account.AccessAuth},
 		{Method: "POST", Path: "/account/token", Handler: app.accountApiTokenCreate, Module: "account", Label: "创建 API 令牌"},
 		{Method: "PUT", Path: "/account/password", Handler: app.accountPasswordChange, Module: "account", Label: "修改密码", Access: account.AccessAuth},
@@ -49,6 +52,44 @@ func (app *App) accountLogin(c *gin.Context) {
 		return
 	}
 	resp, err := app.accountSvc.Login(req)
+	if err != nil {
+		respondError(c, http.StatusUnauthorized, err.Error())
+		return
+	}
+	respondSuccess(c, "登录成功", resp)
+}
+
+// accountOIDCLogin 跳转到 OIDC Provider 登录页
+func (app *App) accountOIDCLogin(c *gin.Context) {
+	loginURL, err := app.accountSvc.OIDCLoginURL(c)
+	if err != nil {
+		respondError(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	c.Redirect(http.StatusFound, loginURL)
+}
+
+// accountOIDCCallback 处理 OIDC Provider 回调
+func (app *App) accountOIDCCallback(c *gin.Context) {
+	code, err := app.accountSvc.OIDCCallback(c)
+	if err != nil {
+		// 通过 URL Fragment 传递错误，不出现在服务器 Referer 日志中
+		// 错误消息已由 service 层脱敏，不含内部细节
+		c.Redirect(http.StatusFound, "/#oidc_error="+url.QueryEscape(err.Error()))
+		return
+	}
+	// loginCode 放入 Fragment（不发送到服务器、不进浏览器历史）
+	c.Redirect(http.StatusFound, "/#oidc_code="+url.QueryEscape(code))
+}
+
+// accountOIDCExchange 使用一次性登录码换取 JWT Token
+func (app *App) accountOIDCExchange(c *gin.Context) {
+	var req account.OIDCExchangeRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		respondError(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	resp, err := app.accountSvc.OIDCExchange(req.Code)
 	if err != nil {
 		respondError(c, http.StatusUnauthorized, err.Error())
 		return

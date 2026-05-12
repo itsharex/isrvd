@@ -4,6 +4,7 @@ export interface AuthInfo {
     mode: 'jwt' | 'header'
     username?: string
     member?: MemberInfo
+    oidcEnabled: boolean
 }
 
 export interface AuthLogin {
@@ -14,6 +15,10 @@ export interface AuthLogin {
 export interface AuthLoginResult {
     token: string
     username: string
+}
+
+export interface OIDCExchange {
+    code: string
 }
 
 // ─── 路由权限 ───

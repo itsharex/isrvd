@@ -3,6 +3,7 @@ package config
 // 配置结构
 type Config struct {
 	Server      *ServerConfig      `yaml:"server"`
+	OIDC        *OIDCConfig        `yaml:"oidc"`
 	Agent       *AgentConfig       `yaml:"agent"`
 	Apisix      *ApisixConfig      `yaml:"apisix"`
 	Docker      *DockerConfig      `yaml:"docker"`
@@ -15,25 +16,36 @@ type Config struct {
 type ServerConfig struct {
 	Debug           bool     `yaml:"debug" json:"debug"`
 	ListenAddr      string   `yaml:"listenAddr" json:"listenAddr"`
-	JWTSecret       string   `yaml:"jwtSecret" json:"-"`                 // 敏感字段不序列化到 JSON
-	JWTExpiration   int64    `yaml:"jwtExpiration" json:"jwtExpiration"` // JWT 过期时间（秒），默认 86400
-	MaxUploadSize   int64    `yaml:"maxUploadSize" json:"maxUploadSize"` // 文件上传最大大小（字节），默认 100MB
+	JWTSecret       string   `yaml:"jwtSecret" json:"jwtSecret,omitempty"` // 写入时为空表示保留原值；响应时不返回
+	JWTExpiration   int64    `yaml:"jwtExpiration" json:"jwtExpiration"`   // JWT 过期时间（秒），默认 86400
+	MaxUploadSize   int64    `yaml:"maxUploadSize" json:"maxUploadSize"`   // 文件上传最大大小（字节），默认 100MB
 	ProxyHeaderName string   `yaml:"proxyHeaderName" json:"proxyHeaderName"`
 	RootDirectory   string   `yaml:"rootDirectory" json:"rootDirectory"`
 	AllowedOrigins  []string `yaml:"allowedOrigins" json:"allowedOrigins"` // 允许的 Origin 列表（API CORS + WebSocket），支持通配符 *
 }
 
+// OIDC 配置
+type OIDCConfig struct {
+	Enabled       bool     `yaml:"enabled" json:"enabled"`
+	IssuerURL     string   `yaml:"issuerUrl" json:"issuerUrl"`
+	ClientID      string   `yaml:"clientId" json:"clientId"`
+	ClientSecret  string   `yaml:"clientSecret" json:"clientSecret,omitempty"` // 写入时为空表示保留原值；响应时不返回
+	RedirectURL   string   `yaml:"redirectUrl" json:"redirectUrl"`
+	UsernameClaim string   `yaml:"usernameClaim" json:"usernameClaim"`
+	Scopes        []string `yaml:"scopes" json:"scopes"`
+}
+
 // Agent LLM 配置
 type AgentConfig struct {
-	Model   string `yaml:"model" json:"model"`     // 模型名称
-	BaseURL string `yaml:"baseUrl" json:"baseUrl"` // LLM API 基础地址（OpenAI 兼容）
-	APIKey  string `yaml:"apiKey" json:"-"`        // API 密钥（敏感字段不序列化到 JSON）
+	Model   string `yaml:"model" json:"model"`             // 模型名称
+	BaseURL string `yaml:"baseUrl" json:"baseUrl"`         // LLM API 基础地址（OpenAI 兼容）
+	APIKey  string `yaml:"apiKey" json:"apiKey,omitempty"` // 写入时为空表示保留原值；响应时不返回
 }
 
 // Apisix 配置
 type ApisixConfig struct {
-	AdminURL string `yaml:"adminUrl" json:"adminUrl"` // Apisix Admin API 地址
-	AdminKey string `yaml:"adminKey" json:"-"`        // Apisix Admin API Key（敏感字段不序列化到 JSON）
+	AdminURL string `yaml:"adminUrl" json:"adminUrl"`           // Apisix Admin API 地址
+	AdminKey string `yaml:"adminKey" json:"adminKey,omitempty"` // 写入时为空表示保留原值；响应时不返回
 }
 
 // Docker 配置
@@ -45,11 +57,11 @@ type DockerConfig struct {
 
 // 镜像仓库配置
 type DockerRegistry struct {
-	Name        string `yaml:"name" json:"name"`               // 仓库名称（用于显示）
-	Description string `yaml:"description" json:"description"` // 仓库描述（可选）
-	URL         string `yaml:"url" json:"url"`                 // 仓库地址，如 registry.example.com
-	Username    string `yaml:"username" json:"username"`       // 用户名（可选）
-	Password    string `yaml:"password" json:"-"`              // 密码（敏感字段不序列化到 JSON）
+	Name        string `yaml:"name" json:"name"`                   // 仓库名称（用于显示）
+	Description string `yaml:"description" json:"description"`     // 仓库描述（可选）
+	URL         string `yaml:"url" json:"url"`                     // 仓库地址，如 registry.example.com
+	Username    string `yaml:"username" json:"username"`           // 用户名（可选）
+	Password    string `yaml:"password" json:"password,omitempty"` // 写入时为空表示保留原值；响应时不返回
 }
 
 // 应用市场配置

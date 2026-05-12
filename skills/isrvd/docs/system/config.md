@@ -19,8 +19,9 @@ isrvd_get "/system/config"
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
-| server | object | `{debug, listenAddr, proxyHeaderName, rootDirectory}` |
+| server | object | `{debug, listenAddr, jwtExpiration, maxUploadSize, proxyHeaderName, rootDirectory, allowedOrigins}`（jwtSecret 不返回） |
 | agent | object | `{model, baseUrl}`（apiKey 不返回） |
+| oidc | object | `{enabled, issuerUrl, clientId, redirectUrl, usernameClaim, scopes}`（clientSecret 不返回） |
 | apisix | object | `{adminUrl}`（adminKey 不返回） |
 | docker | object | `{host, containerRoot, registries}` |
 | marketplace | object | `{url}` |

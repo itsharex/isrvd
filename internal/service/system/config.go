@@ -2,7 +2,6 @@
 package system
 
 import (
-	"encoding/json"
 	"fmt"
 
 	"isrvd/config"
@@ -11,6 +10,7 @@ import (
 // AllConfigResponse 全部配置聚合响应
 type AllConfigResponse struct {
 	Server      *config.ServerConfig      `json:"server"`
+	OIDC        *config.OIDCConfig        `json:"oidc"`
 	Agent       *config.AgentConfig       `json:"agent"`
 	Apisix      *config.ApisixConfig      `json:"apisix"`
 	Docker      *config.DockerConfig      `json:"docker"`
@@ -21,6 +21,7 @@ type AllConfigResponse struct {
 // UpdateAllConfigRequest 全量更新请求
 type UpdateAllConfigRequest struct {
 	Server      *config.ServerConfig      `json:"server"`
+	OIDC        *config.OIDCConfig        `json:"oidc"`
 	Agent       *config.AgentConfig       `json:"agent"`
 	Apisix      *config.ApisixConfig      `json:"apisix"`
 	Docker      *config.DockerConfig      `json:"docker"`
@@ -44,28 +45,44 @@ func pickSecret(newVal, oldVal string) string {
 	return newVal
 }
 
-// ConfigAll 获取全部配置
+// ConfigAll 获取全部配置（显式拷贝，过滤敏感字段）
 func (s *ConfigService) ConfigAll() *AllConfigResponse {
-	resp := &AllConfigResponse{
-		Server:      config.Server,
-		Agent:       config.Agent,
-		Apisix:      config.Apisix,
+	srv := config.Server
+	oidc := config.OIDC
+
+	return &AllConfigResponse{
+		Server: &config.ServerConfig{
+			Debug:           srv.Debug,
+			ListenAddr:      srv.ListenAddr,
+			JWTExpiration:   srv.JWTExpiration,
+			MaxUploadSize:   srv.MaxUploadSize,
+			ProxyHeaderName: srv.ProxyHeaderName,
+			RootDirectory:   srv.RootDirectory,
+			AllowedOrigins:  srv.AllowedOrigins,
+			// JWTSecret 不返回
+		},
+		OIDC: &config.OIDCConfig{
+			Enabled:       oidc.Enabled,
+			IssuerURL:     oidc.IssuerURL,
+			ClientID:      oidc.ClientID,
+			RedirectURL:   oidc.RedirectURL,
+			UsernameClaim: oidc.UsernameClaim,
+			Scopes:        oidc.Scopes,
+			// ClientSecret 不返回
+		},
+		Agent: &config.AgentConfig{
+			Model:   config.Agent.Model,
+			BaseURL: config.Agent.BaseURL,
+			// APIKey 不返回
+		},
+		Apisix: &config.ApisixConfig{
+			AdminURL: config.Apisix.AdminURL,
+			// AdminKey 不返回
+		},
 		Docker:      config.Docker,
 		Marketplace: config.Marketplace,
 		Links:       config.Links,
 	}
-
-	data, err := json.Marshal(resp)
-	if err != nil {
-		return resp
-	}
-
-	var result AllConfigResponse
-	if err := json.Unmarshal(data, &result); err != nil {
-		return resp
-	}
-
-	return &result
 }
 
 // ConfigUpdateAll 一次性更新全部配置（任何 nil 分区将跳过）
@@ -73,6 +90,10 @@ func (s *ConfigService) ConfigUpdateAll(req UpdateAllConfigRequest) error {
 	if req.Server != nil {
 		req.Server.JWTSecret = pickSecret(req.Server.JWTSecret, config.Server.JWTSecret)
 		config.Server = config.ServerNormalize(req.Server)
+	}
+	if req.OIDC != nil {
+		req.OIDC.ClientSecret = pickSecret(req.OIDC.ClientSecret, config.OIDC.ClientSecret)
+		config.OIDC = config.OIDCNormalize(req.OIDC)
 	}
 	if req.Agent != nil {
 		config.Agent.Model = req.Agent.Model

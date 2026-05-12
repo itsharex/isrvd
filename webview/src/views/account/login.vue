@@ -25,6 +25,11 @@ class Login extends Vue {
         this.loginForm.username = ''
         this.loginForm.password = ''
     }
+
+    handleOIDCLogin() {
+        const baseURL = window.__BASE_URL__ || ''
+        window.location.href = `${baseURL}/api/account/oidc/login`
+    }
 }
 
 export default toNative(Login)
@@ -91,6 +96,21 @@ export default toNative(Login)
             <i v-else class="fas fa-sign-in-alt mr-2"></i>
             {{ portal.loading ? '登录中...' : '登录' }}
           </button>
+
+          <template v-if="portal.oidcEnabled">
+            <div class="relative py-1">
+              <div class="absolute inset-0 flex items-center">
+                <div class="w-full border-t border-slate-200"></div>
+              </div>
+              <div class="relative flex justify-center text-xs">
+                <span class="bg-white px-2 text-slate-400">或</span>
+              </div>
+            </div>
+            <button type="button" class="btn btn-secondary w-full py-3 text-base font-semibold" @click="handleOIDCLogin">
+              <i class="fas fa-right-to-bracket mr-2"></i>
+              使用 OIDC 登录
+            </button>
+          </template>
         </form>
       </div>
 
