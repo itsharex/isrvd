@@ -17,69 +17,94 @@
   /* white → 卡片色（比 slate-100 稍暗，与页面底色拉开层次）*/
   --color-white: oklch(16% 0.025 264);
 
-  /* 语义色浅色阶：避免 bg-*-50 / border-*-200 / text-*-700 在暗色模式过亮 */
-  --color-primary-50:  rgba(14, 165, 233, 0.16);
-  --color-primary-100: rgba(14, 165, 233, 0.24);
-  --color-primary-200: rgba(14, 165, 233, 0.36);
-  --color-primary-300: rgba(56, 189, 248, 0.48);
-  --color-primary-700: #7dd3fc;
+  /* 语义色浅色阶：暗色模式下用于 badge / hover / soft panel，避免浅色底过亮 */
+  --color-primary-50:  rgba(14, 165, 233, 0.10);
+  --color-primary-100: rgba(14, 165, 233, 0.16);
+  --color-primary-200: rgba(56, 189, 248, 0.30);
+  --color-primary-300: rgba(56, 189, 248, 0.42);
+  --color-primary-500: #38bdf8;
+  --color-primary-600: #7dd3fc;
+  --color-primary-700: #bae6fd;
 
-  --color-blue-50:  rgba(37, 99, 235, 0.20);
-  --color-blue-100: rgba(37, 99, 235, 0.30);
-  --color-blue-200: rgba(59, 130, 246, 0.42);
-  --color-blue-700: #93c5fd;
+  --color-blue-50:  rgba(37, 99, 235, 0.10);
+  --color-blue-100: rgba(37, 99, 235, 0.16);
+  --color-blue-200: rgba(96, 165, 250, 0.30);
+  --color-blue-600: #93c5fd;
+  --color-blue-700: #bfdbfe;
 
-  --color-red-50:  rgba(220, 38, 38, 0.18);
-  --color-red-100: rgba(220, 38, 38, 0.25);
-  --color-red-200: rgba(248, 113, 113, 0.42);
-  --color-red-700: #fca5a5;
+  --color-red-50:  rgba(220, 38, 38, 0.10);
+  --color-red-100: rgba(220, 38, 38, 0.16);
+  --color-red-200: rgba(248, 113, 113, 0.30);
+  --color-red-600: #fca5a5;
+  --color-red-700: #fecaca;
 
-  --color-amber-50:  rgba(217, 119, 6, 0.18);
-  --color-amber-100: rgba(217, 119, 6, 0.24);
-  --color-amber-200: rgba(251, 191, 36, 0.40);
-  --color-amber-700: #fcd34d;
+  --color-amber-50:  rgba(217, 119, 6, 0.10);
+  --color-amber-100: rgba(217, 119, 6, 0.16);
+  --color-amber-200: rgba(251, 191, 36, 0.30);
+  --color-amber-600: #fcd34d;
+  --color-amber-700: #fde68a;
 
-  --color-green-50:  rgba(22, 163, 74, 0.18);
-  --color-green-200: rgba(74, 222, 128, 0.40);
-  --color-green-700: #86efac;
+  --color-green-50:  rgba(22, 163, 74, 0.10);
+  --color-green-100: rgba(22, 163, 74, 0.16);
+  --color-green-200: rgba(74, 222, 128, 0.30);
+  --color-green-600: #86efac;
+  --color-green-700: #bbf7d0;
 
-  --color-emerald-50:  rgba(16, 185, 129, 0.18);
-  --color-emerald-200: rgba(52, 211, 153, 0.40);
-  --color-emerald-300: rgba(52, 211, 153, 0.48);
-  --color-emerald-700: #6ee7b7;
+  --color-emerald-50:  rgba(16, 185, 129, 0.10);
+  --color-emerald-100: rgba(16, 185, 129, 0.16);
+  --color-emerald-200: rgba(52, 211, 153, 0.30);
+  --color-emerald-300: rgba(52, 211, 153, 0.42);
+  --color-emerald-600: #6ee7b7;
+  --color-emerald-700: #a7f3d0;
 
-  --color-cyan-50:  rgba(6, 182, 212, 0.18);
-  --color-cyan-200: rgba(34, 211, 238, 0.40);
-  --color-cyan-700: #67e8f9;
+  --color-cyan-50:  rgba(6, 182, 212, 0.10);
+  --color-cyan-100: rgba(6, 182, 212, 0.16);
+  --color-cyan-200: rgba(34, 211, 238, 0.30);
+  --color-cyan-600: #67e8f9;
+  --color-cyan-700: #a5f3fc;
 
-  --color-indigo-50:  rgba(79, 70, 229, 0.20);
-  --color-indigo-200: rgba(129, 140, 248, 0.40);
-  --color-indigo-300: rgba(129, 140, 248, 0.48);
-  --color-indigo-700: #a5b4fc;
+  --color-indigo-50:  rgba(79, 70, 229, 0.12);
+  --color-indigo-100: rgba(79, 70, 229, 0.18);
+  --color-indigo-200: rgba(129, 140, 248, 0.30);
+  --color-indigo-300: rgba(129, 140, 248, 0.42);
+  --color-indigo-600: #a5b4fc;
+  --color-indigo-700: #c7d2fe;
 
-  --color-violet-50:  rgba(124, 58, 237, 0.20);
-  --color-violet-200: rgba(167, 139, 250, 0.40);
-  --color-violet-700: #c4b5fd;
+  --color-violet-50:  rgba(124, 58, 237, 0.12);
+  --color-violet-100: rgba(124, 58, 237, 0.18);
+  --color-violet-200: rgba(167, 139, 250, 0.30);
+  --color-violet-600: #c4b5fd;
+  --color-violet-700: #ddd6fe;
 
-  --color-purple-50:  rgba(147, 51, 234, 0.20);
-  --color-purple-200: rgba(192, 132, 252, 0.40);
-  --color-purple-700: #d8b4fe;
+  --color-purple-50:  rgba(147, 51, 234, 0.12);
+  --color-purple-100: rgba(147, 51, 234, 0.18);
+  --color-purple-200: rgba(192, 132, 252, 0.30);
+  --color-purple-600: #d8b4fe;
+  --color-purple-700: #e9d5ff;
 
-  --color-rose-50:  rgba(225, 29, 72, 0.18);
-  --color-rose-200: rgba(251, 113, 133, 0.40);
-  --color-rose-700: #fda4af;
+  --color-rose-50:  rgba(225, 29, 72, 0.10);
+  --color-rose-100: rgba(225, 29, 72, 0.16);
+  --color-rose-200: rgba(251, 113, 133, 0.30);
+  --color-rose-600: #fda4af;
+  --color-rose-700: #fecdd3;
 
-  --color-orange-50:  rgba(234, 88, 12, 0.18);
-  --color-orange-200: rgba(251, 146, 60, 0.40);
-  --color-orange-700: #fdba74;
+  --color-orange-50:  rgba(234, 88, 12, 0.10);
+  --color-orange-100: rgba(234, 88, 12, 0.16);
+  --color-orange-200: rgba(251, 146, 60, 0.30);
+  --color-orange-600: #fdba74;
+  --color-orange-700: #fed7aa;
 
-  --color-yellow-50:  rgba(202, 138, 4, 0.20);
-  --color-yellow-200: rgba(250, 204, 21, 0.40);
-  --color-yellow-700: #fde68a;
+  --color-yellow-50:  rgba(202, 138, 4, 0.12);
+  --color-yellow-100: rgba(202, 138, 4, 0.18);
+  --color-yellow-200: rgba(250, 204, 21, 0.30);
+  --color-yellow-600: #fde68a;
+  --color-yellow-700: #fef3c7;
 
-  --color-teal-50:  rgba(13, 148, 136, 0.18);
-  --color-teal-200: rgba(45, 212, 191, 0.40);
-  --color-teal-700: #5eead4;
+  --color-teal-50:  rgba(13, 148, 136, 0.10);
+  --color-teal-100: rgba(13, 148, 136, 0.16);
+  --color-teal-200: rgba(45, 212, 191, 0.30);
+  --color-teal-600: #5eead4;
+  --color-teal-700: #99f6e4;
 
   color-scheme: dark;
 }
