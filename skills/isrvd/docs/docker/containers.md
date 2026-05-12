@@ -22,6 +22,14 @@ isrvd_get "/docker/containers?all=true"
 | isSwarm | boolean | 是否为 Swarm 管理的容器 |
 | labels | object | 标签键值对 |
 
+## 查看容器详情
+
+```bash
+isrvd_get "/docker/container/<CONTAINER_ID>"
+```
+
+返回 `ContainerDetail`，包含基础信息、运行配置、端口映射、挂载、环境变量、标签等字段。
+
 ## 创建容器
 
 ```bash

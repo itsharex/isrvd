@@ -2,7 +2,7 @@
 import { Component, Vue, toNative } from 'vue-facing-decorator'
 
 import api from '@/service/api'
-import type { SwarmServiceInspect, SwarmTask } from '@/service/types'
+import type { SwarmServiceDetail, SwarmTask } from '@/service/types'
 
 import { formatTime } from '@/helper/utils'
 
@@ -13,7 +13,7 @@ class ServiceInfo extends Vue {
     portal = usePortal()
 
     // ─── 数据属性 ───
-    serviceData: SwarmServiceInspect | null = null
+    serviceData: SwarmServiceDetail | null = null
     formatTime = formatTime
     tasks: SwarmTask[] = []
     loading = false

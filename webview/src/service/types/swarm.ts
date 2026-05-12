@@ -23,7 +23,7 @@ export interface SwarmNodeInfo {
 }
 
 // 节点详情
-export interface SwarmNodeInspect {
+export interface SwarmNodeDetail {
     id: string
     hostname: string
     role: string
@@ -70,8 +70,8 @@ export interface SwarmServiceSpec {
     constraints?: string[]
 }
 
-// SwarmServiceInspect 服务详情（SwarmServiceSpec + 运行时信息）
-export interface SwarmServiceInspect extends SwarmServiceSpec {
+// SwarmServiceDetail 服务详情（SwarmServiceSpec + 运行时信息）
+export interface SwarmServiceDetail extends SwarmServiceSpec {
     id: string
     runningTasks: number
     createdAt: string

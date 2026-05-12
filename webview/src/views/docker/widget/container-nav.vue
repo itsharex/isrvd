@@ -75,6 +75,9 @@ export default toNative(ContainerNav)
       </div>
       <div v-if="container" class="flex items-center gap-2">
         <div class="flex gap-1 bg-slate-100 p-1 rounded-lg">
+          <button v-if="portal.hasPerm('GET /api/docker/container/:id')" :class="['px-3 py-1 text-xs font-medium rounded-md transition-all duration-200 flex items-center gap-1.5', activeTab === 'docker-container' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700']" @click="switchTab('docker-container')">
+            <i class="fas fa-circle-info"></i><span>详情</span>
+          </button>
           <button v-if="container.state === 'running' && portal.hasPerm('GET /api/docker/container/:id/stats')" :class="['px-3 py-1 text-xs font-medium rounded-md transition-all duration-200 flex items-center gap-1.5', activeTab === 'docker-container-stats' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700']" @click="switchTab('docker-container-stats')">
             <i class="fas fa-chart-line"></i><span>监控</span>
           </button>
@@ -109,6 +112,9 @@ export default toNative(ContainerNav)
         </div>
       </div>
       <div v-if="container" class="flex justify-center gap-1 bg-slate-100 p-1 rounded-lg">
+        <button v-if="portal.hasPerm('GET /api/docker/container/:id')" :class="['px-3 py-1 text-xs font-medium rounded-md transition-all duration-200 flex items-center gap-1.5', activeTab === 'docker-container' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700']" @click="switchTab('docker-container')">
+          <i class="fas fa-circle-info"></i><span>详情</span>
+        </button>
         <button v-if="container.state === 'running' && portal.hasPerm('GET /api/docker/container/:id/stats')" :class="['px-3 py-1 text-xs font-medium rounded-md transition-all duration-200 flex items-center gap-1.5', activeTab === 'docker-container-stats' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700']" @click="switchTab('docker-container-stats')">
           <i class="fas fa-chart-line"></i><span>监控</span>
         </button>

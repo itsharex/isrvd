@@ -53,6 +53,14 @@ export interface DockerContainerCreate {
     capDrop?: string[]
 }
 
+export interface DockerContainerDetail extends DockerContainerCreate {
+    id: string
+    name: string
+    state: string
+    createdAt: string
+    labels?: Record<string, string>
+}
+
 // 容器 Compose
 export interface DockerContainerCompose {
     content: string
@@ -129,7 +137,7 @@ export interface DockerImageLayerInfo {
     empty: boolean
 }
 
-export interface DockerImageInspect {
+export interface DockerImageDetail {
     id: string
     shortId: string
     repoTags: string[]
@@ -174,7 +182,7 @@ export interface DockerNetworkContainerInfo {
     macAddress: string
 }
 
-export interface DockerNetworkInspect {
+export interface DockerNetworkDetail {
     id: string
     name: string
     driver: string
@@ -209,7 +217,7 @@ export interface DockerVolumeUsedByContainer {
     readOnly: boolean
 }
 
-export interface DockerVolumeInspect {
+export interface DockerVolumeDetail {
     name: string
     driver: string
     mountpoint: string

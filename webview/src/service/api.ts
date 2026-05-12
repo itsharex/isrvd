@@ -40,24 +40,25 @@ import type {
     DockerContainerInfo,
     DockerContainerStats,
     DockerContainerCreate,
+    DockerContainerDetail,
     DockerContainerCompose,
     DockerImageInfo,
-	DockerImageInspect,
+	DockerImageDetail,
     DockerImageSearchResult,
     DockerNetworkInfo,
-	DockerNetworkInspect,
+	DockerNetworkDetail,
     DockerNetworkCreate,
     DockerVolumeInfo,
-	DockerVolumeInspect,
+	DockerVolumeDetail,
     DockerVolumeCreate,
     DockerRegistryInfo,
     DockerRegistryUpsert,
     // Swarm
     SwarmInfo,
     SwarmNodeInfo,
-	SwarmNodeInspect,
+	SwarmNodeDetail,
     SwarmServiceInfo,
-    SwarmServiceInspect,
+    SwarmServiceDetail,
     SwarmTask,
     SwarmCreateService,
     SwarmServiceCompose,
@@ -318,6 +319,10 @@ class ApiService {
         return http.get<DockerContainerInfo[]>('/api/docker/containers', { params: { all } })
     }
 
+    dockerContainer(id: string) {
+        return http.get<DockerContainerDetail>(`/api/docker/container/${id}`)
+    }
+
     dockerContainerAction(id: string, action: string) {
         return http.post<void>(`/api/docker/container/${id}/action`, { action })
     }
@@ -344,7 +349,7 @@ class ApiService {
     }
 
     dockerImage(id: string) {
-	return http.get<DockerImageInspect>(`/api/docker/image/${id}`)
+	return http.get<DockerImageDetail>(`/api/docker/image/${id}`)
     }
 
     dockerImageAction(id: string, action: string) {
@@ -377,7 +382,7 @@ class ApiService {
     }
 
     dockerNetwork(id: string) {
-	return http.get<DockerNetworkInspect>(`/api/docker/network/${id}`)
+	return http.get<DockerNetworkDetail>(`/api/docker/network/${id}`)
     }
 
     dockerNetworkAction(id: string, action: string) {
@@ -394,7 +399,7 @@ class ApiService {
     }
 
     dockerVolume(name: string) {
-	return http.get<DockerVolumeInspect>(`/api/docker/volume/${encodeURIComponent(name)}`)
+	return http.get<DockerVolumeDetail>(`/api/docker/volume/${encodeURIComponent(name)}`)
     }
 
     dockerVolumeAction(name: string, action: string) {
@@ -437,7 +442,7 @@ class ApiService {
     }
 
     swarmNode(id: string) {
-	return http.get<SwarmNodeInspect>(`/api/swarm/node/${id}`)
+	return http.get<SwarmNodeDetail>(`/api/swarm/node/${id}`)
     }
 
     swarmNodeAction(id: string, action: string) {
@@ -450,7 +455,7 @@ class ApiService {
     }
 
     swarmService(id: string) {
-        return http.get<SwarmServiceInspect>(`/api/swarm/service/${id}`)
+        return http.get<SwarmServiceDetail>(`/api/swarm/service/${id}`)
     }
 
     swarmServiceAction(id: string, action: string, replicas?: number) {

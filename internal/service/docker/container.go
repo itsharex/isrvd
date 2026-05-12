@@ -26,6 +26,14 @@ func (s *Service) ContainerList(ctx context.Context, all bool) ([]*pkgdocker.Con
 	return s.docker.ContainerList(ctx, all)
 }
 
+// ContainerInspect 获取容器详情
+func (s *Service) ContainerInspect(ctx context.Context, id string) (*pkgdocker.ContainerDetail, error) {
+	if id == "" {
+		return nil, fmt.Errorf("容器ID不能为空")
+	}
+	return s.docker.ContainerInspect(ctx, id)
+}
+
 // ContainerCreate 创建并启动容器
 func (s *Service) ContainerCreate(ctx context.Context, req pkgdocker.ContainerSpec) (*ContainerCreateResult, error) {
 	if err := s.docker.ImageEnsure(ctx, req.Image); err != nil {

@@ -222,6 +222,9 @@ export default toNative(Containers)
                 <td class="px-4 py-3 whitespace-nowrap text-sm text-slate-600">{{ formatTime(new Date(ct.created * 1000).toISOString()) }}</td>
                 <td class="px-4 py-3">
                   <div class="flex justify-end items-center gap-1">
+                    <button v-if="portal.hasPerm('GET /api/docker/container/:id')" class="btn-icon text-slate-600 hover:bg-slate-50" title="详情" @click="$router.push({ path: '/docker/container/' + ct.id })">
+                      <i class="fas fa-circle-info text-xs"></i>
+                    </button>
                     <button v-if="ct.state === 'running' && portal.hasPerm('GET /api/docker/container/:id/stats')" class="btn-icon text-indigo-600 hover:bg-indigo-50" title="统计" @click="$router.push({ path: '/docker/container/' + ct.id + '/stats' })">
                       <i class="fas fa-chart-line text-xs"></i>
                     </button>
@@ -292,6 +295,9 @@ export default toNative(Containers)
 
             <!-- 底部：操作按钮 -->
             <div class="flex flex-wrap gap-1.5 pt-2 border-t border-slate-100">
+              <button v-if="portal.hasPerm('GET /api/docker/container/:id')" class="btn-icon text-slate-600 hover:bg-slate-50" title="详情" @click="$router.push({ path: '/docker/container/' + ct.id })">
+                <i class="fas fa-circle-info text-xs"></i><span class="text-xs ml-1">详情</span>
+              </button>
               <button v-if="portal.hasPerm('GET /api/docker/container/:id/logs')" class="btn-icon text-slate-600 hover:bg-slate-50" title="日志" @click="$router.push({ path: '/docker/container/' + ct.id + '/logs' })">
                 <i class="fas fa-file-lines text-xs"></i><span class="text-xs ml-1">日志</span>
               </button>

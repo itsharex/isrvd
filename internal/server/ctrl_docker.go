@@ -17,6 +17,7 @@ func (app *App) defineDockerRoutes() []Route {
 		{Method: "GET", Path: "/docker/info", Handler: app.dockerInfo, Module: "docker", Label: "获取 Docker 信息"},
 		// 容器管理
 		{Method: "GET", Path: "/docker/containers", Handler: app.dockerContainerList, Module: "docker", Label: "列出容器"},
+		{Method: "GET", Path: "/docker/container/:id", Handler: app.dockerContainerInspect, Module: "docker", Label: "查看容器"},
 		{Method: "POST", Path: "/docker/container", Handler: app.dockerContainerCreate, Module: "docker", Label: "创建容器"},
 		{Method: "GET", Path: "/docker/container/:id/stats", Handler: app.dockerContainerStats, Module: "docker", Label: "查看容器统计"},
 		{Method: "POST", Path: "/docker/container/:id/action", Handler: app.dockerContainerAction, Module: "docker", Label: "操作容器"},
@@ -83,6 +84,16 @@ func (app *App) dockerContainerCreate(c *gin.Context) {
 		return
 	}
 	respondSuccess(c, "容器创建成功", result)
+}
+
+func (app *App) dockerContainerInspect(c *gin.Context) {
+	id := c.Param("id")
+	result, err := app.dockerSvc.ContainerInspect(c.Request.Context(), id)
+	if err != nil {
+		respondError(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	respondSuccess(c, "获取容器详情成功", result)
 }
 
 func (app *App) dockerContainerStats(c *gin.Context) {

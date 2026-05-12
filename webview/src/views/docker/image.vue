@@ -2,7 +2,7 @@
 import { Component, Vue, toNative } from 'vue-facing-decorator'
 
 import api from '@/service/api'
-import type { DockerImageInspect } from '@/service/types'
+import type { DockerImageDetail } from '@/service/types'
 
 import { formatFileSize, formatTime } from '@/helper/utils'
 
@@ -13,7 +13,7 @@ class ImageDetail extends Vue {
     portal = usePortal()
 
     // ─── 数据属性 ───
-    inspectData: DockerImageInspect | null = null
+    inspectData: DockerImageDetail | null = null
     loading = false
     formatFileSize = formatFileSize
     formatTime = formatTime

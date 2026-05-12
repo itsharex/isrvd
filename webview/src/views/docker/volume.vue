@@ -2,7 +2,7 @@
 import { Component, Vue, toNative } from 'vue-facing-decorator'
 
 import api from '@/service/api'
-import type { DockerVolumeInspect } from '@/service/types'
+import type { DockerVolumeDetail } from '@/service/types'
 
 import { formatFileSize, formatTime } from '@/helper/utils'
 
@@ -13,7 +13,7 @@ class VolumeDetail extends Vue {
     portal = usePortal()
 
     // ─── 数据属性 ───
-    detailData: DockerVolumeInspect | null = null
+    detailData: DockerVolumeDetail | null = null
     loading = false
     formatFileSize = formatFileSize
     formatTime = formatTime

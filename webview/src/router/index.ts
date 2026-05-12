@@ -71,7 +71,8 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: '/docker/container/:id',
-    redirect: to => ({ name: 'docker-container-stats', params: { id: to.params.id } })
+    name: 'docker-container',
+    component: () => import('@/views/docker/container.vue')
   },
   {
     path: '/docker/container/:id/stats',

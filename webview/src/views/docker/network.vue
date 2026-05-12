@@ -2,7 +2,7 @@
 import { Component, Vue, toNative } from 'vue-facing-decorator'
 
 import api from '@/service/api'
-import type { DockerNetworkInspect } from '@/service/types'
+import type { DockerNetworkDetail } from '@/service/types'
 
 import { usePortal } from '@/stores'
 
@@ -11,7 +11,7 @@ class NetworkDetail extends Vue {
     portal = usePortal()
 
     // ─── 数据属性 ───
-    detailData: DockerNetworkInspect | null = null
+    detailData: DockerNetworkDetail | null = null
     loading = false
 
     get networkId() {
