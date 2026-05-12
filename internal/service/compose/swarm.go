@@ -15,7 +15,7 @@ import (
 
 // ==================== 部署 ====================
 
-func (s *Service) swarmDeploy(ctx context.Context, req DeployRequest) (*DeployResult, error) {
+func (s *Service) SwarmDeploy(ctx context.Context, req DeployRequest) (*DeployResult, error) {
 	if s.swarm == nil {
 		return nil, fmt.Errorf("swarm 服务未初始化")
 	}
@@ -50,12 +50,12 @@ func (s *Service) swarmDeploy(ctx context.Context, req DeployRequest) (*DeployRe
 
 	s.swarmContentSave(projectName, req.Content, "")
 
-	return &DeployResult{Target: TargetSwarm, ProjectName: projectName, Items: items}, nil
+	return &DeployResult{ProjectName: projectName, Items: items}, nil
 }
 
 // ==================== 获取内容 ====================
 
-func (s *Service) swarmContentGet(ctx context.Context, name string) (string, error) {
+func (s *Service) SwarmContentGet(ctx context.Context, name string) (string, error) {
 	if s.swarm == nil {
 		return "", fmt.Errorf("swarm 服务未初始化")
 	}
@@ -82,12 +82,12 @@ func (s *Service) swarmContentGet(ctx context.Context, name string) (string, err
 
 // ==================== 重建 ====================
 
-func (s *Service) swarmRedeploy(ctx context.Context, name, content string) (*DeployResult, error) {
+func (s *Service) SwarmRedeploy(ctx context.Context, name, content string) (*DeployResult, error) {
 	if s.swarm == nil {
 		return nil, fmt.Errorf("swarm 服务未初始化")
 	}
 
-	oldContent, _ := s.swarmContentGet(ctx, name)
+	oldContent, _ := s.SwarmContentGet(ctx, name)
 
 	s.swarmServicesRemove(ctx, name, oldContent)
 
@@ -115,15 +115,15 @@ func (s *Service) swarmRedeploy(ctx context.Context, name, content string) (*Dep
 	s.swarmContentSave(name, content, oldContent)
 
 	logman.Info("Swarm compose redeployed", "name", name)
-	return &DeployResult{Target: TargetSwarm, Items: items}, nil
+	return &DeployResult{Items: items}, nil
 }
 
-func (s *Service) swarmImageRedeploy(ctx context.Context, name, serviceName, image string) (*DeployResult, error) {
+func (s *Service) SwarmImageRedeploy(ctx context.Context, name, serviceName, image string) (*DeployResult, error) {
 	if s.swarm == nil {
 		return nil, fmt.Errorf("swarm 服务未初始化")
 	}
 
-	oldContent, err := s.swarmContentGet(ctx, name)
+	oldContent, err := s.SwarmContentGet(ctx, name)
 	if err != nil {
 		return nil, err
 	}
@@ -162,7 +162,7 @@ func (s *Service) swarmImageRedeploy(ctx context.Context, name, serviceName, ima
 
 	item := fmt.Sprintf("%s (%s)", newSvc.Name, pkgdocker.ShortID(id))
 	logman.Info("Swarm compose service image redeployed", "name", name, "service", serviceName, "image", image)
-	return &DeployResult{Target: TargetSwarm, ProjectName: name, Items: []string{item}}, nil
+	return &DeployResult{ProjectName: name, Items: []string{item}}, nil
 }
 
 // ==================== 辅助函数 ====================
@@ -215,7 +215,7 @@ func (s *Service) swarmServicesRemove(ctx context.Context, name, content string)
 		return
 	}
 	if content == "" {
-		content, _ = s.swarmContentGet(ctx, name)
+		content, _ = s.SwarmContentGet(ctx, name)
 	}
 	if content == "" {
 		return

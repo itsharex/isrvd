@@ -32,7 +32,7 @@ class NavigationBar extends Vue {
 
     // Compose 部署菜单可见性
     get composeDeployVisible() {
-        return this.portal.hasPerm('POST /api/compose/:target/deploy')
+        return this.portal.hasPerm('POST /api/compose/docker/deploy')
     }
 
     // ─── 监听器 ───

@@ -32,7 +32,7 @@ class ComposeDeploy extends Vue {
 
     // ─── 计算属性 ───
     get swarmAvailable(): boolean {
-        return this.portal.hasPerm('POST /api/compose/:target/deploy')
+        return this.portal.hasPerm('POST /api/compose/swarm/deploy')
     }
 
     get canSubmit(): boolean {
@@ -131,7 +131,7 @@ export default toNative(ComposeDeploy)
             <button type="button" :disabled="loading" class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors disabled:opacity-50" @click="resetForm()">
               <i class="fas fa-rotate-left"></i>清空
             </button>
-            <button v-if="portal.hasPerm('POST /api/compose/:target/deploy')" type="button" class="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-xs font-medium flex items-center gap-1.5 transition-colors" @click="openMarketplace()">
+            <button v-if="portal.hasPerm('POST /api/compose/docker/deploy')" type="button" class="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-xs font-medium flex items-center gap-1.5 transition-colors" @click="openMarketplace()">
               <i class="fas fa-store"></i>应用市场
             </button>
           </div>
@@ -150,7 +150,7 @@ export default toNative(ComposeDeploy)
             <button type="button" :disabled="loading" class="w-9 h-9 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 flex items-center justify-center transition-colors disabled:opacity-50" title="清空" @click="resetForm()">
               <i class="fas fa-rotate-left"></i>
             </button>
-            <button v-if="portal.hasPerm('POST /api/compose/:target/deploy')" type="button" class="w-9 h-9 rounded-lg bg-amber-500 hover:bg-amber-600 flex items-center justify-center text-white transition-colors" title="从应用市场选择" @click="openMarketplace()">
+            <button v-if="portal.hasPerm('POST /api/compose/docker/deploy')" type="button" class="w-9 h-9 rounded-lg bg-amber-500 hover:bg-amber-600 flex items-center justify-center text-white transition-colors" title="从应用市场选择" @click="openMarketplace()">
               <i class="fas fa-store"></i>
             </button>
           </div>

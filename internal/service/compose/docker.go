@@ -18,7 +18,7 @@ import (
 
 // ==================== 部署 ====================
 
-func (s *Service) dockerDeploy(ctx context.Context, req DeployRequest) (*DeployResult, error) {
+func (s *Service) DockerDeploy(ctx context.Context, req DeployRequest) (*DeployResult, error) {
 	root := s.docker.ContainerRoot()
 	if root == "" {
 		return nil, fmt.Errorf("未配置容器数据根目录")
@@ -89,7 +89,7 @@ func (s *Service) dockerDeploy(ctx context.Context, req DeployRequest) (*DeployR
 
 	deployed = true
 	logman.Info("Compose deployed", "name", projectName, "dir", installDir)
-	return &DeployResult{Target: TargetDocker, ProjectName: projectName, Items: items, InstallDir: installDir}, nil
+	return &DeployResult{ProjectName: projectName, Items: items, InstallDir: installDir}, nil
 }
 
 // dockerInitFileHandle 处理附加运行文件（支持 URL 下载或直接上传）
@@ -114,7 +114,7 @@ func (s *Service) dockerInitFileHandle(installDir string, req DeployRequest) err
 
 // ==================== 获取内容 ====================
 
-func (s *Service) dockerContentGet(ctx context.Context, name string) (string, error) {
+func (s *Service) DockerContentGet(ctx context.Context, name string) (string, error) {
 	root := s.docker.ContainerRoot()
 	if root == "" {
 		return "", fmt.Errorf("未配置容器数据根目录")
@@ -142,23 +142,19 @@ func (s *Service) dockerContentGet(ctx context.Context, name string) (string, er
 		return "", err
 	}
 
-	// 写入快照（失败不影响返回结果）
-	_ = os.MkdirAll(filepath.Dir(path), 0755)
-	_ = os.WriteFile(path, data, 0644)
-
 	return string(data), nil
 }
 
 // ==================== 重建 ====================
 
-func (s *Service) dockerRedeploy(ctx context.Context, name, content string) (*DeployResult, error) {
+func (s *Service) DockerRedeploy(ctx context.Context, name, content string) (*DeployResult, error) {
 	root := s.docker.ContainerRoot()
 	installDir := ""
 	if root != "" {
 		installDir = filepath.Join(root, name)
 	}
 
-	oldContent, _ := s.dockerContentGet(ctx, name)
+	oldContent, _ := s.DockerContentGet(ctx, name)
 
 	s.dockerContainersRemove(ctx, name, oldContent)
 
@@ -186,17 +182,17 @@ func (s *Service) dockerRedeploy(ctx context.Context, name, content string) (*De
 	s.dockerContentSave(installDir, content, oldContent)
 
 	logman.Info("Compose redeployed", "name", name)
-	return &DeployResult{Target: TargetDocker, Items: items, InstallDir: installDir}, nil
+	return &DeployResult{Items: items, InstallDir: installDir}, nil
 }
 
-func (s *Service) dockerImageRedeploy(ctx context.Context, name, serviceName, image string) (*DeployResult, error) {
+func (s *Service) DockerImageRedeploy(ctx context.Context, name, serviceName, image string) (*DeployResult, error) {
 	root := s.docker.ContainerRoot()
 	installDir := ""
 	if root != "" {
 		installDir = filepath.Join(root, name)
 	}
 
-	oldContent, err := s.dockerContentGet(ctx, name)
+	oldContent, err := s.DockerContentGet(ctx, name)
 	if err != nil {
 		return nil, err
 	}
@@ -238,7 +234,7 @@ func (s *Service) dockerImageRedeploy(ctx context.Context, name, serviceName, im
 
 	item := fmt.Sprintf("%s (%s)", dockerContainerNameOf(newSvc), pkgdocker.ShortID(id))
 	logman.Info("Compose service image redeployed", "name", name, "service", serviceName, "image", image)
-	return &DeployResult{Target: TargetDocker, ProjectName: name, Items: []string{item}, InstallDir: installDir}, nil
+	return &DeployResult{ProjectName: name, Items: []string{item}, InstallDir: installDir}, nil
 }
 
 // ==================== 辅助函数 ====================
@@ -268,7 +264,7 @@ func (s *Service) dockerServiceContainerCreate(ctx context.Context, project *typ
 // dockerContainersRemove 停止并删除实例的所有容器
 func (s *Service) dockerContainersRemove(ctx context.Context, name, content string) {
 	if content == "" {
-		content, _ = s.dockerContentGet(ctx, name)
+		content, _ = s.DockerContentGet(ctx, name)
 	}
 	if content == "" {
 		return
