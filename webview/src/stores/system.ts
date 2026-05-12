@@ -3,7 +3,7 @@ import { ref, reactive } from 'vue'
 
 import api from '@/service/api'
 import type { LinkConfig } from '@/service/types'
-import { initTheme } from '@/helper/utils'
+import { initTheme } from '@/helper/theme'
 
 interface ServiceAvailability {
     agent: boolean

@@ -1,39 +1,33 @@
 <script lang="ts">
 import { Component, Vue, toNative } from 'vue-facing-decorator'
 
-import { cycleTheme, getThemeMode, type ThemeMode } from '@/helper/utils'
+import { cycleTheme, getThemeMode, THEME_META, type ThemeMode } from '@/helper/theme'
 
 import Dropdown from '@/component/dropdown.vue'
 
 import { usePortal } from '@/stores'
 
-const THEME_META: Record<ThemeMode, { icon: string; label: string }> = {
-    light: { icon: 'fas fa-sun', label: '浅色' },
-    dark: { icon: 'fas fa-moon', label: '深色' },
-    system: { icon: 'fas fa-desktop', label: '跟随系统' }
-}
-
 @Component({
-    components: { Dropdown }
+  components: { Dropdown }
 })
 class UserMenu extends Vue {
-    portal = usePortal()
+  portal = usePortal()
 
-    // ─── 数据属性 ───
-    menuOpen = false
-    themeMode: ThemeMode = getThemeMode()
+  // ─── 数据属性 ───
+  menuOpen = false
+  themeMode: ThemeMode = getThemeMode()
 
-    get themeIcon() { return THEME_META[this.themeMode].icon }
-    get themeLabel() { return THEME_META[this.themeMode].label }
+  get themeIcon() { return THEME_META[this.themeMode].icon }
+  get themeLabel() { return THEME_META[this.themeMode].label }
 
-    // ─── 方法 ───
-    toggleTheme() {
-        this.themeMode = cycleTheme()
-    }
+  // ─── 方法 ───
+  toggleTheme() {
+    this.themeMode = cycleTheme()
+  }
 
-    handleLogout() {
-        this.portal.clearAuth()
-    }
+  handleLogout() {
+    this.portal.clearAuth()
+  }
 }
 
 export default toNative(UserMenu)
@@ -81,7 +75,7 @@ export default toNative(UserMenu)
       @click.stop="toggleTheme"
     >
       <i :class="themeIcon" class="w-4 text-center"></i>
-      <span>主题：{{ themeLabel }}</span>
+      <span>{{ themeLabel }}</span>
     </button>
 
     <!-- 分割线 -->

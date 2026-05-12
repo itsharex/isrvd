@@ -4,6 +4,7 @@ import { Component, Vue, toNative } from 'vue-facing-decorator'
 import api from '@/service/api'
 import type { ApiTokenResult } from '@/service/types'
 
+import { copyToClipboard } from '@/helper/utils'
 import { usePortal } from '@/stores'
 
 @Component
@@ -89,12 +90,9 @@ class Profile extends Vue {
         this.tokenLoading = false
     }
 
-    copyToken(token: string) {
-        navigator.clipboard.writeText(token).then(() => {
-            this.portal.showNotification('success', '令牌已复制到剪贴板')
-        }).catch(() => {
-            this.portal.showNotification('error', '复制失败，请手动复制')
-        })
+    async copyToken(token: string) {
+        const ok = await copyToClipboard(token)
+        this.portal.showNotification(ok ? 'success' : 'error', ok ? '令牌已复制到剪贴板' : '复制失败，请手动复制')
     }
 
     dismissNewToken() {
@@ -206,15 +204,15 @@ export default toNative(Profile)
         <!-- 新令牌提示 -->
         <div v-if="newToken" class="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
           <div class="flex items-start gap-3">
-            <div class="w-10 h-10 rounded-lg bg-emerald-500 flex items-center justify-center flex-shrink-0">
-              <i class="fas fa-check text-white"></i>
+            <div class="w-9 h-9 rounded-lg bg-emerald-500 flex items-center justify-center flex-shrink-0">
+              <i class="fas fa-check text-white text-sm"></i>
             </div>
             <div class="flex-1 min-w-0">
               <h3 class="text-sm font-semibold text-emerald-800 mb-1">令牌创建成功</h3>
               <p class="text-xs text-emerald-700 mb-3">请立即复制保存，此令牌仅显示一次：</p>
-              <div class="flex items-center gap-2">
-                <code class="flex-1 px-3 py-2 bg-white rounded-lg text-xs font-mono text-slate-700 break-all border border-emerald-200">{{ newToken.token }}</code>
-                <button class="flex-shrink-0 px-3 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-medium flex items-center gap-1.5 transition-colors" @click="copyToken(newToken.token)">
+              <div class="flex flex-col sm:flex-row gap-2">
+                <code class="block flex-1 min-w-0 max-h-28 overflow-y-auto px-3 py-2 bg-white rounded-lg text-xs font-mono leading-relaxed text-slate-700 break-all border border-emerald-200">{{ newToken.token }}</code>
+                <button class="self-start sm:self-stretch flex-shrink-0 px-3 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-medium flex items-center justify-center gap-1.5 transition-colors" @click="copyToken(newToken.token)">
                   <i class="fas fa-copy"></i>复制
                 </button>
               </div>
