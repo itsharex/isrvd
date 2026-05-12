@@ -55,8 +55,17 @@ cd ../
 # 编译后端
 ###########################################
 
+# Linux
 build linux amd64
 build linux arm64
+
+# macOS
+build darwin amd64
+build darwin arm64
+
+# Windows
+build windows amd64
+build windows arm64
 
 ###########################################
 # 打包分发
