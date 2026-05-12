@@ -29,7 +29,7 @@ isrvd_token "$ISRVD_APIURL" "$ISRVD_APITOKEN"
 | 文档 | 覆盖内容 |
 |------|----------|
 | [docs/docker/containers.md](docs/docker/containers.md) | 容器列表、创建、操作、日志、stats、终端 |
-| [docs/docker/images.md](docs/docker/images.md) | 镜像列表、详情、搜索、构建、标签、拉取、推送、删除 |
+| [docs/docker/images.md](docs/docker/images.md) | 镜像列表、详情、搜索、构建、标签、拉取、推送、删除、清理（prune） |
 | [docs/docker/networks.md](docs/docker/networks.md) | 网络列表、详情、创建、删除 |
 | [docs/docker/volumes.md](docs/docker/volumes.md) | 数据卷列表、详情、创建、删除 |
 | [docs/docker/registries.md](docs/docker/registries.md) | 镜像仓库 CRUD |
