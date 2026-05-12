@@ -17,17 +17,17 @@ export interface SystemVersionCheck {
 }
 
 export interface SystemNetInterface {
-    Name: string
-    BytesRecv: number
-    BytesSent: number
+    name: string
+    bytesRecv: number
+    bytesSent: number
 }
 
 export interface SystemDiskPartition {
-    Device: string
-    Mountpoint: string
-    Fstype: string
-    Used: number
-    Total: number
+    device: string
+    mountpoint: string
+    fstype: string
+    used: number
+    total: number
 }
 
 export interface SystemDiskIO {
@@ -40,30 +40,30 @@ export interface SystemGoRuntimeStat {
     version: string
     numCPU: number
     numGoroutine: number
-    HeapAlloc: number
-    HeapInuse: number
-    Sys: number
-    StackInuse: number
-    TotalAlloc: number
-    NumGC: number
-    LastGC: number
+    heapAlloc: number
+    heapInuse: number
+    sys: number
+    stackInuse: number
+    totalAlloc: number
+    numGC: number
+    lastGC: number
 }
 
 export interface SystemInfo {
-    HostName: string
-    Platform: string
-    KernelArch: string
-    Uptime: number
-    CpuCore: number
-    CpuCoreLogic: number
-    CpuModel: string[]
-    CpuPercent: number[]
-    MemoryUsed: number
-    MemoryTotal: number
-    DiskTotal: number
-    DiskUsed: number
-    NetInterface: SystemNetInterface[]
-    DiskPartition: SystemDiskPartition[]
+    hostName: string
+    platform: string
+    kernelArch: string
+    uptime: number
+    cpuCore: number
+    cpuCoreLogic: number
+    cpuModel: string[]
+    cpuPercent: number[]
+    memoryUsed: number
+    memoryTotal: number
+    diskTotal: number
+    diskUsed: number
+    netInterface: SystemNetInterface[]
+    diskPartition: SystemDiskPartition[]
 }
 
 export interface SystemGPU {

@@ -28,7 +28,7 @@ class SystemDisk extends Vue {
     private diskIOCharts: Record<string, Chart<'line'>> = {}
     diskIOHistory: Record<string, DiskIOSeriesHistory> = {}
     private lastDiskIO: Record<string, { read: number; write: number; time: number }> = {}
-    current: Pick<SystemStat['system'], 'DiskTotal' | 'DiskUsed' | 'DiskPartition'> | null = null
+    current: Pick<SystemStat['system'], 'diskTotal' | 'diskUsed' | 'diskPartition'> | null = null
     private currentDiskIO: SystemDiskIO[] = []
 
     fmtSize(bytes: number, rates = false) {
@@ -128,10 +128,10 @@ class SystemDisk extends Vue {
 
     pushData(payload: SystemStat) {
         const s = payload.system
-        this.current = { DiskTotal: s.DiskTotal, DiskUsed: s.DiskUsed, DiskPartition: s.DiskPartition }
+        this.current = { diskTotal: s.diskTotal, diskUsed: s.diskUsed, diskPartition: s.diskPartition }
         this.currentDiskIO = payload.diskIO || []
 
-        if (!payload.diskIO?.length || !s.DiskPartition) return
+        if (!payload.diskIO?.length || !s.diskPartition) return
 
         const now = new Date()
         const label = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`
@@ -187,52 +187,52 @@ export default toNative(SystemDisk)
 </script>
 
 <template>
-  <div v-if="current?.DiskPartition?.length" class="rounded-xl border border-slate-200 bg-white overflow-hidden">
+  <div v-if="current?.diskPartition?.length" class="rounded-xl border border-slate-200 bg-white overflow-hidden">
     <div class="px-4 py-3 border-b border-slate-100 flex items-center gap-2">
       <div class="w-6 h-6 rounded-md bg-amber-500 flex items-center justify-center">
         <i class="fas fa-hard-drive text-white text-xs"></i>
       </div>
       <span class="text-sm font-semibold text-slate-700">硬盘 I/O</span>
       <span class="ml-auto text-xs text-slate-400">
-        总计 {{ fmtBytes(current.DiskTotal) }}，已用 {{ fmtBytes(current.DiskUsed) }}
+        总计 {{ fmtBytes(current.diskTotal) }}，已用 {{ fmtBytes(current.diskUsed) }}
       </span>
     </div>
     <div ref="diskIOContainerRef" class="divide-y divide-slate-100">
-      <div v-for="dp in current.DiskPartition" :key="dp.Mountpoint" class="px-4 py-3">
+      <div v-for="dp in current.diskPartition" :key="dp.mountpoint" class="px-4 py-3">
         <div class="flex flex-col gap-2">
           <div class="flex items-center justify-between gap-2">
             <div class="flex items-center gap-2 min-w-0">
-              <p class="text-xs font-semibold text-slate-700 truncate">{{ dp.Mountpoint }}</p>
-              <p class="text-xs text-slate-400 shrink-0">{{ dp.Device }} · {{ dp.Fstype }}</p>
+              <p class="text-xs font-semibold text-slate-700 truncate">{{ dp.mountpoint }}</p>
+              <p class="text-xs text-slate-400 shrink-0">{{ dp.device }} · {{ dp.fstype }}</p>
             </div>
-            <p class="text-xs text-slate-600 font-mono shrink-0">{{ fmtBytes(dp.Used) }} / {{ fmtBytes(dp.Total) }} ({{ memPercent(dp.Used, dp.Total) }}%)</p>
+            <p class="text-xs text-slate-600 font-mono shrink-0">{{ fmtBytes(dp.used) }} / {{ fmtBytes(dp.total) }} ({{ memPercent(dp.used, dp.total) }}%)</p>
           </div>
           <div class="h-1 relative bg-slate-100 rounded overflow-hidden">
-            <div :class="['absolute inset-y-0 left-0 rounded', barColor(memPercent(dp.Used, dp.Total))]" :style="{ width: memPercent(dp.Used, dp.Total) + '%' }"></div>
+            <div :class="['absolute inset-y-0 left-0 rounded', barColor(memPercent(dp.used, dp.total))]" :style="{ width: memPercent(dp.used, dp.total) + '%' }"></div>
           </div>
-          <template v-if="diskIOByDevice(dp.Device)">
+          <template v-if="diskIOByDevice(dp.device)">
             <div class="flex items-center justify-between gap-1">
               <span class="text-xs text-slate-400">IO 速率</span>
               <div class="flex items-center gap-4 text-xs">
                 <span class="flex items-center gap-1">
                   <i class="fas fa-arrow-down text-amber-500"></i>
-                  <span class="font-mono text-slate-600 w-20 text-right">{{ fmtRate(currentDiskRate(devShortName(dp.Device), 'read')) }}</span>
+                  <span class="font-mono text-slate-600 w-20 text-right">{{ fmtRate(currentDiskRate(devShortName(dp.device), 'read')) }}</span>
                 </span>
                 <span class="flex items-center gap-1">
                   <i class="fas fa-arrow-up text-violet-500"></i>
-                  <span class="font-mono text-slate-600 w-20 text-right">{{ fmtRate(currentDiskRate(devShortName(dp.Device), 'write')) }}</span>
+                  <span class="font-mono text-slate-600 w-20 text-right">{{ fmtRate(currentDiskRate(devShortName(dp.device), 'write')) }}</span>
                 </span>
               </div>
             </div>
             <div class="relative h-16 bg-slate-50 rounded-lg overflow-hidden">
-              <canvas :data-disk="devShortName(dp.Device)" class="w-full h-full"></canvas>
-              <div v-if="!diskIOHistory[devShortName(dp.Device)]?.read?.length" class="absolute inset-0 flex items-center justify-center">
+              <canvas :data-disk="devShortName(dp.device)" class="w-full h-full"></canvas>
+              <div v-if="!diskIOHistory[devShortName(dp.device)]?.read?.length" class="absolute inset-0 flex items-center justify-center">
                 <span class="text-xs text-slate-300">等待数据...</span>
               </div>
             </div>
             <div class="flex gap-4 text-xs text-slate-400">
-              <span>累计读: {{ fmtBytes(diskIOByDevice(dp.Device)?.ReadBytes ?? 0) }}</span>
-              <span>累计写: {{ fmtBytes(diskIOByDevice(dp.Device)?.WriteBytes ?? 0) }}</span>
+              <span>累计读: {{ fmtBytes(diskIOByDevice(dp.device)?.ReadBytes ?? 0) }}</span>
+              <span>累计写: {{ fmtBytes(diskIOByDevice(dp.device)?.WriteBytes ?? 0) }}</span>
             </div>
           </template>
         </div>
