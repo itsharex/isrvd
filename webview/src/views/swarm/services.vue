@@ -217,7 +217,7 @@ export default toNative(Services)
                     <button v-if="portal.hasPerm('GET /api/swarm/service/:id/logs')" class="btn-icon text-slate-600 hover:bg-slate-50" title="日志" @click="$router.push({ name: 'swarm-service-logs', params: { id: svc.id } })"><i class="fas fa-file-lines text-xs"></i></button>
                     <button v-if="svc.mode === 'replicated' && portal.hasPerm('POST /api/swarm/service/:id/action')" class="btn-icon text-indigo-600 hover:bg-indigo-50" title="扩缩容" @click="openScaleModal(svc)"><i class="fas fa-up-right-and-down-left-from-center text-xs"></i></button>
                     <button v-if="portal.hasPerm('POST /api/swarm/service/:id/force-update')" class="btn-icon text-blue-600 hover:bg-blue-50" title="强制重部署" @click="handleRedeploy(svc)"><i class="fas fa-arrows-rotate text-xs"></i></button>
-                    <button v-if="portal.hasPerm('GET /api/compose/:target/:name') && portal.hasPerm('POST /api/compose/:target/:name/redeploy')" class="btn-icon text-blue-600 hover:bg-blue-50" title="编辑" @click="openEditModal(svc)"><i class="fas fa-pen text-xs"></i></button>
+                    <button v-if="portal.hasPerm('GET /api/compose/swarm/:name') && portal.hasPerm('POST /api/compose/swarm/:name/redeploy')" class="btn-icon text-blue-600 hover:bg-blue-50" title="编辑" @click="openEditModal(svc)"><i class="fas fa-pen text-xs"></i></button>
                     <button v-if="portal.hasPerm('POST /api/swarm/service/:id/action')" class="btn-icon text-red-600 hover:bg-red-50" title="删除" @click="handleServiceRemove(svc)"><i class="fas fa-trash text-xs"></i></button>
                   </div>
                 </td>
@@ -289,7 +289,7 @@ export default toNative(Services)
               <button v-if="portal.hasPerm('POST /api/swarm/service/:id/force-update')" class="btn-icon text-blue-600 hover:bg-blue-50" title="强制重部署" @click="handleRedeploy(svc)">
                 <i class="fas fa-arrows-rotate text-xs"></i><span class="text-xs ml-1">重部署</span>
               </button>
-              <button v-if="portal.hasPerm('GET /api/compose/:target/:name') && portal.hasPerm('POST /api/compose/:target/:name/redeploy')" class="btn-icon text-blue-600 hover:bg-blue-50" title="编辑" @click="openEditModal(svc)">
+              <button v-if="portal.hasPerm('GET /api/compose/swarm/:name') && portal.hasPerm('POST /api/compose/swarm/:name/redeploy')" class="btn-icon text-blue-600 hover:bg-blue-50" title="编辑" @click="openEditModal(svc)">
                 <i class="fas fa-pen text-xs"></i><span class="text-xs ml-1">编辑</span>
               </button>
               <button v-if="portal.hasPerm('POST /api/swarm/service/:id/action')" class="btn-icon text-red-600 hover:bg-red-50" title="删除" @click="handleServiceRemove(svc)">
