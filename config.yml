@@ -12,7 +12,7 @@ oidc:
   # clientId: isrvd
   # clientSecret: your-client-secret
   # redirectUrl: https://isrvd.example.com/api/account/oidc/callback
-  # usernameClaim: email（默认值，对应 OIDC 标准 claim）
+  # usernameClaim: sub（默认值，稳定且不可复用；如使用 email 需确保 IdP 已验证邮箱）
   # scopes: [openid, profile, email]（默认值，openid 始终被自动包含）
 
 agent:

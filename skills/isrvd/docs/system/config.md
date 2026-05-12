@@ -35,6 +35,12 @@ isrvd_get "/system/config"
 isrvd_put "/system/config" '<CURRENT_CONFIG_WITH_CHANGES>'
 ```
 
+配置说明：
+
+- `clientSecret`、`jwtSecret`、`apiKey`、`adminKey` 等敏感字段不会通过 GET 返回；PUT 时为空表示保留原值。
+- `oidc.redirectUrl` 生产环境建议显式配置固定 HTTPS 地址；留空会按当前请求 Host 自动生成，适合本地开发。
+- `oidc.usernameClaim` 默认 `sub`；如改用 `email`，需确保 IdP 已验证邮箱且本地 `members.username` 与邮箱完全一致。
+
 ---
 
 ## 审计日志

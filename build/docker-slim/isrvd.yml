@@ -9,6 +9,16 @@ agent:
   baseUrl: https://ai.rehiy.wang/v1
   apiKey: your-api-key
 
+oidc:
+  enabled: false
+  # 元数据（authorization_endpoint、token_endpoint、jwks_uri 等）由 issuerUrl 自动发现
+  # issuerUrl: https://idp.example.com
+  # clientId: isrvd
+  # clientSecret: your-client-secret
+  # redirectUrl: https://isrvd.example.com/api/account/oidc/callback（生产环境建议显式配置）
+  # usernameClaim: sub（默认值）
+  # scopes: [openid, profile, email]
+
 apisix:
   # adminUrl: http://127.0.0.1:9180/apisix/admin
   # adminKey: __APISIX_ADMIN_KEY__

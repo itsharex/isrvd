@@ -24,9 +24,9 @@ const maxAuditBufferSize = 100 // 内存缓冲最大条数
 // sensitiveFields 需要脱敏的请求体字段名
 var sensitiveFields = []string{
 	// 系统配置
-	"jwtSecret", "apiKey", "adminKey",
+	"jwtSecret", "apiKey", "adminKey", "clientSecret", "client_secret",
 	// 账户模块
-	"password", "oldPassword", "newPassword", "token",
+	"password", "oldPassword", "newPassword", "token", "accessToken", "refreshToken", "idToken",
 	// APISIX 插件 + SSL 证书私钥
 	"key", "secret", "public_key", "key_id", "secret_key",
 }

@@ -17,8 +17,8 @@ class Config extends Vue {
   saving = false
   activeTab: 'server' | 'agent' | 'oidc' | 'app' | 'links' = 'server'
 
-  server: ServerConfig = { debug: false, listenAddr: '', proxyHeaderName: '', rootDirectory: '' }
-  oidc: OIDCConfig = { enabled: false, issuerUrl: '', clientId: '', redirectUrl: '', usernameClaim: 'email', scopes: ['openid', 'profile', 'email'] }
+  server: ServerConfig = { debug: false, listenAddr: '', jwtExpiration: 86400, maxUploadSize: 104857600, proxyHeaderName: '', rootDirectory: '', allowedOrigins: [] }
+  oidc: OIDCConfig = { enabled: false, issuerUrl: '', clientId: '', redirectUrl: '', usernameClaim: 'sub', scopes: ['openid', 'profile', 'email'] }
   oidcScopes = 'openid profile email'
   agent: AgentConfig = { model: '', baseUrl: '' }
   apisix: ApisixConfig = { adminUrl: '' }
@@ -33,7 +33,7 @@ class Config extends Vue {
       const res = await api.systemConfig(reload ? { reload: 'true' } : undefined)
       const payload = res.payload as AllConfig
       this.server = { ...payload.server }
-      this.oidc = { ...(payload.oidc || { enabled: false, issuerUrl: '', clientId: '', redirectUrl: '', usernameClaim: 'email', scopes: ['openid', 'profile', 'email'] }) }
+      this.oidc = { ...(payload.oidc || { enabled: false, issuerUrl: '', clientId: '', redirectUrl: '', usernameClaim: 'sub', scopes: ['openid', 'profile', 'email'] }) }
       this.oidcScopes = (this.oidc.scopes || []).join(' ')
       this.agent = { ...payload.agent }
       this.apisix = { ...payload.apisix }
@@ -222,12 +222,12 @@ export default toNative(Config)
           <div>
             <label class="block text-sm font-medium text-slate-700 mb-1.5">Redirect URL</label>
             <input v-model="oidc.redirectUrl" type="text" placeholder="https://isrvd.example.com/api/account/oidc/callback" class="input" />
-            <p class="mt-1 text-xs text-slate-400">留空时按当前请求 Host 自动生成 /api/account/oidc/callback</p>
+            <p class="mt-1 text-xs text-slate-400">开发环境可留空自动生成；生产环境建议填写固定 HTTPS 回调地址</p>
           </div>
           <div>
             <label class="block text-sm font-medium text-slate-700 mb-1.5">用户名 Claim</label>
-            <input v-model="oidc.usernameClaim" type="text" placeholder="preferred_username" class="input" />
-            <p class="mt-1 text-xs text-slate-400">该 Claim 的值必须与 members.username 完全一致；用户不存在时登录失败</p>
+            <input v-model="oidc.usernameClaim" type="text" placeholder="sub" class="input" />
+            <p class="mt-1 text-xs text-slate-400">默认 sub；该 Claim 的值必须与 members.username 完全一致，用户不存在时登录失败</p>
           </div>
           <div>
             <label class="block text-sm font-medium text-slate-700 mb-1.5">Scopes</label>

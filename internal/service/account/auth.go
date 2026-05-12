@@ -74,7 +74,7 @@ func (s *Service) AuthInfo(username string) *AuthInfoResponse {
 		Mode:        mode,
 		Username:    username,
 		Member:      s.MemberInspect(username),
-		OIDCEnabled: config.OIDC.Enabled,
+		OIDCEnabled: mode == "jwt" && config.OIDC.Enabled && config.OIDC.IssuerURL != "" && config.OIDC.ClientID != "",
 	}
 }
 

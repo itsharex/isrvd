@@ -130,7 +130,7 @@ func OIDCNormalize(oidc *OIDCConfig) *OIDCConfig {
 		oidc = &OIDCConfig{}
 	}
 	if oidc.UsernameClaim == "" {
-		oidc.UsernameClaim = "email"
+		oidc.UsernameClaim = "sub"
 	}
 	if len(oidc.Scopes) == 0 {
 		oidc.Scopes = []string{"openid", "profile", "email"}

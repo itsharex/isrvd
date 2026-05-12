@@ -117,6 +117,7 @@ func (s *Service) OIDCCallback(c *gin.Context) (string, error) {
 		return "", fmt.Errorf("OIDC 登录失败，请重试")
 	}
 
+	// 根据 state 获取 OAuth 配置
 	provider, oauthConfig, err := s.newOAuthConfig(c.Request.Context(), c)
 	if err != nil {
 		return "", err
@@ -129,16 +130,19 @@ func (s *Service) OIDCCallback(c *gin.Context) (string, error) {
 		return "", fmt.Errorf("OIDC 登录失败，请重试")
 	}
 
-	// 校验 id_token
+	// 从授权码中提取 ID Token
 	rawIDToken, ok := token.Extra("id_token").(string)
 	if !ok || rawIDToken == "" {
 		return "", fmt.Errorf("OIDC 登录失败，请重试")
 	}
+
+	// 验证 id_token 签名和 claims
 	idToken, err := provider.Verifier(&oidc.Config{ClientID: config.OIDC.ClientID}).Verify(c.Request.Context(), rawIDToken)
 	if err != nil {
 		logman.Warn("OIDC id_token verify failed", "err", err)
 		return "", fmt.Errorf("OIDC 登录失败，请重试")
 	}
+
 	// nonce 统一返回相同错误消息，避免 oracle 攻击
 	if idToken.Nonce != nonce {
 		logman.Warn("OIDC nonce mismatch")
@@ -151,6 +155,7 @@ func (s *Service) OIDCCallback(c *gin.Context) (string, error) {
 		logman.Warn("OIDC username claim error", "err", err, "claim", config.OIDC.UsernameClaim)
 		return "", fmt.Errorf("OIDC 登录失败，请重试")
 	}
+
 	if _, exists := config.Members[username]; !exists {
 		logman.Warn("OIDC user not in members", "username", username)
 		return "", fmt.Errorf("用户未配置，请联系管理员添加成员")
@@ -269,10 +274,7 @@ func (s *Service) cleanupOIDC() {
 // oidcUsername 从 id_token claims 或 UserInfo endpoint 中提取用户名
 func oidcUsername(ctx context.Context, provider *oidc.Provider, tokenSource oauth2.TokenSource, idToken *oidc.IDToken, claimName string) (string, error) {
 	claimName = strings.TrimSpace(claimName)
-	if claimName == "" {
-		claimName = "email"
-	}
-	if claimName == "sub" {
+	if claimName == "" || claimName == "sub" {
 		return idToken.Subject, nil
 	}
 

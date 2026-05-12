@@ -17,8 +17,11 @@ export interface AuditLog {
 export interface ServerConfig {
     debug: boolean
     listenAddr: string
+    jwtExpiration: number
+    maxUploadSize: number
     proxyHeaderName: string
     rootDirectory: string
+    allowedOrigins: string[]
     // 写入时为空表示保留原值（不通过 JSON 返回）
     jwtSecret?: string
 }
