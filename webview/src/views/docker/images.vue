@@ -176,6 +176,22 @@ class Images extends Vue {
         })
     }
 
+    handleImagePrune() {
+        this.portal.showConfirm({
+            title: '清理镜像',
+            message: '将清理未打标签的悬空镜像层，不会删除正在被容器使用的镜像。确定继续吗？',
+            icon: 'fa-broom',
+            iconColor: 'red',
+            confirmText: '确认清理',
+            danger: true,
+            onConfirm: async () => {
+                const { payload } = await api.dockerImagePrune()
+                this.portal.showNotification('success', `镜像清理完成，回收 ${formatFileSize(payload?.spaceReclaimed || 0)}`)
+                this.loadImages()
+            }
+        })
+    }
+
     // ─── 生命周期 ───
     mounted() {
         this.loadImages()
@@ -215,6 +231,9 @@ export default toNative(Images)
             <button class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors" @click="loadImages()">
               <i class="fas fa-rotate"></i>刷新
             </button>
+            <button v-if="portal.hasPerm('POST /api/docker/image/prune')" class="px-3 py-1.5 rounded-lg bg-white border border-amber-200 hover:bg-amber-50 text-amber-700 text-xs font-medium flex items-center gap-1.5 transition-colors" @click="handleImagePrune()">
+              <i class="fas fa-broom"></i>清理
+            </button>
             <button v-if="portal.hasPerm('POST /api/docker/image/:id/action')" class="px-3 py-1.5 rounded-lg bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium flex items-center gap-1.5 transition-colors" @click="buildModalRef?.show()">
               <i class="fas fa-hammer"></i>构建
             </button>
@@ -245,6 +264,9 @@ export default toNative(Images)
             </div>
             <button class="w-9 h-9 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-600 transition-colors" title="刷新" @click="loadImages()">
               <i class="fas fa-rotate text-sm"></i>
+            </button>
+            <button v-if="portal.hasPerm('POST /api/docker/image/prune')" class="w-9 h-9 rounded-lg bg-white border border-amber-200 hover:bg-amber-50 flex items-center justify-center text-amber-700 transition-colors" title="清理镜像" @click="handleImagePrune()">
+              <i class="fas fa-broom text-sm"></i>
             </button>
             <button v-if="portal.hasPerm('POST /api/docker/image/:id/action')" class="w-9 h-9 rounded-lg bg-blue-500 hover:bg-blue-600 flex items-center justify-center text-white transition-colors" title="构建" @click="buildModalRef?.show()">
               <i class="fas fa-hammer text-sm"></i>

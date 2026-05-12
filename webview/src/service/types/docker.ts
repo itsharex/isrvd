@@ -164,6 +164,21 @@ export interface DockerImageSearchResult {
     starCount: number
 }
 
+export interface DockerImagePrune {
+    all?: boolean
+    until?: string
+}
+
+export interface DockerImagePruneDeleted {
+    untagged?: string
+    deleted?: string
+}
+
+export interface DockerImagePruneResult {
+    imagesDeleted: DockerImagePruneDeleted[]
+    spaceReclaimed: number
+}
+
 // ─── 网络 ───
 
 export interface DockerNetworkInfo {

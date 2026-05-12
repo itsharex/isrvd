@@ -46,6 +46,8 @@ import type {
     DockerImageInfo,
 	DockerImageDetail,
     DockerImageSearchResult,
+    DockerImagePrune,
+    DockerImagePruneResult,
     DockerNetworkInfo,
 	DockerNetworkDetail,
     DockerNetworkCreate,
@@ -371,6 +373,10 @@ class ApiService {
 
     dockerImageBuild(dockerfile: string, tag = '') {
         return http.post<void>('/api/docker/image/build', { dockerfile, tag })
+    }
+
+    dockerImagePrune(data: DockerImagePrune = {}) {
+        return http.post<DockerImagePruneResult>('/api/docker/image/prune', data)
     }
 
     dockerImagePush(image: string, registryUrl: string, namespace: string) {
