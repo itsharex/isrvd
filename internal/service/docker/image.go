@@ -39,6 +39,11 @@ func (s *Service) ImageBuild(ctx context.Context, req pkgdocker.ImageBuildReques
 	return map[string]string{"tag": req.Tag, "message": msg}, nil
 }
 
+// ImagePrune 清理未使用的镜像
+func (s *Service) ImagePrune(ctx context.Context, req pkgdocker.ImagePruneRequest) (*pkgdocker.ImagePruneReport, error) {
+	return s.docker.ImagePrune(ctx, req)
+}
+
 // ImageInspect 获取镜像详情
 func (s *Service) ImageInspect(ctx context.Context, id string) (*pkgdocker.ImageDetail, error) {
 	if id == "" {

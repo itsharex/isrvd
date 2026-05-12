@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/docker/docker/api/types/build"
+	"github.com/docker/docker/api/types/filters"
 	dockerimage "github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/api/types/registry"
 	dockerspec "github.com/moby/docker-image-spec/specs-go/v1"
@@ -56,6 +57,53 @@ func (s *DockerService) ImageList(ctx context.Context, all bool) ([]*ImageInfo, 
 	}
 
 	return result, nil
+}
+
+// ImagePruneRequest 镜像清理请求
+type ImagePruneRequest struct {
+	// All 为 true 时清理所有未被任何容器使用的镜像（包括有标签的）；
+	// 为 false 时仅清理悬空（未打标签）的镜像层，即 Docker 默认行为。
+	All bool `json:"all"`
+	// Until 仅清理在该时间之前创建的镜像，格式参考 Docker filters（如 "24h"、"2024-01-01T00:00:00"）。
+	Until string `json:"until,omitempty"`
+}
+
+// ImagePruneReport 镜像清理结果
+type ImagePruneReport struct {
+	ImagesDeleted  []ImagePruneDeleted `json:"imagesDeleted"`
+	SpaceReclaimed uint64              `json:"spaceReclaimed"`
+}
+
+// ImagePruneDeleted 单次删除条目（解除标签 / 删除层）
+type ImagePruneDeleted struct {
+	Untagged string `json:"untagged,omitempty"`
+	Deleted  string `json:"deleted,omitempty"`
+}
+
+// ImagePrune 清理未使用的镜像。
+// dangling=true 仅清理悬空层；dangling=false 等价于 `docker image prune -a`，
+// 会回收所有未被容器引用的镜像（包括有标签但闲置的）。
+func (s *DockerService) ImagePrune(ctx context.Context, req ImagePruneRequest) (*ImagePruneReport, error) {
+	args := filters.NewArgs()
+	// dangling 过滤器为 Docker prune 必填项；true=仅悬空，false=全部未用
+	args.Add("dangling", fmt.Sprintf("%t", !req.All))
+	if req.Until != "" {
+		args.Add("until", req.Until)
+	}
+
+	report, err := s.client.ImagesPrune(ctx, args)
+	if err != nil {
+		logman.Error("Prune images failed", "all", req.All, "error", err)
+		return nil, err
+	}
+
+	deleted := make([]ImagePruneDeleted, 0, len(report.ImagesDeleted))
+	for _, d := range report.ImagesDeleted {
+		deleted = append(deleted, ImagePruneDeleted{Untagged: d.Untagged, Deleted: d.Deleted})
+	}
+
+	logman.Info("Images pruned", "all", req.All, "deletedCount", len(deleted), "spaceReclaimed", report.SpaceReclaimed)
+	return &ImagePruneReport{ImagesDeleted: deleted, SpaceReclaimed: report.SpaceReclaimed}, nil
 }
 
 // ImageActionRequest 镜像操作请求
