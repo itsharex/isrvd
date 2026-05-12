@@ -13,7 +13,6 @@ import (
 	"github.com/rehiy/libgo/request"
 
 	"isrvd/pkgs/compose"
-	pkgdocker "isrvd/pkgs/docker"
 )
 
 // ==================== 部署 ====================
@@ -221,9 +220,9 @@ func (s *Service) DockerImageRedeploy(ctx context.Context, name, serviceName, im
 		return nil, fmt.Errorf("删除旧容器 %s 失败: %w", oldContainerName, err)
 	}
 
-	id, err := s.dockerServiceContainerCreate(ctx, newProject, newSvc)
+	id, _, err := s.compose.ServiceContainerCreate(ctx, newProject, newSvc)
 	if err != nil {
-		if _, rbErr := s.dockerServiceContainerCreate(ctx, oldProject, oldSvc); rbErr != nil {
+		if _, _, rbErr := s.compose.ServiceContainerCreate(ctx, oldProject, oldSvc); rbErr != nil {
 			logman.Warn("Docker service rollback failed", "name", name, "service", serviceName, "error", rbErr)
 		}
 		s.dockerContentSave(installDir, oldContent, "")
@@ -232,7 +231,7 @@ func (s *Service) DockerImageRedeploy(ctx context.Context, name, serviceName, im
 
 	s.dockerContentSave(installDir, newContent, oldContent)
 
-	item := fmt.Sprintf("%s (%s)", dockerContainerNameOf(newSvc), pkgdocker.ShortID(id))
+	item := fmt.Sprintf("%s (%s)", dockerContainerNameOf(newSvc), shortID(id))
 	logman.Info("Compose service image redeployed", "name", name, "service", serviceName, "image", image)
 	return &DeployResult{ProjectName: name, Items: []string{item}, InstallDir: installDir}, nil
 }
@@ -254,11 +253,6 @@ func (s *Service) dockerProjectLoad(ctx context.Context, name, content, installD
 		WorkingDir:  installDir,
 		ProjectName: name,
 	})
-}
-
-func (s *Service) dockerServiceContainerCreate(ctx context.Context, project *types.Project, svc types.ServiceConfig) (string, error) {
-	id, _, err := s.compose.ServiceContainerCreate(ctx, project, svc)
-	return id, err
 }
 
 // dockerContainersRemove 停止并删除实例的所有容器

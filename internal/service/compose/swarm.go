@@ -10,16 +10,11 @@ import (
 	"github.com/rehiy/libgo/logman"
 
 	"isrvd/pkgs/compose"
-	pkgdocker "isrvd/pkgs/docker"
 )
 
 // ==================== 部署 ====================
 
 func (s *Service) SwarmDeploy(ctx context.Context, req DeployRequest) (*DeployResult, error) {
-	if s.swarm == nil {
-		return nil, fmt.Errorf("swarm 服务未初始化")
-	}
-
 	// 从 compose 内容加载项目，获取项目名
 	project, err := compose.LoadProjectFromContent(ctx, req.Content, "")
 	if err != nil {
@@ -56,10 +51,6 @@ func (s *Service) SwarmDeploy(ctx context.Context, req DeployRequest) (*DeployRe
 // ==================== 获取内容 ====================
 
 func (s *Service) SwarmContentGet(ctx context.Context, name string) (string, error) {
-	if s.swarm == nil {
-		return "", fmt.Errorf("swarm 服务未初始化")
-	}
-
 	// 优先读持久化文件
 	if content := s.swarmContentLoad(name); content != "" {
 		return content, nil
@@ -83,10 +74,6 @@ func (s *Service) SwarmContentGet(ctx context.Context, name string) (string, err
 // ==================== 重建 ====================
 
 func (s *Service) SwarmRedeploy(ctx context.Context, name, content string) (*DeployResult, error) {
-	if s.swarm == nil {
-		return nil, fmt.Errorf("swarm 服务未初始化")
-	}
-
 	oldContent, _ := s.SwarmContentGet(ctx, name)
 
 	s.swarmServicesRemove(ctx, name, oldContent)
@@ -119,10 +106,6 @@ func (s *Service) SwarmRedeploy(ctx context.Context, name, content string) (*Dep
 }
 
 func (s *Service) SwarmImageRedeploy(ctx context.Context, name, serviceName, image string) (*DeployResult, error) {
-	if s.swarm == nil {
-		return nil, fmt.Errorf("swarm 服务未初始化")
-	}
-
 	oldContent, err := s.SwarmContentGet(ctx, name)
 	if err != nil {
 		return nil, err
@@ -160,7 +143,7 @@ func (s *Service) SwarmImageRedeploy(ctx context.Context, name, serviceName, ima
 
 	s.swarmContentSave(name, newContent, oldContent)
 
-	item := fmt.Sprintf("%s (%s)", newSvc.Name, pkgdocker.ShortID(id))
+	item := fmt.Sprintf("%s (%s)", newSvc.Name, shortID(id))
 	logman.Info("Swarm compose service image redeployed", "name", name, "service", serviceName, "image", image)
 	return &DeployResult{ProjectName: name, Items: []string{item}}, nil
 }
@@ -188,8 +171,8 @@ func (s *Service) swarmProjectDeploy(ctx context.Context, project *types.Project
 		}
 
 		createdIDs = append(createdIDs, id)
-		items = append(items, fmt.Sprintf("%s (%s)", svc.Name, pkgdocker.ShortID(id)))
-		logman.Info("Swarm service deployed", "service", svc.Name, "id", pkgdocker.ShortID(id))
+		items = append(items, fmt.Sprintf("%s (%s)", svc.Name, shortID(id)))
+		logman.Info("Swarm service deployed", "service", svc.Name, "id", shortID(id))
 	}
 	return items, nil
 }
@@ -211,9 +194,6 @@ func (s *Service) swarmServiceCreate(ctx context.Context, project *types.Project
 
 // swarmServicesRemove 删除实例的所有服务
 func (s *Service) swarmServicesRemove(ctx context.Context, name, content string) {
-	if s.swarm == nil {
-		return
-	}
 	if content == "" {
 		content, _ = s.SwarmContentGet(ctx, name)
 	}

@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"regexp"
-	"sync"
 
 	"github.com/compose-spec/compose-go/v2/types"
 
@@ -17,13 +16,25 @@ import (
 	"isrvd/pkgs/swarm"
 )
 
-// ==================== 类型定义 ====================
+// Service Compose 部署业务服务
+type Service struct {
+	compose *compose.ComposeService
+	docker  *docker.DockerService
+	swarm   *swarm.SwarmService
+}
 
 // DeployRequest 部署请求
 type DeployRequest struct {
 	Content  string    `json:"content" binding:"required"`
 	InitURL  string    `json:"initURL,omitempty"`
 	InitFile io.Reader `json:"-"`
+}
+
+// DeployResult 部署结果
+type DeployResult struct {
+	ProjectName string   `json:"projectName"`
+	Items       []string `json:"items"`
+	InstallDir  string   `json:"installDir,omitempty"`
 }
 
 // RedeployRequest 重建请求
@@ -35,51 +46,19 @@ type RedeployRequest struct {
 	Image       string `json:"image,omitempty"`
 }
 
-// DeployResult 部署结果
-type DeployResult struct {
-	ProjectName string   `json:"projectName"`
-	Items       []string `json:"items"`
-	InstallDir  string   `json:"installDir,omitempty"`
-}
+var safeName = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9_.-]*$`)
 
-// ==================== 服务定义 ====================
-
-// Service Compose 部署业务服务
-type Service struct {
-	compose *compose.ComposeService
-	docker  *docker.DockerService
-	swarm   *swarm.SwarmService
-}
-
-var (
-	instance   *Service
-	instanceMu sync.Mutex
-	safeName   = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9_.-]*$`)
-)
-
-// NewService 创建服务（单例，供 server 层调用）
-// 依赖未就绪时返回错误，下次调用可重试，直到依赖初始化完成
+// NewService 创建 Compose 业务服务
 func NewService() (*Service, error) {
-	instanceMu.Lock()
-	defer instanceMu.Unlock()
-
-	if instance != nil {
-		return instance, nil
-	}
-
 	d := registry.DockerService
 	c := registry.ComposeService
-	s := registry.SwarmService
-
 	if d == nil {
 		return nil, fmt.Errorf("docker 服务未初始化")
 	}
 	if c == nil {
 		return nil, fmt.Errorf("compose 包服务未初始化")
 	}
-
-	instance = &Service{compose: c, docker: d, swarm: s}
-	return instance, nil
+	return &Service{compose: c, docker: d, swarm: registry.SwarmService}, nil
 }
 
 // ==================== 内部工具 ====================
@@ -134,4 +113,12 @@ func projectServiceFind(project *types.Project, serviceName string) (types.Servi
 func shortHash(content string) string {
 	h := sha256.Sum256([]byte(content))
 	return fmt.Sprintf("%x", h[:4])
+}
+
+// shortID 返回 ID 的前 12 字符
+func shortID(id string) string {
+	if len(id) > 12 {
+		return id[:12]
+	}
+	return id
 }
