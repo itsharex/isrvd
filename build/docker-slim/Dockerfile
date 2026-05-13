@@ -5,10 +5,12 @@ FROM alpine:3
 
 ARG TARGETARCH
 ARG ISRVD_VERSION
+ARG ISRVD_DOWNLOAD_BASE=https://github.com/rehiy/isrvd/releases/download
 
 # 安装基础工具，下载 isrvd，清理 curl
 RUN apk add --no-cache ca-certificates curl \
-    && curl -fsSL "https://github.com/rehiy/isrvd/releases/download/${ISRVD_VERSION}/isrvd-linux-${TARGETARCH}.tar.gz" \
+    && isrvd_download_url="${ISRVD_DOWNLOAD_BASE}/${ISRVD_VERSION}/isrvd-linux-${TARGETARCH}.tar.gz" \
+    && curl -fsSL "${isrvd_download_url}" \
        | tar xz -C /usr/local/bin/ isrvd-linux-${TARGETARCH} \
     && mv /usr/local/bin/isrvd-linux-${TARGETARCH} /usr/local/bin/isrvd \
     && apk del curl

@@ -1,0 +1,60 @@
+$:
+  tag_push:
+    - name: Isrvd Release
+      if: echo "$CNB_BRANCH" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+$'
+      runner:
+        tags: cnb:arch:amd64
+        cpus: 4
+      docker:
+        image: golang:1.25-bookworm
+        volumes:
+          - /go/pkg/mod
+          - /root/.cache/go-build
+          - /root/.npm
+      services:
+        - name: docker
+          options:
+            rootlessBuildkitd:
+              enabled: true
+      env:
+        IMAGE_URL: ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}
+        ISRVD_DOWNLOAD_BASE: ${CNB_WEB_ENDPOINT}/${CNB_REPO_SLUG}/-/releases/download
+
+      stages:
+        - name: Setup Node.js 24
+          timeout: 20m
+          script:
+            - apt-get update
+            - apt-get install -y --no-install-recommends ca-certificates curl git gnupg
+            - curl -fsSL https://deb.nodesource.com/setup_24.x | bash -
+            - apt-get install -y --no-install-recommends nodejs
+            - git fetch --unshallow --tags --force --prune || git fetch --tags --force --prune
+
+        - name: Build binary packages
+          timeout: 2h
+          script: sh build.sh
+
+        - name: Create CNB release
+          type: git:release
+          options:
+            title: $CNB_BRANCH
+            descriptionFromFile: RELEASE.md
+            latest: true
+
+        - name: Upload binary attachments
+          image: cnbcool/attachments:latest
+          settings:
+            attachments:
+              - dist/*
+
+        - name: Login to CNB Docker registry
+          script: printf "%s" "$CNB_TOKEN" | docker login -u "$CNB_TOKEN_USER_NAME" --password-stdin "$CNB_DOCKER_REGISTRY"
+
+        - name: Build and push CNB image
+          timeout: 2h
+          script: docker buildx build --platform linux/amd64,linux/arm64 -f build/docker/Dockerfile -t $IMAGE_URL:latest -t $IMAGE_URL:$CNB_BRANCH --build-arg "ISRVD_VERSION=$CNB_BRANCH" --build-arg "ISRVD_DOWNLOAD_BASE=$ISRVD_DOWNLOAD_BASE" --push .
+
+        - name: Build and push CNB slim image
+          timeout: 2h
+          script: docker buildx build --platform linux/amd64,linux/arm64 -f build/docker-slim/Dockerfile -t $IMAGE_URL:slim -t "$IMAGE_URL:$CNB_BRANCH-slim" --build-arg "ISRVD_VERSION=$CNB_BRANCH" --build-arg "ISRVD_DOWNLOAD_BASE=$ISRVD_DOWNLOAD_BASE" --push .
+

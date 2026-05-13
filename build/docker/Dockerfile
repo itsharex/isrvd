@@ -5,10 +5,12 @@ FROM alpine:3 AS builder
 
 ARG TARGETARCH
 ARG ISRVD_VERSION
+ARG ISRVD_DOWNLOAD_BASE=https://github.com/rehiy/isrvd/releases/download
 ARG ETCD_VERSION=v3.5.29
 
 RUN apk add --no-cache curl tar \
-    && curl -fsSL "https://github.com/rehiy/isrvd/releases/download/${ISRVD_VERSION}/isrvd-linux-${TARGETARCH}.tar.gz" \
+    && isrvd_download_url="${ISRVD_DOWNLOAD_BASE}/${ISRVD_VERSION}/isrvd-linux-${TARGETARCH}.tar.gz" \
+    && curl -fsSL "${isrvd_download_url}" \
        | tar xz -C /usr/local/bin/ isrvd-linux-${TARGETARCH} \
     && mv /usr/local/bin/isrvd-linux-${TARGETARCH} /usr/local/bin/isrvd \
     && curl -fsSL "https://github.com/etcd-io/etcd/releases/download/${ETCD_VERSION}/etcd-${ETCD_VERSION}-linux-${TARGETARCH}.tar.gz" \
