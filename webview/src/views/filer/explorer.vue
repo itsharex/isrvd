@@ -100,13 +100,13 @@ export default toNative(FileExplorer)
           <nav aria-label="breadcrumb" class="flex-1 min-w-0">
             <ol class="flex items-center space-x-2 text-sm overflow-x-auto">
               <li class="flex-shrink-0">
-                <a 
+                <button 
+                  type="button"
                   class="flex items-center px-3 py-1.5 rounded-lg text-slate-600 hover:bg-white hover:text-primary-600 transition-all"
-                  href="#" 
                   @click="navigateTo('/')"
                 >
                   <i class="fas fa-home text-base"></i>
-                </a>
+                </button>
               </li>
               
               <template v-for="(part, index) in paths" :key="index">
@@ -114,13 +114,13 @@ export default toNative(FileExplorer)
                   <i class="fas fa-chevron-right text-xs"></i>
                 </li>
                 <li v-if="Number(index) < paths.length - 1" class="flex-shrink-0">
-                  <a 
+                  <button 
+                    type="button"
                     class="px-3 py-1.5 rounded-lg text-slate-600 hover:bg-white hover:text-primary-600 transition-all"
-                    href="#" 
                     @click="navigateTo('/' + paths.slice(0, Number(index) + 1).join('/'))"
                   >
                     {{ part }}
-                  </a>
+                  </button>
                 </li>
                 <li v-else class="px-3 py-1.5 text-primary-600 font-semibold flex-shrink-0">
                   {{ part }}
@@ -223,14 +223,14 @@ export default toNative(FileExplorer)
                       <i :class="getFileIcon(file)" class="text-white text-sm"></i>
                     </div>
                     <div class="min-w-0">
-                      <a 
+                      <button 
                         v-if="file.isDir" 
-                        href="#" 
-                        class="font-medium text-slate-800 hover:text-primary-600 transition-colors truncate block" 
+                        type="button"
+                        class="font-medium text-slate-800 hover:text-primary-600 transition-colors truncate block text-left" 
                         @click="navigateTo(file.path)"
                       >
                         {{ file.name }}
-                      </a>
+                      </button>
                       <span v-else class="font-medium text-slate-800 truncate block">{{ file.name }}</span>
                     </div>
                   </div>
@@ -378,14 +378,14 @@ export default toNative(FileExplorer)
                   <i :class="getFileIcon(file)" class="text-white text-base"></i>
                 </div>
                 <div class="min-w-0">
-                  <a 
+                  <button 
                     v-if="file.isDir" 
-                    href="#" 
-                    class="font-medium text-slate-800 hover:text-primary-600 transition-colors text-sm truncate block" 
+                    type="button"
+                    class="font-medium text-slate-800 hover:text-primary-600 transition-colors text-sm truncate block text-left" 
                     @click="navigateTo(file.path)"
                   >
                     {{ file.name }}
-                  </a>
+                  </button>
                   <span v-else class="font-medium text-slate-800 text-sm truncate block">{{ file.name }}</span>
                   <span v-if="!file.isDir" class="text-xs text-slate-400 truncate block mt-0.5">{{ formatFileSize(file.size) }}</span>
                   <span v-else class="text-xs text-slate-400 truncate block mt-0.5">目录</span>

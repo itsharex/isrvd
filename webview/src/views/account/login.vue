@@ -27,8 +27,7 @@ class Login extends Vue {
     }
 
     handleOIDCLogin() {
-        const baseURL = window.__BASE_URL__ || ''
-        window.location.href = `${baseURL}/api/account/oidc/login`
+        window.location.href = 'api/account/oidc/login'
     }
 }
 

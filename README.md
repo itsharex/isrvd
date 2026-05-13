@@ -59,6 +59,8 @@ docker run -d \
 | 9080 | APISIX | HTTP 代理端口 |
 | 9443 | APISIX | HTTPS 代理端口 |
 
+Web 管理界面使用 hash 路由与相对 API 路径，反向代理可部署在 `/` 或 `/xxx/`。
+
 ### slim（仅 isrvd）
 
 ```bash

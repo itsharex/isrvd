@@ -76,113 +76,113 @@ class ApiService {
     // ==================== Overview 系统概览 ====================
 
     overviewProbe() {
-        return http.get<SystemProbe>('/api/overview/probe')
+        return http.get<SystemProbe>('overview/probe')
     }
 
     overviewStatus() {
-        return http.get<SystemStat>('/api/overview/status')
+        return http.get<SystemStat>('overview/status')
     }
 
     // ==================== System 系统相关 ====================
 
     systemConfig(params?: Record<string, string>) {
-        return http.get<AllConfig>('/api/system/config', { params })
+        return http.get<AllConfig>('system/config', { params })
     }
 
     systemConfigUpdate(data: Partial<AllConfig>) {
-        return http.put<void>('/api/system/config', data)
+        return http.put<void>('system/config', data)
     }
 
     systemAuditLogs(params?: { username?: string; limit?: number }) {
-        return http.get<AuditLog[]>('/api/system/audit/logs', { params })
+        return http.get<AuditLog[]>('system/audit/logs', { params })
     }
 
     // ==================== Account 账户相关 ====================
 
     accountLogin(data: AuthLogin) {
-        return http.post<AuthLoginResult>('/api/account/login', data)
+        return http.post<AuthLoginResult>('account/login', data)
     }
 
     accountOIDCExchange(data: OIDCExchange) {
-        return http.post<AuthLoginResult>('/api/account/oidc/exchange', data)
+        return http.post<AuthLoginResult>('account/oidc/exchange', data)
     }
 
     accountInfo() {
-        return http.get<AuthInfo>('/api/account/info')
+        return http.get<AuthInfo>('account/info')
     }
 
     accountRouteList() {
-        return http.get<Route[]>('/api/account/routes')
+        return http.get<Route[]>('account/routes')
     }
 
     accountMemberList() {
-        return http.get<MemberInfo[]>('/api/account/members')
+        return http.get<MemberInfo[]>('account/members')
     }
 
     accountMemberCreate(data: MemberUpsert) {
-        return http.post<void>('/api/account/member', data)
+        return http.post<void>('account/member', data)
     }
 
     accountMemberUpdate(username: string, data: MemberUpsert) {
-        return http.put<void>(`/api/account/member/${encodeURIComponent(username)}`, data)
+        return http.put<void>(`account/member/${encodeURIComponent(username)}`, data)
     }
 
     accountMemberDelete(username: string) {
-        return http.delete<void>(`/api/account/member/${encodeURIComponent(username)}`)
+        return http.delete<void>(`account/member/${encodeURIComponent(username)}`)
     }
 
     accountTokenCreate(data: ApiTokenCreate) {
-        return http.post<ApiTokenResult>('/api/account/token', data)
+        return http.post<ApiTokenResult>('account/token', data)
     }
 
     accountPasswordChange(data: ChangePassword) {
-        return http.put<void>('/api/account/password', data)
+        return http.put<void>('account/password', data)
     }
 
     // ==================== Filer 文件管理相关 ====================
 
     filerList(path: string) {
-        return http.post<FilerList>('/api/filer/list', { path })
+        return http.post<FilerList>('filer/list', { path })
     }
 
     filerDelete(path: string) {
-        return http.post<void>('/api/filer/delete', { path })
+        return http.post<void>('filer/delete', { path })
     }
 
     filerRename(path: string, target: string) {
-        return http.post<void>('/api/filer/rename', { path, target })
+        return http.post<void>('filer/rename', { path, target })
     }
 
     filerMkdir(path: string) {
-        return http.post<void>('/api/filer/mkdir', { path })
+        return http.post<void>('filer/mkdir', { path })
     }
 
     filerCreate(path: string, content = '') {
-        return http.post<void>('/api/filer/create', { path, content })
+        return http.post<void>('filer/create', { path, content })
     }
 
     filerRead(path: string) {
-        return http.post<FilerRead>('/api/filer/read', { path })
+        return http.post<FilerRead>('filer/read', { path })
     }
 
     filerModify(path: string, content: string) {
-        return http.post<void>('/api/filer/modify', { path, content })
+        return http.post<void>('filer/modify', { path, content })
     }
 
     filerChmod(path: string, mode: string) {
-        return http.post<void>('/api/filer/chmod', { path, mode })
+        return http.post<void>('filer/chmod', { path, mode })
     }
 
     filerZip(path: string) {
-        return http.post<void>('/api/filer/zip', { path })
+        return http.post<void>('filer/zip', { path })
     }
 
     filerUnzip(path: string) {
-        return http.post<void>('/api/filer/unzip', { path })
+        return http.post<void>('filer/unzip', { path })
     }
 
     filerUpload(formData: FormData, config: AxiosRequestConfig = {}) {
-        return http.post<void>('/api/filer/upload', formData, {
+        return http.post<void>('filer/upload', formData, {
             headers: {
                 'Content-Type': 'multipart/form-data'
             },
@@ -191,306 +191,306 @@ class ApiService {
     }
 
     filerDownload(path: string) {
-        return httpBlob.post('/api/filer/download', { path }, { responseType: 'blob' })
+        return httpBlob.post('filer/download', { path }, { responseType: 'blob' })
     }
 
     // ==================== APISIX 管理相关 ====================
 
     // 路由管理
     apisixRouteList() {
-        return http.get<ApisixRoute[]>('/api/apisix/routes')
+        return http.get<ApisixRoute[]>('apisix/routes')
     }
 
     apisixRoute(id: string) {
-        return http.get<ApisixRoute>(`/api/apisix/route/${id}`)
+        return http.get<ApisixRoute>(`apisix/route/${id}`)
     }
 
     apisixRouteCreate(data: ApisixRoute) {
-        return http.post('/api/apisix/route', data)
+        return http.post('apisix/route', data)
     }
 
     apisixRouteUpdate(id: string, data: ApisixRoute) {
-        return http.put(`/api/apisix/route/${id}`, data)
+        return http.put(`apisix/route/${id}`, data)
     }
 
     apisixRouteStatus(id: string, status: number) {
-        return http.patch<void>(`/api/apisix/route/${id}/status`, { status })
+        return http.patch<void>(`apisix/route/${id}/status`, { status })
     }
 
     apisixRouteDelete(id: string) {
-        return http.delete<void>(`/api/apisix/route/${id}`)
+        return http.delete<void>(`apisix/route/${id}`)
     }
 
     // Consumer 管理
     apisixConsumerList() {
-        return http.get<ApisixConsumer[]>('/api/apisix/consumers')
+        return http.get<ApisixConsumer[]>('apisix/consumers')
     }
 
     apisixConsumerCreate(data: ApisixConsumerCreate) {
-        return http.post('/api/apisix/consumer', data)
+        return http.post('apisix/consumer', data)
     }
 
     apisixConsumerUpdate(username: string, data: ApisixConsumerUpdate) {
-        return http.put(`/api/apisix/consumer/${username}`, data)
+        return http.put(`apisix/consumer/${username}`, data)
     }
 
     apisixConsumerDelete(username: string) {
-        return http.delete<void>(`/api/apisix/consumer/${username}`)
+        return http.delete<void>(`apisix/consumer/${username}`)
     }
 
     // 白名单管理
     apisixWhitelist() {
-        return http.get<ApisixRoute[]>('/api/apisix/whitelist')
+        return http.get<ApisixRoute[]>('apisix/whitelist')
     }
 
     apisixWhitelistRevoke(payload: ApisixRevokeWhitelist) {
-        return http.post<void>('/api/apisix/whitelist/revoke', payload)
+        return http.post<void>('apisix/whitelist/revoke', payload)
     }
 
     // PluginConfig 管理
     apisixPluginConfigList() {
-        return http.get<ApisixPluginConfig[]>('/api/apisix/plugin-configs')
+        return http.get<ApisixPluginConfig[]>('apisix/plugin-configs')
     }
 
     apisixPluginConfig(id: string) {
-        return http.get<ApisixPluginConfig>(`/api/apisix/plugin-config/${id}`)
+        return http.get<ApisixPluginConfig>(`apisix/plugin-config/${id}`)
     }
 
     apisixPluginConfigCreate(data: ApisixPluginConfigCreate) {
-        return http.post('/api/apisix/plugin-config', data)
+        return http.post('apisix/plugin-config', data)
     }
 
     apisixPluginConfigUpdate(id: string, data: ApisixPluginConfigUpdate) {
-        return http.put(`/api/apisix/plugin-config/${id}`, data)
+        return http.put(`apisix/plugin-config/${id}`, data)
     }
 
     apisixPluginConfigDelete(id: string) {
-        return http.delete<void>(`/api/apisix/plugin-config/${id}`)
+        return http.delete<void>(`apisix/plugin-config/${id}`)
     }
 
     // Upstream 管理
     apisixUpstreamList() {
-        return http.get<ApisixUpstream[]>('/api/apisix/upstreams')
+        return http.get<ApisixUpstream[]>('apisix/upstreams')
     }
 
     apisixUpstream(id: string) {
-        return http.get<ApisixUpstream>(`/api/apisix/upstream/${id}`)
+        return http.get<ApisixUpstream>(`apisix/upstream/${id}`)
     }
 
     apisixUpstreamCreate(data: ApisixUpstreamCreate) {
-        return http.post('/api/apisix/upstream', data)
+        return http.post('apisix/upstream', data)
     }
 
     apisixUpstreamUpdate(id: string, data: ApisixUpstreamUpdate) {
-        return http.put(`/api/apisix/upstream/${id}`, data)
+        return http.put(`apisix/upstream/${id}`, data)
     }
 
     apisixUpstreamDelete(id: string) {
-        return http.delete<void>(`/api/apisix/upstream/${id}`)
+        return http.delete<void>(`apisix/upstream/${id}`)
     }
 
     // SSL 管理
     apisixSSLList() {
-        return http.get<ApisixSSL[]>('/api/apisix/ssls')
+        return http.get<ApisixSSL[]>('apisix/ssls')
     }
 
     apisixSSL(id: string) {
-        return http.get<ApisixSSL>(`/api/apisix/ssl/${id}`)
+        return http.get<ApisixSSL>(`apisix/ssl/${id}`)
     }
 
     apisixSSLCreate(data: ApisixSSLCreate) {
-        return http.post('/api/apisix/ssl', data)
+        return http.post('apisix/ssl', data)
     }
 
     apisixSSLUpdate(id: string, data: ApisixSSLUpdate) {
-        return http.put(`/api/apisix/ssl/${id}`, data)
+        return http.put(`apisix/ssl/${id}`, data)
     }
 
     apisixSSLDelete(id: string) {
-        return http.delete<void>(`/api/apisix/ssl/${id}`)
+        return http.delete<void>(`apisix/ssl/${id}`)
     }
 
     apisixPluginList() {
-        return http.get<Record<string, { schema: Record<string, unknown> }>>('/api/apisix/plugins')
+        return http.get<Record<string, { schema: Record<string, unknown> }>>('apisix/plugins')
     }
 
     // ==================== Docker 服务相关 ====================
 
     // Docker 概览信息
     dockerInfo() {
-        return http.get<DockerInfo>('/api/docker/info')
+        return http.get<DockerInfo>('docker/info')
     }
 
     // 容器管理
     dockerContainerList(all = false) {
-        return http.get<DockerContainerInfo[]>('/api/docker/containers', { params: { all } })
+        return http.get<DockerContainerInfo[]>('docker/containers', { params: { all } })
     }
 
     dockerContainer(id: string) {
-        return http.get<DockerContainerDetail>(`/api/docker/container/${id}`)
+        return http.get<DockerContainerDetail>(`docker/container/${id}`)
     }
 
     dockerContainerAction(id: string, action: string) {
-        return http.post<void>(`/api/docker/container/${id}/action`, { action })
+        return http.post<void>(`docker/container/${id}/action`, { action })
     }
 
     dockerContainerCreate(data: DockerContainerCreate) {
-        return http.post('/api/docker/container', data)
+        return http.post('docker/container', data)
     }
 
     dockerContainerLogs(id: string, tail = '100') {
-        return http.get<{ logs: string[] }>(`/api/docker/container/${id}/logs`, { params: { tail } })
+        return http.get<{ logs: string[] }>(`docker/container/${id}/logs`, { params: { tail } })
     }
 
     dockerContainerStats(id: string) {
-        return http.get<DockerContainerStats>(`/api/docker/container/${id}/stats`)
+        return http.get<DockerContainerStats>(`docker/container/${id}/stats`)
     }
 
     dockerContainerCompose(name: string) {
-        return http.get<DockerContainerCompose>(`/api/compose/docker/${name}`)
+        return http.get<DockerContainerCompose>(`compose/docker/${name}`)
     }
 
     // 镜像管理
     dockerImageList(all = false) {
-        return http.get<DockerImageInfo[]>('/api/docker/images', { params: { all } })
+        return http.get<DockerImageInfo[]>('docker/images', { params: { all } })
     }
 
     dockerImage(id: string) {
-	return http.get<DockerImageDetail>(`/api/docker/image/${id}`)
+	return http.get<DockerImageDetail>(`docker/image/${id}`)
     }
 
     dockerImageAction(id: string, action: string) {
-        return http.post<void>(`/api/docker/image/${id}/action`, { action })
+        return http.post<void>(`docker/image/${id}/action`, { action })
     }
 
     dockerImageTag(id: string, repoTag: string) {
-        return http.post<void>(`/api/docker/image/${id}/tag`, { repoTag })
+        return http.post<void>(`docker/image/${id}/tag`, { repoTag })
     }
 
     dockerImageSearch(name: string) {
-        return http.get<DockerImageSearchResult[]>('/api/docker/images/search', { params: { name } })
+        return http.get<DockerImageSearchResult[]>('docker/images/search', { params: { name } })
     }
 
     dockerImageBuild(dockerfile: string, tag = '') {
-        return http.post<void>('/api/docker/image/build', { dockerfile, tag })
+        return http.post<void>('docker/image/build', { dockerfile, tag })
     }
 
     dockerImagePrune(data: DockerImagePrune = {}) {
-        return http.post<DockerImagePruneResult>('/api/docker/image/prune', data)
+        return http.post<DockerImagePruneResult>('docker/image/prune', data)
     }
 
     dockerImagePush(image: string, registryUrl: string, namespace: string) {
-        return http.post<void>('/api/docker/image/push', { image, registryUrl, namespace })
+        return http.post<void>('docker/image/push', { image, registryUrl, namespace })
     }
 
     dockerImagePull(image: string, registryUrl: string, namespace: string) {
-        return http.post<void>('/api/docker/image/pull', { image, registryUrl, namespace })
+        return http.post<void>('docker/image/pull', { image, registryUrl, namespace })
     }
 
     // 网络管理
     dockerNetworkList() {
-        return http.get<DockerNetworkInfo[]>('/api/docker/networks')
+        return http.get<DockerNetworkInfo[]>('docker/networks')
     }
 
     dockerNetwork(id: string) {
-	return http.get<DockerNetworkDetail>(`/api/docker/network/${id}`)
+	return http.get<DockerNetworkDetail>(`docker/network/${id}`)
     }
 
     dockerNetworkAction(id: string, action: string) {
-        return http.post<void>(`/api/docker/network/${id}/action`, { action })
+        return http.post<void>(`docker/network/${id}/action`, { action })
     }
 
     dockerNetworkCreate(data: DockerNetworkCreate) {
-        return http.post('/api/docker/network', data)
+        return http.post('docker/network', data)
     }
 
     // 卷管理
     dockerVolumeList() {
-        return http.get<DockerVolumeInfo[]>('/api/docker/volumes')
+        return http.get<DockerVolumeInfo[]>('docker/volumes')
     }
 
     dockerVolume(name: string) {
-	return http.get<DockerVolumeDetail>(`/api/docker/volume/${encodeURIComponent(name)}`)
+	return http.get<DockerVolumeDetail>(`docker/volume/${encodeURIComponent(name)}`)
     }
 
     dockerVolumeAction(name: string, action: string) {
-        return http.post<void>(`/api/docker/volume/${encodeURIComponent(name)}/action`, { action })
+        return http.post<void>(`docker/volume/${encodeURIComponent(name)}/action`, { action })
     }
 
     dockerVolumeCreate(data: DockerVolumeCreate) {
-        return http.post('/api/docker/volume', data)
+        return http.post('docker/volume', data)
     }
 
     // 镜像仓库管理
     dockerRegistryList() {
-        return http.get<DockerRegistryInfo[]>('/api/docker/registries')
+        return http.get<DockerRegistryInfo[]>('docker/registries')
     }
 
     dockerRegistryCreate(data: DockerRegistryUpsert) {
-        return http.post<void>('/api/docker/registry', data)
+        return http.post<void>('docker/registry', data)
     }
 
     dockerRegistryUpdate(url: string, data: DockerRegistryUpsert) {
-        return http.put<void>('/api/docker/registry', data, { params: { url } })
+        return http.put<void>('docker/registry', data, { params: { url } })
     }
 
     dockerRegistryDelete(url: string) {
-        return http.delete<void>('/api/docker/registry', { params: { url } })
+        return http.delete<void>('docker/registry', { params: { url } })
     }
 
     // ==================== Docker Swarm 管理相关 ====================
 
     swarmInfo() {
-        return http.get<SwarmInfo>('/api/swarm/info')
+        return http.get<SwarmInfo>('swarm/info')
     }
 
     swarmNodeList() {
-        return http.get<SwarmNodeInfo[]>('/api/swarm/nodes')
+        return http.get<SwarmNodeInfo[]>('swarm/nodes')
     }
 
     swarmJoinToken() {
-        return http.get<{ worker: string; manager: string }>('/api/swarm/token')
+        return http.get<{ worker: string; manager: string }>('swarm/token')
     }
 
     swarmNode(id: string) {
-	return http.get<SwarmNodeDetail>(`/api/swarm/node/${id}`)
+	return http.get<SwarmNodeDetail>(`swarm/node/${id}`)
     }
 
     swarmNodeAction(id: string, action: string) {
-        return http.post<void>(`/api/swarm/node/${id}/action`, { action })
+        return http.post<void>(`swarm/node/${id}/action`, { action })
     }
 
     // 服务管理
     swarmServiceList() {
-        return http.get<SwarmServiceInfo[]>('/api/swarm/services')
+        return http.get<SwarmServiceInfo[]>('swarm/services')
     }
 
     swarmService(id: string) {
-        return http.get<SwarmServiceDetail>(`/api/swarm/service/${id}`)
+        return http.get<SwarmServiceDetail>(`swarm/service/${id}`)
     }
 
     swarmServiceAction(id: string, action: string, replicas?: number) {
-        return http.post<void>(`/api/swarm/service/${id}/action`, { action, replicas })
+        return http.post<void>(`swarm/service/${id}/action`, { action, replicas })
     }
 
     swarmServiceCreate(data: SwarmCreateService) {
-        return http.post('/api/swarm/service', data)
+        return http.post('swarm/service', data)
     }
 
     swarmServiceRedeploy(id: string) {
-        return http.post<void>(`/api/swarm/service/${id}/force-update`)
+        return http.post<void>(`swarm/service/${id}/force-update`)
     }
 
     swarmServiceCompose(name: string) {
-        return http.get<SwarmServiceCompose>(`/api/compose/swarm/${name}`)
+        return http.get<SwarmServiceCompose>(`compose/swarm/${name}`)
     }
 
     swarmServiceLogs(id: string, tail = '100') {
-        return http.get<{ logs: string[] }>(`/api/swarm/service/${id}/logs`, { params: { tail } })
+        return http.get<{ logs: string[] }>(`swarm/service/${id}/logs`, { params: { tail } })
     }
 
     swarmTaskList(serviceID = '') {
-        return http.get<SwarmTask[]>('/api/swarm/tasks', { params: serviceID ? { serviceID } : {} })
+        return http.get<SwarmTask[]>('swarm/tasks', { params: serviceID ? { serviceID } : {} })
     }
 
     // ==================== Compose 部署 ====================
@@ -504,19 +504,19 @@ class ApiService {
         } else if (data.initURL) {
             form.append('initURL', data.initURL)
         }
-        return http.post<ComposeDeployResult>('/api/compose/docker/deploy', form)
+        return http.post<ComposeDeployResult>('compose/docker/deploy', form)
     }
 
     composeSwarmDeploy(data: { content: string }) {
-        return http.post<ComposeDeployResult>('/api/compose/swarm/deploy', data)
+        return http.post<ComposeDeployResult>('compose/swarm/deploy', data)
     }
 
     composeDockerRedeploy(name: string, data: ComposeRedeploy) {
-        return http.post<ComposeDeployResult>(`/api/compose/docker/${name}/redeploy`, data)
+        return http.post<ComposeDeployResult>(`compose/docker/${name}/redeploy`, data)
     }
 
     composeSwarmRedeploy(name: string, data: ComposeRedeploy) {
-        return http.post<ComposeDeployResult>(`/api/compose/swarm/${name}/redeploy`, data)
+        return http.post<ComposeDeployResult>(`compose/swarm/${name}/redeploy`, data)
     }
 }
 
