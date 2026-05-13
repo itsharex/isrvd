@@ -48,9 +48,11 @@ export default toNative(Login)
       <div class="card p-8">
         <!-- Header -->
         <div class="text-center mb-8">
-          <div class="inline-flex items-center justify-center w-16 h-16 rounded-lg bg-primary-500 mb-4 shadow-glow transform hover:scale-105 transition-transform duration-300">
-            <i class="fas fa-server text-white text-2xl"></i>
-          </div>
+          <img
+            src="@/assets/logo.svg"
+            alt="Isrvd"
+            class="inline-flex w-28 object-contain my-5 transform hover:scale-105 transition-transform duration-300"
+          >
           <h1 class="text-2xl font-bold text-slate-800 mb-2">欢迎回来</h1>
           <p class="text-slate-500">登录到 Isrvd 管理面板</p>
         </div>
