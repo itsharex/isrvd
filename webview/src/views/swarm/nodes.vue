@@ -209,7 +209,7 @@ export default toNative(Nodes)
                       <i class="fas fa-server text-white text-sm"></i>
                     </div>
                     <div class="min-w-0">
-                      <a v-if="portal.hasPerm('GET /api/swarm/node/:id')" :href="'/swarm/node/' + n.id" class="font-medium text-slate-800 hover:text-blue-600 transition-colors truncate block" @click.prevent="$router.push(`/swarm/node/${n.id}`)">{{ n.hostname }}</a>
+                      <router-link v-if="portal.hasPerm('GET /api/swarm/node/:id')" :to="`/swarm/node/${n.id}`" class="font-medium text-slate-800 hover:text-blue-600 transition-colors truncate block">{{ n.hostname }}</router-link>
                       <span v-else class="font-medium text-slate-800 truncate block">{{ n.hostname }}</span>
                       <span class="text-xs text-slate-400 font-mono truncate block mt-0.5">{{ n.id }}</span>
                     </div>
@@ -253,7 +253,7 @@ export default toNative(Nodes)
                 <i class="fas fa-server text-white text-base"></i>
               </div>
               <div class="min-w-0">
-                <a v-if="portal.hasPerm('GET /api/swarm/node/:id')" :href="'/swarm/node/' + n.id" class="font-medium text-slate-800 hover:text-blue-600 transition-colors text-sm truncate block" @click.prevent="$router.push(`/swarm/node/${n.id}`)">{{ n.hostname }}</a>
+                <router-link v-if="portal.hasPerm('GET /api/swarm/node/:id')" :to="`/swarm/node/${n.id}`" class="font-medium text-slate-800 hover:text-blue-600 transition-colors text-sm truncate block">{{ n.hostname }}</router-link>
                 <span v-else class="font-medium text-slate-800 text-sm truncate block">{{ n.hostname }}</span>
                 <span class="text-xs text-slate-400 font-mono truncate block mt-0.5">{{ n.id }}</span>
               </div>

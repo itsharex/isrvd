@@ -1,7 +1,4 @@
-import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
-
-// 获取 baseURL 配置
-const baseURL = window.__BASE_URL__ || ''
+import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -187,7 +184,7 @@ const routes: RouteRecordRaw[] = [
 ]
 
 const router = createRouter({
-  history: createWebHistory(baseURL),
+  history: createWebHashHistory(),
   routes
 })
 

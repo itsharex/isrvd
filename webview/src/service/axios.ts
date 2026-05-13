@@ -1,11 +1,5 @@
 import axios, { AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios'
 
-declare global {
-    interface Window {
-        __BASE_URL__?: string
-    }
-}
-
 /**
  * 标准 API 响应结构
  */
@@ -42,10 +36,19 @@ export interface HttpBlobClient {
  */
 export type NotificationType = 'success' | 'error' | 'warning' | 'info'
 
-// 创建配置了 baseURL 的 axios 实例
-const baseURL = window.__BASE_URL__ || ''
-const axiosInstance = axios.create({ baseURL })
-const axiosBlobInstance = axios.create({ baseURL })
+// API 使用相对 baseURL，业务接口只传模块路径
+const axiosInstance = axios.create({ baseURL: 'api/' })
+const axiosBlobInstance = axios.create({ baseURL: 'api/' })
+
+/**
+ * 将 api/ 相对路径转换为 WebSocket 绝对 URL
+ * 兼容部署在 / 或 /xxx/ 子路径下的场景
+ */
+export const wsUrl = (path: string): string => {
+    const base = new URL('api/' + path.replace(/^\/+/, ''), window.location.href)
+    base.protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+    return base.toString()
+}
 
 /**
  * 导出类型安全的 HTTP 客户端

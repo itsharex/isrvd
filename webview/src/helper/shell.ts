@@ -1,6 +1,8 @@
 import { Terminal } from '@xterm/xterm'
 import { FitAddon } from '@xterm/addon-fit'
 
+import { wsUrl } from '@/service/axios'
+
 let term: Terminal | null = null
 let socket: WebSocket | null = null
 let fitAddon: FitAddon | null = null
@@ -19,8 +21,7 @@ export function create(el: HTMLElement, token: string, shell = 'bash'): void {
     resizeHandler = () => fitAddon?.fit()
     window.addEventListener('resize', resizeHandler)
 
-    const baseURL =  window.__BASE_URL__ || ''
-    socket = new WebSocket(`${baseURL}/api/shell?token=${token}&shell=${encodeURIComponent(shell)}`)
+    socket = new WebSocket(wsUrl(`shell?token=${token}&shell=${encodeURIComponent(shell)}`))
 
     term.onData(data => socket?.readyState === WebSocket.OPEN && socket.send(data))
     socket.onopen = () => term && term.write('[连接中...]\r\n')
