@@ -28,6 +28,8 @@ isrvd_get "/docker/network/<NETWORK_ID>"
 isrvd_post "/docker/network" '{"name":"<NAME>","driver":"<DRIVER>","subnet":"<CIDR>"}'
 ```
 
+`subnet` 可选；填写时会作为 Docker IPAM 子网创建网络。
+
 ## 删除网络
 
 ```bash

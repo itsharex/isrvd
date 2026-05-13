@@ -57,7 +57,7 @@ isrvd_get "/account/routes"
 ## 创建 API Token
 
 ```bash
-isrvd_post "/account/token" '{"name":"<TOKEN_NAME>","expiresIn":"720h"}'
+isrvd_post "/account/token" '{"name":"<TOKEN_NAME>","expiresIn":2592000}'
 ```
 
 返回：`{"token": "长效token..."}`

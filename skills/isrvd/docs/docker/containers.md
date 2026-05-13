@@ -1,5 +1,13 @@
 # Docker 容器 API
 
+## Docker 服务信息
+
+```bash
+isrvd_get "/docker/info"
+```
+
+返回 Docker daemon 基础信息。
+
 ## 列出容器
 
 ```bash
