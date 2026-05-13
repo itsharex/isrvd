@@ -36,6 +36,8 @@ COPY --chmod=755 build/docker/entrypoint.sh /entrypoint.sh
 COPY build/docker/apisix.yaml build/docker/isrvd.yml /etc/defaults/
 COPY build/docker/runit /etc/sv
 
+ENV CONFIG_PATH=/data/conf/isrvd.yml
+
 # 暴露端口
 # 8080: isrvd Web UI
 # 9180: Apisix Admin API

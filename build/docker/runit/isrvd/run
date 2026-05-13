@@ -18,5 +18,5 @@ done
 echo "[isrvd] Starting isrvd..."
 cd /data
 
-export CONFIG_PATH="/data/conf/isrvd.yml"
+echo "[isrvd] Using CONFIG_PATH: $CONFIG_PATH"
 exec /usr/local/bin/isrvd
