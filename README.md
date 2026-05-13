@@ -89,6 +89,8 @@ services:
 
 ## 二进制部署
 
+安装目录：`/usr/local/isrvd/`（包含二进制和配置文件）
+
 ```bash
 # 一键安装
 bash <(curl -sL https://jscdn.rehi.org/gh/rehiy/isrvd/build/script/isrvd.sh) install
@@ -98,8 +100,6 @@ bash <(curl -sL https://jscdn.rehi.org/gh/rehiy/isrvd/build/script/isrvd.sh) upd
 bash <(curl -sL https://jscdn.rehi.org/gh/rehiy/isrvd/build/script/isrvd.sh) uninstall
 bash <(curl -sL https://jscdn.rehi.org/gh/rehiy/isrvd/build/script/isrvd.sh) download
 ```
-
-安装目录：`/usr/local/isrvd/`（包含二进制和配置文件）
 
 也可直接运行 `./isrvd`，通过 `CONFIG_PATH` 指定配置位置：
 
@@ -116,9 +116,12 @@ CONFIG_PATH="etcd://user:pass@127.0.0.1:2379/isrvd/config?scheme=http&timeout=5s
 
 # etcd key 不存在时，用 fallback YAML 初始化并写入 etcd
 CONFIG_PATH="etcd://127.0.0.1:2379/isrvd/config?fallback=/data/conf/isrvd.yml" ./isrvd
+
+# etcd 完整配置示例
+# etcd://user:pass@host1:2379,host2:2379/key?scheme=http&timeout=5s&fallback=/path/config.yml
 ```
 
-`etcd://user:pass@host1:2379,host2:2379/key?scheme=http&timeout=5s&fallback=/path/config.yml`；认证可省略或用 `ETCD_USERNAME` / `ETCD_PASSWORD` 补充。etcd 配置变更仅记录重启提示，不自动热更新。
+**etcd** 认证可省略或用 `ETCD_USERNAME` / `ETCD_PASSWORD` 补充，配置变更仅记录重启提示，不自动热更新。
 
 ## 本地开发
 
