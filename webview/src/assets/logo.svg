@@ -1,25 +1,24 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 255 90" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" aria-labelledby="title desc" viewBox="0 0 255 90">
     <defs>
-        <linearGradient id="markGradient" x1="0" y1="6" x2="34" y2="74" gradientUnits="userSpaceOnUse">
-            <stop offset="0" stop-color="#06B6D4" />
-            <stop offset="0.52" stop-color="#3B82F6" />
-            <stop offset="1" stop-color="#8B5CF6" />
+        <linearGradient id="color_a" x1="0" x2="34" y1="6" y2="74" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#06b6d4" />
+            <stop offset=".52" stop-color="#3b82f6" />
+            <stop offset="1" stop-color="#8b5cf6" />
         </linearGradient>
-        <linearGradient id="textGradient" x1="60" y1="16" x2="210" y2="68" gradientUnits="userSpaceOnUse">
-            <stop offset="0" stop-color="#0EA5E9" />
-            <stop offset="0.45" stop-color="#2563EB" />
-            <stop offset="1" stop-color="#7C3AED" />
+        <linearGradient id="color_b" x1="60" x2="210" y1="20" y2="70" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#22d3ee" />
+            <stop offset=".45" stop-color="#3b82f6" />
+            <stop offset="1" stop-color="#a855f7" />
         </linearGradient>
-        <linearGradient id="cursorGradient" x1="235" y1="14" x2="235" y2="66" gradientUnits="userSpaceOnUse">
-            <stop offset="0" stop-color="#F97316" />
-            <stop offset="1" stop-color="#EC4899" />
+        <linearGradient id="color_c" x1="245" x2="245" y1="19" y2="71" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#f97316" />
+            <stop offset="1" stop-color="#ec4899" />
         </linearGradient>
     </defs>
-    <g transform="translate(10 5)">
-        <path d="M0 6l34 34-34 34" fill="none" stroke="url(#markGradient)" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" />
-        <text x="60" y="60" font-family="'Comic Sans MS', sans-serif" font-size="56" font-weight="800" textLength="150" lengthAdjust="spacingAndGlyphs" fill="url(#textGradient)">isrvd</text>
-        <path d="M235 14v52" fill="none" stroke="url(#cursorGradient)" stroke-width="8" stroke-linecap="round">
-            <animate attributeName="opacity" values="1;0;1;0;1;1" keyTimes="0;0.05;0.1;0.15;0.2;1" dur="10s" repeatCount="indefinite" />
-        </path>
-    </g>
+    <path fill="none" stroke="url(#color_a)" stroke-linecap="round" stroke-linejoin="round" stroke-width="10" d="M10 11l34 34-34 34" transform="matrix(.78 0 0 .78 8 9)" />
+    <path fill="url(#color_b)" fill-rule="evenodd"
+          d="M70.683 39.12c-.056 30.503.29 30.866-.365 31.023-.006.001-7.35.126-7.64-.064-.348-.226-.219-2.157-.243-26.566-.005-4.406.275-5.442 4.59-5.471 3.029-.02 3.027-.028 3.287.01.295.044.365.978.372 1.068M64.832 34.63c-.306-.033-2.733-.304-2.802-2.648-.16-5.38.305-6.175 1.742-6.767.92-.38 5.45-.142 5.458-.14 2.876.605 2.266 4.711 2.265 5.257-.01 4.859-1.796 4.304-6.663 4.3M127.976 38.2c2.348-.249 13.796-.403 13.994.106.158.404.066 6.24.057 6.313-.19 1.432-10.835-.883-13.94 1.486-1.673 1.277-1.448 1.693-1.442 21.848 0 1.542.415 2.216-1.13 2.22-6.807.024-6.957.025-7.06-.325-.069-.232-.038-9.322-.035-10.133.039-11.413-1.383-19.829 9.556-21.514M165.072 70.265c-6.592.517-6.561-2.365-10.811-11.611-.736-1.6-8.998-19.576-9.065-20.066-.09-.662.33-.758 8.327-.518.622.019.654.21 3.423 6.764l5.205 12.086c1.161 2.697 1.57 4.783 2.197 3.125.787-2.077 7.833-18.447 8.522-20.047.9-2.089 1.17-1.902 1.527-1.907.636-.008 7.499-.098 7.947-.02.628.108.328.514-2.93 7.4-2.268 4.794-9.55 21.86-10.314 22.691-1.582 1.723-2.873 1.943-4.028 2.103M82.676 63.148c17.422-.212 20.61.765 21.115-2.067 1.292-7.24-14.206-.42-21.3-5.605-4.474-3.27-6.893-15.866 5.962-17.379 1.383-.162 21.643-.052 21.677-.047.746.112.357 6.715.26 6.818-.391.413-13.126.061-20.026.189-3.699.068-3.472 2.906-3.031 3.954 1.981 4.71 23.36-3.872 24.503 9.875 1.048 12.615-11.034 11.316-15.154 11.314-16.355-.008-16.352.02-16.486-.015-.706-.187-.3-6.808-.239-6.878.157-.175 2.502-.16 2.72-.159M184.697 58.617c-.222-11.407-.124-15.65 4.862-18.85 5.12-3.283 18.53-1.068 19.671-1.824.707-.467-.262-12.639.565-12.894.178-.054 7.318-.046 7.463-.003.365.11.324.31.338 23.41.006 11.502 1.583 21.737-12.995 21.75-9.38.008-19.291 1.312-19.904-11.589m24.774-1.099c-.145 6.197-2.459 5.637-11.735 5.604-5.604-.02-4.955-3.707-4.918-13.018.023-5.808 3.701-5.081 14.255-5.04.188.001 2.214.01 2.328.303.004.013.088.012.07 12.151" />
+    <path fill="none" stroke="url(#color_c)" stroke-linecap="round" stroke-width="8" d="M233 19v52">
+        <animate attributeName="opacity" dur="10s" keyTimes="0;0.05;0.1;0.15;0.2;1" repeatCount="indefinite" values="1;0;1;0;1;1" />
+    </path>
 </svg>
