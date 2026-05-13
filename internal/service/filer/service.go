@@ -38,7 +38,7 @@ type FileInfo struct {
 
 // AbsPath 解析用户相对路径为绝对路径，并防止目录遍历和符号链接逃逸
 // 安全策略：解析所有符号链接后，验证实际路径仍在 home 目录内
-func (s *Service) AbsPath(username, path string) string {
+func (s *Service) AbsPath(username, path string) (string, error) {
 	home := filepath.Clean(filepath.Join(config.Server.RootDirectory, "share"))
 	if username != "" {
 		if member, ok := config.Members[username]; ok {
@@ -77,14 +77,14 @@ func (s *Service) AbsPath(username, path string) string {
 	rel, err := filepath.Rel(homeReal, realPath)
 	if err != nil {
 		logman.Warn("Path escape attempt", "username", username, "path", path, "realPath", realPath, "error", err)
-		return home // 无法计算相对路径，拒绝访问
+		return "", fmt.Errorf("路径越界，拒绝访问")
 	}
 	if rel == ".." || filepath.IsAbs(rel) || strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
 		logman.Warn("Path escape attempt", "username", username, "path", path, "realPath", realPath, "home", homeReal)
-		return home // 路径逃逸，拒绝访问
+		return "", fmt.Errorf("路径越界，拒绝访问")
 	}
 
-	return abs
+	return abs, nil
 }
 
 // FileList 列出目录下的文件
