@@ -27,6 +27,17 @@
 | `rehiy/isrvd:latest` | All-in-One，集成 APISIX + etcd + isrvd |
 | `rehiy/isrvd:slim` | 仅 isrvd，适合不需要 APISIX 的场景 |
 
+CNB 流水线会同步推送到 CNB Docker 制品库，镜像路径为：
+
+| 镜像 | 说明 |
+|------|------|
+| `docker.cnb.cool/<repo-slug>:latest` | All-in-One 最新版 |
+| `docker.cnb.cool/<repo-slug>:<version>` | All-in-One 指定版本，如 `v1.2.3` |
+| `docker.cnb.cool/<repo-slug>:slim` | Slim 最新版 |
+| `docker.cnb.cool/<repo-slug>:<version>-slim` | Slim 指定版本，如 `v1.2.3-slim` |
+
+其中 `<repo-slug>` 为 CNB 仓库路径的小写形式，例如 `team/isrvd`。
+
 首次启动自动生成随机密码，通过 `docker logs isrvd` 查看。
 
 ### latest（All-in-One）
