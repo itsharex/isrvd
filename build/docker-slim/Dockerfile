@@ -19,6 +19,8 @@ RUN apk add --no-cache ca-certificates curl \
 COPY --chmod=755 build/docker-slim/entrypoint.sh /entrypoint.sh
 COPY build/docker-slim/isrvd.yml /etc/defaults/isrvd.yml
 
+ENV CONFIG_PATH=/data/conf/isrvd.yml
+
 # 暴露端口
 # 8080: isrvd Web UI
 EXPOSE 8080
