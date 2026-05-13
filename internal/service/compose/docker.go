@@ -28,12 +28,13 @@ func (s *Service) DockerDeploy(ctx context.Context, req DeployRequest) (*DeployR
 	if err != nil {
 		return nil, err
 	}
+
 	projectName := project.Name
 	if projectName == "" || projectName == "." {
 		projectName = shortHash(req.Content)
 	}
-	if !safeName.MatchString(projectName) {
-		return nil, fmt.Errorf("非法的项目名称: %s", projectName)
+	if err := ValidateName(projectName); err != nil {
+		return nil, err
 	}
 
 	installDir := filepath.Join(root, projectName)
@@ -114,6 +115,10 @@ func (s *Service) dockerInitFileHandle(installDir string, req DeployRequest) err
 // ==================== 获取内容 ====================
 
 func (s *Service) DockerContentGet(ctx context.Context, name string) (string, error) {
+	if err := ValidateName(name); err != nil {
+		return "", err
+	}
+
 	root := s.docker.ContainerRoot()
 	if root == "" {
 		return "", fmt.Errorf("未配置容器数据根目录")
@@ -147,6 +152,10 @@ func (s *Service) DockerContentGet(ctx context.Context, name string) (string, er
 // ==================== 重建 ====================
 
 func (s *Service) DockerRedeploy(ctx context.Context, name, content string) (*DeployResult, error) {
+	if err := ValidateName(name); err != nil {
+		return nil, err
+	}
+
 	root := s.docker.ContainerRoot()
 	installDir := ""
 	if root != "" {
@@ -185,6 +194,10 @@ func (s *Service) DockerRedeploy(ctx context.Context, name, content string) (*De
 }
 
 func (s *Service) DockerImageRedeploy(ctx context.Context, name, serviceName, image string) (*DeployResult, error) {
+	if err := ValidateName(name); err != nil {
+		return nil, err
+	}
+
 	root := s.docker.ContainerRoot()
 	installDir := ""
 	if root != "" {

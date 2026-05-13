@@ -2,6 +2,7 @@ package server
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 
@@ -23,8 +24,22 @@ func (app *App) defineComposeRoutes() []Route {
 	}
 }
 
+func composeNameParam(c *gin.Context) (string, bool) {
+	name := c.Param("name")
+	if err := svcCompose.ValidateName(name); err != nil {
+		respondError(c, http.StatusBadRequest, err.Error())
+		return "", false
+	}
+	return name, true
+}
+
 func (app *App) composeDockerInspect(c *gin.Context) {
-	content, err := app.composeSvc.DockerContentGet(c.Request.Context(), c.Param("name"))
+	name, ok := composeNameParam(c)
+	if !ok {
+		return
+	}
+
+	content, err := app.composeSvc.DockerContentGet(c.Request.Context(), name)
 	if err != nil {
 		respondError(c, http.StatusInternalServerError, err.Error())
 		return
@@ -33,7 +48,12 @@ func (app *App) composeDockerInspect(c *gin.Context) {
 }
 
 func (app *App) composeSwarmInspect(c *gin.Context) {
-	content, err := app.composeSvc.SwarmContentGet(c.Request.Context(), c.Param("name"))
+	name, ok := composeNameParam(c)
+	if !ok {
+		return
+	}
+
+	content, err := app.composeSvc.SwarmContentGet(c.Request.Context(), name)
 	if err != nil {
 		respondError(c, http.StatusInternalServerError, err.Error())
 		return
@@ -46,26 +66,34 @@ func (app *App) composeDockerDeploy(c *gin.Context) {
 		respondError(c, http.StatusBadRequest, "文件大小超过限制")
 		return
 	}
-	req := svcCompose.DeployRequest{
-		Content: c.PostForm("content"),
-		InitURL: c.PostForm("initURL"),
+
+	var req svcCompose.DeployRequest
+	if strings.HasPrefix(c.ContentType(), "application/json") {
+		if err := c.ShouldBindJSON(&req); err != nil {
+			respondError(c, http.StatusBadRequest, err.Error())
+			return
+		}
+	} else {
+		req.Content = c.PostForm("content")
+		req.InitURL = c.PostForm("initURL")
+		if fh, err := c.FormFile("initFile"); err == nil {
+			if fh.Size > config.Server.MaxUploadSize {
+				respondError(c, http.StatusBadRequest, "文件大小超过限制")
+				return
+			}
+			f, err := fh.Open()
+			if err != nil {
+				respondError(c, http.StatusBadRequest, "读取上传文件失败: "+err.Error())
+				return
+			}
+			req.InitFile = f
+			defer f.Close()
+		}
 	}
+
 	if req.Content == "" {
 		respondError(c, http.StatusBadRequest, "content 不能为空")
 		return
-	}
-	if fh, err := c.FormFile("initFile"); err == nil {
-		if fh.Size > config.Server.MaxUploadSize {
-			respondError(c, http.StatusBadRequest, "文件大小超过限制")
-			return
-		}
-		f, err := fh.Open()
-		if err != nil {
-			respondError(c, http.StatusBadRequest, "读取上传文件失败: "+err.Error())
-			return
-		}
-		req.InitFile = f
-		defer f.Close()
 	}
 	result, err := app.composeSvc.DockerDeploy(c.Request.Context(), req)
 	if err != nil {
@@ -95,7 +123,12 @@ func (app *App) composeDockerRedeploy(c *gin.Context) {
 		respondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
-	name := c.Param("name")
+
+	name, ok := composeNameParam(c)
+	if !ok {
+		return
+	}
+
 	var (
 		result *svcCompose.DeployResult
 		err    error
@@ -126,7 +159,12 @@ func (app *App) composeSwarmRedeploy(c *gin.Context) {
 		respondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
-	name := c.Param("name")
+
+	name, ok := composeNameParam(c)
+	if !ok {
+		return
+	}
+
 	var (
 		result *svcCompose.DeployResult
 		err    error

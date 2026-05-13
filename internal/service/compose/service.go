@@ -48,6 +48,14 @@ type RedeployRequest struct {
 
 var safeName = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9_.-]*$`)
 
+// ValidateName 校验 Compose 项目名，防止路径逃逸。
+func ValidateName(name string) error {
+	if name == "" || !safeName.MatchString(name) {
+		return fmt.Errorf("非法的项目名称: %s", name)
+	}
+	return nil
+}
+
 // NewService 创建 Compose 业务服务
 func NewService() (*Service, error) {
 	d := registry.DockerService

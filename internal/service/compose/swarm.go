@@ -24,8 +24,8 @@ func (s *Service) SwarmDeploy(ctx context.Context, req DeployRequest) (*DeployRe
 	if projectName == "" || projectName == "." {
 		projectName = shortHash(req.Content)
 	}
-	if !safeName.MatchString(projectName) {
-		return nil, fmt.Errorf("非法的项目名称: %s", projectName)
+	if err := ValidateName(projectName); err != nil {
+		return nil, err
 	}
 
 	if len(project.Services) == 0 {
@@ -51,6 +51,10 @@ func (s *Service) SwarmDeploy(ctx context.Context, req DeployRequest) (*DeployRe
 // ==================== 获取内容 ====================
 
 func (s *Service) SwarmContentGet(ctx context.Context, name string) (string, error) {
+	if err := ValidateName(name); err != nil {
+		return "", err
+	}
+
 	// 优先读持久化文件
 	if content := s.swarmContentLoad(name); content != "" {
 		return content, nil
@@ -74,6 +78,10 @@ func (s *Service) SwarmContentGet(ctx context.Context, name string) (string, err
 // ==================== 重建 ====================
 
 func (s *Service) SwarmRedeploy(ctx context.Context, name, content string) (*DeployResult, error) {
+	if err := ValidateName(name); err != nil {
+		return nil, err
+	}
+
 	oldContent, _ := s.SwarmContentGet(ctx, name)
 
 	s.swarmServicesRemove(ctx, name, oldContent)
@@ -106,6 +114,10 @@ func (s *Service) SwarmRedeploy(ctx context.Context, name, content string) (*Dep
 }
 
 func (s *Service) SwarmImageRedeploy(ctx context.Context, name, serviceName, image string) (*DeployResult, error) {
+	if err := ValidateName(name); err != nil {
+		return nil, err
+	}
+
 	oldContent, err := s.SwarmContentGet(ctx, name)
 	if err != nil {
 		return nil, err
@@ -275,7 +287,7 @@ func (s *Service) swarmEnsureNetworks(ctx context.Context, project *types.Projec
 		if driver == "" {
 			driver = "overlay"
 		}
-		if _, err := s.docker.NetworkCreate(ctx, netName, driver); err != nil {
+		if _, err := s.docker.NetworkCreate(ctx, netName, driver, ""); err != nil {
 			return fmt.Errorf("创建网络 %s 失败: %w", netName, err)
 		}
 		logman.Info("Swarm network created", "network", netName, "driver", driver)
