@@ -135,10 +135,12 @@ export default toNative(NavigationBar)
     <!-- Logo 区域 -->
     <div class="h-16 flex items-center border-b border-slate-200/50" :class="collapsed ? 'justify-center' : 'px-4'">
       <div class="flex items-center space-x-3 flex-1 min-w-0" :class="collapsed ? 'justify-center flex-none' : ''">
-        <div class="w-9 h-9 rounded-lg bg-primary-500 flex items-center justify-center shadow-glow flex-shrink-0">
-          <i class="fas fa-server text-white text-lg"></i>
-        </div>
-        <span v-if="!collapsed" class="text-xl font-bold gradient-text truncate">Isrvd</span>
+        <img
+          src="@/assets/logo.svg"
+          alt="Isrvd"
+          class="flex-shrink-0 transition-all duration-300"
+          :class="collapsed ? 'w-9 h-9 object-cover object-left' : 'w-auto h-9 max-w-[11rem] object-contain'"
+        >
       </div>
       <!-- 移动端关闭按钮，仅展开状态下显示 -->
       <button 

@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 255 90" role="img" aria-labelledby="title desc">
+    <defs>
+        <linearGradient id="markGradient" x1="0" y1="6" x2="34" y2="74" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#06B6D4" />
+            <stop offset="0.52" stop-color="#3B82F6" />
+            <stop offset="1" stop-color="#8B5CF6" />
+        </linearGradient>
+        <linearGradient id="textGradient" x1="60" y1="16" x2="210" y2="68" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#0EA5E9" />
+            <stop offset="0.45" stop-color="#2563EB" />
+            <stop offset="1" stop-color="#7C3AED" />
+        </linearGradient>
+        <linearGradient id="cursorGradient" x1="235" y1="14" x2="235" y2="66" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#F97316" />
+            <stop offset="1" stop-color="#EC4899" />
+        </linearGradient>
+    </defs>
+    <g transform="translate(10 5)">
+        <path d="M0 6l34 34-34 34" fill="none" stroke="url(#markGradient)" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" />
+        <text x="60" y="60" font-family="'Comic Sans MS', sans-serif" font-size="56" font-weight="800" textLength="150" lengthAdjust="spacingAndGlyphs" fill="url(#textGradient)">isrvd</text>
+        <path d="M235 14v52" fill="none" stroke="url(#cursorGradient)" stroke-width="8" stroke-linecap="round" />
+    </g>
+</svg>
