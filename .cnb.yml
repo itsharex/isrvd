@@ -34,11 +34,17 @@ $:
           timeout: 2h
           script: sh build.sh
 
+        - name: Check release notes
+          script:
+            - test -s RELEASE.md || echo "- Release $CNB_BRANCH" > RELEASE.md
+            - cat RELEASE.md
+
         - name: Create CNB release
           type: git:release
           options:
+            tag: $CNB_BRANCH
             title: $CNB_BRANCH
-            descriptionFromFile: RELEASE.md
+            descriptionFromFile: ./RELEASE.md
             latest: true
 
         - name: Upload binary attachments
