@@ -74,12 +74,19 @@ type NetworkSpec struct {
 }
 
 // NetworkCreate 创建网络
-func (s *DockerService) NetworkCreate(ctx context.Context, name, driver string) (string, error) {
+func (s *DockerService) NetworkCreate(ctx context.Context, name, driver, subnet string) (string, error) {
 	if driver == "" {
 		driver = "bridge"
 	}
 
-	resp, err := s.client.NetworkCreate(ctx, name, network.CreateOptions{Driver: driver})
+	options := network.CreateOptions{Driver: driver}
+	if subnet != "" {
+		options.IPAM = &network.IPAM{
+			Config: []network.IPAMConfig{{Subnet: subnet}},
+		}
+	}
+
+	resp, err := s.client.NetworkCreate(ctx, name, options)
 	if err != nil {
 		logman.Error("Create network failed", "error", err)
 		return "", err

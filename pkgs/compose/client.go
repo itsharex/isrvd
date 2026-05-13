@@ -104,7 +104,7 @@ func (s *ComposeService) ensureNetwork(ctx context.Context, name string) error {
 	if _, err := s.docker.NetworkInspect(ctx, name); err == nil {
 		return nil
 	}
-	_, err := s.docker.NetworkCreate(ctx, name, "bridge")
+	_, err := s.docker.NetworkCreate(ctx, name, "bridge", "")
 	return err
 }
 

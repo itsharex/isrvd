@@ -19,7 +19,7 @@ func (s *Service) NetworkAction(ctx context.Context, req pkgdocker.NetworkAction
 
 // NetworkCreate 创建网络
 func (s *Service) NetworkCreate(ctx context.Context, req pkgdocker.NetworkSpec) (map[string]string, error) {
-	id, err := s.docker.NetworkCreate(ctx, req.Name, req.Driver)
+	id, err := s.docker.NetworkCreate(ctx, req.Name, req.Driver, req.Subnet)
 	if err != nil {
 		return nil, err
 	}
