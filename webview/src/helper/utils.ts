@@ -7,6 +7,10 @@ export const TEXT_EXTENSIONS: string[] = [
     'java', 'cpp', 'c', 'h', 'sql', 'sh', 'bat', 'env'
 ]
 
+export const IMAGE_EXTENSIONS: string[] = [
+    'jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg', 'webp', 'ico', 'tiff', 'tif'
+]
+
 export const FILE_ICON_MAP: Record<string, string> = {
     'txt': 'fas fa-file-alt text-secondary',
     'md': 'fab fa-markdown text-dark',
@@ -49,6 +53,12 @@ export const isEditableFile = (filename: string): boolean => {
     if (!filename) return false
     const ext = filename.split('.').pop()?.toLowerCase() ?? ''
     return TEXT_EXTENSIONS.includes(ext)
+}
+
+export const isImageFile = (filename: string): boolean => {
+    if (!filename) return false
+    const ext = filename.split('.').pop()?.toLowerCase() ?? ''
+    return IMAGE_EXTENSIONS.includes(ext)
 }
 
 export const getFileIcon = (file: { isDir: boolean; name: string }): string => {

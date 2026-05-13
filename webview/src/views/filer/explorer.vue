@@ -4,7 +4,7 @@ import { Component, Ref, Vue, toNative } from 'vue-facing-decorator'
 import api from '@/service/api'
 import type { FilerFileInfo } from '@/service/types'
 
-import { downloadFile, formatFileSize, formatTime, getFileIcon, isEditableFile } from '@/helper/utils'
+import { downloadFile, formatFileSize, formatTime, getFileIcon, isEditableFile, isImageFile } from '@/helper/utils'
 
 import PageSearch from '@/component/page-search.vue'
 
@@ -15,6 +15,7 @@ import CreateModal from './widget/create-modal.vue'
 import DeleteModal from './widget/delete-modal.vue'
 import MkdirModal from './widget/mkdir-modal.vue'
 import ModifyModal from './widget/modify-modal.vue'
+import PreviewModal from './widget/preview-modal.vue'
 import RenameModal from './widget/rename-modal.vue'
 import UnzipModal from './widget/unzip-modal.vue'
 import UploadModal from './widget/upload-modal.vue'
@@ -23,7 +24,7 @@ import ZipModal from './widget/zip-modal.vue'
 @Component({
     components: {
         PageSearch, ChmodModal, CreateModal, DeleteModal, MkdirModal,
-        ModifyModal, RenameModal, UnzipModal, UploadModal, ZipModal
+        ModifyModal, PreviewModal, RenameModal, UnzipModal, UploadModal, ZipModal
     }
 })
 class FileExplorer extends Vue {
@@ -32,6 +33,7 @@ class FileExplorer extends Vue {
 
     // ─── Refs ───
     @Ref readonly modifyModalRef!: InstanceType<typeof ModifyModal>
+    @Ref readonly previewModalRef!: InstanceType<typeof PreviewModal>
     @Ref readonly renameModalRef!: InstanceType<typeof RenameModal>
     @Ref readonly chmodModalRef!: InstanceType<typeof ChmodModal>
     @Ref readonly zipModalRef!: InstanceType<typeof ZipModal>
@@ -46,6 +48,7 @@ class FileExplorer extends Vue {
     formatTime = formatTime
     getFileIcon = getFileIcon
     isEditableFile = isEditableFile
+    isImageFile = isImageFile
     searchText = ''
 
     // ─── 计算属性 ───
@@ -309,6 +312,14 @@ export default toNative(FileExplorer)
                       >
                         <i class="fas fa-download text-xs"></i>
                       </button>
+                      <button
+                        v-if="isImageFile(file.name) && appActions.hasPerm('POST /api/filer/download')"
+                        class="btn-icon text-purple-600 hover:bg-purple-50"
+                        title="预览"
+                        @click="previewModalRef.show(file)"
+                      >
+                        <i class="fas fa-eye text-xs"></i>
+                      </button>
                       <button 
                         v-if="file.name.endsWith('.zip') && appActions.hasPerm('POST /api/filer/unzip')"
                         class="btn-icon text-amber-600 hover:bg-amber-50"
@@ -461,6 +472,14 @@ export default toNative(FileExplorer)
                 >
                   <i class="fas fa-download text-xs"></i><span class="text-xs ml-1">下载</span>
                 </button>
+                <button
+                  v-if="isImageFile(file.name) && appActions.hasPerm('POST /api/filer/download')"
+                  class="btn-icon text-purple-600 hover:bg-purple-50"
+                  title="预览"
+                  @click="previewModalRef.show(file)"
+                >
+                  <i class="fas fa-eye text-xs"></i><span class="text-xs ml-1">预览</span>
+                </button>
                 <button 
                   v-if="file.name.endsWith('.zip') && appActions.hasPerm('POST /api/filer/unzip')"
                   class="btn-icon text-amber-600 hover:bg-amber-50"
@@ -510,6 +529,7 @@ export default toNative(FileExplorer)
 
     <!-- Modals -->
     <ModifyModal ref="modifyModalRef" />
+    <PreviewModal ref="previewModalRef" />
     <RenameModal ref="renameModalRef" />
     <ChmodModal ref="chmodModalRef" />
     <DeleteModal ref="deleteModalRef" />
