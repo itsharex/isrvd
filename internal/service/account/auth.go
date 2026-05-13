@@ -2,6 +2,7 @@ package account
 
 import (
 	"fmt"
+	"net"
 	"strings"
 	"time"
 
@@ -217,8 +218,12 @@ func (s *Service) extractJwtToken(c *gin.Context) string {
 
 // ─── Header 代理认证 ──────────────────────────────────────────────────────────
 
-// HeaderTokenCheck 从代理 Header 读取用户名；失败时返回空用户名和具体错误原因。
+// HeaderTokenCheck 从可信代理 Header 读取用户名；失败时返回空用户名和具体错误原因。
 func (s *Service) HeaderTokenCheck(c *gin.Context) (username, errMsg string) {
+	if !s.headerSourceTrusted(c) {
+		return "", "代理 Header 来源不可信"
+	}
+
 	raw := c.GetHeader(config.Server.ProxyHeaderName)
 	if raw == "" {
 		return "", "代理 Header 缺失"
@@ -240,4 +245,29 @@ func (s *Service) HeaderUsernameExtract(c *gin.Context) string {
 		return ""
 	}
 	return username
+}
+
+func (s *Service) headerSourceTrusted(c *gin.Context) bool {
+	// 未配置 ProxyTrustedCIDRs 时，向后兼容：不做来源限制
+	if len(config.Server.ProxyTrustedCIDRs) == 0 {
+		return true
+	}
+	host, _, err := net.SplitHostPort(c.Request.RemoteAddr)
+	if err != nil {
+		host = c.Request.RemoteAddr
+	}
+	ip := net.ParseIP(host)
+	if ip == nil {
+		return false
+	}
+	for _, cidr := range config.Server.ProxyTrustedCIDRs {
+		if trustedIP := net.ParseIP(cidr); trustedIP != nil && trustedIP.Equal(ip) {
+			return true
+		}
+		_, ipNet, err := net.ParseCIDR(cidr)
+		if err == nil && ipNet.Contains(ip) {
+			return true
+		}
+	}
+	return false
 }

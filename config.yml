@@ -1,8 +1,9 @@
 server:
   debug: false
   listenAddr: :8080
-  jwtSecret: default-secret-key
+  # jwtSecret: your-jwt-secret
   # proxyHeaderName: X-Username
+  # proxyTrustedCIDRs: [127.0.0.1/32]
   rootDirectory: /srv/
 
 oidc:
