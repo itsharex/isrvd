@@ -18,6 +18,8 @@
     <g transform="translate(10 5)">
         <path d="M0 6l34 34-34 34" fill="none" stroke="url(#markGradient)" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" />
         <text x="60" y="60" font-family="'Comic Sans MS', sans-serif" font-size="56" font-weight="800" textLength="150" lengthAdjust="spacingAndGlyphs" fill="url(#textGradient)">isrvd</text>
-        <path d="M235 14v52" fill="none" stroke="url(#cursorGradient)" stroke-width="8" stroke-linecap="round" />
+        <path d="M235 14v52" fill="none" stroke="url(#cursorGradient)" stroke-width="8" stroke-linecap="round">
+            <animate attributeName="opacity" values="1;0;1;0;1;1" keyTimes="0;0.05;0.1;0.15;0.2;1" dur="10s" repeatCount="indefinite" />
+        </path>
     </g>
 </svg>
