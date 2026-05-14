@@ -17,6 +17,7 @@ class ZipModal extends Vue {
 
     // ─── 数据属性 ───
     isOpen = false
+    loading = false
     formData = { file: null as FilerFileInfo | null }
 
     // ─── 方法 ───
@@ -26,9 +27,14 @@ class ZipModal extends Vue {
     }
 
     async handleConfirm() {
-        await api.filerZip(this.formData.file?.path ?? '')
-        this.portal.loadFiles()
-        this.isOpen = false
+        this.loading = true
+        try {
+            await api.filerZip(this.formData.file?.path ?? '')
+            this.portal.loadFiles()
+            this.isOpen = false
+        } finally {
+            this.loading = false
+        }
     }
 }
 
@@ -36,7 +42,7 @@ export default toNative(ZipModal)
 </script>
 
 <template>
-  <BaseModal ref="modalRef" v-model="isOpen" title="压缩确认" :loading="portal.loading" :confirm-disabled="!formData.file" @confirm="handleConfirm">
+  <BaseModal ref="modalRef" v-model="isOpen" title="压缩确认" :loading="loading" :confirm-disabled="!formData.file" @confirm="handleConfirm">
     <div v-if="formData.file" class="text-center py-6">
       <div class="w-16 h-16 rounded-lg bg-amber-400 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-amber-500/30">
         <i class="fas fa-file-archive text-3xl text-white"></i>
@@ -48,7 +54,7 @@ export default toNative(ZipModal)
     </div>
 
     <template #confirm-text>
-      {{ portal.loading ? '压缩中...' : '开始压缩' }}
+      {{ loading ? '压缩中...' : '开始压缩' }}
     </template>
   </BaseModal>
 </template>

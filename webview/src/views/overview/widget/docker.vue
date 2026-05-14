@@ -37,8 +37,9 @@ class DockerOverview extends Vue {
         } catch {
             this.portal.showNotification('error', '加载 Docker 信息失败')
             this.info = null
+        } finally {
+            this.loading = false
         }
-        this.loading = false
     }
 }
 

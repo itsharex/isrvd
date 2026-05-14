@@ -42,8 +42,9 @@ class SSLs extends Vue {
             this.ssls = this.sortSSLs((await api.apisixSSLList()).payload || [])
         } catch {
             this.portal.showNotification('error', '加载证书列表失败')
+        } finally {
+            this.loading = false
         }
-        this.loading = false
     }
 
     openCreateModal() {

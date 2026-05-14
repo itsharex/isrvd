@@ -37,8 +37,9 @@ class Whitelist extends Vue {
             this.whitelist = (await api.apisixWhitelist()).payload || []
         } catch {
             this.portal.showNotification('error', '加载白名单失败')
+        } finally {
+            this.loading = false
         }
-        this.loading = false
     }
 
     getRouteUri(r: ApisixRoute) {

@@ -23,7 +23,6 @@ export interface ConfirmOptions {
 export const useUIStore = defineStore('ui', () => {
     // ─── 状态定义 ───
 
-    const loading = ref(false)
     const notifications = ref<Notification[]>([])
     const confirm = reactive({
         show: false,
@@ -93,7 +92,6 @@ export const useUIStore = defineStore('ui', () => {
 
     return {
         // 状态
-        loading,
         notifications,
         confirm,
         // 操作

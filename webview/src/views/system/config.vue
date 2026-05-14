@@ -47,8 +47,9 @@ class Config extends Vue {
       }
     } catch {
       this.portal.showNotification('error', reload ? '重载配置失败' : '加载配置失败')
+    } finally {
+      this.loading = false
     }
-    this.loading = false
   }
 
   async saveAll() {
@@ -65,8 +66,9 @@ class Config extends Vue {
       })
       this.portal.showNotification('success', '全部配置已保存，监听地址等选项需重启生效')
       this.loadConfig()
-    } catch { }
-    this.saving = false
+    } catch { } finally {
+      this.saving = false
+    }
   }
 
   addLink() {

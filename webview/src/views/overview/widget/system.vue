@@ -49,8 +49,9 @@ class SystemOverview extends Vue {
                 this.ready = true
                 this.dispatchData(res.payload)
             }
-        } catch { /* ignore */ }
-        this.loading = false
+        } catch { /* ignore */ } finally {
+            this.loading = false
+        }
     }
 
     async poll() {

@@ -67,8 +67,9 @@ class Registries extends Vue {
             this.registries = res.payload || []
         } catch {
             this.portal.showNotification('error', '加载仓库列表失败')
+        } finally {
+            this.loading = false
         }
-        this.loading = false
     }
 
     openAdd() {

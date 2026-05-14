@@ -62,8 +62,9 @@ class Containers extends Vue {
             this.containers = res.payload || []
         } catch {
             this.portal.showNotification('error', '加载容器列表失败')
+        } finally {
+            this.loading = false
         }
-        this.loading = false
     }
 
     handleContainerAction(container: DockerContainerInfo, action: string) {

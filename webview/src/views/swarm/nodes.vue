@@ -17,7 +17,7 @@ class Nodes extends Vue {
 
     // ─── 数据属性 ───
     nodes: SwarmNodeInfo[] = []
-    nodesLoading = false
+    loading = false
     searchText = ''
     showJoinModal = false
     joinTokens: { worker: string; manager: string } | null = null
@@ -55,7 +55,7 @@ class Nodes extends Vue {
     }
 
     async loadNodes() {
-        this.nodesLoading = true
+        this.loading = true
         try {
             const res = await api.swarmNodeList()
             const list = res.payload || []
@@ -63,8 +63,9 @@ class Nodes extends Vue {
             this.nodes = list.sort((a: SwarmNodeInfo, b: SwarmNodeInfo) => (b.leader ? 1 : 0) - (a.leader ? 1 : 0))
         } catch {
             this.portal.showNotification('error', '获取节点列表失败')
+        } finally {
+            this.loading = false
         }
-        this.nodesLoading = false
     }
 
     handleNodeAction(node: SwarmNodeInfo, action: string) {
@@ -96,8 +97,9 @@ class Nodes extends Vue {
         } catch {
             this.portal.showNotification('error', '获取加入令牌失败')
             this.showJoinModal = false
+        } finally {
+            this.joinTokensLoading = false
         }
-        this.joinTokensLoading = false
     }
 
     get joinCommand() {
@@ -182,7 +184,7 @@ export default toNative(Nodes)
         <PageSearch v-model="searchText" search-key="swarm-nodes" placeholder="搜索主机名、ID、角色、状态或 IP..." width-class="w-full" focus-color="blue" />
       </div>
 
-      <div v-if="nodesLoading" class="flex flex-col items-center justify-center py-20">
+      <div v-if="loading" class="flex flex-col items-center justify-center py-20">
         <div class="w-12 h-12 spinner mb-3"></div>
         <p class="text-slate-500">加载中...</p>
       </div>

@@ -93,8 +93,9 @@ class SSLEditModal extends Vue {
             this.$emit('success')
         } catch (e: unknown) {
             this.portal.showNotification('error', (e instanceof Error ? e.message : '') || '操作失败')
+        } finally {
+            this.modalLoading = false
         }
-        this.modalLoading = false
     }
 }
 

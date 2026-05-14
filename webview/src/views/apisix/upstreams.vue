@@ -50,8 +50,9 @@ class Upstreams extends Vue {
             this.upstreams = this.sortUpstreams((await api.apisixUpstreamList()).payload || [])
         } catch {
             this.portal.showNotification('error', '加载上游列表失败')
+        } finally {
+            this.loading = false
         }
-        this.loading = false
     }
 
     openCreateModal() {

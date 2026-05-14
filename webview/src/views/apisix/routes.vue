@@ -63,8 +63,9 @@ class Routes extends Vue {
             this.routes = this.sortRoutes((await api.apisixRouteList()).payload || [])
         } catch {
             this.portal.showNotification('error', '加载路由列表失败')
+        } finally {
+            this.loading = false
         }
-        this.loading = false
     }
 
     openCreateModal() {

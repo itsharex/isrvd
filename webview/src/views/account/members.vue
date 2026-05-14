@@ -19,7 +19,7 @@ class Members extends Vue {
 
     // ─── 数据属性 ───
     members: MemberInfo[] = []
-    membersLoading = false
+    loading = false
     searchText = ''
 
     get filteredMembers() {
@@ -35,14 +35,15 @@ class Members extends Vue {
 
     // ─── 方法 ───
     async loadMembers() {
-        this.membersLoading = true
+        this.loading = true
         try {
             const res = await api.accountMemberList()
             this.members = res.payload || []
         } catch {
             this.portal.showNotification('error', '加载成员列表失败')
+        } finally {
+            this.loading = false
         }
-        this.membersLoading = false
     }
 
     openAddMember() {
@@ -132,7 +133,7 @@ export default toNative(Members)
       </div>
 
       <!-- Loading -->
-      <div v-if="membersLoading" class="flex flex-col items-center justify-center py-20">
+      <div v-if="loading" class="flex flex-col items-center justify-center py-20">
         <div class="w-12 h-12 spinner mb-3"></div>
         <p class="text-slate-500">加载中...</p>
       </div>

@@ -199,7 +199,6 @@ class RouteEditModal extends Vue {
                 if (!r) {
                     this.portal.showNotification('error', '加载路由详情失败')
                     this.isOpen = false
-                    this.modalLoading = false
                     return
                 }
                 const plugins = r.plugins || {}
@@ -224,8 +223,9 @@ class RouteEditModal extends Vue {
             } catch {
                 this.portal.showNotification('error', '加载路由详情失败')
                 this.isOpen = false
+            } finally {
+                this.modalLoading = false
             }
-            this.modalLoading = false
             return
         }
         this.isEditMode = false
@@ -257,8 +257,9 @@ class RouteEditModal extends Vue {
             this.$emit('success')
         } catch (e: unknown) {
             this.portal.showNotification('error', (e instanceof Error ? e.message : '') || '操作失败')
+        } finally {
+            this.modalLoading = false
         }
-        this.modalLoading = false
     }
 }
 

@@ -56,8 +56,6 @@ export const usePortalStore = defineStore('portal', () => {
     const stateProxy = {
         get token() { return authStore.token },
         set token(val: string | null) { authStore.token = val },
-        get loading() { return uiStore.loading },
-        set loading(val: boolean) { uiStore.loading = val }
     }
     
     interceptors(stateProxy, {
@@ -100,7 +98,6 @@ export const usePortalStore = defineStore('portal', () => {
         hasPerm,
 
         // UI Store 状态（响应式）
-        loading: uiRefs.loading,
         notifications: uiRefs.notifications,
         confirm: uiRefs.confirm,
         // UI Store 方法

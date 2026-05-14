@@ -25,7 +25,7 @@ class Services extends Vue {
 
     // ─── 数据属性 ───
     services: SwarmServiceInfo[] = []
-    servicesLoading = false
+    loading = false
     searchText = ''
 
     get filteredServices() {
@@ -54,14 +54,15 @@ class Services extends Vue {
     }
 
     async loadServices() {
-        this.servicesLoading = true
+        this.loading = true
         try {
             const res = await api.swarmServiceList()
             this.services = res.payload || []
         } catch {
             this.portal.showNotification('error', '获取服务列表失败')
+        } finally {
+            this.loading = false
         }
-        this.servicesLoading = false
     }
 
     handleScaleSuccess() {
@@ -168,7 +169,7 @@ export default toNative(Services)
         <PageSearch v-model="searchText" search-key="swarm-services" placeholder="搜索服务名、镜像、模式或端口..." width-class="w-full" focus-color="emerald" />
       </div>
 
-      <div v-if="servicesLoading" class="flex flex-col items-center justify-center py-20">
+      <div v-if="loading" class="flex flex-col items-center justify-center py-20">
         <div class="w-12 h-12 spinner mb-3"></div>
         <p class="text-slate-500">加载中...</p>
       </div>

@@ -66,11 +66,11 @@ export const httpBlob = axiosBlobInstance as unknown as HttpBlobClient
 /**
  * 注册 Axios 拦截器
  * 
- * @param state 全局状态，包含 token 和 loading 状态
+ * @param state 全局状态，包含 token
  * @param actions 全局动作，包含显示通知和清除认证信息的方法
  */
 export const interceptors = (
-    state: { token: string | null; loading: boolean },
+    state: { token: string | null },
     actions: { showNotification: (type: NotificationType, message: string) => void; clearAuth: () => void }
 ) => {
     /**
@@ -90,7 +90,6 @@ export const interceptors = (
      * @param isBlob 是否为 Blob 下载请求
      */
     const handleError = (error: unknown, isBlob = false) => {
-        state.loading = false
         const err = error as { response?: { status?: number; data?: { message?: string } }; request?: unknown }
         if (err.response?.status === 401) {
             actions.showNotification('error', '登录已过期，请重新登录')
@@ -111,14 +110,8 @@ export const interceptors = (
     }
 
     axiosInstance.interceptors.request.use(
-        (config: InternalAxiosRequestConfig) => {
-            state.loading = true
-            return attachAuth(config)
-        },
-        (error: unknown) => {
-            state.loading = false
-            return Promise.reject(error)
-        }
+        (config: InternalAxiosRequestConfig) => attachAuth(config),
+        (error: unknown) => Promise.reject(error)
     )
 
     axiosBlobInstance.interceptors.request.use(
@@ -133,7 +126,6 @@ export const interceptors = (
 
     axiosInstance.interceptors.response.use(
         (value: AxiosResponse) => {
-            state.loading = false
             // 过滤逻辑：不显示 GET 请求和 HTTP 200 状态码的消息
             const isGetRequest = value.config?.method?.toLowerCase() === 'get'
             const isSuccessStatus = value.status === 200

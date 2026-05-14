@@ -60,8 +60,9 @@ class Images extends Vue {
             this.images = res.payload || []
         } catch {
             this.portal.showNotification('error', '加载镜像列表失败')
+        } finally {
+            this.loading = false
         }
-        this.loading = false
     }
 
     async loadRegistries() {

@@ -44,8 +44,9 @@ class Consumers extends Vue {
             this.whitelist = wlRes.payload || []
         } catch {
             this.portal.showNotification('error', '加载消费者列表失败')
+        } finally {
+            this.loading = false
         }
-        this.loading = false
     }
 
     getConsumerRoutes(username: string) {

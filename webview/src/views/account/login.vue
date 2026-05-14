@@ -10,6 +10,7 @@ class Login extends Vue {
     portal = usePortal()
 
     // ─── 数据属性 ───
+    loading = false
     loginForm = {
         username: '',
         password: ''
@@ -17,13 +18,18 @@ class Login extends Vue {
 
     // ─── 方法 ───
     async handleLogin() {
-        const { payload } = await api.accountLogin(this.loginForm)
-        if (!payload) return
+        this.loading = true
+        try {
+            const { payload } = await api.accountLogin(this.loginForm)
+            if (!payload) return
 
-        this.portal.setAuth({ authMode: 'jwt', ...payload })
-        await this.portal.initialize()
-        this.loginForm.username = ''
-        this.loginForm.password = ''
+            this.portal.setAuth({ authMode: 'jwt', ...payload })
+            await this.portal.initialize()
+            this.loginForm.username = ''
+            this.loginForm.password = ''
+        } finally {
+            this.loading = false
+        }
     }
 
     handleOIDCLogin() {
@@ -90,12 +96,12 @@ export default toNative(Login)
 
           <button 
             type="submit" 
-            :disabled="portal.loading"
+            :disabled="loading"
             class="btn btn-primary w-full py-3 text-base font-semibold mt-6"
           >
-            <i v-if="portal.loading" class="fas fa-spinner fa-spin mr-2"></i>
+            <i v-if="loading" class="fas fa-spinner fa-spin mr-2"></i>
             <i v-else class="fas fa-sign-in-alt mr-2"></i>
-            {{ portal.loading ? '登录中...' : '登录' }}
+            {{ loading ? '登录中...' : '登录' }}
           </button>
 
           <template v-if="portal.oidcEnabled">
