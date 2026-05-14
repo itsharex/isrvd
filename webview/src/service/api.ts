@@ -142,7 +142,7 @@ class ApiService {
     // ==================== Filer 文件管理相关 ====================
 
     filerList(path: string) {
-        return http.post<FilerList>('filer/list', { path })
+        return http.get<FilerList>('filer/list', { params: { path } })
     }
 
     filerDelete(path: string) {
@@ -162,7 +162,7 @@ class ApiService {
     }
 
     filerRead(path: string) {
-        return http.post<FilerRead>('filer/read', { path })
+        return http.get<FilerRead>('filer/read', { params: { path } })
     }
 
     filerModify(path: string, content: string) {
@@ -191,7 +191,14 @@ class ApiService {
     }
 
     filerDownload(path: string) {
-        return httpBlob.post('filer/download', { path }, { responseType: 'blob' })
+        return httpBlob.get('filer/download', { params: { path }, responseType: 'blob' })
+    }
+
+    filerDownloadURL(path: string, token = '', inline = false) {
+        const params = new URLSearchParams({ path })
+        if (inline) params.set('inline', '1')
+        if (token) params.set('token', token)
+        return `api/filer/download?${params.toString()}`
     }
 
     // ==================== APISIX 管理相关 ====================

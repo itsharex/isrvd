@@ -2,8 +2,10 @@ package server
 
 import (
 	"io"
+	"mime"
 	"net/http"
 	"path/filepath"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/rehiy/libgo/logman"
@@ -15,9 +17,9 @@ import (
 func (app *App) defineFilerRoutes() []Route {
 	return []Route{
 		// 读取类操作不记录审计日志
-		{Method: "POST", Path: "/filer/list", Handler: app.filerFileList, Module: "filer", Label: "查询目录文件列表", Audit: AuditIgnore},
-		{Method: "POST", Path: "/filer/read", Handler: app.filerFileRead, Module: "filer", Label: "读取文件内容", Audit: AuditIgnore},
-		{Method: "POST", Path: "/filer/download", Handler: app.filerFileDownload, Module: "filer", Label: "下载文件", Audit: AuditIgnore},
+		{Method: "GET", Path: "/filer/list", Handler: app.filerFileList, Module: "filer", Label: "查询目录文件列表", Audit: AuditIgnore},
+		{Method: "GET", Path: "/filer/read", Handler: app.filerFileRead, Module: "filer", Label: "读取文件内容", Audit: AuditIgnore},
+		{Method: "GET", Path: "/filer/download", Handler: app.filerFileDownload, Module: "filer", Label: "下载文件", Audit: AuditIgnore},
 		// 写入与变更类操作按默认策略审计
 		{Method: "POST", Path: "/filer/mkdir", Handler: app.filerFileMkdir, Module: "filer", Label: "创建目录"},
 		{Method: "POST", Path: "/filer/create", Handler: app.filerFileCreate, Module: "filer", Label: "创建文件"},
@@ -34,7 +36,7 @@ func (app *App) defineFilerRoutes() []Route {
 // ─── 请求结构 ───
 
 type filerPathReq struct {
-	Path string `json:"path" binding:"required"`
+	Path string `json:"path" form:"path" binding:"required"`
 }
 
 type filerContentReq struct {
@@ -52,6 +54,31 @@ type filerRenameReq struct {
 	Target string `json:"target" binding:"required"`
 }
 
+var filerPreviewContentTypes = map[string]string{
+	".jpg":  "image/jpeg",
+	".jpeg": "image/jpeg",
+	".png":  "image/png",
+	".gif":  "image/gif",
+	".bmp":  "image/bmp",
+	".svg":  "image/svg+xml",
+	".webp": "image/webp",
+	".ico":  "image/x-icon",
+	".tiff": "image/tiff",
+	".tif":  "image/tiff",
+	".mp3":  "audio/mpeg",
+	".wav":  "audio/wav",
+	".ogg":  "audio/ogg",
+	".m4a":  "audio/mp4",
+	".flac": "audio/flac",
+	".aac":  "audio/aac",
+	".mp4":  "video/mp4",
+	".webm": "video/webm",
+	".mov":  "video/quicktime",
+	".m4v":  "video/x-m4v",
+	".mkv":  "video/x-matroska",
+	".pdf":  "application/pdf",
+}
+
 func (app *App) filerAbsPath(c *gin.Context, path string) (string, bool) {
 	absPath, err := app.filerSvc.AbsPath(c.GetString("username"), path)
 	if err != nil {
@@ -65,7 +92,7 @@ func (app *App) filerAbsPath(c *gin.Context, path string) (string, bool) {
 
 func (app *App) filerFileList(c *gin.Context) {
 	var req filerPathReq
-	if err := c.ShouldBindJSON(&req); err != nil {
+	if err := c.ShouldBindQuery(&req); err != nil {
 		respondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
@@ -142,7 +169,7 @@ func (app *App) filerFileCreate(c *gin.Context) {
 
 func (app *App) filerFileRead(c *gin.Context) {
 	var req filerPathReq
-	if err := c.ShouldBindJSON(&req); err != nil {
+	if err := c.ShouldBindQuery(&req); err != nil {
 		respondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
@@ -263,7 +290,7 @@ func (app *App) filerFileUpload(c *gin.Context) {
 
 func (app *App) filerFileDownload(c *gin.Context) {
 	var req filerPathReq
-	if err := c.ShouldBindJSON(&req); err != nil {
+	if err := c.ShouldBindQuery(&req); err != nil {
 		respondError(c, http.StatusBadRequest, err.Error())
 		return
 	}
@@ -273,15 +300,33 @@ func (app *App) filerFileDownload(c *gin.Context) {
 		return
 	}
 
-	content, err := app.filerSvc.FileRead(absPath)
+	inline := c.Query("inline") == "1"
+	contentType := ""
+	if inline {
+		var supported bool
+		contentType, supported = filerPreviewContentTypes[strings.ToLower(filepath.Ext(req.Path))]
+		if !supported {
+			respondError(c, http.StatusUnsupportedMediaType, "Unsupported preview file type")
+			return
+		}
+	}
+
+	file, info, err := app.filerSvc.FileOpen(absPath)
 	if err != nil {
 		respondError(c, http.StatusNotFound, "File not found")
 		return
 	}
-	c.Header("Content-Disposition", "attachment; filename="+filepath.Base(req.Path))
-	if _, err := c.Writer.Write(content); err != nil {
-		logman.Error("Download write failed", "path", absPath, "error", err)
+	defer file.Close()
+
+	filename := filepath.Base(req.Path)
+	if inline {
+		c.Header("Content-Type", contentType)
+		c.Header("Content-Disposition", mime.FormatMediaType("inline", map[string]string{"filename": filename}))
+		c.Header("X-Frame-Options", "SAMEORIGIN")
+	} else {
+		c.Header("Content-Disposition", mime.FormatMediaType("attachment", map[string]string{"filename": filename}))
 	}
+	http.ServeContent(c.Writer, c.Request, filename, info.ModTime(), file)
 }
 
 func (app *App) filerFileZip(c *gin.Context) {

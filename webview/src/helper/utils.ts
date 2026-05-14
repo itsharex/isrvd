@@ -7,7 +7,9 @@ export const TEXT_EXTENSIONS: string[] = [
     'java', 'cpp', 'c', 'h', 'sql', 'sh', 'bat', 'env'
 ]
 
-export const IMAGE_MIME_MAP: Record<string, string> = {
+export type PreviewFileType = 'image' | 'audio' | 'video' | 'pdf' | ''
+
+export const PREVIEW_MIME_MAP: Record<string, string> = {
     jpg: 'image/jpeg',
     jpeg: 'image/jpeg',
     png: 'image/png',
@@ -17,7 +19,44 @@ export const IMAGE_MIME_MAP: Record<string, string> = {
     webp: 'image/webp',
     ico: 'image/x-icon',
     tiff: 'image/tiff',
-    tif: 'image/tiff'
+    tif: 'image/tiff',
+    mp3: 'audio/mpeg',
+    wav: 'audio/wav',
+    ogg: 'audio/ogg',
+    m4a: 'audio/mp4',
+    flac: 'audio/flac',
+    aac: 'audio/aac',
+    mp4: 'video/mp4',
+    webm: 'video/webm',
+    mov: 'video/quicktime',
+    m4v: 'video/x-m4v',
+    mkv: 'video/x-matroska',
+    pdf: 'application/pdf'
+}
+
+export const PREVIEW_TYPE_MAP: Record<string, PreviewFileType> = {
+    jpg: 'image',
+    jpeg: 'image',
+    png: 'image',
+    gif: 'image',
+    bmp: 'image',
+    svg: 'image',
+    webp: 'image',
+    ico: 'image',
+    tiff: 'image',
+    tif: 'image',
+    mp3: 'audio',
+    wav: 'audio',
+    ogg: 'audio',
+    m4a: 'audio',
+    flac: 'audio',
+    aac: 'audio',
+    mp4: 'video',
+    webm: 'video',
+    mov: 'video',
+    m4v: 'video',
+    mkv: 'video',
+    pdf: 'pdf'
 }
 
 export const FILE_ICON_MAP: Record<string, string> = {
@@ -43,9 +82,16 @@ export const FILE_ICON_MAP: Record<string, string> = {
     'svg': 'fas fa-file-image text-info',
     'mp3': 'fas fa-file-audio text-success',
     'wav': 'fas fa-file-audio text-success',
+    'ogg': 'fas fa-file-audio text-success',
+    'm4a': 'fas fa-file-audio text-success',
+    'flac': 'fas fa-file-audio text-success',
+    'aac': 'fas fa-file-audio text-success',
     'mp4': 'fas fa-file-video text-danger',
+    'webm': 'fas fa-file-video text-danger',
     'avi': 'fas fa-file-video text-danger',
     'mov': 'fas fa-file-video text-danger',
+    'm4v': 'fas fa-file-video text-danger',
+    'mkv': 'fas fa-file-video text-danger',
     'js': 'fab fa-js-square text-warning',
     'html': 'fab fa-html5 text-danger',
     'css': 'fab fa-css3-alt text-primary',
@@ -64,15 +110,17 @@ export const isEditableFile = (filename: string): boolean => {
     return TEXT_EXTENSIONS.includes(ext)
 }
 
-export const isImageFile = (filename: string): boolean => {
-    if (!filename) return false
+export const getPreviewType = (filename: string): PreviewFileType => {
+    if (!filename) return ''
     const ext = filename.split('.').pop()?.toLowerCase() ?? ''
-    return Object.prototype.hasOwnProperty.call(IMAGE_MIME_MAP, ext)
+    return PREVIEW_TYPE_MAP[ext] || ''
 }
 
-export const getImageMimeType = (filename: string): string => {
+export const isPreviewableFile = (filename: string): boolean => getPreviewType(filename) !== ''
+
+export const getPreviewMimeType = (filename: string): string => {
     const ext = filename.split('.').pop()?.toLowerCase() ?? ''
-    return IMAGE_MIME_MAP[ext] || 'image/*'
+    return PREVIEW_MIME_MAP[ext] || 'application/octet-stream'
 }
 
 export const getFileIcon = (file: { isDir: boolean; name: string }): string => {

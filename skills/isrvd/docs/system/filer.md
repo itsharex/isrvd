@@ -1,6 +1,6 @@
 # 文件管理 API
 
-> 均为 POST 方法
+> 读取类接口为 GET 方法，写入与变更类接口为 POST 方法
 
 ## ⚠️ 重要：filer 路径 ≠ 宿主机路径
 
@@ -15,7 +15,7 @@ filer 管理的是 **isrvd 容器内部**挂载的卷，这些路径只在 isrvd
 ```
 
 **正确的静态文件更新流程**（不需要重建容器）：
-1. 先查出 filer 可用目录：`isrvd_post "/filer/list" '{"path":"/"}'`
+1. 先查出 filer 可用目录：`isrvd_get "/filer/list?path=/"`
 2. 用 filer 写文件：`isrvd_post "/filer/modify" '{"path":"<FILER_PATH>/<FILE>","content":"..."}'`
 3. 确认 web 容器是否已经用正确的 hostPath 挂载了该目录（只在首次部署时配置一次）
 4. 文件写入后立即生效，无需重启
@@ -25,7 +25,7 @@ filer 管理的是 **isrvd 容器内部**挂载的卷，这些路径只在 isrvd
 ## 列出文件
 
 ```bash
-isrvd_post "/filer/list" '{"path":"<DIR>"}'
+isrvd_get "/filer/list?path=<DIR>"
 ```
 
 ## 创建目录
@@ -43,7 +43,7 @@ isrvd_post "/filer/create" '{"path":"<FILE>","content":"<CONTENT>"}'
 ## 读取文件
 
 ```bash
-isrvd_post "/filer/read" '{"path":"<FILE>"}'
+isrvd_get "/filer/read?path=<FILE>"
 ```
 
 返回：`{"content": "文件内容..."}`
@@ -81,10 +81,18 @@ isrvd_upload "/filer/upload" "file" "<LOCAL_FILE>" "path=<FILER_DIR>"
 ## 下载文件
 
 ```bash
-isrvd_post "/filer/download" '{"path":"<FILE>"}'
+isrvd_get "/filer/download?path=<FILE>"
 ```
 
-返回文件二进制流。
+返回 attachment 文件流，支持 HTTP Range。
+
+## 预览文件
+
+```bash
+isrvd_get "/filer/download?path=<FILE>&inline=1"
+```
+
+返回 inline 文件流，支持 HTTP Range，适用于图片、音频、视频、PDF 等浏览器可直接预览的文件；不支持的扩展名返回 415。
 
 ## 压缩
 

@@ -28,6 +28,7 @@ export interface HttpClient {
  * 当 responseType 为 'blob' 时，拦截器解包后直接返回 Blob 对象
  */
 export interface HttpBlobClient {
+    get(url: string, config?: AxiosRequestConfig): Promise<Blob>
     post(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<Blob>
 }
 

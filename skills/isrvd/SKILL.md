@@ -64,7 +64,7 @@ isrvd_token "$ISRVD_APIURL" "$ISRVD_APITOKEN"
 | [docs/system/overview.md](docs/system/overview.md) | 服务探测、系统资源统计 |
 | [docs/system/config.md](docs/system/config.md) | 系统配置、审计日志 |
 | [docs/system/account.md](docs/system/account.md) | 登录、OIDC 登录、成员管理、权限、API Token |
-| [docs/system/filer.md](docs/system/filer.md) | 文件 CRUD、上传下载、压缩解压 |
+| [docs/system/filer.md](docs/system/filer.md) | 文件 CRUD、上传下载（含 inline 预览）、压缩解压 |
 | Agent 代理 | `ANY /api/agent/*path` 代理到配置的 OpenAI 兼容 LLM API，自动注入 `agent.apiKey` 并可重写 `agent.model` |
 
 ---
@@ -196,7 +196,7 @@ isrvd_patch "/apisix/route/<ROUTE_ID>/status" '{"status":1}'
 
 ```bash
 # 先查看 filer 可用目录
-isrvd_post "/filer/list" '{"path":"/"}'
+isrvd_get "/filer/list?path=/"
 
 # 写入小文件
 isrvd_post "/filer/modify" '{"path":"<FILER_PATH>/<FILE>","content":"..."}'
@@ -213,8 +213,8 @@ isrvd_upload "/filer/upload" "file" "/tmp/<FILE>" "path=<FILER_PATH>"
 ### 其他文件操作
 
 ```bash
-isrvd_post "/filer/list" '{"path":"<DIR>"}'
-isrvd_post "/filer/read" '{"path":"<FILE>"}' '.content'
+isrvd_get "/filer/list?path=<DIR>"
+isrvd_get "/filer/read?path=<FILE>" '.content'
 isrvd_post "/filer/modify" '{"path":"<FILE>","content":"<CONTENT>"}'
 isrvd_upload "/filer/upload" "file" "<LOCAL_FILE>" "path=<FILER_DIR>"
 ```

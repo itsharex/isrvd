@@ -4,7 +4,7 @@ import { Component, Ref, Vue, toNative } from 'vue-facing-decorator'
 import api from '@/service/api'
 import type { FilerFileInfo } from '@/service/types'
 
-import { downloadFile, formatFileSize, formatTime, getFileIcon, isEditableFile, isImageFile } from '@/helper/utils'
+import { downloadFile, formatFileSize, formatTime, getFileIcon, isEditableFile, isPreviewableFile } from '@/helper/utils'
 
 import PageSearch from '@/component/page-search.vue'
 
@@ -48,7 +48,7 @@ class FileExplorer extends Vue {
     formatTime = formatTime
     getFileIcon = getFileIcon
     isEditableFile = isEditableFile
-    isImageFile = isImageFile
+    isPreviewableFile = isPreviewableFile
     searchText = ''
 
     // ─── 计算属性 ───
@@ -135,7 +135,7 @@ export default toNative(FileExplorer)
           <div class="flex items-center gap-2 flex-shrink-0">
             <PageSearch v-model="searchText" search-key="filer-explorer" placeholder="搜索文件名、路径或权限..." width-class="w-72" focus-color="primary" type-to-search class="hidden md:block" />
             <button 
-              v-if="appActions.hasPerm('POST /api/filer/list')"
+              v-if="appActions.hasPerm('GET /api/filer/list')"
               class="hidden md:flex px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium items-center gap-1.5 transition-colors"
               @click="refreshFiles()"
             >
@@ -163,7 +163,7 @@ export default toNative(FileExplorer)
               <i class="fas fa-upload"></i><span>上传文件</span>
             </button>
             <!-- 移动端图标按鈕 -->
-            <button v-if="appActions.hasPerm('POST /api/filer/list')" class="md:hidden w-9 h-9 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-600 transition-colors" title="刷新" @click="refreshFiles()">
+            <button v-if="appActions.hasPerm('GET /api/filer/list')" class="md:hidden w-9 h-9 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-600 transition-colors" title="刷新" @click="refreshFiles()">
               <i class="fas fa-rotate text-sm"></i>
             </button>
             <button v-if="appActions.hasPerm('POST /api/filer/mkdir')" class="md:hidden w-9 h-9 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-600 transition-colors" title="新建目录" @click="mkdirModalRef.show()">
@@ -261,7 +261,7 @@ export default toNative(FileExplorer)
                     <!-- Directory Actions -->
                     <template v-if="file.isDir">
                       <button 
-                        v-if="appActions.hasPerm('POST /api/filer/list')"
+                        v-if="appActions.hasPerm('GET /api/filer/list')"
                         class="btn-icon text-slate-600 hover:bg-slate-50"
                         title="进入目录" 
                         @click="navigateTo(file.path)"
@@ -305,7 +305,7 @@ export default toNative(FileExplorer)
                     <!-- File Actions -->
                     <template v-else>
                       <button 
-                        v-if="appActions.hasPerm('POST /api/filer/download')"
+                        v-if="appActions.hasPerm('GET /api/filer/download')"
                         class="btn-icon text-slate-600 hover:bg-slate-50"
                         title="下载" 
                         @click="download(file)"
@@ -313,7 +313,7 @@ export default toNative(FileExplorer)
                         <i class="fas fa-download text-xs"></i>
                       </button>
                       <button
-                        v-if="isImageFile(file.name) && appActions.hasPerm('POST /api/filer/download')"
+                        v-if="isPreviewableFile(file.name) && appActions.hasPerm('GET /api/filer/download')"
                         class="btn-icon text-slate-600 hover:bg-slate-50"
                         title="预览"
                         @click="previewModalRef.show(file)"
@@ -329,7 +329,7 @@ export default toNative(FileExplorer)
                         <i class="fas fa-file-zipper text-xs"></i>
                       </button>
                       <button 
-                        v-if="isEditableFile(file.name) && appActions.hasPerm('POST /api/filer/read') && appActions.hasPerm('POST /api/filer/modify')"
+                        v-if="isEditableFile(file.name) && appActions.hasPerm('GET /api/filer/read') && appActions.hasPerm('POST /api/filer/modify')"
                         class="btn-icon text-blue-600 hover:bg-blue-50"
                         title="编辑" 
                         @click="modifyModalRef.show(file)"
@@ -421,7 +421,7 @@ export default toNative(FileExplorer)
               <!-- Directory Actions -->
               <template v-if="file.isDir">
                 <button 
-                  v-if="appActions.hasPerm('POST /api/filer/list')"
+                  v-if="appActions.hasPerm('GET /api/filer/list')"
                   class="btn-icon text-slate-600 hover:bg-slate-50"
                   title="进入目录" 
                   @click="navigateTo(file.path)"
@@ -465,7 +465,7 @@ export default toNative(FileExplorer)
               <!-- File Actions -->
               <template v-else>
                 <button 
-                  v-if="appActions.hasPerm('POST /api/filer/download')"
+                  v-if="appActions.hasPerm('GET /api/filer/download')"
                   class="btn-icon text-slate-600 hover:bg-slate-50"
                   title="下载" 
                   @click="download(file)"
@@ -473,7 +473,7 @@ export default toNative(FileExplorer)
                   <i class="fas fa-download text-xs"></i><span class="text-xs ml-1">下载</span>
                 </button>
                 <button
-                  v-if="isImageFile(file.name) && appActions.hasPerm('POST /api/filer/download')"
+                  v-if="isPreviewableFile(file.name) && appActions.hasPerm('GET /api/filer/download')"
                   class="btn-icon text-slate-600 hover:bg-slate-50"
                   title="预览"
                   @click="previewModalRef.show(file)"
@@ -489,7 +489,7 @@ export default toNative(FileExplorer)
                   <i class="fas fa-file-zipper text-xs"></i><span class="text-xs ml-1">解压</span>
                 </button>
                 <button 
-                  v-if="isEditableFile(file.name) && appActions.hasPerm('POST /api/filer/read') && appActions.hasPerm('POST /api/filer/modify')"
+                  v-if="isEditableFile(file.name) && appActions.hasPerm('GET /api/filer/read') && appActions.hasPerm('POST /api/filer/modify')"
                   class="btn-icon text-blue-600 hover:bg-blue-50"
                   title="编辑" 
                   @click="modifyModalRef.show(file)"

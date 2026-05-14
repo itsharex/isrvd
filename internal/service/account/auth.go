@@ -3,6 +3,7 @@ package account
 import (
 	"fmt"
 	"net"
+	"net/http"
 	"strings"
 	"time"
 
@@ -207,10 +208,10 @@ func (s *Service) JwtUsernameExtract(c *gin.Context) string {
 	return sub
 }
 
-// extractJwtToken 从 Authorization Header 或 WebSocket query 中提取原始 token 字符串
+// extractJwtToken 从 Authorization Header、WebSocket query 或文件预览 query 中提取原始 token 字符串
 func (s *Service) extractJwtToken(c *gin.Context) string {
 	tokenStr := strings.TrimPrefix(c.GetHeader("Authorization"), "Bearer ")
-	if tokenStr == "" && c.GetHeader("Upgrade") == "websocket" {
+	if tokenStr == "" && (c.GetHeader("Upgrade") == "websocket" || (c.Request.Method == http.MethodGet && c.FullPath() == "/api/filer/download" && c.Query("inline") == "1")) {
 		tokenStr = c.Query("token")
 	}
 	return tokenStr

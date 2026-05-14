@@ -118,6 +118,24 @@ func (s *Service) FileList(absPath, relPath string) ([]*FileInfo, error) {
 	return result, nil
 }
 
+// FileOpen 打开文件并返回文件信息，用于流式读取
+func (s *Service) FileOpen(absPath string) (*os.File, os.FileInfo, error) {
+	file, err := os.Open(absPath)
+	if err != nil {
+		return nil, nil, err
+	}
+	info, err := file.Stat()
+	if err != nil {
+		file.Close()
+		return nil, nil, err
+	}
+	if info.IsDir() {
+		file.Close()
+		return nil, nil, fmt.Errorf("路径是目录")
+	}
+	return file, info, nil
+}
+
 // FileRead 读取文件内容
 func (s *Service) FileRead(absPath string) ([]byte, error) {
 	return os.ReadFile(absPath)

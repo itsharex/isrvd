@@ -196,7 +196,7 @@ cd webview && python3 sort-imports.py --dry-run src
 | `overview` | `POST /api/overview/stats` | 系统概览 |
 | `system` | `POST /api/system/config` | 系统设置 |
 | `account` | `POST /api/members` | 成员管理 |
-| `filer` | `POST /api/filer/list` | 文件管理（列出） |
+| `filer` | `GET /api/filer/list` | 文件管理（列出） |
 | `filer` | `POST /api/filer/upload` | 文件管理（上传） |
 | `filer` | `POST /api/filer/modify` | 文件管理（修改） |
 | `shell` | `WS /api/shell` | Web 终端 |
