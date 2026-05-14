@@ -20,6 +20,7 @@ export interface ServerConfig {
     jwtExpiration: number
     maxUploadSize: number
     proxyHeaderName: string
+    proxyTrustedCIDRs: string[]
     rootDirectory: string
     allowedOrigins: string[]
     // 写入时为空表示保留原值（不通过 JSON 返回）

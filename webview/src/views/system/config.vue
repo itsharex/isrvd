@@ -17,8 +17,9 @@ class Config extends Vue {
   saving = false
   activeTab: 'server' | 'agent' | 'oidc' | 'app' | 'links' = 'server'
 
-  server: ServerConfig = { debug: false, listenAddr: '', jwtExpiration: 86400, maxUploadSize: 104857600, proxyHeaderName: '', rootDirectory: '', allowedOrigins: [] }
+  server: ServerConfig = { debug: false, listenAddr: '', jwtExpiration: 86400, maxUploadSize: 104857600, proxyHeaderName: '', proxyTrustedCIDRs: [], rootDirectory: '', allowedOrigins: [] }
   allowedOriginsText = ''
+  proxyTrustedCIDRsText = ''
   oidc: OIDCConfig = { enabled: false, issuerUrl: '', clientId: '', redirectUrl: '', usernameClaim: 'sub', scopes: ['openid', 'profile', 'email'] }
   oidcScopes = 'openid profile email'
   agent: AgentConfig = { model: '', baseUrl: '' }
@@ -35,6 +36,7 @@ class Config extends Vue {
       const payload = res.payload as AllConfig
       this.server = { ...payload.server }
       this.allowedOriginsText = (this.server.allowedOrigins || []).join('\n')
+      this.proxyTrustedCIDRsText = (this.server.proxyTrustedCIDRs || []).join('\n')
       this.oidc = { ...(payload.oidc || { enabled: false, issuerUrl: '', clientId: '', redirectUrl: '', usernameClaim: 'sub', scopes: ['openid', 'profile', 'email'] }) }
       this.oidcScopes = (this.oidc.scopes || []).join(' ')
       this.agent = { ...payload.agent }
@@ -56,7 +58,7 @@ class Config extends Vue {
     this.saving = true
     try {
       await api.systemConfigUpdate({
-        server: { ...this.server, allowedOrigins: this.allowedOriginsText.split(/\s+/).filter(Boolean) },
+        server: { ...this.server, allowedOrigins: this.allowedOriginsText.split(/\s+/).filter(Boolean), proxyTrustedCIDRs: this.proxyTrustedCIDRsText.split(/\s+/).filter(Boolean) },
         oidc: { ...this.oidc, scopes: this.oidcScopes.split(/\s+/).filter(Boolean) },
         agent: this.agent,
         apisix: this.apisix,
@@ -186,12 +188,7 @@ export default toNative(Config)
             <p class="mt-1 text-xs text-slate-400">HTTP 服务监听端口，例如 :8080 或 127.0.0.1:8080（重启生效）</p>
           </div>
           <div>
-            <label class="block text-sm font-medium text-slate-700 mb-1.5">基础目录</label>
-            <input v-model="server.rootDirectory" type="text" placeholder="." class="input" />
-            <p class="mt-1 text-xs text-slate-400">成员家目录及容器数据的基础目录</p>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-slate-700 mb-1.5">JWT 密钥</label>
+            <label class="block text-sm font-medium text-slate-700 mb-1.5">JWT 认证密钥</label>
             <input v-model="server.jwtSecret" type="password" placeholder="留空保持不变" class="input" autocomplete="new-password" />
             <p class="mt-1 text-xs text-slate-400">用于签名登录令牌，修改后所有用户需要重新登录</p>
           </div>
@@ -201,9 +198,14 @@ export default toNative(Config)
             <p class="mt-1 text-xs text-slate-400">登录令牌的有效期，默认 86400（24 小时）</p>
           </div>
           <div>
-            <label class="block text-sm font-medium text-slate-700 mb-1.5">文件上传大小限制（字节）</label>
-            <input v-model.number="server.maxUploadSize" type="number" min="0" placeholder="104857600" class="input" />
-            <p class="mt-1 text-xs text-slate-400">单次上传的最大文件大小，默认 104857600（100 MB）</p>
+            <label class="block text-sm font-medium text-slate-700 mb-1.5">内网代理认证 Header</label>
+            <input v-model="server.proxyHeaderName" type="text" placeholder="例如 X-Auth-User（留空禁用）" class="input" />
+            <p class="mt-1 text-xs text-slate-400">启用时，将使用上游传入的 Header {{ server.proxyHeaderName }} 值作为登录用户</p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1.5">代理可信来源 CIDR</label>
+            <textarea v-model="proxyTrustedCIDRsText" rows="3" placeholder="127.0.0.1/32&#10;10.0.0.0/8" class="input font-mono text-xs"></textarea>
+            <p class="mt-1 text-xs text-slate-400">每行一个 CIDR，仅列出的来源 IP 允许使用代理认证；留空则仅信任本机（127.0.0.1）</p>
           </div>
           <div>
             <label class="block text-sm font-medium text-slate-700 mb-1.5">允许的跨域 Origin</label>
@@ -211,9 +213,14 @@ export default toNative(Config)
             <p class="mt-1 text-xs text-slate-400">每行一个，支持通配符 *；留空则不限制</p>
           </div>
           <div>
-            <label class="block text-sm font-medium text-slate-700 mb-1.5">内网代理认证 Header</label>
-            <input v-model="server.proxyHeaderName" type="text" placeholder="例如 X-Auth-User（留空禁用）" class="input" />
-            <p class="mt-1 text-xs text-slate-400">启用时，将使用上游传入的 Header {{ server.proxyHeaderName }} 值作为登录用户</p>
+            <label class="block text-sm font-medium text-slate-700 mb-1.5">文件上传大小限制（字节）</label>
+            <input v-model.number="server.maxUploadSize" type="number" min="0" placeholder="104857600" class="input" />
+            <p class="mt-1 text-xs text-slate-400">单次上传的最大文件大小，默认 104857600（100 MB）</p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1.5">基础目录</label>
+            <input v-model="server.rootDirectory" type="text" placeholder="." class="input" />
+            <p class="mt-1 text-xs text-slate-400">成员家目录及容器数据的基础目录</p>
           </div>
         </section>
 
@@ -227,32 +234,34 @@ export default toNative(Config)
             </select>
           </div>
           <div>
-            <label class="block text-sm font-medium text-slate-700 mb-1.5">Issuer URL</label>
+            <label class="block text-sm font-medium text-slate-700 mb-1.5">颁发者地址</label>
             <input v-model="oidc.issuerUrl" type="text" placeholder="https://idp.example.com" class="input" />
-            <p class="mt-1 text-xs text-slate-400">OIDC Provider 的 issuer 地址，用于自动发现 authorization_endpoint、token_endpoint、jwks_uri 等元数据；保存后立即生效</p>
+            <p class="mt-1 text-xs text-slate-400">Issuer URL；用于自动发现 authorization_endpoint、token_endpoint、jwks_uri 等元数据；保存后立即生效</p>
           </div>
           <div>
-            <label class="block text-sm font-medium text-slate-700 mb-1.5">Client ID</label>
+            <label class="block text-sm font-medium text-slate-700 mb-1.5">客户端 ID</label>
             <input v-model="oidc.clientId" type="text" placeholder="isrvd" class="input" />
+            <p class="mt-1 text-xs text-slate-400">Client ID；在 OIDC Provider 处注册应用时获得</p>
           </div>
           <div>
-            <label class="block text-sm font-medium text-slate-700 mb-1.5">Client Secret</label>
+            <label class="block text-sm font-medium text-slate-700 mb-1.5">客户端密钥</label>
             <input v-model="oidc.clientSecret" type="password" placeholder="留空保持不变" class="input" autocomplete="new-password" />
+            <p class="mt-1 text-xs text-slate-400">Client Secret；留空表示保持原值不变</p>
           </div>
           <div>
-            <label class="block text-sm font-medium text-slate-700 mb-1.5">Redirect URL</label>
+            <label class="block text-sm font-medium text-slate-700 mb-1.5">回调地址</label>
             <input v-model="oidc.redirectUrl" type="text" placeholder="https://isrvd.example.com/api/account/oidc/callback" class="input" />
-            <p class="mt-1 text-xs text-slate-400">开发环境可留空自动生成；生产环境建议填写固定 HTTPS 回调地址</p>
+            <p class="mt-1 text-xs text-slate-400">Redirect URL；开发环境可留空自动生成，生产环境建议填写固定 HTTPS 回调地址</p>
           </div>
           <div>
-            <label class="block text-sm font-medium text-slate-700 mb-1.5">用户名 Claim</label>
+            <label class="block text-sm font-medium text-slate-700 mb-1.5">用户名字段</label>
             <input v-model="oidc.usernameClaim" type="text" placeholder="sub" class="input" />
-            <p class="mt-1 text-xs text-slate-400">默认 sub；该 Claim 的值必须与 members.username 完全一致，用户不存在时登录失败</p>
+            <p class="mt-1 text-xs text-slate-400">Username Claim；默认 sub，该字段的值必须与 members.username 完全一致，用户不存在时登录失败</p>
           </div>
           <div>
-            <label class="block text-sm font-medium text-slate-700 mb-1.5">Scopes</label>
+            <label class="block text-sm font-medium text-slate-700 mb-1.5">授权范围</label>
             <input v-model="oidcScopes" type="text" placeholder="openid profile email" class="input" />
-            <p class="mt-1 text-xs text-slate-400">以空格分隔；系统会自动确保包含 openid</p>
+            <p class="mt-1 text-xs text-slate-400">Scopes；以空格分隔，系统会自动确保包含 openid</p>
           </div>
         </section>
 
