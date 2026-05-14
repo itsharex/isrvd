@@ -13,6 +13,9 @@ class BaseModal extends Vue {
     @Prop({ type: Boolean, default: false }) readonly confirmDisabled!: boolean
     @Prop({ type: String, default: 'btn-primary' }) readonly confirmClass!: string
     @Prop({ type: Boolean, default: true }) readonly showConfirm!: boolean
+    @Prop({ type: String, default: 'max-w-3xl' }) readonly maxWidthClass!: string
+    @Prop({ type: String, default: '' }) readonly cardClass!: string
+    @Prop({ type: String, default: 'px-6 py-6 overflow-y-auto' }) readonly bodyClass!: string
 
     // ─── Refs ───
     @Ref readonly modalRef!: HTMLDivElement
@@ -96,24 +99,29 @@ export default toNative(BaseModal)
         @mousedown="handleBackdropMouseDown"
         @click="handleBackdropClick"
       >
-        <div :class="['w-full max-h-[calc(100vh-2rem)] modal-card animate-scale-in flex flex-col overflow-hidden', 'max-w-3xl']">
+        <div :class="['w-full max-h-[calc(100vh-2rem)] modal-card animate-scale-in flex flex-col overflow-hidden', maxWidthClass, cardClass]">
           <!-- Header -->
           <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200/50 flex-shrink-0">
-            <h1 class="text-lg font-semibold text-slate-800 min-w-0 pr-4">
-              <slot name="title">{{ title }}</slot>
-            </h1>
-            <button 
-              type="button" 
-              class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all duration-200 flex-shrink-0"
-              :disabled="loading"
-              @click="handleCancel"
-            >
-              <i class="fas fa-times"></i>
-            </button>
+            <div class="min-w-0 flex-1 pr-4">
+              <slot name="title">
+                <h1 class="text-lg font-semibold text-slate-800 truncate">{{ title }}</h1>
+              </slot>
+            </div>
+            <div class="flex items-center gap-2 flex-shrink-0">
+              <slot name="header-actions"></slot>
+              <button 
+                type="button" 
+                class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all duration-200 flex-shrink-0"
+                :disabled="loading"
+                @click="handleCancel"
+              >
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
           </div>
 
           <!-- Body -->
-          <div class="px-6 py-6 flex-1 min-h-0 overflow-y-auto">
+          <div :class="['flex-1 min-h-0', bodyClass]">
             <slot></slot>
           </div>
 
