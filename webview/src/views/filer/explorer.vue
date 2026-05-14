@@ -314,7 +314,7 @@ export default toNative(FileExplorer)
                       </button>
                       <button
                         v-if="isImageFile(file.name) && appActions.hasPerm('POST /api/filer/download')"
-                        class="btn-icon text-purple-600 hover:bg-purple-50"
+                        class="btn-icon text-slate-600 hover:bg-slate-50"
                         title="预览"
                         @click="previewModalRef.show(file)"
                       >
@@ -474,7 +474,7 @@ export default toNative(FileExplorer)
                 </button>
                 <button
                   v-if="isImageFile(file.name) && appActions.hasPerm('POST /api/filer/download')"
-                  class="btn-icon text-purple-600 hover:bg-purple-50"
+                  class="btn-icon text-slate-600 hover:bg-slate-50"
                   title="预览"
                   @click="previewModalRef.show(file)"
                 >

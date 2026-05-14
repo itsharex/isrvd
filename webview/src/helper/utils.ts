@@ -7,9 +7,18 @@ export const TEXT_EXTENSIONS: string[] = [
     'java', 'cpp', 'c', 'h', 'sql', 'sh', 'bat', 'env'
 ]
 
-export const IMAGE_EXTENSIONS: string[] = [
-    'jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg', 'webp', 'ico', 'tiff', 'tif'
-]
+export const IMAGE_MIME_MAP: Record<string, string> = {
+    jpg: 'image/jpeg',
+    jpeg: 'image/jpeg',
+    png: 'image/png',
+    gif: 'image/gif',
+    bmp: 'image/bmp',
+    svg: 'image/svg+xml',
+    webp: 'image/webp',
+    ico: 'image/x-icon',
+    tiff: 'image/tiff',
+    tif: 'image/tiff'
+}
 
 export const FILE_ICON_MAP: Record<string, string> = {
     'txt': 'fas fa-file-alt text-secondary',
@@ -58,7 +67,12 @@ export const isEditableFile = (filename: string): boolean => {
 export const isImageFile = (filename: string): boolean => {
     if (!filename) return false
     const ext = filename.split('.').pop()?.toLowerCase() ?? ''
-    return IMAGE_EXTENSIONS.includes(ext)
+    return Object.prototype.hasOwnProperty.call(IMAGE_MIME_MAP, ext)
+}
+
+export const getImageMimeType = (filename: string): string => {
+    const ext = filename.split('.').pop()?.toLowerCase() ?? ''
+    return IMAGE_MIME_MAP[ext] || 'image/*'
 }
 
 export const getFileIcon = (file: { isDir: boolean; name: string }): string => {
