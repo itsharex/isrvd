@@ -69,8 +69,10 @@ const (
 
 func StartApp() {
 	app := &App{
-		Engine:     httpd.Engine(config.Server.Debug),
-		wsConfig:   &websocket.ServerConfig{AllowedOrigins: config.Server.AllowedOrigins},
+		Engine: httpd.Engine(config.Server.Debug),
+		wsConfig: &websocket.ServerConfig{
+			AllowedOrigins: config.Server.AllowedOrigins,
+		},
 		routeIndex: make(map[string]Route),
 	}
 

@@ -1,9 +1,12 @@
 server:
   debug: false
   listenAddr: :8080
-  # jwtSecret: your-jwt-secret
-  # proxyHeaderName: X-Username
-  # proxyTrustedCIDRs: [127.0.0.1/32]
+  # jwtSecret: your-jwt-secret         # JWT 签名密钥，修改后所有用户需重新登录
+  # jwtExpiration: 86400               # JWT 有效期（秒），默认 86400（24小时）
+  # maxUploadSize: 104857600           # 文件上传最大字节数，默认 104857600（100MB）
+  # allowedOrigins: [https://example.com]  # 允许的跨域 Origin，支持通配符 *
+  # proxyHeaderName: X-Username        # 内网代理认证 Header，留空禁用
+  # proxyTrustedCIDRs: [127.0.0.1/32]  # 代理认证可信来源 CIDR，为空时仅信任本机
   rootDirectory: /srv/
 
 oidc:

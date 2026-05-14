@@ -16,13 +16,13 @@ type Config struct {
 type ServerConfig struct {
 	Debug             bool     `yaml:"debug" json:"debug"`
 	ListenAddr        string   `yaml:"listenAddr" json:"listenAddr"`
-	JWTSecret         string   `yaml:"jwtSecret" json:"jwtSecret,omitempty"` // 写入时为空表示保留原值；响应时不返回
-	JWTExpiration     int64    `yaml:"jwtExpiration" json:"jwtExpiration"`   // JWT 过期时间（秒），默认 86400
-	MaxUploadSize     int64    `yaml:"maxUploadSize" json:"maxUploadSize"`   // 文件上传最大大小（字节），默认 100MB
-	ProxyHeaderName   string   `yaml:"proxyHeaderName" json:"proxyHeaderName"`
+	JWTSecret         string   `yaml:"jwtSecret" json:"jwtSecret,omitempty"`       // 写入时为空表示保留原值；响应时不返回
+	JWTExpiration     int64    `yaml:"jwtExpiration" json:"jwtExpiration"`         // JWT 过期时间（秒），默认 86400
+	ProxyHeaderName   string   `yaml:"proxyHeaderName" json:"proxyHeaderName"`     // 使用代理认证的请求头名称
 	ProxyTrustedCIDRs []string `yaml:"proxyTrustedCIDRs" json:"proxyTrustedCIDRs"` // Header 代理认证可信来源 CIDR；为空时仅信任本机
+	AllowedOrigins    []string `yaml:"allowedOrigins" json:"allowedOrigins"`       // 允许的 Origin 列表，支持通配符 *
+	MaxUploadSize     int64    `yaml:"maxUploadSize" json:"maxUploadSize"`         // 文件上传最大大小（字节），默认 100MB
 	RootDirectory     string   `yaml:"rootDirectory" json:"rootDirectory"`
-	AllowedOrigins    []string `yaml:"allowedOrigins" json:"allowedOrigins"` // 允许的 Origin 列表（API CORS + WebSocket），支持通配符 *
 }
 
 // OIDC 配置
@@ -58,10 +58,10 @@ type DockerConfig struct {
 
 // 镜像仓库配置
 type DockerRegistry struct {
-	Name        string `yaml:"name" json:"name"`               // 仓库名称（用于显示）
-	Description string `yaml:"description" json:"description"` // 仓库描述（可选）
-	URL         string `yaml:"url" json:"url"`                 // 仓库地址，如 registry.example.com
-	Username    string `yaml:"username" json:"username"`       // 用户名（可选）
+	Name        string `yaml:"name" json:"name"`                   // 仓库名称（用于显示）
+	Description string `yaml:"description" json:"description"`     // 仓库描述（可选）
+	URL         string `yaml:"url" json:"url"`                     // 仓库地址，如 registry.example.com
+	Username    string `yaml:"username" json:"username"`           // 用户名（可选）
 	Password    string `yaml:"password" json:"-"`              // 敏感字段不序列化到 JSON；写入时为空表示保留原值
 }
 

@@ -18,6 +18,7 @@ class Config extends Vue {
   activeTab: 'server' | 'agent' | 'oidc' | 'app' | 'links' = 'server'
 
   server: ServerConfig = { debug: false, listenAddr: '', jwtExpiration: 86400, maxUploadSize: 104857600, proxyHeaderName: '', rootDirectory: '', allowedOrigins: [] }
+  allowedOriginsText = ''
   oidc: OIDCConfig = { enabled: false, issuerUrl: '', clientId: '', redirectUrl: '', usernameClaim: 'sub', scopes: ['openid', 'profile', 'email'] }
   oidcScopes = 'openid profile email'
   agent: AgentConfig = { model: '', baseUrl: '' }
@@ -33,6 +34,7 @@ class Config extends Vue {
       const res = await api.systemConfig(reload ? { reload: 'true' } : undefined)
       const payload = res.payload as AllConfig
       this.server = { ...payload.server }
+      this.allowedOriginsText = (this.server.allowedOrigins || []).join('\n')
       this.oidc = { ...(payload.oidc || { enabled: false, issuerUrl: '', clientId: '', redirectUrl: '', usernameClaim: 'sub', scopes: ['openid', 'profile', 'email'] }) }
       this.oidcScopes = (this.oidc.scopes || []).join(' ')
       this.agent = { ...payload.agent }
@@ -53,7 +55,7 @@ class Config extends Vue {
     this.saving = true
     try {
       await api.systemConfigUpdate({
-        server: this.server,
+        server: { ...this.server, allowedOrigins: this.allowedOriginsText.split(/\s+/).filter(Boolean) },
         oidc: { ...this.oidc, scopes: this.oidcScopes.split(/\s+/).filter(Boolean) },
         agent: this.agent,
         apisix: this.apisix,
@@ -189,6 +191,21 @@ export default toNative(Config)
             <label class="block text-sm font-medium text-slate-700 mb-1.5">JWT 密钥</label>
             <input v-model="server.jwtSecret" type="password" placeholder="留空保持不变" class="input" autocomplete="new-password" />
             <p class="mt-1 text-xs text-slate-400">用于签名登录令牌，修改后所有用户需要重新登录</p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1.5">JWT 有效期（秒）</label>
+            <input v-model.number="server.jwtExpiration" type="number" min="60" placeholder="86400" class="input" />
+            <p class="mt-1 text-xs text-slate-400">登录令牌的有效期，默认 86400（24 小时）</p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1.5">文件上传大小限制（字节）</label>
+            <input v-model.number="server.maxUploadSize" type="number" min="0" placeholder="104857600" class="input" />
+            <p class="mt-1 text-xs text-slate-400">单次上传的最大文件大小，默认 104857600（100 MB）</p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1.5">允许的跨域 Origin</label>
+            <textarea v-model="allowedOriginsText" rows="3" placeholder="https://example.com&#10;https://*.example.com" class="input font-mono text-xs"></textarea>
+            <p class="mt-1 text-xs text-slate-400">每行一个，支持通配符 *；留空则不限制</p>
           </div>
           <div>
             <label class="block text-sm font-medium text-slate-700 mb-1.5">内网代理认证 Header</label>

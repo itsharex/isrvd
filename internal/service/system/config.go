@@ -55,11 +55,11 @@ func (s *ConfigService) ConfigAll() *AllConfigResponse {
 			Debug:             srv.Debug,
 			ListenAddr:        srv.ListenAddr,
 			JWTExpiration:     srv.JWTExpiration,
-			MaxUploadSize:     srv.MaxUploadSize,
 			ProxyHeaderName:   srv.ProxyHeaderName,
 			ProxyTrustedCIDRs: srv.ProxyTrustedCIDRs,
-			RootDirectory:     srv.RootDirectory,
 			AllowedOrigins:    srv.AllowedOrigins,
+			MaxUploadSize:     srv.MaxUploadSize,
+			RootDirectory:     srv.RootDirectory,
 			// JWTSecret 不返回
 		},
 		OIDC: &config.OIDCConfig{
