@@ -415,18 +415,6 @@ export default toNative(NavigationBar)
         <span v-if="!collapsed">Compose 部署</span>
       </router-link>
 
-      <!-- 用户管理 -->
-      <router-link
-        v-if="portal.hasPerm('GET /api/account/members')"
-        to="/account/members"
-        class="flex items-center gap-3 px-3 py-3 text-sm font-medium text-slate-600 rounded-xl transition-all duration-200 hover:bg-slate-100 hover:text-slate-900"
-        active-class="bg-blue-50 text-blue-700"
-        :title="collapsed ? '用户管理' : ''"
-      >
-        <i class="fas fa-users"></i>
-        <span v-if="!collapsed">用户管理</span>
-      </router-link>
-
       <!-- 操作审计 -->
       <router-link
         v-if="portal.hasPerm('GET /api/system/audit/logs')"
@@ -437,6 +425,18 @@ export default toNative(NavigationBar)
       >
         <i class="fas fa-clipboard-list"></i>
         <span v-if="!collapsed">操作审计</span>
+      </router-link>
+
+      <!-- 用户管理 -->
+      <router-link
+        v-if="portal.hasPerm('GET /api/account/members')"
+        to="/account/members"
+        class="flex items-center gap-3 px-3 py-3 text-sm font-medium text-slate-600 rounded-xl transition-all duration-200 hover:bg-slate-100 hover:text-slate-900"
+        active-class="bg-blue-50 text-blue-700"
+        :title="collapsed ? '用户管理' : ''"
+      >
+        <i class="fas fa-users"></i>
+        <span v-if="!collapsed">用户管理</span>
       </router-link>
 
       <!-- 系统配置 -->
