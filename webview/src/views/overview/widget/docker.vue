@@ -23,11 +23,6 @@ class DockerOverview extends Vue {
         { key: 'networksTotal',     label: '网络总数',   icon: 'fa-network-wired', bgColor: 'bg-purple-500' },
     ]
 
-    // ─── 生命周期 ───
-    mounted() {
-        this.load()
-    }
-
     // ─── 方法 ───
     async load() {
         this.loading = true
@@ -40,6 +35,11 @@ class DockerOverview extends Vue {
         } finally {
             this.loading = false
         }
+    }
+
+    // ─── 生命周期 ───
+    mounted() {
+        this.load()
     }
 }
 

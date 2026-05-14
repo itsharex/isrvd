@@ -66,7 +66,8 @@ class Config extends Vue {
       })
       this.portal.showNotification('success', '全部配置已保存，监听地址等选项需重启生效')
       this.loadConfig()
-    } catch { } finally {
+    } catch {
+    } finally {
       this.saving = false
     }
   }

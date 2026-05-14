@@ -20,11 +20,6 @@ class ApisixOverview extends Vue {
         { key: 'whitelist', label: '白名单授权', icon: 'fa-shield-halved', bgColor: 'bg-emerald-500' },
     ]
 
-    // ─── 生命周期 ───
-    mounted() {
-        this.load()
-    }
-
     // ─── 方法 ───
     async load() {
         this.loading = true
@@ -48,6 +43,11 @@ class ApisixOverview extends Vue {
         } finally {
             this.loading = false
         }
+    }
+
+    // ─── 生命周期 ───
+    mounted() {
+        this.load()
     }
 }
 

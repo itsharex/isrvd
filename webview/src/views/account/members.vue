@@ -15,6 +15,8 @@ import MemberEditModal from './widget/member-edit-modal.vue'
 })
 class Members extends Vue {
     portal = usePortal()
+
+    // ─── Refs ───
     @Ref readonly memberEditModalRef!: InstanceType<typeof MemberEditModal>
 
     // ─── 数据属性 ───

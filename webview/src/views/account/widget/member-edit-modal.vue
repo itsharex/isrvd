@@ -119,8 +119,9 @@ class MemberEditModal extends Vue {
             this.routeGroups = ordered
         } catch {
             this.portal.showNotification('error', '加载路由列表失败')
+        } finally {
+            this.routesLoading = false
         }
-        this.routesLoading = false
     }
 
     async show(member: MemberInfo | null = null) {
@@ -249,8 +250,10 @@ class MemberEditModal extends Vue {
             }
             this.isOpen = false
             this.$emit('success')
-        } catch {}
-        this.modalLoading = false
+        } catch {
+        } finally {
+            this.modalLoading = false
+        }
     }
 }
 

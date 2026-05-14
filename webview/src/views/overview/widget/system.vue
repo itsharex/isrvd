@@ -20,11 +20,14 @@ import SystemNetwork from './system_network.vue'
 })
 class SystemOverview extends Vue {
     portal = usePortal()
+
+    // ─── 数据属性 ───
     loading = false
-    ready = false
+    ready   = false
 
     private pollTimer: ReturnType<typeof setInterval> | null = null
 
+    // ─── Refs ───
     @Ref readonly infoRef!: InstanceType<typeof SystemInfo>
     @Ref readonly cpuMemRef!: InstanceType<typeof SystemCpuMem>
     @Ref readonly gpuRef!: InstanceType<typeof SystemGpu>
@@ -32,6 +35,7 @@ class SystemOverview extends Vue {
     @Ref readonly networkRef!: InstanceType<typeof SystemNetwork>
     @Ref readonly goRef!: InstanceType<typeof SystemGo>
 
+    // ─── 方法 ───
     private dispatchData(payload: SystemStat) {
         this.infoRef?.pushData(payload)
         this.cpuMemRef?.pushData(payload)
@@ -81,6 +85,7 @@ class SystemOverview extends Vue {
         this.startPoll()
     }
 
+    // ─── 生命周期 ───
     mounted() {
         this.load()
     }
