@@ -96,7 +96,11 @@ class ContainerCreateModal extends Vue {
             svc.command = this.formData.cmd.trim().split(/\s+/)
         }
         if (this.formData.envStr.trim()) {
-            svc.environment = this.formData.envStr.split('\n').filter(e => e.trim())
+            svc.environment = this.formData.envStr
+                .split('\n')
+                .map(e => e.trim())
+                .filter(e => e)
+                .map(e => e.includes('=') ? e : e.replace(/\s*:\s*/, '='))
         }
         if (this.formData.portsStr.trim()) {
             svc.ports = this.formData.portsStr.split('\n').filter(p => p.trim())
@@ -208,6 +212,7 @@ export default toNative(ContainerCreateModal)
       <div>
         <label class="block text-sm font-medium text-slate-700 mb-2">环境变量</label>
         <textarea v-model="formData.envStr" rows="2" placeholder="KEY=value" class="input font-mono text-sm"></textarea>
+        <p class="mt-1 text-xs text-slate-400">每行一条，支持 KEY=value 或 KEY: value 格式</p>
       </div>
 
       <!-- 高级选项 -->
