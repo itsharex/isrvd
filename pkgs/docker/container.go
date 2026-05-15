@@ -34,6 +34,7 @@ type ContainerInfo struct {
 	Networks []string          `json:"networks,omitempty"`
 	Created  int64             `json:"created"`
 	IsSwarm  bool              `json:"isSwarm,omitempty"`
+	IsSelf   bool              `json:"isSelf,omitempty"`
 	Labels   map[string]string `json:"labels,omitempty"`
 }
 
@@ -69,6 +70,8 @@ func (s *DockerService) ContainerList(ctx context.Context, all bool) ([]*Contain
 		return nil, err
 	}
 
+	selfID := SelfContainerID()
+
 	var result []*ContainerInfo
 	for _, ct := range containers {
 		name := ""
@@ -81,8 +84,9 @@ func (s *DockerService) ContainerList(ctx context.Context, all bool) ([]*Contain
 				networks = append(networks, netName)
 			}
 		}
+		shortID := ShortID(ct.ID)
 		result = append(result, &ContainerInfo{
-			ID:       ShortID(ct.ID),
+			ID:       shortID,
 			Name:     name,
 			Image:    ct.Image,
 			State:    ct.State,
@@ -91,6 +95,7 @@ func (s *DockerService) ContainerList(ctx context.Context, all bool) ([]*Contain
 			Networks: networks,
 			Created:  ct.Created,
 			IsSwarm:  ct.Labels["com.docker.swarm.service.id"] != "",
+			IsSelf:   selfID != "" && shortID == selfID,
 			Labels:   ct.Labels,
 		})
 	}

@@ -2,14 +2,53 @@ package docker
 
 import (
 	"archive/tar"
+	"bufio"
 	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/docker/docker/api/types/container"
 )
+
+// SelfContainerID 返回当前进程所在容器的短 ID（前 12 位）。
+// 通过读取 /proc/self/cgroup 解析 Docker 容器 ID；不在容器内时返回空字符串。
+func SelfContainerID() string {
+	f, err := os.Open("/proc/self/cgroup")
+	if err != nil {
+		return ""
+	}
+	defer f.Close()
+
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		line := scanner.Text()
+		// 格式：hierarchy-ID:subsystems:/path
+		// Docker 路径形如 /docker/<full-id> 或 /system.slice/docker-<full-id>.scope
+		parts := strings.SplitN(line, ":", 3)
+		if len(parts) != 3 {
+			continue
+		}
+		cgroupPath := parts[2]
+		// 匹配 /docker/<id>
+		if idx := strings.LastIndex(cgroupPath, "/docker/"); idx >= 0 {
+			id := cgroupPath[idx+len("/docker/"):]
+			if len(id) >= 12 {
+				return id[:12]
+			}
+		}
+		// 匹配 docker-<id>.scope
+		if idx := strings.Index(cgroupPath, "docker-"); idx >= 0 {
+			rest := cgroupPath[idx+len("docker-"):]
+			if end := strings.Index(rest, ".scope"); end >= 12 {
+				return rest[:12]
+			}
+		}
+	}
+	return ""
+}
 
 // ActionRequest 资源操作请求（容器/镜像/网络/卷通用）。
 // ID 字段对所有资源使用，卷场景下 ID 即卷名。

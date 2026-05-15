@@ -23,6 +23,7 @@ export interface DockerContainerInfo {
     networks?: string[]
     created: number
     isSwarm?: boolean
+    isSelf?: boolean
     labels?: Record<string, string>
 }
 
