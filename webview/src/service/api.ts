@@ -68,7 +68,13 @@ import type {
     // Compose
     ComposeDeployResult,
     ComposeDeploy,
-    ComposeRedeploy
+    ComposeRedeploy,
+    // Cron
+    CronJob,
+    CronJobCreate,
+    CronJobList,
+    CronJobLogList,
+    CronTypeInfo,
 } from './types'
 
 // API 服务类，统一管理所有 API 请求
@@ -524,6 +530,40 @@ class ApiService {
 
     composeSwarmRedeploy(name: string, data: ComposeRedeploy) {
         return http.post<ComposeDeployResult>(`compose/swarm/${name}/redeploy`, data)
+    }
+
+    // ==================== Cron 计划任务 ====================
+
+    cronTypes() {
+        return http.get<{ types: CronTypeInfo[] }>('cron/types')
+    }
+
+    cronJobList() {
+        return http.get<CronJobList>('cron/jobs')
+    }
+
+    cronJobCreate(data: CronJobCreate) {
+        return http.post<{ job: CronJob }>('cron/jobs', data)
+    }
+
+    cronJobUpdate(id: string, data: CronJobCreate) {
+        return http.put<{ job: CronJob }>(`cron/jobs/${id}`, data)
+    }
+
+    cronJobDelete(id: string) {
+        return http.delete<void>(`cron/jobs/${id}`)
+    }
+
+    cronJobRun(id: string) {
+        return http.post<void>(`cron/jobs/${id}/run`, {})
+    }
+
+    cronJobEnable(id: string, enabled: boolean) {
+        return http.post<void>(`cron/jobs/${id}/enable`, { enabled })
+    }
+
+    cronJobLogs(id: string, limit = 50) {
+        return http.get<CronJobLogList>(`cron/jobs/${id}/logs`, { params: { limit } })
     }
 }
 

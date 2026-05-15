@@ -1,0 +1,309 @@
+<script lang="ts">
+import { Component, Ref, Vue, toNative } from 'vue-facing-decorator'
+
+import api from '@/service/api'
+import type { CronJob, CronTypeInfo } from '@/service/types'
+
+import PageSearch from '@/component/page-search.vue'
+
+import { usePortal } from '@/stores'
+
+import JobEditModal from './widget/job-edit-modal.vue'
+import JobLogsModal from './widget/job-logs-modal.vue'
+
+@Component({
+    components: { PageSearch, JobEditModal, JobLogsModal }
+})
+class CronJobs extends Vue {
+    portal = usePortal()
+
+    @Ref readonly editModalRef!: InstanceType<typeof JobEditModal>
+    @Ref readonly logsModalRef!: InstanceType<typeof JobLogsModal>
+
+    jobs: CronJob[] = []
+    loading = false
+    searchText = ''
+    types: CronTypeInfo[] = []
+
+    get filteredJobs() {
+        if (!this.searchText) return this.jobs
+        const s = this.searchText.toLowerCase()
+        return this.jobs.filter(j =>
+            j.name.toLowerCase().includes(s) ||
+            j.schedule.toLowerCase().includes(s) ||
+            j.description.toLowerCase().includes(s)
+        )
+    }
+
+    formatTime(t?: string): string {
+        if (!t) return '-'
+        return new Date(t).toLocaleString('zh-CN')
+    }
+
+    async loadTypes() {
+        try {
+            const res = await api.cronTypes()
+            this.types = res.payload?.types || []
+        } catch {
+            this.types = []
+            this.portal.showNotification('error', '获取可用脚本类型失败')
+        }
+    }
+
+    async loadJobs() {
+        this.loading = true
+        try {
+            const res = await api.cronJobList()
+            this.jobs = res.payload?.jobs || []
+        } catch {
+            this.portal.showNotification('error', '获取计划任务失败')
+        } finally {
+            this.loading = false
+        }
+    }
+
+    openCreate() {
+        if (this.types.length === 0) {
+            this.portal.showNotification('error', '暂无可用脚本类型')
+            return
+        }
+        this.editModalRef?.show(null, this.types)
+    }
+
+    openEdit(job: CronJob) {
+        this.editModalRef?.show(job, this.types)
+    }
+
+    openDelete(job: CronJob) {
+        this.portal.showConfirm({
+            title: '删除计划任务',
+            message: `确定要删除任务 <strong class="text-slate-900">${job.name}</strong> 吗？此操作不可恢复。`,
+            icon: 'fa-trash',
+            iconColor: 'red',
+            confirmText: '确认删除',
+            danger: true,
+            onConfirm: async () => {
+                await api.cronJobDelete(job.id)
+                this.portal.showNotification('success', '任务已删除')
+                this.loadJobs()
+            }
+        })
+    }
+
+    async toggleEnabled(job: CronJob) {
+        try {
+            await api.cronJobEnable(job.id, !job.enabled)
+            this.portal.showNotification('success', job.enabled ? '任务已禁用' : '任务已启用')
+            await this.loadJobs()
+        } catch {
+            this.portal.showNotification('error', '操作失败')
+        }
+    }
+
+    async runNow(job: CronJob) {
+        try {
+            await api.cronJobRun(job.id)
+            this.portal.showNotification('success', `任务 "${job.name}" 已触发`)
+        } catch {
+            this.portal.showNotification('error', '触发任务失败')
+        }
+    }
+
+    openLogs(job: CronJob) {
+        this.logsModalRef?.show(job)
+    }
+
+    mounted() {
+        this.loadTypes()
+        this.loadJobs()
+    }
+}
+
+export default toNative(CronJobs)
+</script>
+
+<template>
+  <div>
+    <div class="card mb-4">
+      <div class="bg-slate-50 border-b border-slate-200 rounded-t-2xl px-4 md:px-6 py-3">
+        <div class="hidden md:flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-lg bg-violet-500 flex items-center justify-center">
+              <i class="fas fa-clock text-white"></i>
+            </div>
+            <div>
+              <h1 class="text-lg font-semibold text-slate-800">计划任务</h1>
+              <p class="text-xs text-slate-500">基于 Cron 表达式的定时脚本执行</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <PageSearch v-model="searchText" search-key="cron-jobs" placeholder="搜索任务名称、表达式..." width-class="w-60" focus-color="violet" type-to-search />
+            <button class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors whitespace-nowrap" @click="loadJobs()">
+              <i class="fas fa-rotate"></i>刷新
+            </button>
+            <button class="px-3 py-1.5 rounded-lg bg-violet-500 hover:bg-violet-600 text-white text-xs font-medium flex items-center gap-1.5 transition-colors whitespace-nowrap" @click="openCreate()">
+              <i class="fas fa-plus"></i>新建任务
+            </button>
+          </div>
+        </div>
+
+        <div class="block md:hidden">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-3 min-w-0 flex-1">
+              <div class="w-9 h-9 rounded-lg bg-violet-500 flex items-center justify-center flex-shrink-0">
+                <i class="fas fa-clock text-white"></i>
+              </div>
+              <div class="min-w-0">
+                <h1 class="text-lg font-semibold text-slate-800 truncate">计划任务</h1>
+                <p class="text-xs text-slate-500 truncate">定时脚本执行</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-1.5 flex-shrink-0">
+              <button class="w-9 h-9 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-600 transition-colors" title="刷新" @click="loadJobs()">
+                <i class="fas fa-rotate text-sm"></i>
+              </button>
+              <button class="w-9 h-9 rounded-lg bg-violet-500 hover:bg-violet-600 flex items-center justify-center text-white transition-colors" title="新建" @click="openCreate()">
+                <i class="fas fa-plus text-sm"></i>
+              </button>
+            </div>
+          </div>
+          <PageSearch v-model="searchText" search-key="cron-jobs" placeholder="搜索任务..." width-class="w-full" focus-color="violet" />
+        </div>
+      </div>
+
+      <div v-if="loading" class="flex flex-col items-center justify-center py-20">
+        <div class="w-12 h-12 spinner mb-3"></div>
+        <p class="text-slate-500">加载中...</p>
+      </div>
+
+      <div v-else-if="filteredJobs.length === 0" class="flex flex-col items-center justify-center py-20">
+        <div class="w-16 h-16 rounded-lg bg-slate-100 flex items-center justify-center mb-4">
+          <i class="fas fa-clock text-4xl text-slate-300"></i>
+        </div>
+        <p class="text-slate-600 font-medium mb-1">暂无计划任务</p>
+        <p class="text-sm text-slate-400 mb-4">点击「新建任务」创建第一个定时任务</p>
+      </div>
+
+      <div v-else class="hidden md:block overflow-x-auto">
+        <table class="w-full border-collapse">
+          <thead>
+            <tr class="bg-slate-50 border-b border-slate-200">
+              <th class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">任务名称</th>
+              <th class="w-36 px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Cron 表达式</th>
+              <th class="w-20 px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">类型</th>
+              <th class="w-20 px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">状态</th>
+              <th class="w-36 px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">下次执行</th>
+              <th class="w-36 px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">上次执行</th>
+              <th class="w-36 px-4 py-3 text-right text-xs font-semibold text-slate-600 uppercase tracking-wider">操作</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-slate-100">
+            <tr v-for="job in filteredJobs" :key="job.id" class="hover:bg-slate-50 transition-colors">
+              <td class="px-4 py-3">
+                <div class="flex items-center gap-2 min-w-0">
+                  <div class="w-8 h-8 rounded-lg bg-violet-400 flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-clock text-white text-sm"></i>
+                  </div>
+                  <div class="min-w-0">
+                    <span class="font-medium text-slate-800 truncate block">{{ job.name }}</span>
+                    <span v-if="job.description" class="text-xs text-slate-400 truncate block mt-0.5">{{ job.description }}</span>
+                  </div>
+                </div>
+              </td>
+              <td class="px-4 py-3">
+                <code class="text-xs text-slate-700 font-mono bg-slate-100 px-1.5 py-0.5 rounded">{{ job.schedule }}</code>
+              </td>
+              <td class="px-4 py-3">
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium font-mono bg-slate-100 text-slate-700">{{ job.type }}</span>
+              </td>
+              <td class="px-4 py-3">
+                <button
+                  :title="job.enabled ? '点击禁用' : '点击启用'"
+                  class="text-xs font-medium transition-colors"
+                  :class="job.enabled ? 'text-emerald-600 hover:text-emerald-700' : 'text-slate-400 hover:text-slate-500'"
+                  @click="toggleEnabled(job)"
+                >
+                  {{ job.enabled ? '已启用' : '已禁用' }}
+                </button>
+              </td>
+              <td class="px-4 py-3 text-xs text-slate-500 whitespace-nowrap">{{ formatTime(job.nextRun) }}</td>
+              <td class="px-4 py-3 text-xs text-slate-500 whitespace-nowrap">{{ formatTime(job.lastRun) }}</td>
+              <td class="px-4 py-3">
+                <div class="flex items-center justify-end gap-1.5">
+                  <button class="btn-icon text-emerald-600 hover:bg-emerald-50" title="立即执行" @click="runNow(job)">
+                    <i class="fas fa-play text-xs"></i>
+                  </button>
+                  <button class="btn-icon text-blue-600 hover:bg-blue-50" title="执行日志" @click="openLogs(job)">
+                    <i class="fas fa-list-ul text-xs"></i>
+                  </button>
+                  <button class="btn-icon text-slate-600 hover:bg-slate-100" title="编辑" @click="openEdit(job)">
+                    <i class="fas fa-pen text-xs"></i>
+                  </button>
+                  <button class="btn-icon text-red-500 hover:bg-red-50" title="删除" @click="openDelete(job)">
+                    <i class="fas fa-trash text-xs"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div v-if="!loading && filteredJobs.length > 0" class="md:hidden space-y-3 p-4">
+        <div v-for="job in filteredJobs" :key="job.id" class="rounded-xl border border-slate-200 bg-white p-4 hover:shadow-sm">
+          <div class="flex items-start justify-between gap-3 mb-3">
+            <div class="flex items-center gap-2 min-w-0 flex-1">
+              <div class="w-9 h-9 rounded-lg bg-violet-400 flex items-center justify-center flex-shrink-0">
+                <i class="fas fa-clock text-white text-base"></i>
+              </div>
+              <div class="min-w-0">
+                <span class="font-medium text-slate-800 text-sm truncate block">{{ job.name }}</span>
+                <span class="text-xs text-slate-400 font-mono truncate block mt-0.5">{{ job.id }}</span>
+              </div>
+            </div>
+            <button
+              class="text-xs font-medium flex-shrink-0 transition-colors"
+              :class="job.enabled ? 'text-emerald-600' : 'text-slate-400'"
+              @click="toggleEnabled(job)"
+            >
+              {{ job.enabled ? '已启用' : '已禁用' }}
+            </button>
+          </div>
+
+          <div class="space-y-2 text-xs">
+            <div class="flex items-start gap-2">
+              <span class="w-20 flex-shrink-0 text-slate-400">Cron</span>
+              <code class="min-w-0 text-slate-700 font-mono truncate">{{ job.schedule }}</code>
+            </div>
+            <div class="flex items-start gap-2">
+              <span class="w-20 flex-shrink-0 text-slate-400">类型</span>
+              <span class="min-w-0 text-slate-600 font-mono truncate">{{ job.type }}</span>
+            </div>
+            <div class="flex items-start gap-2">
+              <span class="w-20 flex-shrink-0 text-slate-400">下次执行</span>
+              <span class="min-w-0 text-slate-600 truncate">{{ formatTime(job.nextRun) }}</span>
+            </div>
+            <div class="flex items-start gap-2">
+              <span class="w-20 flex-shrink-0 text-slate-400">上次执行</span>
+              <span class="min-w-0 text-slate-600 truncate">{{ formatTime(job.lastRun) }}</span>
+            </div>
+            <div v-if="job.description" class="flex items-start gap-2">
+              <span class="w-20 flex-shrink-0 text-slate-400">描述</span>
+              <span class="min-w-0 text-slate-600 break-words">{{ job.description }}</span>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-end gap-1 pt-3 mt-3 border-t border-slate-100">
+            <button class="btn-icon text-emerald-600 hover:bg-emerald-50" title="立即执行" @click="runNow(job)"><i class="fas fa-play text-xs"></i></button>
+            <button class="btn-icon text-blue-600 hover:bg-blue-50" title="执行日志" @click="openLogs(job)"><i class="fas fa-list-ul text-xs"></i></button>
+            <button class="btn-icon text-slate-600 hover:bg-slate-100" title="编辑" @click="openEdit(job)"><i class="fas fa-pen text-xs"></i></button>
+            <button class="btn-icon text-red-500 hover:bg-red-50" title="删除" @click="openDelete(job)"><i class="fas fa-trash text-xs"></i></button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <JobEditModal ref="editModalRef" @success="loadJobs" />
+    <JobLogsModal ref="logsModalRef" />
+  </div>
+</template>

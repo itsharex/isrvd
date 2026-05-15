@@ -415,6 +415,18 @@ export default toNative(NavigationBar)
         <span v-if="!collapsed">Compose 部署</span>
       </router-link>
 
+      <!-- 计划任务 -->
+      <router-link
+        v-if="portal.hasPerm('GET /api/cron/jobs')"
+        to="/cron/jobs"
+        class="flex items-center gap-3 px-3 py-3 text-sm font-medium text-slate-600 rounded-xl transition-all duration-200 hover:bg-slate-100 hover:text-slate-900"
+        active-class="bg-blue-50 text-blue-700"
+        :title="collapsed ? '计划任务' : ''"
+      >
+        <i class="fas fa-clock"></i>
+        <span v-if="!collapsed">计划任务</span>
+      </router-link>
+
       <!-- 操作审计 -->
       <router-link
         v-if="portal.hasPerm('GET /api/system/audit/logs')"

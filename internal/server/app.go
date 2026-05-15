@@ -9,6 +9,7 @@ import (
 	svcAccount "isrvd/internal/service/account"
 	svcApisix "isrvd/internal/service/apisix"
 	svcCompose "isrvd/internal/service/compose"
+	svcCron "isrvd/internal/service/cron"
 	svcDocker "isrvd/internal/service/docker"
 	svcFiler "isrvd/internal/service/filer"
 	svcOverview "isrvd/internal/service/overview"
@@ -32,6 +33,7 @@ type App struct {
 	dockerSvc   *svcDocker.Service
 	swarmSvc    *svcSwarm.Service
 	composeSvc  *svcCompose.Service
+	cronSvc     *svcCron.Service
 	routeIndex  map[string]Route // METHOD+完整路径 → 路由索引
 }
 
@@ -102,6 +104,8 @@ func StartApp() {
 		app.composeSvc = composeSvc
 	}
 
+	app.cronSvc = svcCron.NewService()
+
 	// 统一注册路由
 	app.initRoutes()
 	httpd.StaticEmbed(public.Efs, "", "")
@@ -159,6 +163,8 @@ func (app *App) collectRoutes() []Route {
 	routes = append(routes, app.defineSwarmRoutes()...)
 	// Compose 部署
 	routes = append(routes, app.defineComposeRoutes()...)
+	// 计划任务
+	routes = append(routes, app.defineCronRoutes()...)
 
 	return routes
 }

@@ -162,6 +162,16 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/compose/deploy.vue')
   },
   {
+    path: '/cron',
+    name: 'cron',
+    redirect: '/cron/jobs'
+  },
+  {
+    path: '/cron/jobs',
+    name: 'cron-jobs',
+    component: () => import('@/views/cron/jobs.vue')
+  },
+  {
     path: '/account/members',
     name: 'account-members',
     component: () => import('@/views/account/members.vue')
