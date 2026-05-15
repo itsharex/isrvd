@@ -67,7 +67,7 @@ export default toNative(JobLogsModal)
     <div v-else class="space-y-3">
       <div
         v-for="(log, idx) in logs"
-        :key="idx"
+        :key="log.runId || idx"
         class="rounded-xl border p-4"
         :class="log.success ? 'border-emerald-100 bg-emerald-50/30' : 'border-red-100 bg-red-50/30'"
       >

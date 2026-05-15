@@ -10,7 +10,10 @@ import (
 	"github.com/rehiy/libgo/command"
 	"github.com/rehiy/libgo/logman"
 	"github.com/rehiy/libgo/signal"
+	"github.com/rehiy/libgo/strutil"
 	cronlib "github.com/robfig/cron/v3"
+
+	"isrvd/config"
 )
 
 // TypeInfo 脚本类型描述
@@ -41,6 +44,7 @@ type JobDetail struct {
 
 // JobLog 任务执行日志
 type JobLog struct {
+	RunID     string    `json:"runId"`
 	JobID     string    `json:"jobId"`
 	JobName   string    `json:"jobName"`
 	StartTime time.Time `json:"startTime"`
@@ -55,10 +59,9 @@ type JobLog struct {
 type Service struct {
 	mu      sync.RWMutex
 	cron    *cronlib.Cron
+	store   *Store
 	jobs    map[string]*Job            // jobID → Job
 	entries map[string]cronlib.EntryID // jobID → cron entry ID
-	logs    []*JobLog                  // 执行历史（内存，最多保留 maxLogs 条）
-	maxLogs int
 }
 
 // AvailableTypes 按当前 OS 返回可用脚本类型
@@ -81,12 +84,12 @@ func NewService() *Service {
 	s := &Service{
 		jobs:    make(map[string]*Job),
 		entries: make(map[string]cronlib.EntryID),
-		maxLogs: 500,
 		cron:    cronlib.New(),
+		store:   NewStore(config.Server.RootDirectory),
 	}
 
 	// 从 cron.yml 加载任务
-	jobs, err := loadJobs()
+	jobs, err := s.store.LoadJobs()
 	if err != nil {
 		logman.Warn("Load cron jobs failed", "error", err)
 	}
@@ -311,19 +314,70 @@ func (s *Service) RunNow(id string) error {
 
 // GetLogs 返回指定任务的执行历史（最近 limit 条，倒序）
 func (s *Service) GetLogs(id string, limit int) []*JobLog {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-
-	var result []*JobLog
-	for i := len(s.logs) - 1; i >= 0 && len(result) < limit; i-- {
-		if id == "" || s.logs[i].JobID == id {
-			result = append(result, s.logs[i])
-		}
-	}
-	return result
+	return s.store.LoadJobLogs(id, limit)
 }
 
 // ─── 内部方法 ───
+
+// register 向调度器注册一个任务（调用前须持有锁或在初始化阶段）
+func (s *Service) register(job *Job) error {
+	entryID, err := s.cron.AddFunc(job.Schedule, func() { s.runJob(job.ID) })
+	if err != nil {
+		return fmt.Errorf("invalid schedule %q: %w", job.Schedule, err)
+	}
+	s.entries[job.ID] = entryID
+	return nil
+}
+
+// persist 将当前 jobs 持久化到 cron.yml（调用前须持有锁）
+func (s *Service) persist() error {
+	jobs := make([]*Job, 0, len(s.jobs))
+	for _, j := range s.jobs {
+		jobs = append(jobs, j)
+	}
+	return s.store.SaveJobs(jobs)
+}
+
+// runJob 执行指定 ID 的任务
+func (s *Service) runJob(id string) {
+	s.mu.RLock()
+	job, ok := s.jobs[id]
+	s.mu.RUnlock()
+	if !ok {
+		return
+	}
+
+	start := time.Now()
+	logman.Info("Cron job running", "id", job.ID, "name", job.Name)
+
+	output, err := command.RunScript(&command.ScriptPayload{
+		Name:       job.Name,
+		ScriptType: job.Type,
+		Content:    job.Content,
+		WorkDir:    job.WorkDir,
+		Timeout:    job.Timeout,
+	})
+	end := time.Now()
+
+	entry := &JobLog{
+		RunID:     strutil.NewString(),
+		JobID:     job.ID,
+		JobName:   job.Name,
+		StartTime: start,
+		EndTime:   end,
+		Duration:  end.Sub(start).Milliseconds(),
+		Success:   err == nil,
+		Output:    output,
+	}
+	if err != nil {
+		entry.Error = err.Error()
+		logman.Warn("Cron job failed", "id", job.ID, "name", job.Name, "error", err)
+	} else {
+		logman.Info("Cron job done", "id", job.ID, "name", job.Name, "duration", entry.Duration)
+	}
+
+	s.store.AppendJobLog(entry)
+}
 
 func validateJob(job *Job) error {
 	if job == nil {
@@ -355,68 +409,4 @@ func validateJob(job *Job) error {
 		return fmt.Errorf("job content is required")
 	}
 	return nil
-}
-
-// register 向调度器注册一个任务（调用前须持有锁或在初始化阶段）
-func (s *Service) register(job *Job) error {
-	entryID, err := s.cron.AddFunc(job.Schedule, func() { s.runJob(job.ID) })
-	if err != nil {
-		return fmt.Errorf("invalid schedule %q: %w", job.Schedule, err)
-	}
-	s.entries[job.ID] = entryID
-	return nil
-}
-
-// persist 将当前 jobs 持久化到 cron.yml（调用前须持有锁）
-func (s *Service) persist() error {
-	jobs := make([]*Job, 0, len(s.jobs))
-	for _, j := range s.jobs {
-		jobs = append(jobs, j)
-	}
-	return saveJobs(jobs)
-}
-
-// runJob 执行指定 ID 的任务
-func (s *Service) runJob(id string) {
-	s.mu.RLock()
-	job, ok := s.jobs[id]
-	s.mu.RUnlock()
-	if !ok {
-		return
-	}
-
-	start := time.Now()
-	logman.Info("Cron job running", "id", job.ID, "name", job.Name)
-
-	output, err := command.RunScript(&command.ScriptPayload{
-		Name:       job.Name,
-		ScriptType: job.Type,
-		Content:    job.Content,
-		WorkDir:    job.WorkDir,
-		Timeout:    job.Timeout,
-	})
-	end := time.Now()
-
-	entry := &JobLog{
-		JobID:     job.ID,
-		JobName:   job.Name,
-		StartTime: start,
-		EndTime:   end,
-		Duration:  end.Sub(start).Milliseconds(),
-		Success:   err == nil,
-		Output:    output,
-	}
-	if err != nil {
-		entry.Error = err.Error()
-		logman.Warn("Cron job failed", "id", job.ID, "name", job.Name, "error", err)
-	} else {
-		logman.Info("Cron job done", "id", job.ID, "name", job.Name, "duration", entry.Duration)
-	}
-
-	s.mu.Lock()
-	s.logs = append(s.logs, entry)
-	if len(s.logs) > s.maxLogs {
-		s.logs = s.logs[len(s.logs)-s.maxLogs:]
-	}
-	s.mu.Unlock()
 }

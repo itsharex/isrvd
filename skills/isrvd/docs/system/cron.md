@@ -22,12 +22,13 @@
 | `nextRun` | string? | 下次预计执行时间（RFC3339，运行时字段，只读） |
 | `lastRun` | string? | 上次执行时间（RFC3339，运行时字段，只读） |
 
-计划任务配置存储在 `server.rootDirectory/cron.yml`，由服务自动读写。
+计划任务配置存储在 `server.rootDirectory/cron.yml`，由服务自动读写；执行历史按任务 ID 拆分为 JSONL 文件，写入 `server.rootDirectory/logs/cron/{jobId}.log`，每次执行追加一行结构化记录。
 
 ### JobLog
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
+| `runId` | string | 单次执行 ID |
 | `jobId` | string | 任务 ID |
 | `jobName` | string | 任务名称 |
 | `startTime` | string | 开始时间（RFC3339） |
@@ -164,7 +165,7 @@ Query 参数：
 }
 ```
 
-日志按时间倒序排列（最新的在前）。
+日志从 `server.rootDirectory/logs/cron/{jobId}.log` 读取，按时间倒序排列（最新的在前）。
 
 ---
 

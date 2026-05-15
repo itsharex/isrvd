@@ -33,6 +33,7 @@ export interface CronJobCreate {
 }
 
 export interface CronJobLog {
+    runId: string
     jobId: string
     jobName: string
     startTime: string

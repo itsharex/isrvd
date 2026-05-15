@@ -1,21 +1,32 @@
 package cron
 
 import (
+	"bufio"
+	"encoding/json"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 
 	"github.com/goccy/go-yaml"
 	"github.com/rehiy/libgo/logman"
-
-	"isrvd/config"
 )
 
-var storeMu sync.Mutex
+// Store 负责计划任务配置和执行日志的文件存储。
+type Store struct {
+	rootDirectory string
+	jobMu         sync.Mutex
+	logMu         sync.Mutex
+}
 
-// loadJobs 从 cron.yml 加载任务列表
-func loadJobs() ([]*Job, error) {
-	data, err := os.ReadFile(cronFilePath())
+// NewStore 创建计划任务文件存储。
+func NewStore(rootDirectory string) *Store {
+	return &Store{rootDirectory: rootDirectory}
+}
+
+// LoadJobs 从 cron.yml 加载任务列表。
+func (s *Store) LoadJobs() ([]*Job, error) {
+	data, err := os.ReadFile(filepath.Join(s.rootDirectory, "cron.yml"))
 	if err != nil {
 		if os.IsNotExist(err) {
 			return nil, nil
@@ -30,17 +41,17 @@ func loadJobs() ([]*Job, error) {
 	return jobs, nil
 }
 
-// saveJobs 将任务列表写入 cron.yml
-func saveJobs(jobs []*Job) error {
-	storeMu.Lock()
-	defer storeMu.Unlock()
+// SaveJobs 将任务列表写入 cron.yml。
+func (s *Store) SaveJobs(jobs []*Job) error {
+	s.jobMu.Lock()
+	defer s.jobMu.Unlock()
 
 	data, err := yaml.Marshal(jobs)
 	if err != nil {
 		return err
 	}
 
-	path := cronFilePath()
+	path := filepath.Join(s.rootDirectory, "cron.yml")
 	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
 		return err
 	}
@@ -49,7 +60,85 @@ func saveJobs(jobs []*Job) error {
 	return os.WriteFile(path, data, 0644)
 }
 
-// cronFilePath 返回计划任务配置文件路径，存放在 server.rootDirectory 下。
-func cronFilePath() string {
-	return filepath.Join(config.Server.RootDirectory, "cron.yml")
+// AppendJobLog 将任务执行日志按任务 ID 追加到 logs/cron/{jobID}.log，每行一条 JSON。
+func (s *Store) AppendJobLog(entry *JobLog) {
+	if entry == nil || entry.JobID == "" {
+		return
+	}
+
+	s.logMu.Lock()
+	defer s.logMu.Unlock()
+
+	path, ok := s.jobLogPath(entry.JobID)
+	if !ok {
+		logman.Warn("Cron", "msg", "无效的计划任务日志 ID", "id", entry.JobID)
+		return
+	}
+	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
+		logman.Warn("Cron", "msg", "无法创建计划任务日志目录", "err", err)
+		return
+	}
+
+	data, err := json.Marshal(entry)
+	if err != nil {
+		logman.Warn("Cron", "msg", "序列化计划任务日志失败", "err", err)
+		return
+	}
+	data = append(data, '\n')
+
+	file, err := os.OpenFile(path, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
+	if err != nil {
+		logman.Warn("Cron", "msg", "无法打开计划任务日志文件", "path", path, "err", err)
+		return
+	}
+	defer file.Close()
+
+	if _, err := file.Write(data); err != nil {
+		logman.Warn("Cron", "msg", "写入计划任务日志失败", "path", path, "err", err)
+	}
+}
+
+// LoadJobLogs 从 logs/cron/{jobID}.log 读取最近的任务执行日志，按时间倒序返回。
+func (s *Store) LoadJobLogs(id string, limit int) []*JobLog {
+	if limit <= 0 {
+		limit = 50
+	}
+
+	path, ok := s.jobLogPath(id)
+	if !ok {
+		return nil
+	}
+
+	entries := s.readJobLogFile(path)
+	result := make([]*JobLog, 0, limit)
+	for i := len(entries) - 1; i >= 0 && len(result) < limit; i-- {
+		result = append(result, entries[i])
+	}
+	return result
+}
+
+func (s *Store) readJobLogFile(path string) []*JobLog {
+	file, err := os.Open(path)
+	if err != nil {
+		return nil
+	}
+	defer file.Close()
+
+	var entries []*JobLog
+	scanner := bufio.NewScanner(file)
+	scanner.Buffer(make([]byte, 0, 64*1024), 10*1024*1024)
+	for scanner.Scan() {
+		var entry JobLog
+		if json.Unmarshal(scanner.Bytes(), &entry) == nil {
+			entries = append(entries, &entry)
+		}
+	}
+	return entries
+}
+
+func (s *Store) jobLogPath(id string) (string, bool) {
+	if id == "" || id == "." || id == ".." || strings.ContainsAny(id, `/\\`) {
+		return "", false
+	}
+	return filepath.Join(s.rootDirectory, "logs", "cron", id+".log"), true
 }
