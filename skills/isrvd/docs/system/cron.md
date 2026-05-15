@@ -13,9 +13,12 @@
 | `id` | string | 唯一标识（UUID，只读） |
 | `name` | string | 任务名称 |
 | `schedule` | string | Cron 表达式（5字段标准格式，如 `0 2 * * *`） |
-| `type` | string | 脚本类型；以服务器操作系统返回的 `/api/cron/types` 为准 |
+| `type` | string | 脚本类型；以服务器操作系统返回的 `/api/cron/types` 为准；所有系统均包含 `DOCKER` |
 | `content` | string | 脚本内容 |
-| `workDir` | string | 工作目录（可选） |
+| `workDir` | string | 工作目录（可选，DOCKER 类型无效） |
+| `container` | string? | 目标容器名（DOCKER 类型，exec 进现有容器；与 `image` 二选一） |
+| `image` | string? | 镜像名（DOCKER 类型，创建临时容器运行脚本；与 `container` 二选一） |
+| `volumes` | string? | 额外挂载（DOCKER + image 临时容器模式，换行分隔，格式 `/host:/container[:ro]`） |
 | `timeout` | number | 超时秒数，0 表示不限制 |
 | `enabled` | boolean | 是否启用（存储字段） |
 | `registered` | boolean | 当前是否已注册到内存调度器（运行时字段，只读） |
@@ -75,7 +78,7 @@
 }
 ```
 
-说明：Linux/macOS 返回 `SHELL`、`EXEC`；Windows 返回 `BAT`、`POWERSHELL`、`EXEC`。创建/更新任务时，后端会校验 `type` 是否符合当前服务器操作系统。
+说明：Linux/macOS 返回 `SHELL`、`EXEC`；Windows 返回 `BAT`、`POWERSHELL`、`EXEC`。所有平台都额外返回 `DOCKER`。`DOCKER` 类型需指定 `image`（临时容器）或 `container`（exec），二选一；`image` 模式下还可通过 `volumes` 挂载宿主机目录。
 
 ---
 
@@ -105,7 +108,8 @@
 | `schedule` | string | ✓ | Cron 表达式 |
 | `type` | string | ✓ | 取值以 `GET /api/cron/types` 返回为准 |
 | `content` | string | ✓ | 脚本内容 |
-| `workDir` | string | - | 工作目录 |
+| `workDir` | string | - | 工作目录（DOCKER 类型无效） |
+| `container` | string | DOCKER 类型必填 | 目标容器名，如 `my-python` |
 | `timeout` | number | - | 超时秒数（默认 0） |
 | `enabled` | boolean | - | 创建后是否启用（默认 false） |
 | `description` | string | - | 描述 |

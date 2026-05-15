@@ -32,6 +32,9 @@ type cronJobUpsertReq struct {
 	Type        string `json:"type" binding:"required"`
 	Content     string `json:"content" binding:"required"`
 	WorkDir     string `json:"workDir"`
+	Image       string `json:"image"`
+	Container   string `json:"container"`
+	Volumes     string `json:"volumes"`
 	Timeout     uint   `json:"timeout"`
 	Enabled     bool   `json:"enabled"`
 	Description string `json:"description"`
@@ -70,6 +73,9 @@ func (app *App) cronJobCreate(c *gin.Context) {
 		Type:        req.Type,
 		Content:     req.Content,
 		WorkDir:     req.WorkDir,
+		Image:       req.Image,
+		Container:   req.Container,
+		Volumes:     req.Volumes,
 		Timeout:     req.Timeout,
 		Enabled:     req.Enabled,
 		Description: req.Description,
@@ -99,6 +105,9 @@ func (app *App) cronJobUpdate(c *gin.Context) {
 		Type:        req.Type,
 		Content:     req.Content,
 		WorkDir:     req.WorkDir,
+		Image:       req.Image,
+		Container:   req.Container,
+		Volumes:     req.Volumes,
 		Timeout:     req.Timeout,
 		Enabled:     req.Enabled,
 		Description: req.Description,

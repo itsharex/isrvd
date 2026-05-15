@@ -2,8 +2,10 @@
 package cron
 
 import (
+	"context"
 	"fmt"
 	"runtime"
+	"strings"
 	"sync"
 	"time"
 
@@ -14,6 +16,7 @@ import (
 	cronlib "github.com/robfig/cron/v3"
 
 	"isrvd/config"
+	"isrvd/pkgs/docker"
 )
 
 // TypeInfo 脚本类型描述
@@ -27,10 +30,13 @@ type Job struct {
 	ID          string `yaml:"id" json:"id"`
 	Name        string `yaml:"name" json:"name"`
 	Schedule    string `yaml:"schedule" json:"schedule"`
-	Type        string `yaml:"type" json:"type"` // SHELL | EXEC | BAT | POWERSHELL
+	Type        string `yaml:"type" json:"type"` // SHELL | EXEC | BAT | POWERSHELL | DOCKER_TMP | DOCKER_CTR
 	Content     string `yaml:"content" json:"content"`
 	WorkDir     string `yaml:"workDir" json:"workDir"`
-	Timeout     uint   `yaml:"timeout" json:"timeout"` // 秒，0 表示不限制
+	Image       string `yaml:"image,omitempty" json:"image,omitempty"`         // DOCKER_TMP：镜像名
+	Container   string `yaml:"container,omitempty" json:"container,omitempty"` // DOCKER_CTR：目标容器名
+	Volumes     string `yaml:"volumes,omitempty" json:"volumes,omitempty"`     // DOCKER_TMP：额外挂载，格式：/host:/container[:ro]，换行分隔
+	Timeout     uint   `yaml:"timeout" json:"timeout"`                         // 秒，0 表示不限制
 	Enabled     bool   `yaml:"enabled" json:"enabled"`
 	Description string `yaml:"description" json:"description"`
 }
@@ -63,32 +69,38 @@ type Service struct {
 	mu      sync.RWMutex
 	cron    *cronlib.Cron
 	store   *Store
+	docker  *docker.DockerService      // 可选，DOCKER 类型任务需要
 	jobs    map[string]*Job            // jobID → Job
 	entries map[string]cronlib.EntryID // jobID → cron entry ID
 }
 
 // AvailableTypes 按当前 OS 返回可用脚本类型
 func AvailableTypes() []TypeInfo {
+	types := []TypeInfo{
+		{Value: "DOCKER_TMP", Label: "Docker 临时容器"},
+		{Value: "DOCKER_CTR", Label: "Docker 现有容器"},
+	}
 	if runtime.GOOS == "windows" {
-		return []TypeInfo{
-			{Value: "BAT", Label: "BAT（批处理脚本）"},
-			{Value: "POWERSHELL", Label: "POWERSHELL（PowerShell 脚本）"},
+		return append(types, []TypeInfo{
+			{Value: "BAT", Label: "BAT 理脚本"},
+			{Value: "POWERSHELL", Label: "PowerShell 脚本"},
 			{Value: "EXEC", Label: "EXEC（直接执行命令）"},
-		}
+		}...)
 	}
-	return []TypeInfo{
-		{Value: "SHELL", Label: "SHELL（Shell 脚本）"},
+	return append(types, []TypeInfo{
+		{Value: "SHELL", Label: "Shell 脚本"},
 		{Value: "EXEC", Label: "EXEC（直接执行命令）"},
-	}
+	}...)
 }
 
 // NewService 创建计划任务服务并启动调度器
-func NewService() *Service {
+func NewService(dockerSvc *docker.DockerService) *Service {
 	s := &Service{
 		jobs:    make(map[string]*Job),
 		entries: make(map[string]cronlib.EntryID),
 		cron:    cronlib.New(),
 		store:   NewStore(config.Server.RootDirectory),
+		docker:  dockerSvc,
 	}
 
 	// 从 cron.yml 加载任务
@@ -361,13 +373,21 @@ func (s *Service) runJob(id string) {
 	start := time.Now()
 	logman.Info("Cron job running", "id", job.ID, "name", job.Name)
 
-	output, err := command.RunScript(&command.ScriptPayload{
-		Name:       job.Name,
-		ScriptType: job.Type,
-		Content:    job.Content,
-		WorkDir:    job.WorkDir,
-		Timeout:    job.Timeout,
-	})
+	var output string
+	var err error
+
+	if job.Type == "DOCKER_TMP" || job.Type == "DOCKER_CTR" {
+		output, err = s.runDockerJob(job)
+	} else {
+		output, err = command.RunScript(&command.ScriptPayload{
+			Name:       job.Name,
+			ScriptType: job.Type,
+			Content:    job.Content,
+			WorkDir:    job.WorkDir,
+			Timeout:    job.Timeout,
+		})
+	}
+
 	end := time.Now()
 
 	entry := &JobLog{
@@ -388,6 +408,46 @@ func (s *Service) runJob(id string) {
 	}
 
 	s.store.AppendJobLog(entry)
+}
+
+// runDockerJob 执行 DOCKER_TMP / DOCKER_CTR 类型任务
+func (s *Service) runDockerJob(job *Job) (string, error) {
+	if s.docker == nil {
+		return "", fmt.Errorf("Docker 服务未启用，无法执行该类型任务")
+	}
+	switch job.Type {
+	case "DOCKER_TMP":
+		vols := parseVolumeLines(job.Volumes)
+		return s.docker.ContainerRunScript(context.Background(), job.Image, "/bin/sh", job.Content, job.Timeout, vols)
+	case "DOCKER_CTR":
+		return s.docker.ContainerExecRun(context.Background(), job.Container, "/bin/sh", job.Content, job.Timeout)
+	}
+	return "", fmt.Errorf("未知的 Docker 任务类型: %s", job.Type)
+}
+
+// parseVolumeLines 将换行分隔的 /host:/container[:ro] 字符串转为 VolumeMapping 列表
+func parseVolumeLines(s string) []docker.VolumeMapping {
+	var result []docker.VolumeMapping
+	for _, line := range strings.Split(s, "\n") {
+		line = strings.TrimSpace(line)
+		if line == "" {
+			continue
+		}
+		parts := strings.SplitN(line, ":", 3)
+		if len(parts) < 2 {
+			continue
+		}
+		vol := docker.VolumeMapping{
+			Type:          "bind",
+			Source:        parts[0],
+			ContainerPath: parts[1],
+		}
+		if len(parts) == 3 && strings.Contains(parts[2], "ro") {
+			vol.ReadOnly = true
+		}
+		result = append(result, vol)
+	}
+	return result
 }
 
 func validateJob(job *Job) error {
@@ -418,6 +478,12 @@ func validateJob(job *Job) error {
 	}
 	if job.Content == "" {
 		return fmt.Errorf("job content is required")
+	}
+	if job.Type == "DOCKER_TMP" && job.Image == "" {
+		return fmt.Errorf("DOCKER_TMP 类型任务必须指定镜像名")
+	}
+	if job.Type == "DOCKER_CTR" && job.Container == "" {
+		return fmt.Errorf("DOCKER_CTR 类型任务必须指定目标容器名")
 	}
 	return nil
 }

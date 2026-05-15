@@ -17,6 +17,7 @@ import (
 	svcSystem "isrvd/internal/service/system"
 
 	"isrvd/config"
+	"isrvd/internal/registry"
 	"isrvd/public"
 )
 
@@ -104,7 +105,7 @@ func StartApp() {
 		app.composeSvc = composeSvc
 	}
 
-	app.cronSvc = svcCron.NewService()
+	app.cronSvc = svcCron.NewService(registry.DockerService)
 
 	// 统一注册路由
 	app.initRoutes()

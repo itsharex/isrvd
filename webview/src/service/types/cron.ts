@@ -1,6 +1,6 @@
 // ─── 计划任务 ───
 
-export type CronType = 'SHELL' | 'EXEC' | 'BAT' | 'POWERSHELL'
+export type CronType = 'SHELL' | 'EXEC' | 'BAT' | 'POWERSHELL' | 'DOCKER_TMP' | 'DOCKER_CTR'
 
 export interface CronTypeInfo {
     value: CronType
@@ -16,6 +16,9 @@ export interface CronJob {
     type: CronType
     content: string
     workDir: string
+    image?: string
+    container?: string
+    volumes?: string
     timeout: number
     enabled: boolean
     registered: boolean
@@ -32,6 +35,9 @@ export interface CronJobCreate {
     type: CronType
     content: string
     workDir?: string
+    image?: string
+    container?: string
+    volumes?: string
     timeout?: number
     enabled: boolean
     description?: string
