@@ -71,6 +71,7 @@ func (s *DockerService) ContainerList(ctx context.Context, all bool) ([]*Contain
 	}
 
 	var result []*ContainerInfo
+	selfID := s.GetSelfContainerID(ctx)
 	for _, ct := range containers {
 		name := ""
 		if len(ct.Names) > 0 {
@@ -93,7 +94,7 @@ func (s *DockerService) ContainerList(ctx context.Context, all bool) ([]*Contain
 			Networks: networks,
 			Created:  ct.Created,
 			IsSwarm:  ct.Labels["com.docker.swarm.service.id"] != "",
-			IsSelf:   s.isSelfContainer(ctx, ct.ID, ct.NetworkSettings),
+			IsSelf:   selfID != "" && ct.ID == selfID,
 			Labels:   ct.Labels,
 		})
 	}
@@ -172,7 +173,8 @@ func (s *DockerService) ContainerInspect(ctx context.Context, id string) (*Conta
 func (s *DockerService) ContainerAction(ctx context.Context, id, action string) error {
 	switch action {
 	case "stop", "restart", "remove", "pause":
-		if s.isSelfContainer(ctx, id, nil) {
+		selfID := s.GetSelfContainerID(ctx)
+		if selfID != "" && (id == selfID || ShortID(id) == ShortID(selfID)) {
 			return fmt.Errorf("禁止操作当前 isrvd 所在容器")
 		}
 	}

@@ -58,10 +58,10 @@ type DockerConfig struct {
 
 // 镜像仓库配置
 type DockerRegistry struct {
-	Name        string `yaml:"name" json:"name"`                   // 仓库名称（用于显示）
-	Description string `yaml:"description" json:"description"`     // 仓库描述（可选）
-	URL         string `yaml:"url" json:"url"`                     // 仓库地址，如 registry.example.com
-	Username    string `yaml:"username" json:"username"`           // 用户名（可选）
+	Name        string `yaml:"name" json:"name"`               // 仓库名称（用于显示）
+	Description string `yaml:"description" json:"description"` // 仓库描述（可选）
+	URL         string `yaml:"url" json:"url"`                 // 仓库地址，如 registry.example.com
+	Username    string `yaml:"username" json:"username"`       // 用户名（可选）
 	Password    string `yaml:"password" json:"-"`              // 敏感字段不序列化到 JSON；写入时为空表示保留原值
 }
 

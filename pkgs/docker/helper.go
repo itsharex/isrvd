@@ -137,11 +137,20 @@ func consumeImageStream(dec *json.Decoder) (string, error) {
 	return lastMessage, nil
 }
 
-// isSelfContainer 判断容器是否是当前运行的自身容器。
-// 优先比较当前进程根文件系统的 overlay 路径；无法命中时再使用 IP / hostname 兜底。
-func (s *DockerService) isSelfContainer(ctx context.Context, id string, ns *container.NetworkSettingsSummary) bool {
-	shortID := ShortID(id)
+// GetSelfContainerID 获取并缓存当前容器的完整 ID。如果不在容器中，返回空字符串。
+func (s *DockerService) GetSelfContainerID(ctx context.Context) string {
+	s.selfIDOnce.Do(func() {
+		s.selfID = s.resolveSelfContainerID(ctx)
+	})
+	return s.selfID
+}
 
+// resolveSelfContainerID 解析当前运行的自身容器 ID。
+// 识别链条：
+// 1. 优先使用 mountinfo 匹配 overlay 存储驱动的 upperdir/workdir (最精准，兼容 host 网络)。
+// 2. 降级使用 IP 匹配网络端点 (兼容 btrfs/zfs 等非 overlay 存储驱动)。
+// 3. 降级使用 hostname 兜底。
+func (s *DockerService) resolveSelfContainerID(ctx context.Context) string {
 	selfMounts := make(map[string]bool)
 	if data, err := os.ReadFile("/proc/self/mountinfo"); err == nil {
 		for line := range strings.SplitSeq(string(data), "\n") {
@@ -165,23 +174,6 @@ func (s *DockerService) isSelfContainer(ctx context.Context, id string, ns *cont
 		}
 	}
 
-	if len(selfMounts) > 0 || ns == nil {
-		if info, err := s.client.ContainerInspect(ctx, id); err == nil {
-			if ns == nil && info.NetworkSettings != nil {
-				ns = &container.NetworkSettingsSummary{Networks: info.NetworkSettings.Networks}
-			}
-			for _, key := range []string{"UpperDir", "WorkDir", "MergedDir"} {
-				if selfMounts[info.GraphDriver.Data[key]] {
-					return true
-				}
-			}
-		}
-	}
-
-	if ns == nil {
-		return false
-	}
-
 	selfIPs := make(map[string]bool)
 	if ifaces, err := net.Interfaces(); err == nil {
 		for _, iface := range ifaces {
@@ -195,20 +187,42 @@ func (s *DockerService) isSelfContainer(ctx context.Context, id string, ns *cont
 		}
 	}
 
-	hasIP := false
-	for _, ep := range ns.Networks {
-		if ep == nil || ep.IPAddress == "" {
-			continue
-		}
-		hasIP = true
-		if selfIPs[ep.IPAddress] {
-			return true
-		}
+	hostname, _ := os.Hostname()
+
+	containers, err := s.client.ContainerList(ctx, container.ListOptions{All: true})
+	if err != nil {
+		return ""
 	}
 
-	if !hasIP {
-		hostname, _ := os.Hostname()
-		return hostname != "" && strings.HasPrefix(hostname, shortID)
+	for _, ct := range containers {
+		if len(selfMounts) > 0 {
+			if info, err := s.client.ContainerInspect(ctx, ct.ID); err == nil {
+				for _, key := range []string{"UpperDir", "WorkDir", "MergedDir"} {
+					if selfMounts[info.GraphDriver.Data[key]] {
+						return ct.ID
+					}
+				}
+			}
+		}
+
+		hasIP := false
+		if ct.NetworkSettings != nil {
+			for _, ep := range ct.NetworkSettings.Networks {
+				if ep == nil || ep.IPAddress == "" {
+					continue
+				}
+				hasIP = true
+				if selfIPs[ep.IPAddress] {
+					return ct.ID
+				}
+			}
+		}
+
+		if !hasIP {
+			if hostname != "" && strings.HasPrefix(hostname, ShortID(ct.ID)) {
+				return ct.ID
+			}
+		}
 	}
-	return false
+	return ""
 }

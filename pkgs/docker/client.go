@@ -17,6 +17,9 @@ type DockerService struct {
 	client     *client.Client
 	config     *DockerConfig
 	registryMu sync.RWMutex // 保护 config.Registries 的并发读写
+
+	selfID     string
+	selfIDOnce sync.Once
 }
 
 // DockerConfig Docker 配置（由外部注入，解除对 config 的依赖）

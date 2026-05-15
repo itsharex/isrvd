@@ -18,15 +18,15 @@ import (
 
 // ServiceInfo 服务列表信息（精简视图）
 type ServiceInfo struct {
-	ID           string       `json:"id"`
-	Name         string       `json:"name"`
-	Image        string       `json:"image"`
-	Mode         string       `json:"mode"`
-	Replicas     *uint64      `json:"replicas"`
-	RunningTasks int          `json:"runningTasks"`
+	ID           string        `json:"id"`
+	Name         string        `json:"name"`
+	Image        string        `json:"image"`
+	Mode         string        `json:"mode"`
+	Replicas     *uint64       `json:"replicas"`
+	RunningTasks int           `json:"runningTasks"`
 	Ports        []ServicePort `json:"ports"`
-	CreatedAt    string       `json:"createdAt"`
-	UpdatedAt    string       `json:"updatedAt"`
+	CreatedAt    string        `json:"createdAt"`
+	UpdatedAt    string        `json:"updatedAt"`
 }
 
 // ServiceDetail 服务详情（完整视图，与 ContainerDetail 对称）
