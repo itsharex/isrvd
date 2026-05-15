@@ -18,7 +18,7 @@ import BaseModal from '@/component/modal.vue'
 
 import { usePortal } from '@/stores'
 
-import HostSelect from './host-select.vue'
+import ContainerSelect from '@/views/docker/widget/container-select.vue'
 import PortSelect from './port-select.vue'
 
 const UPSTREAM_TYPE_OPTIONS: Array<{ value: ApisixUpstreamType; label: string; desc: string }> = [
@@ -53,7 +53,7 @@ const defaultFormData = () => ({
 
 @Component({
     expose: ['show'],
-    components: { BaseModal, HostSelect, PortSelect },
+    components: { BaseModal, ContainerSelect, PortSelect },
     emits: ['success']
 })
 class UpstreamEditModal extends Vue {
@@ -259,7 +259,7 @@ export default toNative(UpstreamEditModal)
           <div v-for="(node, index) in formData.nodes" :key="index" class="grid grid-cols-12 gap-2 p-3 items-end">
             <div class="col-span-12 md:col-span-5">
               <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Host</label>
-              <HostSelect :model-value="node.host" :containers="containers" placeholder="127.0.0.1 或 容器名" @update:model-value="updateNode(index, 'host', $event)" />
+              <ContainerSelect :model-value="node.host" :containers="containers" placeholder="127.0.0.1 或 容器名" @update:model-value="updateNode(index, 'host', $event)" />
             </div>
             <div class="col-span-5 md:col-span-3">
               <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Port</label>

@@ -23,7 +23,7 @@ import BaseModal from '@/component/modal.vue'
 
 import { usePortal } from '@/stores'
 
-import HostSelect from './host-select.vue'
+import ContainerSelect from '@/views/docker/widget/container-select.vue'
 import PluginConfigPanel from './plugin-config-panel.vue'
 import PortSelect from './port-select.vue'
 
@@ -62,7 +62,7 @@ const defaultFormData = () => ({
 
 @Component({
     expose: ['show'],
-    components: { BaseModal, HostSelect, PluginConfigPanel, PortSelect },
+    components: { BaseModal, ContainerSelect, PluginConfigPanel, PortSelect },
     emits: ['success']
 })
 class RouteEditModal extends Vue {
@@ -298,7 +298,7 @@ export default toNative(RouteEditModal)
         <div v-if="formData.upstream_mode === 'nodes'" class="space-y-3">
           <div>
             <div class="grid grid-cols-[2fr_1fr] gap-2 items-center">
-              <HostSelect :model-value="formData.upstream_nodes[0]?.host || ''" :containers="containers" placeholder="127.0.0.1 或 容器名" @update:model-value="updateUpstreamNode(0, 'host', $event)" />
+              <ContainerSelect :model-value="formData.upstream_nodes[0]?.host || ''" :containers="containers" placeholder="127.0.0.1 或 容器名" @update:model-value="updateUpstreamNode(0, 'host', $event)" />
               <PortSelect :model-value="formData.upstream_nodes[0]?.port || ''" :ports="getPortsByHost(formData.upstream_nodes[0]?.host || '')" placeholder="80" @update:model-value="updateUpstreamNode(0, 'port', $event)" />
             </div>
             <p class="text-xs text-slate-400 mt-2">直接输入模式仅提交一个上游节点；如需多节点负载均衡，请先在「上游管理」中创建后再引用。</p>

@@ -14,7 +14,7 @@ interface HostGroup {
     components: { Combobox },
     emits: ['update:modelValue']
 })
-class HostSelect extends Vue {
+class ContainerSelect extends Vue {
     @Prop({ type: String, default: '' }) readonly modelValue!: string
     @Prop({ type: Array, default: () => [] }) readonly containers!: DockerContainerInfo[]
     @Prop({ type: String, default: '127.0.0.1 或 容器名' }) readonly placeholder!: string
@@ -63,7 +63,7 @@ class HostSelect extends Vue {
     }
 }
 
-export default toNative(HostSelect)
+export default toNative(ContainerSelect)
 </script>
 
 <template>
