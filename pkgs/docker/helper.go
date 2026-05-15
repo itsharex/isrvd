@@ -2,53 +2,17 @@ package docker
 
 import (
 	"archive/tar"
-	"bufio"
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net"
 	"os"
 	"strings"
 
 	"github.com/docker/docker/api/types/container"
 )
-
-// SelfContainerID 返回当前进程所在容器的短 ID（前 12 位）。
-// 通过读取 /proc/self/cgroup 解析 Docker 容器 ID；不在容器内时返回空字符串。
-func SelfContainerID() string {
-	f, err := os.Open("/proc/self/cgroup")
-	if err != nil {
-		return ""
-	}
-	defer f.Close()
-
-	scanner := bufio.NewScanner(f)
-	for scanner.Scan() {
-		line := scanner.Text()
-		// 格式：hierarchy-ID:subsystems:/path
-		// Docker 路径形如 /docker/<full-id> 或 /system.slice/docker-<full-id>.scope
-		parts := strings.SplitN(line, ":", 3)
-		if len(parts) != 3 {
-			continue
-		}
-		cgroupPath := parts[2]
-		// 匹配 /docker/<id>
-		if idx := strings.LastIndex(cgroupPath, "/docker/"); idx >= 0 {
-			id := cgroupPath[idx+len("/docker/"):]
-			if len(id) >= 12 {
-				return id[:12]
-			}
-		}
-		// 匹配 docker-<id>.scope
-		if idx := strings.Index(cgroupPath, "docker-"); idx >= 0 {
-			rest := cgroupPath[idx+len("docker-"):]
-			if end := strings.Index(rest, ".scope"); end >= 12 {
-				return rest[:12]
-			}
-		}
-	}
-	return ""
-}
 
 // ActionRequest 资源操作请求（容器/镜像/网络/卷通用）。
 // ID 字段对所有资源使用，卷场景下 ID 即卷名。
@@ -171,4 +135,80 @@ func consumeImageStream(dec *json.Decoder) (string, error) {
 		}
 	}
 	return lastMessage, nil
+}
+
+// isSelfContainer 判断容器是否是当前运行的自身容器。
+// 优先比较当前进程根文件系统的 overlay 路径；无法命中时再使用 IP / hostname 兜底。
+func (s *DockerService) isSelfContainer(ctx context.Context, id string, ns *container.NetworkSettingsSummary) bool {
+	shortID := ShortID(id)
+
+	selfMounts := make(map[string]bool)
+	if data, err := os.ReadFile("/proc/self/mountinfo"); err == nil {
+		for line := range strings.SplitSeq(string(data), "\n") {
+			parts := strings.SplitN(line, " - ", 2)
+			if len(parts) != 2 {
+				continue
+			}
+			pre := strings.Fields(parts[0])
+			post := strings.Fields(parts[1])
+			if len(pre) < 5 || pre[4] != "/" || len(post) < 3 || post[0] != "overlay" {
+				continue
+			}
+			for opt := range strings.SplitSeq(post[2], ",") {
+				if v, ok := strings.CutPrefix(opt, "upperdir="); ok {
+					selfMounts[v] = true
+				}
+				if v, ok := strings.CutPrefix(opt, "workdir="); ok {
+					selfMounts[v] = true
+				}
+			}
+		}
+	}
+
+	if len(selfMounts) > 0 || ns == nil {
+		if info, err := s.client.ContainerInspect(ctx, id); err == nil {
+			if ns == nil && info.NetworkSettings != nil {
+				ns = &container.NetworkSettingsSummary{Networks: info.NetworkSettings.Networks}
+			}
+			for _, key := range []string{"UpperDir", "WorkDir", "MergedDir"} {
+				if selfMounts[info.GraphDriver.Data[key]] {
+					return true
+				}
+			}
+		}
+	}
+
+	if ns == nil {
+		return false
+	}
+
+	selfIPs := make(map[string]bool)
+	if ifaces, err := net.Interfaces(); err == nil {
+		for _, iface := range ifaces {
+			if addrs, err := iface.Addrs(); err == nil {
+				for _, addr := range addrs {
+					if ipNet, ok := addr.(*net.IPNet); ok {
+						selfIPs[ipNet.IP.String()] = true
+					}
+				}
+			}
+		}
+	}
+
+	hasIP := false
+	for _, ep := range ns.Networks {
+		if ep == nil || ep.IPAddress == "" {
+			continue
+		}
+		hasIP = true
+		if selfIPs[ep.IPAddress] {
+			return true
+		}
+	}
+
+	if !hasIP {
+		hostname, _ := os.Hostname()
+		return hostname != "" && strings.HasPrefix(hostname, shortID)
+	}
+	return false
 }

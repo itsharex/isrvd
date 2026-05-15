@@ -28,6 +28,7 @@ isrvd_get "/docker/containers?all=true"
 | networks | string[] | 所属网络名 |
 | created | number | 创建时间戳（Unix 秒） |
 | isSwarm | boolean | 是否为 Swarm 管理的容器 |
+| isSelf | boolean | 是否为当前 isrvd 所在容器；用于前端隐藏危险操作 |
 | labels | object | 标签键值对 |
 
 ## 查看容器详情
@@ -74,6 +75,8 @@ isrvd_post "/docker/container" '{
 | capDrop | string[] | | 移除的 Capabilities |
 
 ## 容器操作
+
+当目标容器被识别为当前 isrvd 所在容器时，后端会拒绝 `stop` / `restart` / `remove` / `pause`，避免误操作导致服务中断。
 
 ```bash
 isrvd_post "/docker/container/<CONTAINER_ID>/action" '{"action":"start"}'
