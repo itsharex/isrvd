@@ -7,7 +7,7 @@ server:
   # allowedOrigins: [https://example.com]  # 允许的跨域 Origin，支持通配符 *
   # proxyHeaderName: X-Username        # 内网代理认证 Header，留空禁用
   # proxyTrustedCIDRs: [127.0.0.1/32]  # 代理认证可信来源 CIDR，为空时仅信任本机
-  rootDirectory: /srv/
+  rootDirectory: /srv/data
 
 oidc:
   enabled: false

@@ -4,34 +4,9 @@ server:
   jwtSecret: __JWT_SECRET__
   rootDirectory: /data/
 
-agent:
-  model: your-model
-  baseUrl: https://ai.rehiy.wang/v1
-  apiKey: your-api-key
-
-oidc:
-  enabled: false
-  # 元数据（authorization_endpoint、token_endpoint、jwks_uri 等）由 issuerUrl 自动发现
-  # issuerUrl: https://idp.example.com
-  # clientId: isrvd
-  # clientSecret: your-client-secret
-  # redirectUrl: https://isrvd.example.com/api/account/oidc/callback（生产环境建议显式配置）
-  # usernameClaim: sub（默认值）
-  # scopes: [openid, profile, email]
-
-apisix:
-  # adminUrl: http://127.0.0.1:9180/apisix/admin
-  # adminKey: __APISIX_ADMIN_KEY__
-
 docker:
-  # host: unix:///var/run/docker.sock
-  # containerRoot: container/
-  # registries:
-     # - name: Company Hub
-     #   description: 公司内部镜像仓库
-     #   url: hub.example.com
-     #   username: debug
-     #   password: 123
+  host: unix:///var/run/docker.sock
+  containerRoot: container/
 
 marketplace:
   url: https://apps.rehi.org
