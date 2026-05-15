@@ -1,5 +1,7 @@
 # isrvd
 
+> 名称源自 *"it is a server daemon"*，`srv` 对应 Linux 惯例目录 `/srv`，`d` 代表 daemon。
+
 轻量级 Web 服务器管理工具，基于 Go + Vue 3 构建，提供文件管理、Docker/Swarm/Compose 管理、APISIX 管理和实时终端等功能。
 
 ## 功能特性
