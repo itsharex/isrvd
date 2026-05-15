@@ -137,11 +137,11 @@ export default toNative(CronJobs)
             </div>
             <div>
               <h1 class="text-lg font-semibold text-slate-800">计划任务</h1>
-              <p class="text-xs text-slate-500">基于 Cron 表达式的定时脚本执行</p>
+              <p class="text-xs text-slate-500">按执行计划自动运行脚本</p>
             </div>
           </div>
           <div class="flex items-center gap-2">
-            <PageSearch v-model="searchText" search-key="cron-jobs" placeholder="搜索任务名称、表达式..." width-class="w-60" focus-color="violet" type-to-search />
+            <PageSearch v-model="searchText" search-key="cron-jobs" placeholder="搜索任务名称、执行计划..." width-class="w-60" focus-color="violet" type-to-search />
             <button class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors whitespace-nowrap" @click="loadJobs()">
               <i class="fas fa-rotate"></i>刷新
             </button>
@@ -193,7 +193,7 @@ export default toNative(CronJobs)
           <thead>
             <tr class="bg-slate-50 border-b border-slate-200">
               <th class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">任务名称</th>
-              <th class="w-36 px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Cron 表达式</th>
+              <th class="w-36 px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">执行计划</th>
               <th class="w-20 px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">类型</th>
               <th class="w-20 px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">状态</th>
               <th class="w-36 px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">下次执行</th>
@@ -276,7 +276,7 @@ export default toNative(CronJobs)
 
           <div class="space-y-2 text-xs">
             <div class="flex items-start gap-2">
-              <span class="w-20 flex-shrink-0 text-slate-400">Cron</span>
+              <span class="w-20 flex-shrink-0 text-slate-400">执行计划</span>
               <code class="min-w-0 text-slate-700 font-mono truncate">{{ job.schedule }}</code>
             </div>
             <div class="flex items-start gap-2">

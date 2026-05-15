@@ -59,7 +59,7 @@ class JobEditModal extends Vue {
 
     async handleConfirm() {
         if (!this.formData.name || !this.formData.schedule || !this.formData.content) {
-            this.portal.showNotification('error', '请填写必填项：名称、Cron 表达式、脚本内容')
+            this.portal.showNotification('error', '请填写必填项：名称、执行计划、脚本内容')
             return
         }
         this.modalLoading = true
@@ -107,10 +107,10 @@ export default toNative(JobEditModal)
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
-            Cron 表达式 <span class="text-red-500">*</span>
-            <a href="https://crontab.guru" target="_blank" rel="noreferrer" class="ml-1 text-primary-500 hover:underline normal-case font-normal">参考</a>
+            执行计划 <span class="text-red-500">*</span>
+            <a href="https://crontab.guru" target="_blank" rel="noreferrer" class="ml-1 text-primary-500 hover:underline normal-case font-normal">格式参考</a>
           </label>
-          <input v-model="formData.schedule" type="text" class="input font-mono" placeholder="如：0 2 * * *" />
+          <input v-model="formData.schedule" type="text" class="input font-mono" placeholder="如：每天 2 点可填 0 2 * * *" />
         </div>
         <div>
           <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">脚本类型 <span class="text-red-500">*</span></label>

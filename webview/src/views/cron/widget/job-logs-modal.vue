@@ -96,7 +96,7 @@ export default toNative(JobLogsModal)
         <div class="rounded-xl bg-white px-4 py-3 mb-4">
           <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-slate-500">
             <span class="font-medium text-slate-700">{{ job?.name }}</span>
-            <span class="font-mono">{{ job?.schedule }}</span>
+            <span>执行计划 <code class="font-mono">{{ job?.schedule }}</code></span>
             <span>{{ job?.type }}</span>
             <span>最近 {{ logs.length }} 次</span>
             <span class="text-emerald-600">成功 {{ successCount }}</span>
