@@ -20,13 +20,13 @@ func NewSwarmService(dockerClient *client.Client) *SwarmService {
 }
 
 // GetClient 获取 Docker 客户端
-func (m *SwarmService) GetClient() *client.Client {
-	return m.client
+func (s *SwarmService) GetClient() *client.Client {
+	return s.client
 }
 
 // JoinToken 获取加入集群的 token
-func (m *SwarmService) JoinToken(ctx context.Context) (map[string]string, error) {
-	info, err := m.client.SwarmInspect(ctx)
+func (s *SwarmService) JoinToken(ctx context.Context) (map[string]string, error) {
+	info, err := s.client.SwarmInspect(ctx)
 	if err != nil {
 		logman.Error("SwarmInspect failed", "error", err)
 		return nil, err
@@ -38,22 +38,22 @@ func (m *SwarmService) JoinToken(ctx context.Context) (map[string]string, error)
 }
 
 // Info 获取 Swarm 集群概览
-func (m *SwarmService) Info(ctx context.Context) (map[string]any, error) {
-	info, err := m.client.SwarmInspect(ctx)
+func (s *SwarmService) Info(ctx context.Context) (map[string]any, error) {
+	info, err := s.client.SwarmInspect(ctx)
 	if err != nil {
 		logman.Error("SwarmInspect failed", "error", err)
 		return nil, err
 	}
 
-	nodes, err := m.client.NodeList(ctx, swarm.NodeListOptions{})
+	nodes, err := s.client.NodeList(ctx, swarm.NodeListOptions{})
 	if err != nil {
 		logman.Warn("NodeList failed in Info", "error", err)
 	}
-	services, err := m.client.ServiceList(ctx, swarm.ServiceListOptions{})
+	services, err := s.client.ServiceList(ctx, swarm.ServiceListOptions{})
 	if err != nil {
 		logman.Warn("ServiceList failed in Info", "error", err)
 	}
-	tasks, err := m.client.TaskList(ctx, swarm.TaskListOptions{})
+	tasks, err := s.client.TaskList(ctx, swarm.TaskListOptions{})
 	if err != nil {
 		logman.Warn("TaskList failed in Info", "error", err)
 	}

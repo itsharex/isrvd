@@ -38,12 +38,6 @@ func (s *DockerService) VolumeList(ctx context.Context) ([]*VolumeInfo, error) {
 	return result, nil
 }
 
-// VolumeActionRequest 卷操作请求
-type VolumeActionRequest struct {
-	Name   string `json:"name" binding:"required"`
-	Action string `json:"action" binding:"required"`
-}
-
 // VolumeAction 卷操作
 func (s *DockerService) VolumeAction(ctx context.Context, name, action string) error {
 	switch action {

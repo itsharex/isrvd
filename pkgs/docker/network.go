@@ -44,12 +44,6 @@ func (s *DockerService) NetworkList(ctx context.Context) ([]*NetworkInfo, error)
 	return result, nil
 }
 
-// NetworkActionRequest 网络操作请求
-type NetworkActionRequest struct {
-	ID     string `json:"id" binding:"required"`
-	Action string `json:"action" binding:"required"`
-}
-
 // NetworkAction 网络操作
 func (s *DockerService) NetworkAction(ctx context.Context, id, action string) error {
 	switch action {

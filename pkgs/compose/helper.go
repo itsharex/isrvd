@@ -27,6 +27,25 @@ func isBuiltinNetworkMode(mode string) bool {
 	return strings.HasPrefix(m, "container:") || strings.HasPrefix(m, "service:")
 }
 
+// CollectNetworks 收集 project 中所有需要确保存在的网络名（去重）
+// 包含：自定义 network_mode + 各 service.networks 解析后的真实名称
+func CollectNetworks(project *types.Project) []string {
+	set := map[string]struct{}{}
+	for _, svc := range project.Services {
+		if svc.NetworkMode != "" && !isBuiltinNetworkMode(svc.NetworkMode) {
+			set[svc.NetworkMode] = struct{}{}
+		}
+		for k := range svc.Networks {
+			set[resolveNetworkName(project, k)] = struct{}{}
+		}
+	}
+	result := make([]string, 0, len(set))
+	for k := range set {
+		result = append(result, k)
+	}
+	return result
+}
+
 // envToSlice 将 compose MappingWithEquals 转为 KEY=VALUE 列表
 // value 为 nil 表示"不显式赋值"，此处跳过
 func envToSlice(env types.MappingWithEquals) []string {

@@ -101,12 +101,6 @@ func (s *DockerService) ImagePrune(ctx context.Context, req ImagePruneRequest) (
 	return &ImagePruneReport{ImagesDeleted: deleted, SpaceReclaimed: report.SpaceReclaimed}, nil
 }
 
-// ImageActionRequest 镜像操作请求
-type ImageActionRequest struct {
-	ID     string `json:"id" binding:"required"`
-	Action string `json:"action" binding:"required"`
-}
-
 // ImageAction 镜像操作
 func (s *DockerService) ImageAction(ctx context.Context, id, action string) error {
 	switch action {

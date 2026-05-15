@@ -165,12 +165,6 @@ func (s *DockerService) ContainerInspect(ctx context.Context, id string) (*Conta
 	}, nil
 }
 
-// ContainerActionRequest 容器操作请求
-type ContainerActionRequest struct {
-	ID     string `json:"id" binding:"required"`
-	Action string `json:"action" binding:"required"`
-}
-
 // ContainerAction 容器操作（start/stop/restart/remove/pause/unpause）
 func (s *DockerService) ContainerAction(ctx context.Context, id, action string) error {
 	var err error
@@ -364,40 +358,6 @@ func (s *DockerService) ContainerCreate(ctx context.Context, req ContainerSpec) 
 	logman.Info("Container created", "id", ShortID(resp.ID), "name", req.Name)
 
 	return resp.ID, nil
-}
-
-// ContainerUpdate 更新容器配置并重建
-func (s *DockerService) ContainerUpdate(ctx context.Context, req ContainerSpec) (string, error) {
-	// 查找并停止旧容器
-	containers, err := s.client.ContainerList(ctx, container.ListOptions{All: true})
-	if err != nil {
-		return "", err
-	}
-
-	var id string
-	for _, ct := range containers {
-		ctName := ""
-		if len(ct.Names) > 0 {
-			ctName = strings.TrimPrefix(ct.Names[0], "/")
-		}
-		if ctName == req.Name {
-			id = ct.ID
-			break
-		}
-	}
-
-	// 停止并删除旧容器
-	if id != "" {
-		timeout := 10
-		if err := s.client.ContainerStop(ctx, id, container.StopOptions{Timeout: &timeout}); err != nil {
-			logman.Warn("Stop old container failed", "id", ShortID(id), "error", err)
-		}
-		if err := s.client.ContainerRemove(ctx, id, container.RemoveOptions{Force: true}); err != nil {
-			logman.Warn("Remove old container failed", "id", ShortID(id), "error", err)
-		}
-	}
-
-	return s.ContainerCreate(ctx, req)
 }
 
 func (s *DockerService) buildMount(containerName string, vol VolumeMapping) (mount.Mount, error) {

@@ -4,5 +4,4 @@ package registry
 func Init() {
 	initApisix()
 	initDocker()
-	initCompose()
 }

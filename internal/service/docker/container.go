@@ -55,7 +55,7 @@ func (s *Service) ContainerStats(ctx context.Context, id string) (*pkgdocker.Con
 }
 
 // ContainerAction 容器操作
-func (s *Service) ContainerAction(ctx context.Context, req pkgdocker.ContainerActionRequest) error {
+func (s *Service) ContainerAction(ctx context.Context, req pkgdocker.ActionRequest) error {
 	return s.docker.ContainerAction(ctx, req.ID, req.Action)
 }
 

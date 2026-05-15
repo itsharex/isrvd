@@ -23,8 +23,8 @@ type NodeInfo struct {
 }
 
 // NodeList 获取节点列表
-func (m *SwarmService) NodeList(ctx context.Context) ([]NodeInfo, error) {
-	nodes, err := m.client.NodeList(ctx, swarm.NodeListOptions{})
+func (s *SwarmService) NodeList(ctx context.Context) ([]NodeInfo, error) {
+	nodes, err := s.client.NodeList(ctx, swarm.NodeListOptions{})
 	if err != nil {
 		logman.Error("NodeList failed", "error", err)
 		return nil, err
@@ -48,16 +48,16 @@ func (m *SwarmService) NodeList(ctx context.Context) ([]NodeInfo, error) {
 }
 
 // NodeAction 节点操作（drain/active/pause/remove）
-func (m *SwarmService) NodeAction(ctx context.Context, id, action string) error {
+func (s *SwarmService) NodeAction(ctx context.Context, id, action string) error {
 	if action == "remove" {
-		if err := m.client.NodeRemove(ctx, id, swarm.NodeRemoveOptions{Force: true}); err != nil {
+		if err := s.client.NodeRemove(ctx, id, swarm.NodeRemoveOptions{Force: true}); err != nil {
 			logman.Error("NodeRemove failed", "id", id, "error", err)
 			return err
 		}
 		return nil
 	}
 
-	node, _, err := m.client.NodeInspectWithRaw(ctx, id)
+	node, _, err := s.client.NodeInspectWithRaw(ctx, id)
 	if err != nil {
 		logman.Error("NodeInspect failed", "id", id, "error", err)
 		return err
@@ -74,7 +74,7 @@ func (m *SwarmService) NodeAction(ctx context.Context, id, action string) error 
 		return fmt.Errorf("不支持的操作: %s", action)
 	}
 
-	if err := m.client.NodeUpdate(ctx, id, node.Version, node.Spec); err != nil {
+	if err := s.client.NodeUpdate(ctx, id, node.Version, node.Spec); err != nil {
 		logman.Error("NodeUpdate failed", "error", err)
 		return err
 	}
@@ -102,8 +102,8 @@ type NodeDetail struct {
 }
 
 // NodeInspect 获取节点详情
-func (m *SwarmService) NodeInspect(ctx context.Context, id string) (*NodeDetail, error) {
-	node, _, err := m.client.NodeInspectWithRaw(ctx, id)
+func (s *SwarmService) NodeInspect(ctx context.Context, id string) (*NodeDetail, error) {
+	node, _, err := s.client.NodeInspectWithRaw(ctx, id)
 	if err != nil {
 		logman.Error("NodeInspect failed", "id", id, "error", err)
 		return nil, err

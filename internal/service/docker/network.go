@@ -13,7 +13,7 @@ func (s *Service) NetworkList(ctx context.Context) ([]*pkgdocker.NetworkInfo, er
 }
 
 // NetworkAction 网络操作
-func (s *Service) NetworkAction(ctx context.Context, req pkgdocker.NetworkActionRequest) error {
+func (s *Service) NetworkAction(ctx context.Context, req pkgdocker.ActionRequest) error {
 	return s.docker.NetworkAction(ctx, req.ID, req.Action)
 }
 
@@ -39,9 +39,9 @@ func (s *Service) VolumeList(ctx context.Context) ([]*pkgdocker.VolumeInfo, erro
 	return s.docker.VolumeList(ctx)
 }
 
-// VolumeAction 卷操作
-func (s *Service) VolumeAction(ctx context.Context, req pkgdocker.VolumeActionRequest) error {
-	return s.docker.VolumeAction(ctx, req.Name, req.Action)
+// VolumeAction 卷操作（ID 字段即卷名）
+func (s *Service) VolumeAction(ctx context.Context, req pkgdocker.ActionRequest) error {
+	return s.docker.VolumeAction(ctx, req.ID, req.Action)
 }
 
 // VolumeCreate 创建卷

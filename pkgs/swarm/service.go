@@ -70,15 +70,15 @@ type ServiceMount struct {
 }
 
 // ServiceList 获取服务列表
-func (m *SwarmService) ServiceList(ctx context.Context) ([]ServiceInfo, error) {
-	services, err := m.client.ServiceList(ctx, swarm.ServiceListOptions{})
+func (s *SwarmService) ServiceList(ctx context.Context) ([]ServiceInfo, error) {
+	services, err := s.client.ServiceList(ctx, swarm.ServiceListOptions{})
 	if err != nil {
 		logman.Error("ServiceList failed", "error", err)
 		return nil, err
 	}
 
 	// 统计各服务运行中的任务数
-	tasks, err := m.client.TaskList(ctx, swarm.TaskListOptions{})
+	tasks, err := s.client.TaskList(ctx, swarm.TaskListOptions{})
 	if err != nil {
 		logman.Warn("TaskList failed in ServiceList", "error", err)
 	}
@@ -123,9 +123,9 @@ func (m *SwarmService) ServiceList(ctx context.Context) ([]ServiceInfo, error) {
 }
 
 // ServiceAction 服务操作（scale/remove）
-func (m *SwarmService) ServiceAction(ctx context.Context, id, action string, replicas *uint64) error {
+func (s *SwarmService) ServiceAction(ctx context.Context, id, action string, replicas *uint64) error {
 	if action == "remove" {
-		if err := m.client.ServiceRemove(ctx, id); err != nil {
+		if err := s.client.ServiceRemove(ctx, id); err != nil {
 			logman.Error("ServiceRemove failed", "id", id, "error", err)
 			return err
 		}
@@ -133,7 +133,7 @@ func (m *SwarmService) ServiceAction(ctx context.Context, id, action string, rep
 	}
 
 	if action == "scale" && replicas != nil {
-		svc, _, err := m.client.ServiceInspectWithRaw(ctx, id, swarm.ServiceInspectOptions{InsertDefaults: true})
+		svc, _, err := s.client.ServiceInspectWithRaw(ctx, id, swarm.ServiceInspectOptions{InsertDefaults: true})
 		if err != nil {
 			logman.Error("ServiceInspect failed", "id", id, "error", err)
 			return err
@@ -142,7 +142,7 @@ func (m *SwarmService) ServiceAction(ctx context.Context, id, action string, rep
 			return fmt.Errorf("仅 replicated 模式服务支持 scale")
 		}
 		svc.Spec.Mode.Replicated.Replicas = replicas
-		if _, err := m.client.ServiceUpdate(ctx, id, svc.Version, svc.Spec, swarm.ServiceUpdateOptions{}); err != nil {
+		if _, err := s.client.ServiceUpdate(ctx, id, svc.Version, svc.Spec, swarm.ServiceUpdateOptions{}); err != nil {
 			logman.Error("ServiceScale failed", "id", id, "replicas", *replicas, "error", err)
 			return err
 		}
@@ -153,7 +153,7 @@ func (m *SwarmService) ServiceAction(ctx context.Context, id, action string, rep
 }
 
 // ServiceCreate 创建服务
-func (m *SwarmService) ServiceCreate(ctx context.Context, req ServiceSpec) (string, error) {
+func (s *SwarmService) ServiceCreate(ctx context.Context, req ServiceSpec) (string, error) {
 	spec := swarm.ServiceSpec{
 		Annotations: swarm.Annotations{Name: req.Name},
 		TaskTemplate: swarm.TaskSpec{
@@ -226,7 +226,7 @@ func (m *SwarmService) ServiceCreate(ctx context.Context, req ServiceSpec) (stri
 		}
 	}
 
-	resp, err := m.client.ServiceCreate(ctx, spec, swarm.ServiceCreateOptions{})
+	resp, err := s.client.ServiceCreate(ctx, spec, swarm.ServiceCreateOptions{})
 	if err != nil {
 		logman.Error("ServiceCreate failed", "error", err)
 		return "", err
@@ -236,8 +236,8 @@ func (m *SwarmService) ServiceCreate(ctx context.Context, req ServiceSpec) (stri
 }
 
 // ServiceForceUpdate 强制重新部署服务
-func (m *SwarmService) ServiceForceUpdate(ctx context.Context, id string) error {
-	svc, _, err := m.client.ServiceInspectWithRaw(ctx, id, swarm.ServiceInspectOptions{InsertDefaults: true})
+func (s *SwarmService) ServiceForceUpdate(ctx context.Context, id string) error {
+	svc, _, err := s.client.ServiceInspectWithRaw(ctx, id, swarm.ServiceInspectOptions{InsertDefaults: true})
 	if err != nil {
 		logman.Error("ServiceInspect failed", "id", id, "error", err)
 		return err
@@ -245,7 +245,7 @@ func (m *SwarmService) ServiceForceUpdate(ctx context.Context, id string) error 
 
 	svc.Spec.TaskTemplate.ForceUpdate++
 
-	if _, err := m.client.ServiceUpdate(ctx, id, svc.Version, svc.Spec, swarm.ServiceUpdateOptions{}); err != nil {
+	if _, err := s.client.ServiceUpdate(ctx, id, svc.Version, svc.Spec, swarm.ServiceUpdateOptions{}); err != nil {
 		logman.Error("ServiceForceUpdate failed", "error", err)
 		return err
 	}
@@ -254,8 +254,8 @@ func (m *SwarmService) ServiceForceUpdate(ctx context.Context, id string) error 
 }
 
 // ServiceLogs 获取服务日志
-func (m *SwarmService) ServiceLogs(ctx context.Context, serviceID, tail string) ([]string, error) {
-	reader, err := m.client.ServiceLogs(ctx, serviceID, container.LogsOptions{
+func (s *SwarmService) ServiceLogs(ctx context.Context, serviceID, tail string) ([]string, error) {
+	reader, err := s.client.ServiceLogs(ctx, serviceID, container.LogsOptions{
 		ShowStdout: true,
 		ShowStderr: true,
 		Tail:       tail,
@@ -276,8 +276,8 @@ func (m *SwarmService) ServiceLogs(ctx context.Context, serviceID, tail string) 
 }
 
 // ServiceInspect 获取服务详情（返回业务 DTO，供 API 层使用）
-func (m *SwarmService) ServiceInspect(ctx context.Context, id string) (*ServiceDetail, error) {
-	svc, err := m.ServiceInspectRaw(ctx, id)
+func (s *SwarmService) ServiceInspect(ctx context.Context, id string) (*ServiceDetail, error) {
+	svc, err := s.ServiceInspectRaw(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -285,7 +285,7 @@ func (m *SwarmService) ServiceInspect(ctx context.Context, id string) (*ServiceD
 	// 统计运行中任务数
 	f := filters.NewArgs()
 	f.Add("service", svc.ID)
-	tasks, _ := m.client.TaskList(ctx, swarm.TaskListOptions{Filters: f})
+	tasks, _ := s.client.TaskList(ctx, swarm.TaskListOptions{Filters: f})
 	runningTasks := 0
 	for _, t := range tasks {
 		if t.Status.State == swarm.TaskStateRunning {
@@ -344,8 +344,8 @@ func (m *SwarmService) ServiceInspect(ctx context.Context, id string) (*ServiceD
 }
 
 // ServiceInspectRaw 获取服务原始配置（返回 Docker SDK 原始类型，供 compose 转换使用）
-func (m *SwarmService) ServiceInspectRaw(ctx context.Context, id string) (swarm.Service, error) {
-	svc, _, err := m.client.ServiceInspectWithRaw(ctx, id, swarm.ServiceInspectOptions{InsertDefaults: true})
+func (s *SwarmService) ServiceInspectRaw(ctx context.Context, id string) (swarm.Service, error) {
+	svc, _, err := s.client.ServiceInspectWithRaw(ctx, id, swarm.ServiceInspectOptions{InsertDefaults: true})
 	if err != nil {
 		logman.Error("InspectService failed", "id", id, "error", err)
 		return swarm.Service{}, err

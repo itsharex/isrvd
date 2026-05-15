@@ -14,9 +14,9 @@ import (
 
 // DockerService Docker 服务
 type DockerService struct {
-	client      *client.Client
-	config      *DockerConfig
-	registryMu  sync.RWMutex // 保护 config.Registries 的并发读写
+	client     *client.Client
+	config     *DockerConfig
+	registryMu sync.RWMutex // 保护 config.Registries 的并发读写
 }
 
 // DockerConfig Docker 配置（由外部注入，解除对 config 的依赖）

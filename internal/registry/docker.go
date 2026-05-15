@@ -60,6 +60,11 @@ func IsDockerAvailable(ctx context.Context) bool {
 	return true
 }
 
+// IsComposeAvailable 检查 Compose 能力是否可用（等价于 Docker 可用）
+func IsComposeAvailable(ctx context.Context) bool {
+	return IsDockerAvailable(ctx)
+}
+
 // IsSwarmAvailable 检查 Swarm 是否可用
 func IsSwarmAvailable(ctx context.Context) bool {
 	if SwarmService == nil {

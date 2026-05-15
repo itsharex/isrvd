@@ -164,4 +164,3 @@ func (app *App) cronJobLogs(c *gin.Context) {
 	logs := app.cronSvc.GetLogs(id, limit)
 	respondSuccess(c, "Logs retrieved", gin.H{"logs": logs})
 }
-

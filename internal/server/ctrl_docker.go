@@ -108,7 +108,7 @@ func (app *App) dockerContainerStats(c *gin.Context) {
 }
 
 func (app *App) dockerContainerAction(c *gin.Context) {
-	req := pkgdocker.ContainerActionRequest{
+	req := pkgdocker.ActionRequest{
 		ID: c.Param("id"),
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -167,7 +167,7 @@ func (app *App) dockerImageList(c *gin.Context) {
 }
 
 func (app *App) dockerImageAction(c *gin.Context) {
-	req := pkgdocker.ImageActionRequest{
+	req := pkgdocker.ActionRequest{
 		ID: c.Param("id"),
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -256,7 +256,7 @@ func (app *App) dockerNetworkList(c *gin.Context) {
 }
 
 func (app *App) dockerNetworkAction(c *gin.Context) {
-	req := pkgdocker.NetworkActionRequest{
+	req := pkgdocker.ActionRequest{
 		ID: c.Param("id"),
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -306,8 +306,8 @@ func (app *App) dockerVolumeList(c *gin.Context) {
 }
 
 func (app *App) dockerVolumeAction(c *gin.Context) {
-	req := pkgdocker.VolumeActionRequest{
-		Name: c.Param("name"),
+	req := pkgdocker.ActionRequest{
+		ID: c.Param("name"),
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		respondError(c, http.StatusBadRequest, err.Error())

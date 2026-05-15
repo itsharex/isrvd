@@ -13,7 +13,7 @@ func (s *Service) ImageList(ctx context.Context, all bool) ([]*pkgdocker.ImageIn
 }
 
 // ImageAction 镜像操作
-func (s *Service) ImageAction(ctx context.Context, req pkgdocker.ImageActionRequest) error {
+func (s *Service) ImageAction(ctx context.Context, req pkgdocker.ActionRequest) error {
 	return s.docker.ImageAction(ctx, req.ID, req.Action)
 }
 

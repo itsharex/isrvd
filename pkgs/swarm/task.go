@@ -25,7 +25,7 @@ type Task struct {
 }
 
 // TaskList 获取任务列表
-func (m *SwarmService) TaskList(ctx context.Context, serviceID string) ([]Task, error) {
+func (s *SwarmService) TaskList(ctx context.Context, serviceID string) ([]Task, error) {
 	opts := swarm.TaskListOptions{}
 	if serviceID != "" {
 		f := filters.NewArgs()
@@ -33,14 +33,14 @@ func (m *SwarmService) TaskList(ctx context.Context, serviceID string) ([]Task, 
 		opts.Filters = f
 	}
 
-	tasks, err := m.client.TaskList(ctx, opts)
+	tasks, err := s.client.TaskList(ctx, opts)
 	if err != nil {
 		logman.Error("TaskList failed", "error", err)
 		return nil, err
 	}
 
 	// 建立服务 ID→名称 映射
-	services, err := m.client.ServiceList(ctx, swarm.ServiceListOptions{})
+	services, err := s.client.ServiceList(ctx, swarm.ServiceListOptions{})
 	if err != nil {
 		logman.Warn("ServiceList failed in TaskList", "error", err)
 	}
@@ -50,7 +50,7 @@ func (m *SwarmService) TaskList(ctx context.Context, serviceID string) ([]Task, 
 	}
 
 	// 建立节点 ID→主机名 映射
-	nodes, err := m.client.NodeList(ctx, swarm.NodeListOptions{})
+	nodes, err := s.client.NodeList(ctx, swarm.NodeListOptions{})
 	if err != nil {
 		logman.Warn("NodeList failed in TaskList", "error", err)
 	}
