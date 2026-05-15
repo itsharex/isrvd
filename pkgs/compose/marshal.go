@@ -2,29 +2,30 @@ package compose
 
 import (
 	"fmt"
+	"path/filepath"
 	"strconv"
 	"strings"
 
 	"github.com/compose-spec/compose-go/v2/types"
 	"github.com/docker/docker/api/types/container"
+	dockermount "github.com/docker/docker/api/types/mount"
 	dockerswarm "github.com/docker/docker/api/types/swarm"
 	dockerspec "github.com/moby/docker-image-spec/specs-go/v1"
 )
 
-// ProjectFromDockerInspect 将 docker inspect 结果反推为单服务 compose Project
-func ProjectFromDockerInspect(info container.InspectResponse, imageConfig *dockerspec.DockerOCIImageConfig) (*types.Project, error) {
+// ProjectFromDockerInspect 将 docker inspect 结果反推为单服务 compose Project。
+// containerDir 非空时，位于该目录内的 bind source 会输出为相对路径。
+func ProjectFromDockerInspect(info container.InspectResponse, imageConfig *dockerspec.DockerOCIImageConfig, containerDir string) (*types.Project, error) {
 	if info.Config == nil || info.HostConfig == nil {
 		return nil, fmt.Errorf("容器 inspect 数据不完整")
 	}
 	name := defaultString(strings.TrimPrefix(info.Name, "/"), info.ID)
 
-	// entrypoint：与镜像默认相同则省略
 	var entrypoint types.ShellCommand
 	if len(info.Config.Entrypoint) > 0 && (imageConfig == nil || !sliceEqual(info.Config.Entrypoint, imageConfig.Entrypoint)) {
 		entrypoint = types.ShellCommand(info.Config.Entrypoint)
 	}
 
-	// hostname：与容器名相同则省略（docker 默认行为）
 	hostname := info.Config.Hostname
 	if hostname == name {
 		hostname = ""
@@ -51,7 +52,7 @@ func ProjectFromDockerInspect(info container.InspectResponse, imageConfig *docke
 	applyInspectDNS(&svc, info)
 	projectNetworks := applyInspectNetworks(&svc, info, name)
 	applyInspectPorts(&svc, info)
-	applyInspectVolumes(&svc, info)
+	applyInspectVolumes(&svc, info, containerDir)
 	applyInspectResources(&svc, info)
 
 	return &types.Project{
@@ -61,8 +62,9 @@ func ProjectFromDockerInspect(info container.InspectResponse, imageConfig *docke
 	}, nil
 }
 
-// ProjectFromSwarmInspect 将 swarm Service 原始配置反推为单服务 compose Project
-func ProjectFromSwarmInspect(svc dockerswarm.Service) (*types.Project, error) {
+// ProjectFromSwarmInspect 将 swarm Service 原始配置反推为单服务 compose Project。
+// containerDir 非空时，位于该目录内的 bind source 会输出为相对路径。
+func ProjectFromSwarmInspect(svc dockerswarm.Service, containerDir string) (*types.Project, error) {
 	spec := svc.Spec
 	cs := spec.TaskTemplate.ContainerSpec
 	if cs == nil || cs.Image == "" {
@@ -78,7 +80,6 @@ func ProjectFromSwarmInspect(svc dockerswarm.Service) (*types.Project, error) {
 		Labels:      spec.Labels,
 	}
 
-	// deploy: mode / replicas / constraints
 	if spec.Mode.Global != nil {
 		composeSvc.Deploy = &types.DeployConfig{Mode: "global"}
 	} else if spec.Mode.Replicated != nil {
@@ -92,7 +93,6 @@ func ProjectFromSwarmInspect(svc dockerswarm.Service) (*types.Project, error) {
 		composeSvc.Deploy.Placement.Constraints = spec.TaskTemplate.Placement.Constraints
 	}
 
-	// ports
 	if spec.EndpointSpec != nil {
 		for _, p := range spec.EndpointSpec.Ports {
 			composeSvc.Ports = append(composeSvc.Ports, types.ServicePortConfig{
@@ -104,17 +104,15 @@ func ProjectFromSwarmInspect(svc dockerswarm.Service) (*types.Project, error) {
 		}
 	}
 
-	// volumes
 	for _, m := range cs.Mounts {
 		composeSvc.Volumes = append(composeSvc.Volumes, types.ServiceVolumeConfig{
 			Type:     string(m.Type),
-			Source:   m.Source,
+			Source:   swarmMountSource(m, containerDir),
 			Target:   m.Target,
 			ReadOnly: m.ReadOnly,
 		})
 	}
 
-	// networks
 	var projectNetworks types.Networks
 	if len(spec.TaskTemplate.Networks) > 0 {
 		composeSvc.Networks = make(map[string]*types.ServiceNetworkConfig, len(spec.TaskTemplate.Networks))
@@ -200,14 +198,15 @@ func applyInspectPorts(svc *types.ServiceConfig, info container.InspectResponse)
 	}
 }
 
-func applyInspectVolumes(svc *types.ServiceConfig, info container.InspectResponse) {
+func applyInspectVolumes(svc *types.ServiceConfig, info container.InspectResponse, containerDir string) {
 	for _, m := range info.Mounts {
 		if m.Destination == "" {
 			continue
 		}
+		// docker mount.Type 值（"bind"/"volume"/"tmpfs"）与 compose VolumeType 字符串一致
 		svc.Volumes = append(svc.Volumes, types.ServiceVolumeConfig{
 			Type:     string(m.Type),
-			Source:   m.Source,
+			Source:   inspectMountSource(m, containerDir),
 			Target:   m.Destination,
 			ReadOnly: !m.RW,
 		})
@@ -222,7 +221,7 @@ func applyInspectVolumes(svc *types.ServiceConfig, info container.InspectRespons
 		}
 		vol := types.ServiceVolumeConfig{
 			Type:   types.VolumeTypeBind,
-			Source: parts[0],
+			Source: relativeBindSource(parts[0], containerDir),
 			Target: parts[1],
 		}
 		if len(parts) == 3 && strings.Contains(parts[2], "ro") {
@@ -230,6 +229,45 @@ func applyInspectVolumes(svc *types.ServiceConfig, info container.InspectRespons
 		}
 		svc.Volumes = append(svc.Volumes, vol)
 	}
+}
+
+func inspectMountSource(m container.MountPoint, containerDir string) string {
+	switch m.Type {
+	case dockermount.TypeBind:
+		return relativeBindSource(m.Source, containerDir)
+	case dockermount.TypeVolume:
+		if m.Name != "" {
+			return m.Name
+		}
+	}
+	return m.Source
+}
+
+func swarmMountSource(m dockermount.Mount, containerDir string) string {
+	switch m.Type {
+	case dockermount.TypeBind:
+		return relativeBindSource(m.Source, containerDir)
+	case dockermount.TypeVolume:
+		// swarm Mount.Source 对 named volume 即为卷名
+		return m.Source
+	}
+	return m.Source
+}
+
+func relativeBindSource(source, baseDir string) string {
+	if source == "" || baseDir == "" || !filepath.IsAbs(source) {
+		return source
+	}
+
+	rel, err := filepath.Rel(filepath.Clean(baseDir), filepath.Clean(source))
+	if err != nil || rel == ".." || strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
+		return source
+	}
+	// source == baseDir 本身时保留绝对路径，避免挂载整个容器目录
+	if rel == "." {
+		return source
+	}
+	return "." + string(filepath.Separator) + rel
 }
 
 func applyInspectResources(svc *types.ServiceConfig, info container.InspectResponse) {

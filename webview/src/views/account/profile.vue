@@ -5,6 +5,7 @@ import api from '@/service/api'
 import type { ApiTokenResult } from '@/service/types'
 
 import { copyToClipboard } from '@/helper/utils'
+
 import { usePortal } from '@/stores'
 
 @Component

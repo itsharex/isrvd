@@ -75,7 +75,11 @@ class ComposeDeploy extends Vue {
         this.loading = true
         try {
             const res = this.target === 'swarm'
-                ? await api.composeSwarmDeploy({ content: this.content })
+                ? await api.composeSwarmDeploy({
+                    content: this.content,
+                    initURL: this.initURL.trim() || undefined,
+                    initFile: this.initFile ?? undefined,
+                })
                 : await api.composeDockerDeploy({
                     content: this.content,
                     initURL: this.initURL.trim() || undefined,
@@ -197,8 +201,8 @@ export default toNative(ComposeDeploy)
           warning="项目名来自 compose 文件的 name 字段；变量插值需在客户端完成，后端仅按原文落盘与加载"
         />
 
-        <!-- 附加文件（仅 docker） -->
-        <div v-if="target === 'docker'">
+        <!-- 附加文件 -->
+        <div>
           <label class="block text-sm font-medium text-slate-700 mb-2">附加文件
             <span class="text-xs font-normal text-slate-400">（选填，部署前解压到项目目录）</span>
           </label>
@@ -230,7 +234,15 @@ export default toNative(ComposeDeploy)
               />
             </label>
           </div>
-          <p class="mt-1 text-xs text-slate-400">URL 与上传文件二选一，仅支持 .zip 格式</p>
+          <p class="mt-1 text-xs text-slate-400">
+            URL 与上传文件二选一，仅支持 .zip 格式
+            <template v-if="target === 'swarm'">
+              ；
+              <span class="mt-1 text-xs text-amber-600">
+                Swarm 模式下，附加文件仅落盘到管理节点；如需各节点共享，请将容器数据根目录配置为 NFS 等共享存储
+              </span>
+            </template>
+          </p>
         </div>
 
         <!-- 操作按钮 -->

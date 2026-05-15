@@ -509,6 +509,14 @@ class ApiService {
     // ==================== Compose 部署 ====================
 
     composeDockerDeploy(data: ComposeDeploy) {
+        return http.post<ComposeDeployResult>('compose/docker/deploy', this.composeDeployForm(data))
+    }
+
+    composeSwarmDeploy(data: ComposeDeploy) {
+        return http.post<ComposeDeployResult>('compose/swarm/deploy', this.composeDeployForm(data))
+    }
+
+    private composeDeployForm(data: ComposeDeploy) {
         const form = new FormData()
         form.append('content', data.content)
         // 文件优先，二者互斥
@@ -517,11 +525,7 @@ class ApiService {
         } else if (data.initURL) {
             form.append('initURL', data.initURL)
         }
-        return http.post<ComposeDeployResult>('compose/docker/deploy', form)
-    }
-
-    composeSwarmDeploy(data: { content: string }) {
-        return http.post<ComposeDeployResult>('compose/swarm/deploy', data)
+        return form
     }
 
     composeDockerRedeploy(name: string, data: ComposeRedeploy) {

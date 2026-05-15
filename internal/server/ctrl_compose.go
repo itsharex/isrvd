@@ -62,37 +62,8 @@ func (app *App) composeSwarmInspect(c *gin.Context) {
 }
 
 func (app *App) composeDockerDeploy(c *gin.Context) {
-	if c.Request.ContentLength > config.Server.MaxUploadSize {
-		respondError(c, http.StatusBadRequest, "文件大小超过限制")
-		return
-	}
-
-	var req svcCompose.DeployRequest
-	if strings.HasPrefix(c.ContentType(), "application/json") {
-		if err := c.ShouldBindJSON(&req); err != nil {
-			respondError(c, http.StatusBadRequest, err.Error())
-			return
-		}
-	} else {
-		req.Content = c.PostForm("content")
-		req.InitURL = c.PostForm("initURL")
-		if fh, err := c.FormFile("initFile"); err == nil {
-			if fh.Size > config.Server.MaxUploadSize {
-				respondError(c, http.StatusBadRequest, "文件大小超过限制")
-				return
-			}
-			f, err := fh.Open()
-			if err != nil {
-				respondError(c, http.StatusBadRequest, "读取上传文件失败: "+err.Error())
-				return
-			}
-			req.InitFile = f
-			defer f.Close()
-		}
-	}
-
-	if req.Content == "" {
-		respondError(c, http.StatusBadRequest, "content 不能为空")
+	req, ok := bindComposeDeployRequest(c)
+	if !ok {
 		return
 	}
 	result, err := app.composeSvc.DockerDeploy(c.Request.Context(), req)
@@ -104,9 +75,8 @@ func (app *App) composeDockerDeploy(c *gin.Context) {
 }
 
 func (app *App) composeSwarmDeploy(c *gin.Context) {
-	var req svcCompose.DeployRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		respondError(c, http.StatusBadRequest, err.Error())
+	req, ok := bindComposeDeployRequest(c)
+	if !ok {
 		return
 	}
 	result, err := app.composeSvc.SwarmDeploy(c.Request.Context(), req)
@@ -115,6 +85,43 @@ func (app *App) composeSwarmDeploy(c *gin.Context) {
 		return
 	}
 	respondSuccess(c, "部署成功", result)
+}
+
+// bindComposeDeployRequest 解析 JSON 或 multipart form 的部署请求。
+func bindComposeDeployRequest(c *gin.Context) (svcCompose.DeployRequest, bool) {
+	var req svcCompose.DeployRequest
+	if c.Request.ContentLength > config.Server.MaxUploadSize {
+		respondError(c, http.StatusBadRequest, "文件大小超过限制")
+		return req, false
+	}
+
+	if strings.HasPrefix(c.ContentType(), "application/json") {
+		if err := c.ShouldBindJSON(&req); err != nil {
+			respondError(c, http.StatusBadRequest, err.Error())
+			return req, false
+		}
+	} else {
+		req.Content = c.PostForm("content")
+		req.InitURL = c.PostForm("initURL")
+		if fh, err := c.FormFile("initFile"); err == nil {
+			if fh.Size > config.Server.MaxUploadSize {
+				respondError(c, http.StatusBadRequest, "文件大小超过限制")
+				return req, false
+			}
+			f, err := fh.Open()
+			if err != nil {
+				respondError(c, http.StatusBadRequest, "读取上传文件失败: "+err.Error())
+				return req, false
+			}
+			req.InitFile = f
+		}
+	}
+
+	if req.Content == "" {
+		respondError(c, http.StatusBadRequest, "content 不能为空")
+		return req, false
+	}
+	return req, true
 }
 
 func (app *App) composeDockerRedeploy(c *gin.Context) {

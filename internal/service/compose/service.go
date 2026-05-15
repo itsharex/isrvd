@@ -6,9 +6,13 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"io"
+	"os"
+	"path/filepath"
 	"regexp"
 
 	"github.com/compose-spec/compose-go/v2/types"
+	"github.com/rehiy/libgo/archive"
+	"github.com/rehiy/libgo/request"
 
 	"isrvd/internal/registry"
 	"isrvd/pkgs/compose"
@@ -71,18 +75,18 @@ func NewService() (*Service, error) {
 
 // ==================== 内部工具 ====================
 
-// updateServiceImage 将 compose 内容中指定服务的镜像替换为 image，
-// 返回更新后的 YAML 文本和已修改的 project（避免调用方二次加载）
-func updateServiceImage(ctx context.Context, name, content, serviceName, image string) (string, *types.Project, error) {
+// updateServiceImage 将 compose 内容中指定服务的镜像替换为 image，返回更新后的 YAML 文本。
+// 返回内容中的相对路径保持原样，调用方需通过 projectParse 以 installDir 展开后再创建容器。
+func updateServiceImage(ctx context.Context, name, content, serviceName, image string) (string, error) {
 	if content == "" {
-		return "", nil, fmt.Errorf("compose 内容不能为空")
+		return "", fmt.Errorf("compose 内容不能为空")
 	}
 	project, err := compose.LoadProjectFromContent(ctx, content, name)
 	if err != nil {
-		return "", nil, err
+		return "", err
 	}
 	if len(project.Services) == 0 {
-		return "", nil, fmt.Errorf("compose 文件中没有定义服务")
+		return "", fmt.Errorf("compose 文件中没有定义服务")
 	}
 
 	matched := false
@@ -95,14 +99,14 @@ func updateServiceImage(ctx context.Context, name, content, serviceName, image s
 		}
 	}
 	if !matched {
-		return "", nil, fmt.Errorf("compose 服务 %s 不存在", serviceName)
+		return "", fmt.Errorf("compose 服务 %s 不存在", serviceName)
 	}
 
 	data, err := compose.ProjectToYAML(project)
 	if err != nil {
-		return "", nil, err
+		return "", err
 	}
-	return string(data), project, nil
+	return string(data), nil
 }
 
 func projectServiceFind(project *types.Project, serviceName string) (types.ServiceConfig, error) {
@@ -117,16 +121,99 @@ func projectServiceFind(project *types.Project, serviceName string) (types.Servi
 	return types.ServiceConfig{}, fmt.Errorf("compose 服务 %s 不存在", serviceName)
 }
 
-// shortHash 返回内容的短 hash 字符串
 func shortHash(content string) string {
 	h := sha256.Sum256([]byte(content))
 	return fmt.Sprintf("%x", h[:4])
 }
 
-// shortID 返回 ID 的前 12 字符
 func shortID(id string) string {
 	if len(id) > 12 {
 		return id[:12]
 	}
 	return id
+}
+
+// projectLoad 写入 compose.yml 并以 installDir 为 WorkingDir 加载，确保相对路径正确展开。
+func (s *Service) projectLoad(ctx context.Context, name, content, installDir string) (*types.Project, error) {
+	if installDir == "" {
+		return compose.LoadProjectFromContent(ctx, content, name)
+	}
+	if err := os.MkdirAll(installDir, 0755); err != nil {
+		return nil, fmt.Errorf("创建安装目录失败: %w", err)
+	}
+	if err := os.WriteFile(filepath.Join(installDir, "compose.yml"), []byte(content), 0644); err != nil {
+		return nil, fmt.Errorf("写入 compose 文件失败: %w", err)
+	}
+	return compose.LoadProject(ctx, compose.LoadOptions{
+		WorkingDir:  installDir,
+		ProjectName: name,
+	})
+}
+
+// projectParse 解析 compose 内容（不写文件），相对路径基于 installDir 展开。
+func (s *Service) projectParse(ctx context.Context, name, content, installDir string) (*types.Project, error) {
+	if installDir == "" {
+		return compose.LoadProjectFromContent(ctx, content, name)
+	}
+	return compose.LoadProjectFromContentInDir(ctx, content, installDir, name)
+}
+
+// contentSave 持久化 compose.yml；bak 非空时同时写 .bak。
+func (s *Service) contentSave(installDir, content, bak string) {
+	if installDir == "" {
+		return
+	}
+	_ = os.MkdirAll(installDir, 0755)
+	if content != "" {
+		_ = os.WriteFile(filepath.Join(installDir, "compose.yml"), []byte(content), 0644)
+	}
+	if bak != "" {
+		_ = os.WriteFile(filepath.Join(installDir, "compose.yml.bak"), []byte(bak), 0644)
+	}
+}
+
+// initFileHandle 处理附加运行文件（支持本地上传或 URL 下载），解压到 installDir。
+func (s *Service) initFileHandle(installDir string, req DeployRequest) error {
+	if req.InitFile == nil && req.InitURL == "" {
+		return nil
+	}
+	if err := os.MkdirAll(installDir, 0755); err != nil {
+		return fmt.Errorf("创建安装目录失败: %w", err)
+	}
+	zipPath := filepath.Join(installDir, "init.zip")
+
+	if req.InitFile != nil {
+		if closer, ok := req.InitFile.(io.Closer); ok {
+			defer closer.Close()
+		}
+		return writeAndUnzip(zipPath, req.InitFile)
+	}
+
+	if _, err := request.Download(req.InitURL, zipPath, false); err != nil {
+		return fmt.Errorf("下载附加文件失败: %w", err)
+	}
+	if err := archive.NewZipper().Unzip(zipPath); err != nil {
+		return fmt.Errorf("解压附加文件失败: %w", err)
+	}
+	_ = os.Remove(zipPath)
+	return nil
+}
+
+// writeAndUnzip 将 reader 内容写入 zip 文件并解压
+func writeAndUnzip(zipPath string, r io.Reader) error {
+	f, err := os.Create(zipPath)
+	if err != nil {
+		return fmt.Errorf("创建附加文件失败: %w", err)
+	}
+	defer f.Close()
+
+	if _, err = io.Copy(f, r); err != nil {
+		return fmt.Errorf("写入附加文件失败: %w", err)
+	}
+
+	if err := archive.NewZipper().Unzip(zipPath); err != nil {
+		return fmt.Errorf("解压附加文件失败: %w", err)
+	}
+	_ = os.Remove(zipPath)
+	return nil
 }

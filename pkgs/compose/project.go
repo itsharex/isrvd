@@ -33,14 +33,10 @@ func ProjectToYAML(project *types.Project) ([]byte, error) {
 
 // LoadOptions 加载配置
 type LoadOptions struct {
-	// WorkingDir compose 文件所在目录（用于解析相对路径和 .env）
-	WorkingDir string
-	// ConfigFiles 指定要加载的 compose 文件绝对路径；为空则在 WorkingDir 下自动查找
-	ConfigFiles []string
-	// ProjectName 项目名（影响生成的网络/容器默认前缀）
-	ProjectName string
-	// Environment 额外的环境变量（会与 .env 合并，覆盖 .env）
-	Environment map[string]string
+	WorkingDir  string            // compose 文件所在目录（用于解析相对路径和 .env）
+	ConfigFiles []string          // 指定要加载的 compose 文件绝对路径；为空则在 WorkingDir 下自动查找
+	ProjectName string            // 项目名（影响生成的网络/容器默认前缀）
+	Environment map[string]string // 额外的环境变量（会与 .env 合并，优先级更高）
 }
 
 // LoadProject 使用 compose-go 官方加载器解析 compose 文件，
@@ -71,15 +67,26 @@ func LoadProject(ctx context.Context, opts LoadOptions) (*types.Project, error) 
 	}, projectName, true, true)
 }
 
-// LoadProjectFromContent 从 yaml 文本直接加载 compose 项目
-// 用于「手动粘贴 compose 内容」场景，临时写入内存 buffer 即可
+// LoadProjectFromContent 从 yaml 文本加载 compose 项目（不解析相对路径）。
 func LoadProjectFromContent(ctx context.Context, content string, projectName string) (*types.Project, error) {
+	return loadProjectFromContent(ctx, content, ".", projectName, false)
+}
+
+// LoadProjectFromContentInDir 从 yaml 文本加载 compose 项目，并以 workingDir 解析相对路径。
+func LoadProjectFromContentInDir(ctx context.Context, content, workingDir, projectName string) (*types.Project, error) {
+	if workingDir == "" {
+		return LoadProjectFromContent(ctx, content, projectName)
+	}
+	return loadProjectFromContent(ctx, content, workingDir, projectName, true)
+}
+
+func loadProjectFromContent(ctx context.Context, content, workingDir, projectName string, resolvePaths bool) (*types.Project, error) {
 	if content == "" {
 		return nil, fmt.Errorf("compose 内容为空")
 	}
 
 	details := types.ConfigDetails{
-		WorkingDir: ".",
+		WorkingDir: workingDir,
 		ConfigFiles: []types.ConfigFile{
 			{
 				Filename: "compose.yml",
@@ -89,7 +96,7 @@ func LoadProjectFromContent(ctx context.Context, content string, projectName str
 		Environment: projectEnvironment(nil),
 	}
 
-	return loadProject(ctx, details, projectName, false, projectName != "")
+	return loadProject(ctx, details, projectName, resolvePaths, projectName != "")
 }
 
 func loadProject(ctx context.Context, details types.ConfigDetails, projectName string, resolvePaths bool, setProjectName bool) (*types.Project, error) {
@@ -144,8 +151,7 @@ func readConfigFiles(paths []string) ([]types.ConfigFile, error) {
 	return files, nil
 }
 
-// locateComposeFile 在指定目录下查找 compose 文件
-// 查找顺序：根目录 → 一级子目录（处理 zip 解压后外层多一层目录的情况）
+// locateComposeFile 在 dir 下查找 compose 文件，根目录找不到时尝试一级子目录。
 func locateComposeFile(dir string) (string, error) {
 	if p, ok := findComposeFile(dir); ok {
 		return p, nil
