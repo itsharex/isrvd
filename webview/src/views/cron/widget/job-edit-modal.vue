@@ -89,7 +89,6 @@ export default toNative(JobEditModal)
     v-model="isOpen"
     :title="isEditMode ? '编辑计划任务' : '新建计划任务'"
     :loading="modalLoading"
-    max-width-class="max-w-2xl"
     @confirm="handleConfirm"
   >
     <template #confirm-text>{{ isEditMode ? '保存' : '创建' }}</template>

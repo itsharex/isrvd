@@ -20,13 +20,26 @@ class JobLogsModal extends Vue {
     job: CronJob | null = null
     logs: CronJobLog[] = []
 
+    get successCount() {
+        return this.logs.filter(item => item.success).length
+    }
+
+    get failedCount() {
+        return this.logs.length - this.successCount
+    }
+
     async show(job: CronJob) {
         this.job = job
         this.logs = []
         this.isOpen = true
+        await this.loadLogs()
+    }
+
+    async loadLogs() {
+        if (!this.job) return
         this.loading = true
         try {
-            const res = await api.cronJobLogs(job.id, 50)
+            const res = await api.cronJobLogs(this.job.id, 50)
             this.logs = res.payload?.logs || []
         } catch {
             this.portal.showNotification('error', '获取执行日志失败')
@@ -49,42 +62,82 @@ export default toNative(JobLogsModal)
 </script>
 
 <template>
-  <BaseModal v-model="isOpen" :show-footer="false" max-width-class="max-w-3xl">
+  <BaseModal v-model="isOpen" :show-footer="false" body-class="p-0 overflow-y-auto bg-slate-50">
     <template #title>
-      <div class="flex items-center gap-2">
-        <i class="fas fa-list-ul text-blue-500"></i>
-        <span class="text-base font-semibold">执行历史 — {{ job?.name }}</span>
+      <div class="flex items-center gap-3 min-w-0">
+        <div class="w-9 h-9 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
+          <i class="fas fa-list-ul text-sm"></i>
+        </div>
+        <div class="min-w-0">
+          <h2 class="text-base font-semibold text-slate-800 truncate">执行历史</h2>
+          <p class="text-xs text-slate-400 truncate">{{ job?.name }}</p>
+        </div>
       </div>
     </template>
 
-    <div v-if="loading" class="flex items-center justify-center py-12">
-      <div class="w-8 h-8 spinner"></div>
-    </div>
-    <div v-else-if="logs.length === 0" class="flex flex-col items-center justify-center py-12">
-      <i class="fas fa-list-ul text-3xl text-slate-300 mb-2"></i>
-      <p class="text-slate-500 text-sm">暂无执行记录</p>
-    </div>
-    <div v-else class="space-y-3">
-      <div
-        v-for="(log, idx) in logs"
-        :key="log.runId || idx"
-        class="rounded-xl border p-4"
-        :class="log.success ? 'border-emerald-100 bg-emerald-50/30' : 'border-red-100 bg-red-50/30'"
+    <template #header-actions>
+      <button
+        class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+        :disabled="loading"
+        title="刷新"
+        @click="loadLogs"
       >
-        <div class="flex items-center justify-between mb-2">
-          <div class="flex items-center gap-2">
-            <span v-if="log.success" class="inline-flex items-center gap-1 text-xs font-medium text-emerald-600">
-              <i class="fas fa-circle-check"></i>成功
-            </span>
-            <span v-else class="inline-flex items-center gap-1 text-xs font-medium text-red-600">
-              <i class="fas fa-circle-xmark"></i>失败
-            </span>
-            <span class="text-xs text-slate-400">{{ formatDuration(log.duration) }}</span>
+        <i class="fas fa-rotate text-sm" :class="{ 'fa-spin': loading }"></i>
+      </button>
+    </template>
+
+    <div class="p-4 md:p-5">
+      <div v-if="loading" class="flex flex-col items-center justify-center py-16">
+        <div class="w-10 h-10 spinner mb-3"></div>
+        <p class="text-sm text-slate-500">加载中...</p>
+      </div>
+
+      <div v-else>
+        <div class="rounded-xl bg-white px-4 py-3 mb-4">
+          <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-slate-500">
+            <span class="font-medium text-slate-700">{{ job?.name }}</span>
+            <span class="font-mono">{{ job?.schedule }}</span>
+            <span>{{ job?.type }}</span>
+            <span>最近 {{ logs.length }} 次</span>
+            <span class="text-emerald-600">成功 {{ successCount }}</span>
+            <span class="text-red-600">失败 {{ failedCount }}</span>
           </div>
-          <span class="text-xs text-slate-400 whitespace-nowrap">{{ formatTime(log.startTime) }}</span>
         </div>
-        <pre v-if="log.output" class="text-xs text-slate-700 font-mono bg-slate-900/5 rounded-lg p-3 overflow-x-auto whitespace-pre-wrap break-all max-h-40">{{ log.output }}</pre>
-        <pre v-if="log.error" class="mt-2 text-xs text-red-700 font-mono bg-red-900/5 rounded-lg p-3 overflow-x-auto whitespace-pre-wrap break-all max-h-24">{{ log.error }}</pre>
+
+        <div v-if="logs.length === 0" class="flex flex-col items-center justify-center py-16">
+          <div class="w-16 h-16 rounded-lg bg-white flex items-center justify-center mb-4">
+            <i class="fas fa-file-lines text-2xl text-slate-300"></i>
+          </div>
+          <p class="text-slate-500 text-sm">暂无执行记录</p>
+        </div>
+
+        <div v-else class="divide-y divide-slate-200">
+          <div
+            v-for="(log, idx) in logs"
+            :key="log.runId || idx"
+            class="py-3 first:pt-0 last:pb-0"
+          >
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-2">
+              <span
+                class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-medium w-fit"
+                :class="log.success ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'"
+              >
+                <i :class="log.success ? 'fas fa-circle-check' : 'fas fa-circle-xmark'"></i>
+                {{ log.success ? '成功' : '失败' }}
+              </span>
+              <div class="flex items-center gap-3 text-xs text-slate-400">
+                <span><i class="far fa-clock mr-1"></i>{{ formatDuration(log.duration) }}</span>
+                <span>{{ formatTime(log.startTime) }}</span>
+              </div>
+            </div>
+
+            <pre v-if="log.output" class="bg-slate-900 text-slate-100 rounded-lg p-3 text-xs font-mono overflow-auto whitespace-pre-wrap break-all max-h-48">{{ log.output }}</pre>
+            <pre v-if="log.error" class="mt-2 bg-red-50 text-red-700 rounded-lg p-3 text-xs font-mono overflow-auto whitespace-pre-wrap break-all max-h-28">{{ log.error }}</pre>
+            <div v-if="!log.output && !log.error" class="text-xs text-slate-400 rounded-lg bg-slate-100 p-3">
+              无输出内容
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </BaseModal>
