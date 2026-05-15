@@ -7,6 +7,8 @@ export interface CronTypeInfo {
     label: string
 }
 
+export type CronRuntimeStatus = 'scheduled' | 'disabled' | 'unregistered'
+
 export interface CronJob {
     id: string
     name: string
@@ -16,6 +18,9 @@ export interface CronJob {
     workDir: string
     timeout: number
     enabled: boolean
+    registered: boolean
+    entryId?: number
+    runtimeStatus: CronRuntimeStatus
     description: string
     nextRun?: string
     lastRun?: string

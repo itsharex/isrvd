@@ -44,6 +44,18 @@ class CronJobs extends Vue {
         return new Date(t).toLocaleString('zh-CN')
     }
 
+    runtimeStatusText(job: CronJob): string {
+        if (job.runtimeStatus === 'scheduled') return '调度中'
+        if (job.runtimeStatus === 'unregistered') return '未注册'
+        return '已禁用'
+    }
+
+    runtimeStatusClass(job: CronJob): string {
+        if (job.runtimeStatus === 'scheduled') return 'text-emerald-600 hover:text-emerald-700'
+        if (job.runtimeStatus === 'unregistered') return 'text-amber-600 hover:text-amber-700'
+        return 'text-slate-400 hover:text-slate-500'
+    }
+
     async loadTypes() {
         try {
             const res = await api.cronTypes()
@@ -224,10 +236,10 @@ export default toNative(CronJobs)
                 <button
                   :title="job.enabled ? '点击禁用' : '点击启用'"
                   class="text-xs font-medium transition-colors"
-                  :class="job.enabled ? 'text-emerald-600 hover:text-emerald-700' : 'text-slate-400 hover:text-slate-500'"
+                  :class="runtimeStatusClass(job)"
                   @click="toggleEnabled(job)"
                 >
-                  {{ job.enabled ? '已启用' : '已禁用' }}
+                  {{ runtimeStatusText(job) }}
                 </button>
               </td>
               <td class="px-4 py-3 text-xs text-slate-500 whitespace-nowrap">{{ formatTime(job.nextRun) }}</td>
@@ -267,10 +279,10 @@ export default toNative(CronJobs)
             </div>
             <button
               class="text-xs font-medium flex-shrink-0 transition-colors"
-              :class="job.enabled ? 'text-emerald-600' : 'text-slate-400'"
+              :class="runtimeStatusClass(job)"
               @click="toggleEnabled(job)"
             >
-              {{ job.enabled ? '已启用' : '已禁用' }}
+              {{ runtimeStatusText(job) }}
             </button>
           </div>
 

@@ -38,8 +38,11 @@ type Job struct {
 // JobDetail 任务详情（含运行时调度状态）
 type JobDetail struct {
 	*Job
-	NextRun *time.Time `json:"nextRun,omitempty"`
-	LastRun *time.Time `json:"lastRun,omitempty"`
+	Registered    bool       `json:"registered"`
+	EntryID       int        `json:"entryId,omitempty"`
+	RuntimeStatus string     `json:"runtimeStatus"` // scheduled | disabled | unregistered
+	NextRun       *time.Time `json:"nextRun,omitempty"`
+	LastRun       *time.Time `json:"lastRun,omitempty"`
 }
 
 // JobLog 任务执行日志
@@ -127,14 +130,22 @@ func (s *Service) ListJobs() []*JobDetail {
 
 	result := make([]*JobDetail, 0, len(s.jobs))
 	for _, job := range s.jobs {
-		detail := &JobDetail{Job: job}
+		detail := &JobDetail{Job: job, RuntimeStatus: "disabled"}
+		if job.Enabled {
+			detail.RuntimeStatus = "unregistered"
+		}
 		if entryID, ok := s.entries[job.ID]; ok {
 			e := s.cron.Entry(entryID)
-			if !e.Next.IsZero() {
-				detail.NextRun = &e.Next
-			}
-			if !e.Prev.IsZero() {
-				detail.LastRun = &e.Prev
+			if e.ID == entryID {
+				detail.Registered = true
+				detail.EntryID = int(entryID)
+				detail.RuntimeStatus = "scheduled"
+				if !e.Next.IsZero() {
+					detail.NextRun = &e.Next
+				}
+				if !e.Prev.IsZero() {
+					detail.LastRun = &e.Prev
+				}
 			}
 		}
 		result = append(result, detail)

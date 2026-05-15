@@ -17,12 +17,15 @@
 | `content` | string | 脚本内容 |
 | `workDir` | string | 工作目录（可选） |
 | `timeout` | number | 超时秒数，0 表示不限制 |
-| `enabled` | boolean | 是否启用 |
+| `enabled` | boolean | 是否启用（存储字段） |
+| `registered` | boolean | 当前是否已注册到内存调度器（运行时字段，只读） |
+| `entryId` | number? | robfig/cron 调度 entry ID（运行时字段，只读） |
+| `runtimeStatus` | string | 当前调度状态：`scheduled` / `disabled` / `unregistered`（运行时字段，只读） |
 | `description` | string | 描述（可选） |
-| `nextRun` | string? | 下次预计执行时间（RFC3339，运行时字段，只读） |
-| `lastRun` | string? | 上次执行时间（RFC3339，运行时字段，只读） |
+| `nextRun` | string? | 下次预计执行时间（RFC3339，运行时字段，只读，仅已注册任务存在） |
+| `lastRun` | string? | 上次计划调度时间（RFC3339，运行时字段，只读） |
 
-计划任务配置存储在 `server.rootDirectory/cron.yml`，由服务自动读写；执行历史按任务 ID 拆分为 JSONL 文件，写入 `server.rootDirectory/logs/cron/{jobId}.log`，每次执行追加一行结构化记录。
+计划任务配置存储在 `server.rootDirectory/cron.yml`，由服务自动读写；`registered`、`entryId`、`runtimeStatus`、`nextRun`、`lastRun` 来自当前内存调度器状态，不写入存储文件。执行历史按任务 ID 拆分为 JSONL 文件，写入 `server.rootDirectory/logs/cron/{jobId}.log`，每次执行追加一行结构化记录。
 
 ### JobLog
 
