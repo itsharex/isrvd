@@ -30,17 +30,17 @@ class Tasks extends Vue {
         if (this.selectedServiceId) {
             list = list.filter((t: SwarmTask) => t.serviceID === this.selectedServiceId)
         }
-        if (!this.searchText) return list
-        const s = this.searchText.toLowerCase()
+        const keyword = this.searchText.trim().toLowerCase()
+        if (!keyword) return list
         return list.filter((t: SwarmTask) =>
-            (t.id || '').toLowerCase().includes(s) ||
-            (t.serviceName || '').toLowerCase().includes(s) ||
-            (t.serviceID || '').toLowerCase().includes(s) ||
-            (t.nodeName || '').toLowerCase().includes(s) ||
-            (t.nodeID || '').toLowerCase().includes(s) ||
-            (t.state || '').toLowerCase().includes(s) ||
-            (t.message || '').toLowerCase().includes(s) ||
-            (t.err || '').toLowerCase().includes(s)
+            (t.id || '').toLowerCase().includes(keyword) ||
+            (t.serviceName || '').toLowerCase().includes(keyword) ||
+            (t.serviceID || '').toLowerCase().includes(keyword) ||
+            (t.nodeName || '').toLowerCase().includes(keyword) ||
+            (t.nodeID || '').toLowerCase().includes(keyword) ||
+            (t.state || '').toLowerCase().includes(keyword) ||
+            (t.message || '').toLowerCase().includes(keyword) ||
+            (t.err || '').toLowerCase().includes(keyword)
         )
     }
 
@@ -240,8 +240,8 @@ export default toNative(Tasks)
         <div class="w-16 h-16 rounded-lg bg-slate-100 flex items-center justify-center mb-4">
           <i class="fas fa-list-check text-4xl text-slate-300"></i>
         </div>
-        <p class="text-slate-600 font-medium mb-1">暂无任务</p>
-        <p class="text-sm text-slate-400">当前没有运行中的任务</p>
+        <p class="text-slate-600 font-medium mb-1">{{ tasks.length === 0 ? '暂无任务' : '未找到匹配任务' }}</p>
+        <p class="text-sm text-slate-400">{{ tasks.length === 0 ? '当前没有运行中的任务' : '尝试更换关键词或清空搜索条件' }}</p>
       </div>
     </div>
   </div>

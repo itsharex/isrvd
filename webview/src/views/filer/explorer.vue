@@ -57,8 +57,8 @@ class FileExplorer extends Vue {
     }
 
     get filteredFiles() {
-        if (!this.searchText) return this.files
-        const keyword = this.searchText.toLowerCase()
+        const keyword = this.searchText.trim().toLowerCase()
+        if (!keyword) return this.files
         return this.files.filter((file: FilerFileInfo) =>
             file.name.toLowerCase().includes(keyword) ||
             file.path.toLowerCase().includes(keyword) ||

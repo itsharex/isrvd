@@ -53,15 +53,15 @@ class AuditLogs extends Vue {
         if (this.selectedUsername) {
             list = list.filter(log => log.username === this.selectedUsername)
         }
-        if (!this.searchText) return list
-        const s = this.searchText.toLowerCase()
+        const keyword = this.searchText.trim().toLowerCase()
+        if (!keyword) return list
         return list.filter((log: AuditLog) =>
-            (log.username || '').toLowerCase().includes(s) ||
-            (log.method || '').toLowerCase().includes(s) ||
-            (log.uri || '').toLowerCase().includes(s) ||
-            (log.body || '').toLowerCase().includes(s) ||
-            (log.ip || '').toLowerCase().includes(s) ||
-            String(log.statusCode || '').includes(s)
+            (log.username || '').toLowerCase().includes(keyword) ||
+            (log.method || '').toLowerCase().includes(keyword) ||
+            (log.uri || '').toLowerCase().includes(keyword) ||
+            (log.body || '').toLowerCase().includes(keyword) ||
+            (log.ip || '').toLowerCase().includes(keyword) ||
+            String(log.statusCode || '').includes(keyword)
         )
     }
 
@@ -192,8 +192,8 @@ export default toNative(AuditLogs)
         <div class="w-16 h-16 rounded-lg bg-slate-100 flex items-center justify-center mb-4">
           <i class="fas fa-clipboard-list text-4xl text-slate-300"></i>
         </div>
-        <p class="text-slate-600 font-medium mb-1">暂无审计日志</p>
-        <p class="text-sm text-slate-400">用户操作记录将在此展示</p>
+        <p class="text-slate-600 font-medium mb-1">{{ logs.length === 0 ? '暂无审计日志' : '未找到匹配日志' }}</p>
+        <p class="text-sm text-slate-400">{{ logs.length === 0 ? '用户操作记录将在此展示' : '尝试更换关键词或清空搜索条件' }}</p>
       </div>
 
       <!-- 日志列表 -->

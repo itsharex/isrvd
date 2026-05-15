@@ -28,17 +28,17 @@ class Routes extends Vue {
 
     // ─── 计算属性 ───
     get filteredRoutes() {
-        if (!this.searchText) return this.routes
-        const s = this.searchText.toLowerCase()
+        const keyword = this.searchText.trim().toLowerCase()
+        if (!keyword) return this.routes
         return this.routes.filter((r: ApisixRoute) => {
             const upstreamSummary = this.getRouteUpstreamSummary(r).toLowerCase()
             return (
-                (r.name || '').toLowerCase().includes(s) ||
-                (r.id || '').toLowerCase().includes(s) ||
-                (r.uri || '').toLowerCase().includes(s) ||
-                (r.uris || []).some((u: string) => u.toLowerCase().includes(s)) ||
-                (r.desc || '').toLowerCase().includes(s) ||
-                upstreamSummary.includes(s)
+                (r.name || '').toLowerCase().includes(keyword) ||
+                (r.id || '').toLowerCase().includes(keyword) ||
+                (r.uri || '').toLowerCase().includes(keyword) ||
+                (r.uris || []).some((u: string) => u.toLowerCase().includes(keyword)) ||
+                (r.desc || '').toLowerCase().includes(keyword) ||
+                upstreamSummary.includes(keyword)
             )
         })
     }

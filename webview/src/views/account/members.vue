@@ -25,13 +25,13 @@ class Members extends Vue {
     searchText = ''
 
     get filteredMembers() {
-        if (!this.searchText) return this.members
-        const s = this.searchText.toLowerCase()
+        const keyword = this.searchText.trim().toLowerCase()
+        if (!keyword) return this.members
         return this.members.filter((m: MemberInfo) =>
-            (m.username || '').toLowerCase().includes(s) ||
-            (m.description || '').toLowerCase().includes(s) ||
-            (m.homeDirectory || '').toLowerCase().includes(s) ||
-            (m.permissions || []).join(' ').toLowerCase().includes(s)
+            (m.username || '').toLowerCase().includes(keyword) ||
+            (m.description || '').toLowerCase().includes(keyword) ||
+            (m.homeDirectory || '').toLowerCase().includes(keyword) ||
+            (m.permissions || []).join(' ').toLowerCase().includes(keyword)
         )
     }
 
@@ -145,8 +145,8 @@ export default toNative(Members)
         <div class="w-16 h-16 rounded-lg bg-slate-100 flex items-center justify-center mb-4">
           <i class="fas fa-users text-4xl text-slate-300"></i>
         </div>
-        <p class="text-slate-600 font-medium mb-1">暂无成员</p>
-        <p class="text-sm text-slate-400">点击右上角「添加」创建成员</p>
+        <p class="text-slate-600 font-medium mb-1">{{ members.length === 0 ? '暂无成员' : '未找到匹配成员' }}</p>
+        <p class="text-sm text-slate-400">{{ members.length === 0 ? '点击右上角「添加」创建成员' : '尝试更换关键词或清空搜索条件' }}</p>
       </div>
 
       <!-- Table -->

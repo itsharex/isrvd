@@ -37,8 +37,8 @@ class Images extends Vue {
     formatTime = formatTime
 
     get filteredImages() {
-        if (!this.searchText) return this.images
-        const keyword = this.searchText.toLowerCase()
+        const keyword = this.searchText.trim().toLowerCase()
+        if (!keyword) return this.images
         return this.images.filter((image: DockerImageInfo) => {
             const tags = (image.repoTags || []).join(' ')
             const digests = (image.repoDigests || []).join(' ')

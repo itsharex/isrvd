@@ -21,12 +21,12 @@ class Whitelist extends Vue {
 
     // ─── 计算属性 ───
     get filteredWhitelist() {
-        if (!this.searchText) return this.whitelist
-        const s = this.searchText.toLowerCase()
+        const keyword = this.searchText.trim().toLowerCase()
+        if (!keyword) return this.whitelist
         return this.whitelist.filter((r: ApisixRoute) =>
-            (r.name || '').toLowerCase().includes(s) ||
-            (r.id || '').toLowerCase().includes(s) ||
-            (r.consumers || []).some((c: string) => c.toLowerCase().includes(s))
+            (r.name || '').toLowerCase().includes(keyword) ||
+            (r.id || '').toLowerCase().includes(keyword) ||
+            (r.consumers || []).some((c: string) => c.toLowerCase().includes(keyword))
         )
     }
 
@@ -133,8 +133,8 @@ export default toNative(Whitelist)
         <div class="w-16 h-16 rounded-lg bg-slate-100 flex items-center justify-center mb-4">
           <i class="fas fa-shield-halved text-4xl text-slate-300"></i>
         </div>
-        <p class="text-slate-600 font-medium mb-1">暂无白名单数据</p>
-        <p class="text-sm text-slate-400">配置路由的 Consumer 白名单后将在此显示</p>
+        <p class="text-slate-600 font-medium mb-1">{{ whitelist.length === 0 ? '暂无白名单数据' : '未找到匹配白名单' }}</p>
+        <p class="text-sm text-slate-400">{{ whitelist.length === 0 ? '配置路由的 Consumer 白名单后将在此显示' : '尝试更换关键词或清空搜索条件' }}</p>
       </div>
 
       <!-- 列表 -->

@@ -27,11 +27,11 @@ class Consumers extends Vue {
 
     // ─── 计算属性 ───
     get filteredConsumers() {
-        if (!this.searchText) return this.consumers
-        const s = this.searchText.toLowerCase()
+        const keyword = this.searchText.trim().toLowerCase()
+        if (!keyword) return this.consumers
         return this.consumers.filter((c: ApisixConsumer) =>
-            (c.username || '').toLowerCase().includes(s) ||
-            (c.desc || '').toLowerCase().includes(s)
+            (c.username || '').toLowerCase().includes(keyword) ||
+            (c.desc || '').toLowerCase().includes(keyword)
         )
     }
 
@@ -154,8 +154,8 @@ export default toNative(Consumers)
         <div class="w-16 h-16 rounded-lg bg-slate-100 flex items-center justify-center mb-4">
           <i class="fas fa-users text-4xl text-slate-300"></i>
         </div>
-        <p class="text-slate-600 font-medium mb-1">暂无消费者</p>
-        <p class="text-sm text-slate-400">点击「创建」添加 Consumer</p>
+        <p class="text-slate-600 font-medium mb-1">{{ consumers.length === 0 ? '暂无消费者' : '未找到匹配消费者' }}</p>
+        <p class="text-sm text-slate-400">{{ consumers.length === 0 ? '点击「创建」添加 Consumer' : '尝试更换关键词或清空搜索条件' }}</p>
       </div>
 
       <!-- 消费者列表 -->

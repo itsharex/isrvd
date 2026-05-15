@@ -23,11 +23,11 @@ class SSLs extends Vue {
     searchText = ''
 
     get filteredSSLs() {
-        if (!this.searchText) return this.ssls
-        const s = this.searchText.toLowerCase()
+        const keyword = this.searchText.trim().toLowerCase()
+        if (!keyword) return this.ssls
         return this.ssls.filter((ssl: ApisixSSL) =>
-            (ssl.id || '').toLowerCase().includes(s) ||
-            (ssl.snis || []).some((sni: string) => sni.toLowerCase().includes(s))
+            (ssl.id || '').toLowerCase().includes(keyword) ||
+            (ssl.snis || []).some((sni: string) => sni.toLowerCase().includes(keyword))
         )
     }
 
@@ -164,8 +164,8 @@ export default toNative(SSLs)
         <div class="w-16 h-16 rounded-lg bg-slate-100 flex items-center justify-center mb-4">
           <i class="fas fa-certificate text-4xl text-slate-300"></i>
         </div>
-        <p class="text-slate-600 font-medium mb-1">暂无证书</p>
-        <p class="text-sm text-slate-400">点击「创建」添加 SSL 证书</p>
+        <p class="text-slate-600 font-medium mb-1">{{ ssls.length === 0 ? '暂无证书' : '未找到匹配证书' }}</p>
+        <p class="text-sm text-slate-400">{{ ssls.length === 0 ? '点击「创建」添加 SSL 证书' : '尝试更换关键词或清空搜索条件' }}</p>
       </div>
 
       <div v-else class="space-y-3">

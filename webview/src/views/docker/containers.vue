@@ -30,8 +30,8 @@ class Containers extends Vue {
     searchText = ''
 
     get filteredContainers() {
-        if (!this.searchText) return this.containers
-        const keyword = this.searchText.toLowerCase()
+        const keyword = this.searchText.trim().toLowerCase()
+        if (!keyword) return this.containers
         return this.containers.filter((container: DockerContainerInfo) => {
             const ports = container.ports?.join(' ') || ''
             return (

@@ -27,16 +27,16 @@ class Nodes extends Vue {
     copied = false
 
     get filteredNodes() {
-        if (!this.searchText) return this.nodes
-        const s = this.searchText.toLowerCase()
+        const keyword = this.searchText.trim().toLowerCase()
+        if (!keyword) return this.nodes
         return this.nodes.filter((n: SwarmNodeInfo) =>
-            (n.hostname || '').toLowerCase().includes(s) ||
-            (n.id || '').toLowerCase().includes(s) ||
-            (n.role || '').toLowerCase().includes(s) ||
-            (n.availability || '').toLowerCase().includes(s) ||
-            (n.state || '').toLowerCase().includes(s) ||
-            (n.addr || '').toLowerCase().includes(s) ||
-            (n.engineVersion || '').toLowerCase().includes(s)
+            (n.hostname || '').toLowerCase().includes(keyword) ||
+            (n.id || '').toLowerCase().includes(keyword) ||
+            (n.role || '').toLowerCase().includes(keyword) ||
+            (n.availability || '').toLowerCase().includes(keyword) ||
+            (n.state || '').toLowerCase().includes(keyword) ||
+            (n.addr || '').toLowerCase().includes(keyword) ||
+            (n.engineVersion || '').toLowerCase().includes(keyword)
         )
     }
 
@@ -310,8 +310,8 @@ export default toNative(Nodes)
         <div class="w-16 h-16 rounded-lg bg-slate-100 flex items-center justify-center mb-4">
           <i class="fas fa-server text-4xl text-slate-300"></i>
         </div>
-        <p class="text-slate-600 font-medium mb-1">暂无节点</p>
-        <p class="text-sm text-slate-400">当前集群没有可用节点</p>
+        <p class="text-slate-600 font-medium mb-1">{{ nodes.length === 0 ? '暂无节点' : '未找到匹配节点' }}</p>
+        <p class="text-sm text-slate-400">{{ nodes.length === 0 ? '当前集群没有可用节点' : '尝试更换关键词或清空搜索条件' }}</p>
       </div>
     </div>
   </div>

@@ -25,8 +25,8 @@ class Registries extends Vue {
     searchText = ''
 
     get filteredRegistries() {
-        if (!this.searchText) return this.registries
-        const keyword = this.searchText.toLowerCase()
+        const keyword = this.searchText.trim().toLowerCase()
+        if (!keyword) return this.registries
         return this.registries.filter((registry: DockerRegistryInfo) =>
             (registry.name || '').toLowerCase().includes(keyword) ||
             (registry.url || '').toLowerCase().includes(keyword) ||
@@ -36,8 +36,8 @@ class Registries extends Vue {
     }
 
     get showDockerHub() {
-        if (!this.searchText) return true
-        const keyword = this.searchText.toLowerCase()
+        const keyword = this.searchText.trim().toLowerCase()
+        if (!keyword) return true
         const candidates = [
             'docker hub',
             'docker.io',
@@ -317,7 +317,7 @@ export default toNative(Registries)
           </div>
 
           <div v-if="!showDockerHub && filteredRegistries.length === 0" class="rounded-xl border border-slate-200 bg-white py-10 px-4 text-center">
-            <p class="text-sm text-slate-500">未找到匹配仓库，尝试更换关键词</p>
+            <p class="text-sm text-slate-500">{{ registries.length === 0 ? '暂无镜像仓库' : '未找到匹配仓库，尝试更换关键词或清空搜索条件' }}</p>
           </div>
         </div>
 
@@ -325,8 +325,8 @@ export default toNative(Registries)
           <div class="w-16 h-16 rounded-lg bg-slate-100 flex items-center justify-center mb-4">
             <i class="fas fa-warehouse text-4xl text-slate-300"></i>
           </div>
-          <p class="text-slate-600 font-medium mb-1">未找到匹配仓库</p>
-          <p class="text-sm text-slate-400">尝试更换关键词或清空搜索条件</p>
+          <p class="text-slate-600 font-medium mb-1">{{ registries.length === 0 ? '暂无镜像仓库' : '未找到匹配仓库' }}</p>
+          <p class="text-sm text-slate-400">{{ registries.length === 0 ? '点击「添加」创建镜像仓库' : '尝试更换关键词或清空搜索条件' }}</p>
         </div>
       </div>
     </div>

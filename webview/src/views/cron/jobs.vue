@@ -26,12 +26,16 @@ class CronJobs extends Vue {
     types: CronTypeInfo[] = []
 
     get filteredJobs() {
-        if (!this.searchText) return this.jobs
-        const s = this.searchText.toLowerCase()
+        const keyword = this.searchText.trim().toLowerCase()
+        if (!keyword) return this.jobs
         return this.jobs.filter(j =>
-            j.name.toLowerCase().includes(s) ||
-            j.schedule.toLowerCase().includes(s) ||
-            j.description.toLowerCase().includes(s)
+            j.name.toLowerCase().includes(keyword) ||
+            j.id.toLowerCase().includes(keyword) ||
+            j.schedule.toLowerCase().includes(keyword) ||
+            j.type.toLowerCase().includes(keyword) ||
+            j.description.toLowerCase().includes(keyword) ||
+            j.content.toLowerCase().includes(keyword) ||
+            (j.workDir || '').toLowerCase().includes(keyword)
         )
     }
 
@@ -180,8 +184,8 @@ export default toNative(CronJobs)
         <div class="w-16 h-16 rounded-lg bg-slate-100 flex items-center justify-center mb-4">
           <i class="fas fa-clock text-4xl text-slate-300"></i>
         </div>
-        <p class="text-slate-600 font-medium mb-1">暂无计划任务</p>
-        <p class="text-sm text-slate-400 mb-4">点击「新建任务」创建第一个定时任务</p>
+        <p class="text-slate-600 font-medium mb-1">{{ jobs.length === 0 ? '暂无计划任务' : '未找到匹配任务' }}</p>
+        <p class="text-sm text-slate-400 mb-4">{{ jobs.length === 0 ? '点击「新建任务」创建第一个定时任务' : '尝试更换关键词或清空搜索条件' }}</p>
       </div>
 
       <div v-else class="hidden md:block overflow-x-auto">

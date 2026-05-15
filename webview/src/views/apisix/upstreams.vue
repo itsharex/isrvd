@@ -25,16 +25,16 @@ class Upstreams extends Vue {
     searchText = ''
 
     get filteredUpstreams() {
-        if (!this.searchText) return this.upstreams
-        const s = this.searchText.toLowerCase()
+        const keyword = this.searchText.trim().toLowerCase()
+        if (!keyword) return this.upstreams
         return this.upstreams.filter((upstream: ApisixUpstream) => {
             const nodes = this.getUpstreamNodes(upstream).toLowerCase()
             return (
-                (upstream.name || '').toLowerCase().includes(s) ||
-                (upstream.id || '').toLowerCase().includes(s) ||
-                (upstream.desc || '').toLowerCase().includes(s) ||
-                (upstream.type || '').toLowerCase().includes(s) ||
-                nodes.includes(s)
+                (upstream.name || '').toLowerCase().includes(keyword) ||
+                (upstream.id || '').toLowerCase().includes(keyword) ||
+                (upstream.desc || '').toLowerCase().includes(keyword) ||
+                (upstream.type || '').toLowerCase().includes(keyword) ||
+                nodes.includes(keyword)
             )
         })
     }
@@ -173,8 +173,8 @@ export default toNative(Upstreams)
         <div class="w-16 h-16 rounded-lg bg-slate-100 flex items-center justify-center mb-4">
           <i class="fas fa-diagram-project text-4xl text-slate-300"></i>
         </div>
-        <p class="text-slate-600 font-medium mb-1">暂无上游</p>
-        <p class="text-sm text-slate-400">点击「创建」添加可复用 Upstream</p>
+        <p class="text-slate-600 font-medium mb-1">{{ upstreams.length === 0 ? '暂无上游' : '未找到匹配上游' }}</p>
+        <p class="text-sm text-slate-400">{{ upstreams.length === 0 ? '点击「创建」添加可复用 Upstream' : '尝试更换关键词或清空搜索条件' }}</p>
       </div>
 
       <div v-else class="space-y-3">
