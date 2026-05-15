@@ -74,23 +74,28 @@ type Service struct {
 	entries map[string]cronlib.EntryID // jobID → cron entry ID
 }
 
-// AvailableTypes 按当前 OS 返回可用脚本类型
-func AvailableTypes() []TypeInfo {
-	types := []TypeInfo{
-		{Value: "DOCKER_TMP", Label: "Docker 临时容器"},
-		{Value: "DOCKER_CTR", Label: "Docker 现有容器"},
-	}
+// AvailableTypes 按当前 OS 及 Docker 可用性返回可用脚本类型
+func (s *Service) AvailableTypes() []TypeInfo {
+	var types []TypeInfo
 	if runtime.GOOS == "windows" {
-		return append(types, []TypeInfo{
-			{Value: "BAT", Label: "BAT 理脚本"},
+		types = append(types, []TypeInfo{
+			{Value: "BAT", Label: "BAT 批处理脚本"},
 			{Value: "POWERSHELL", Label: "PowerShell 脚本"},
-			{Value: "EXEC", Label: "EXEC（直接执行命令）"},
+			{Value: "EXEC", Label: "可执行文件"},
+		}...)
+	} else {
+		types = append(types, []TypeInfo{
+			{Value: "SHELL", Label: "Shell 脚本"},
+			{Value: "EXEC", Label: "可执行文件"},
 		}...)
 	}
-	return append(types, []TypeInfo{
-		{Value: "SHELL", Label: "Shell 脚本"},
-		{Value: "EXEC", Label: "EXEC（直接执行命令）"},
-	}...)
+	if s.docker != nil {
+		types = append(types, []TypeInfo{
+			{Value: "DOCKER_TMP", Label: "Docker 临时容器"},
+			{Value: "DOCKER_CTR", Label: "Docker 现有容器"},
+		}...)
+	}
+	return types
 }
 
 // NewService 创建计划任务服务并启动调度器
@@ -109,7 +114,7 @@ func NewService(dockerSvc *docker.DockerService) *Service {
 		logman.Warn("Load cron jobs failed", "error", err)
 	}
 	for _, job := range jobs {
-		if err := validateJob(job); err != nil {
+		if err := s.validateJob(job); err != nil {
 			logman.Warn("Skip invalid cron job", "error", err)
 			continue
 		}
@@ -167,7 +172,7 @@ func (s *Service) ListJobs() []*JobDetail {
 
 // CreateJob 创建任务并持久化
 func (s *Service) CreateJob(job *Job) error {
-	if err := validateJob(job); err != nil {
+	if err := s.validateJob(job); err != nil {
 		return err
 	}
 
@@ -199,7 +204,7 @@ func (s *Service) CreateJob(job *Job) error {
 
 // UpdateJob 更新任务并重新注册
 func (s *Service) UpdateJob(job *Job) error {
-	if err := validateJob(job); err != nil {
+	if err := s.validateJob(job); err != nil {
 		return err
 	}
 
@@ -450,7 +455,7 @@ func parseVolumeLines(s string) []docker.VolumeMapping {
 	return result
 }
 
-func validateJob(job *Job) error {
+func (s *Service) validateJob(job *Job) error {
 	if job == nil {
 		return fmt.Errorf("job is nil")
 	}
@@ -467,7 +472,7 @@ func validateJob(job *Job) error {
 		return fmt.Errorf("invalid schedule %q: %w", job.Schedule, err)
 	}
 	typeAllowed := false
-	for _, item := range AvailableTypes() {
+	for _, item := range s.AvailableTypes() {
 		if item.Value == job.Type {
 			typeAllowed = true
 			break

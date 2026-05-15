@@ -51,7 +51,7 @@ type cronJobLogsReq struct {
 // ─── Handler 方法 ───
 
 func (app *App) cronTypes(c *gin.Context) {
-	respondSuccess(c, "Types retrieved", gin.H{"types": svcCron.AvailableTypes()})
+	respondSuccess(c, "Types retrieved", gin.H{"types": app.cronSvc.AvailableTypes()})
 }
 
 func (app *App) cronJobList(c *gin.Context) {
